@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Up Level Guild - Leaderboard</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <h1>🏆 Up Level Guild - Leaderboard</h1>
+  <div id="leaderboard">Loading...</div>
+
+  <script>
+    const scriptURL = "https://script.google.com/macros/s/AKfycbwJoXR9EFLngOAyA_WjQJNE0zT3MmL2afwlwvxmnMQ88WYzjlD-l2c_LXjg-k3bFWj9/exec";
+
+    fetch(scriptURL)
+      .then(response => response.json())
+      .then(data => {
+        if (!data || data.length === 0) {
+          document.getElementById("leaderboard").innerHTML = "<p class='empty'>⏳ รอสมาชิกคนแรกของกิลด์...</p>";
+          return;
+        }
+
+        let html = "<table><thead><tr><th>ชื่อเล่น</th><th>Codename</th><th>Rank</th><th>EXP</th><th>Party</th></tr></thead><tbody>";
+        data.forEach(row => {
+          html += `<tr>
+            <td>${row["ชื่อเล่น"] || "-"}</td>
+            <td>${row["Codename"] || "-"}</td>
+            <td>${row["Rank"] || "-"}</td>
+            <td>${row["EXP"] || "0"}</td>
+            <td>${row["Party"] || "-"}</td>
+          </tr>`;
+        });
+        html += "</tbody></table>";
+        document.getElementById("leaderboard").innerHTML = html;
+      })
+      .catch(err => {
+        document.getElementById("leaderboard").innerText = "❌ โหลดข้อมูลไม่สำเร็จ";
+        console.error(err);
+      });
+  </script>
+</body>
+</html>
