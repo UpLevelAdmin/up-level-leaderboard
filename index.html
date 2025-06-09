@@ -1,12 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Up Level Guild - Leaderboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <img src="https://i.postimg.cc/wjzpnxjB/Up-Level-01-1.png" alt="Up Level Logo" class="logo">
   <h1>🏆 Up Level Guild - Leaderboard</h1>
   <div id="leaderboard">Loading...</div>
 
@@ -32,13 +34,13 @@
           return;
         }
 
-        let html = "<table><thead><tr><th>ชื่อเล่น</th><th>Codename</th><th>Rank</th><th>EXP</th><th>Party</th></tr></thead><tbody>";
-        data.forEach(row => {
+        let html = "<table><thead><tr><th>อันดับ</th><th>Codename</th><th>Rank</th><th>EXP</th><th>Party</th></tr></thead><tbody>";
+        data.forEach((row, index) => {
           const rank = row["Rank"] || "-";
           const emoji = emojiMap[rank] || "";
-          const rankHTML = `<span class='rank-${rank}'>${emoji} ${rank}</span>`;
+          const rankHTML = `<span class='rank-${rank}'>${emoji} ${rank} ${emoji}</span>`;
           html += `<tr>
-            <td>${row["ชื่อเล่น"] || "-"}</td>
+            <td>${index + 1}</td>
             <td>${row["Codename"] || "-"}</td>
             <td>${rankHTML}</td>
             <td>${row["EXP"] || "0"}</td>
