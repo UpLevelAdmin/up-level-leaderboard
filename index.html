@@ -13,6 +13,17 @@
   <script>
     const scriptURL = "https://script.google.com/macros/s/AKfycbwJoXR9EFLngOAyA_WjQJNE0zT3MmL2afwlwvxmnMQ88WYzjlD-l2c_LXjg-k3bFWj9/exec";
 
+    const emojiMap = {
+      "Rookie": "🐣",
+      "Bronze": "🛡️",
+      "Silver": "⚔️",
+      "Gold": "🏅",
+      "Platinum": "⭐",
+      "Diamond": "💎",
+      "Grandmaster": "👑",
+      "Legend": "🐉"
+    };
+
     fetch(scriptURL)
       .then(response => response.json())
       .then(data => {
@@ -23,10 +34,13 @@
 
         let html = "<table><thead><tr><th>ชื่อเล่น</th><th>Codename</th><th>Rank</th><th>EXP</th><th>Party</th></tr></thead><tbody>";
         data.forEach(row => {
+          const rank = row["Rank"] || "-";
+          const emoji = emojiMap[rank] || "";
+          const rankHTML = `<span class='rank-${rank}'>${emoji} ${rank}</span>`;
           html += `<tr>
             <td>${row["ชื่อเล่น"] || "-"}</td>
             <td>${row["Codename"] || "-"}</td>
-            <td>${row["Rank"] || "-"}</td>
+            <td>${rankHTML}</td>
             <td>${row["EXP"] || "0"}</td>
             <td>${row["Party"] || "-"}</td>
           </tr>`;

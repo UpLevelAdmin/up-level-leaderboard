@@ -1,36 +1,51 @@
+
 body {
   font-family: 'Segoe UI', sans-serif;
-  background-color: #fffaf4;
+  background: linear-gradient(to right, #f9f3ec, #ffe4e1);
   color: #333;
-  padding: 20px;
+  padding: 30px;
   text-align: center;
 }
 
 h1 {
-  color: #ff8c00;
+  font-size: 2.4rem;
+  color: #c0392b;
   margin-bottom: 20px;
 }
 
 table {
-  margin: auto;
   width: 95%;
+  margin: auto;
   border-collapse: collapse;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
   background-color: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 0 15px rgba(0,0,0,0.1);
 }
 
 th, td {
-  border: 1px solid #ddd;
-  padding: 10px;
+  padding: 14px 10px;
+  border: 1px solid #eaeaea;
 }
 
 th {
-  background-color: #ffe0b2;
+  background-color: #ffce99;
+  font-weight: bold;
+  font-size: 16px;
 }
 
 tr:nth-child(even) {
-  background-color: #f9f9f9;
+  background-color: #fdf5e6;
 }
+
+.rank-Rookie { color: #888888; }
+.rank-Bronze { color: #cd7f32; }
+.rank-Silver { color: #aaaaaa; }
+.rank-Gold { color: #daa520; font-weight: bold; }
+.rank-Platinum { color: #00bcd4; font-weight: bold; }
+.rank-Diamond { color: #4fc3f7; font-weight: bold; }
+.rank-Grandmaster { color: #673ab7; font-weight: bold; }
+.rank-Legend { color: #e91e63; font-weight: bold; }
 
 .empty {
   font-style: italic;
