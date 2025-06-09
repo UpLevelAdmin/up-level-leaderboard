@@ -38,7 +38,7 @@
         data.forEach((row, index) => {
           const rank = row["Rank"] || "-";
           const emoji = emojiMap[rank] || "";
-          const rankHTML = `<span class='rank-${rank}'>${emoji} ${rank} ${emoji}</span>`;
+          const rankHTML = `<span class='rank-${rank}' style='white-space: nowrap;'>${emoji} ${rank} ${emoji}</span>`;
           html += `<tr>
             <td>${index + 1}</td>
             <td>${row["Codename"] || "-"}</td>
