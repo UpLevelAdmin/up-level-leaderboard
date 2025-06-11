@@ -66,6 +66,16 @@
     .nowrap {
       white-space: nowrap;
     }
+    .desc-short {
+      cursor: pointer;
+      color: #4c1d95;
+    }
+    .desc-full {
+      display: none;
+      color: #333;
+      text-align: left;
+      padding-top: 0.5rem;
+    }
   </style>
 </head>
 <body>
@@ -107,11 +117,16 @@
         loading.style.display = 'none';
         tableWrapper.style.display = 'table';
 
-        data.forEach(q => {
+        data.forEach((q, index) => {
           const row = document.createElement('tr');
+          const shortText = q['รายละเอียด'].substring(0, 40) + '...';
+          const fullId = `full-desc-${index}`;
           row.innerHTML = `
             <td>${q['ชื่อเควส']}</td>
-            <td>${q['รายละเอียด']}</td>
+            <td>
+              <span class="desc-short" onclick="document.getElementById('${fullId}').style.display='block'; this.style.display='none';">${shortText} <u>ดูเพิ่มเติม</u></span>
+              <div class="desc-full" id="${fullId}">${q['รายละเอียด']}</div>
+            </td>
             <td>${q['EXP']}</td>
             <td>${q['Party Point']}</td>
             <td><span class="type ${q['ประเภท']}">${q['ประเภท']}</span></td>
