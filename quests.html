@@ -1,114 +1,96 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Up Level Guild - Quest Board</title>
-  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🧩 Quest Board | Up Level Guild</title>
   <style>
     body {
-      font-family: 'Sarabun', sans-serif;
-      background-color: #f9f9f9;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f4f4f9;
       margin: 0;
-      padding: 20px;
-      text-align: center;
-    }
-
-    header img {
-      width: 100px;
-      margin-top: 10px;
-    }
-
-    h1 {
-      font-size: 24px;
-      margin-top: 10px;
+      padding: 0 1rem;
       color: #333;
     }
-
-    .quest-container {
-      max-width: 800px;
-      margin: 30px auto;
-      background: #fff;
-      border-radius: 12px;
-      padding: 20px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    header {
+      text-align: center;
+      padding: 2rem 0 1rem;
     }
-
+    h1 {
+      font-size: 2rem;
+      color: #6b46c1;
+    }
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 10px;
+      margin-top: 1rem;
+      background-color: #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      border-radius: 0.5rem;
+      overflow: hidden;
     }
-
     th, td {
-      padding: 12px 8px;
-      border: 1px solid #ddd;
+      padding: 0.75rem 1rem;
+      text-align: left;
     }
-
     th {
-      background-color: #f1f1f1;
+      background-color: #ede9fe;
+      color: #4c1d95;
     }
-
-    .exp-badge {
-      background-color: #ffc107;
-      padding: 4px 8px;
-      border-radius: 8px;
+    tr:nth-child(even) {
+      background-color: #f9f9ff;
+    }
+    .type {
       font-weight: bold;
+      font-size: 0.9rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.25rem;
     }
-
-    footer {
-      font-size: 12px;
-      color: #aaa;
-      margin-top: 40px;
-    }
+    .กิจกรรม { background-color: #ffe0b2; color: #bf360c; }
+    .รายวัน { background-color: #c8e6c9; color: #256029; }
+    .รายสัปดาห์ { background-color: #bbdefb; color: #0d47a1; }
   </style>
 </head>
 <body>
   <header>
-    <img src="https://i.postimg.cc/wjzpnxjB/Up-Level-01-1.png" alt="Up Level Guild Logo" />
-    <h1>📜 กระดานเควส Guild</h1>
+    <h1>🧩 Quest Board</h1>
+    <p>รวมเควสพิเศษ EXP และแต้มปาร์ตี้สำหรับเหล่าสมาชิกกิลด์</p>
   </header>
 
-  <main>
-    <div class="quest-container" id="questBoard">
-      <p>กำลังโหลดเควส...</p>
-    </div>
-  </main>
-
-  <footer>
-    &copy; 2025 Up Level Guild. Powered by Netlify + Google Sheets.
-  </footer>
+  <table>
+    <thead>
+      <tr>
+        <th>🎯 เควส</th>
+        <th>📘 รายละเอียด</th>
+        <th>🍎 EXP</th>
+        <th>🍀 Party Point</th>
+        <th>🧩 ประเภท</th>
+      </tr>
+    </thead>
+    <tbody id="quest-table">
+      <!-- Filled by JS -->
+    </tbody>
+  </table>
 
   <script>
-    async function loadQuests() {
-      const container = document.getElementById("questBoard");
-      try {
-        const res = await fetch("https://script.google.com/macros/s/AKfycbwJoXR9EFLngOAyA_WjQJNE0zT3MmL2afwlwvxmnMQ88WYzjlD-l2c_LXjg-k3bFWj9/exec?func=getQuestList");
-        const quests = await res.json();
-
-        if (!quests.length) {
-          container.innerHTML = "<p>ยังไม่มีเควสในตอนนี้</p>";
-          return;
-        }
-
-        let html = "<table><thead><tr><th>ชื่อเควส</th><th>คำอธิบาย</th><th>รางวัล</th></tr></thead><tbody>";
-        quests.forEach(q => {
-          html += `<tr>
-            <td>${q["ชื่อเควส"] || "-"}</td>
-            <td>${q["คำอธิบาย"] || "-"}</td>
-            <td><span class="exp-badge">${q["EXP"] || 0} EXP</span></td>
-          </tr>`;
+    fetch('https://script.google.com/macros/s/AKfycbwJoXR9EFLngOAyA_WjQJNE0zT3MmL2afwlwvxmnMQ88WYzjlD-l2c_LXjg-k3bFWj9/exec?page=quest')
+      .then(res => res.json())
+      .then(data => {
+        const tbody = document.getElementById('quest-table');
+        data.forEach(q => {
+          if (q.Status === 'เปิดใช้งาน') {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+              <td>${q['Quest Name']}</td>
+              <td>${q.Description}</td>
+              <td>${q.EXP}</td>
+              <td>${q['Party Point']}</td>
+              <td><span class="type ${q.Type}">${q.Type}</span></td>
+            `;
+            tbody.appendChild(row);
+          }
         });
-        html += "</tbody></table>";
-        container.innerHTML = html;
-      } catch (err) {
-        container.innerHTML = "<p>เกิดข้อผิดพลาดในการโหลดเควส</p>";
-        console.error(err);
-      }
-    }
-
-    loadQuests();
+      });
   </script>
 </body>
 </html>
