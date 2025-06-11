@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -57,11 +58,20 @@
       });
       table.appendChild(headerRow);
 
+      const rankEmojis = {
+        "Rookie": "🐣", "Bronze": "🛡️", "Silver": "⚔️", "Gold": "🥇",
+        "Platinum": "⭐", "Diamond": "💎", "Grandmaster": "👑", "Legend": "🐉"
+      };
+
       data.forEach((player, index) => {
         const row = document.createElement("tr");
-        const rankEmoji = player.rankEmoji || "";
-        const rankDisplay = `<span style='white-space: nowrap;'>${rankEmoji} ${player.rank} ${rankEmoji}</span>`;
-        [index + 1, player.codename, rankDisplay, player.exp, player.party].forEach(cell => {
+        const codename = player.Codename || "-";
+        const rank = player.Rank || "-";
+        const exp = player.EXP || 0;
+        const party = player.Party || "-";
+        const emoji = rankEmojis[rank] || "";
+        const rankDisplay = `<span style='white-space: nowrap;'>${emoji} ${rank} ${emoji}</span>`;
+        [index + 1, codename, rankDisplay, exp, party].forEach(cell => {
           const td = document.createElement("td");
           td.innerHTML = cell;
           row.appendChild(td);
