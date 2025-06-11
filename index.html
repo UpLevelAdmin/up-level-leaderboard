@@ -1,20 +1,24 @@
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Up Level Guild</title>
+  <title>Up Level Guild - Home</title>
   <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap" rel="stylesheet">
   <style>
     body {
       font-family: 'Sarabun', sans-serif;
-      background-color: #f4f4f4;
-      color: #333;
       margin: 0;
       padding: 0;
-      text-align: center;
+      background-color: #fefefe;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
     header {
+      text-align: center;
       padding: 20px;
     }
     header img {
@@ -22,61 +26,78 @@
       margin-bottom: 10px;
     }
     h1 {
-      font-size: 24px;
-      margin-bottom: 5px;
+      font-size: 28px;
+      margin: 0;
     }
-    .menu {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 10px;
+    p.motto {
+      font-size: 16px;
+      margin-top: 10px;
+      padding: 0 20px;
+      text-align: center;
+      color: #666;
+    }
+    nav {
       margin: 30px 0;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
     }
-    .menu a {
-      background: #ffc107;
-      color: #000;
-      text-decoration: none;
+    .nav-button {
+      background-color: #ffc107;
+      border: none;
+      border-radius: 20px;
       padding: 12px 20px;
-      border-radius: 10px;
-      width: 80%;
-      max-width: 300px;
+      font-size: 16px;
       font-weight: bold;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      cursor: pointer;
+      text-decoration: none;
+      color: #222;
+      box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+      transition: background-color 0.3s ease;
     }
-    .highlight {
-      background-color: white;
+    .nav-button:hover {
+      background-color: #ffb300;
+    }
+    .highlight-section {
+      background-color: #fff7e6;
+      border-left: 6px solid #ffc107;
       padding: 20px;
-      margin: 0 auto 40px;
+      width: 90%;
       max-width: 500px;
-      border-radius: 12px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.08);
+      border-radius: 10px;
+      margin-bottom: 40px;
     }
     footer {
       font-size: 12px;
+      color: #aaa;
       padding: 20px;
-      color: #888;
+      text-align: center;
     }
   </style>
 </head>
 <body>
   <header>
     <img src="https://i.postimg.cc/wjzpnxjB/Up-Level-01-1.png" alt="Up Level Logo" />
-    <h1>🏰 Up Level Guild</h1>
-    <p>ศูนย์กลางของนักผจญภัยในร้านการ์ดเกม</p>
+    <h1>Up Level Guild</h1>
+    <p class="motto">
+      ที่นี่ไม่ใช่แค่คลับ...แต่คือสนามฝึกของเหล่าโปเกมอนเทรนเนอร์ตัวจริง<br>
+      เริ่มต้นการผจญภัยในกิลด์แห่งนี้ สะสมพลัง ฝึกฝนฝีมือ สู่การเป็นตำนาน
+    </p>
   </header>
 
-  <section class="highlight">
-    <h2>🔥 เควสเด่นวันนี้</h2>
-    <p>👥 มาเล่นที่คลับวันนี้ รับ +1 EXP</p>
-    <p>🏆 ชนะการแข่งขัน รับ +2 EXP</p>
-  </section>
-
-  <nav class="menu">
-    <a href="leaderboard.html">🏆 Leaderboard</a>
-    <a href="quests.html">🎯 Quest Board</a>
-    <a href="ranks.html">📈 Rank System</a>
-    <a href="party.html">👥 Party Info</a>
+  <nav>
+    <a href="leaderboard.html" class="nav-button">🏆 Leaderboard</a>
+    <a href="quests.html" class="nav-button">🗺️ Quest Board</a>
+    <a href="ranks.html" class="nav-button">📈 Rank Info</a>
+    <a href="party.html" class="nav-button">👥 Party</a>
+    <a href="https://forms.gle/g71apZo9ixNUYDpb6" class="nav-button" target="_blank">📝 สมัครสมาชิก</a>
   </nav>
+
+  <div class="highlight-section">
+    <h2 style="margin-top: 0;">🔥 เควสเด่นวันนี้</h2>
+    <p>🎯 แข่งครบ 2 รอบกับเพื่อนในคลับ<br>🎁 รับ EXP และแต้มปาร์ตี้ทันที!</p>
+  </div>
 
   <footer>
     &copy; 2025 Up Level Guild System. Powered by Netlify + Google Sheets
