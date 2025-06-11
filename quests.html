@@ -73,22 +73,20 @@
   </table>
 
   <script>
-    fetch('https://script.google.com/macros/s/AKfycbwJoXR9EFLngOAyA_WjQJNE0zT3MmL2afwlwvxmnMQ88WYzjlD-l2c_LXjg-k3bFWj9/exec?page=quest')
+    fetch('https://script.google.com/macros/s/AKfycbwJoXR9EFLngOAyA_WjQJNE0zT3MmL2afwlwvxmnMQ88WYzjlD-l2c_LXjg-k3bFWj9/exec?func=getQuestList')
       .then(res => res.json())
       .then(data => {
         const tbody = document.getElementById('quest-table');
         data.forEach(q => {
-          if (q.Status === 'เปิดใช้งาน') {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-              <td>${q['Quest Name']}</td>
-              <td>${q.Description}</td>
-              <td>${q.EXP}</td>
-              <td>${q['Party Point']}</td>
-              <td><span class="type ${q.Type}">${q.Type}</span></td>
-            `;
-            tbody.appendChild(row);
-          }
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${q['ชื่อเควส']}</td>
+            <td>${q['รายละเอียด']}</td>
+            <td>${q['EXP']}</td>
+            <td>${q['Party Point']}</td>
+            <td><span class="type ${q['ประเภท']}">${q['ประเภท']}</span></td>
+          `;
+          tbody.appendChild(row);
         });
       });
   </script>
