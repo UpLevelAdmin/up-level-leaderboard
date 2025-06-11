@@ -35,8 +35,9 @@
       font-size: 0.95rem;
     }
     th, td {
-      padding: 0.75rem;
-      text-align: left;
+      padding: 0.5rem 0.5rem;
+      text-align: center;
+      vertical-align: middle;
       word-break: break-word;
     }
     th {
@@ -62,6 +63,9 @@
       color: #888;
       padding: 2rem 0;
     }
+    .nowrap {
+      white-space: nowrap;
+    }
   </style>
 </head>
 <body>
@@ -75,11 +79,11 @@
   <table style="display:none;" id="quest-table-wrapper">
     <thead>
       <tr>
-        <th>🎯 เควส</th>
-        <th>📘 รายละเอียด</th>
-        <th>🍎 EXP</th>
-        <th>🍀 Party Point</th>
-        <th>🧩 ประเภท</th>
+        <th class="nowrap">🎯 เควส</th>
+        <th class="nowrap">📘 รายละเอียด</th>
+        <th class="nowrap">🍎 EXP</th>
+        <th class="nowrap">🍀 Party Point</th>
+        <th class="nowrap">🧩 ประเภท</th>
       </tr>
     </thead>
     <tbody id="quest-table">
