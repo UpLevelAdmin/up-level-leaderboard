@@ -1,106 +1,139 @@
-
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Up Level Guild - Home</title>
-  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Up Level Guild</title>
   <style>
     body {
-      font-family: 'Sarabun', sans-serif;
-      margin: 0;
-      padding: 0;
-      background-color: #fefefe;
-      color: #333;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    header {
+      font-family: 'Segoe UI', sans-serif;
       text-align: center;
-      padding: 20px;
+      background: #fffdf5;
+      color: #333;
+      margin: 0;
+      padding: 2rem 1rem;
     }
-    header img {
-      width: 120px;
-      margin-bottom: 10px;
+    img.logo {
+      width: 150px;
+      margin-bottom: 1rem;
     }
     h1 {
-      font-size: 28px;
-      margin: 0;
+      font-size: 2rem;
+      color: #2c2c2c;
+      margin-bottom: 0.25rem;
     }
-    p.motto {
-      font-size: 16px;
-      margin-top: 10px;
-      padding: 0 20px;
-      text-align: center;
-      color: #666;
+    p.intro {
+      max-width: 420px;
+      margin: 0 auto 2rem;
+      font-size: 1rem;
+      color: #555;
     }
-    nav {
-      margin: 30px 0;
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 12px;
+    .btn-container {
+      margin-bottom: 2rem;
     }
-    .nav-button {
-      background-color: #ffc107;
-      border: none;
-      border-radius: 20px;
-      padding: 12px 20px;
-      font-size: 16px;
+    .btn {
+      display: inline-block;
+      margin: 0.25rem;
+      padding: 0.5rem 1rem;
+      border-radius: 30px;
+      background: #ffcc00;
+      color: #000;
       font-weight: bold;
-      cursor: pointer;
       text-decoration: none;
-      color: #222;
-      box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
-      transition: background-color 0.3s ease;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
-    .nav-button:hover {
-      background-color: #ffb300;
+    .highlight-box {
+      background: #fff3e0;
+      border-left: 6px solid #ff6f00;
+      padding: 1rem;
+      max-width: 400px;
+      margin: 0 auto 2rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
     }
-    .highlight-section {
-      background-color: #fff7e6;
-      border-left: 6px solid #ffc107;
-      padding: 20px;
-      width: 90%;
-      max-width: 500px;
-      border-radius: 10px;
-      margin-bottom: 40px;
+    .highlight-box h3 {
+      margin: 0 0 0.5rem;
+      color: #d84315;
+      font-size: 1.2rem;
     }
-    footer {
-      font-size: 12px;
-      color: #aaa;
-      padding: 20px;
-      text-align: center;
+    .highlight-box ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      color: #444;
+    }
+    .log-stream {
+      max-width: 420px;
+      margin: 0 auto;
+      font-size: 0.9rem;
+      color: #444;
+      overflow: hidden;
+      height: 100px;
+      position: relative;
+    }
+    .log-stream ul {
+      padding: 0;
+      margin: 0;
+      list-style: none;
+      text-align: left;
+      animation: scroll-up 10s linear infinite;
+    }
+    .log-stream li {
+      padding: 0.25rem 0;
+    }
+    @keyframes scroll-up {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(-100%); }
     }
   </style>
 </head>
 <body>
-  <header>
-    <img src="https://i.postimg.cc/wjzpnxjB/Up-Level-01-1.png" alt="Up Level Logo" />
-    <h1>Up Level Guild</h1>
-    <p class="motto">
-      ที่นี่ไม่ใช่แค่คลับ...แต่คือสนามฝึกของเหล่าโปเกมอนเทรนเนอร์ตัวจริง<br>
-      เริ่มต้นการผจญภัยในกิลด์แห่งนี้ สะสมพลัง ฝึกฝนฝีมือ สู่การเป็นตำนาน
-    </p>
-  </header>
+  <img class="logo" src="https://i.postimg.cc/wjzpnxjB/Up-Level-01-1.png" alt="Up Level Logo" />
+  <h1>Up Level Guild</h1>
+  <p class="intro">ที่นี่ไม่ใช่แค่คลับ...แต่คือสนามฝึกของเหล่าเทรนเนอร์ตัวจริง<br>เริ่มต้นการผจญภัยในโลกเต็มพลัง สะสมพลัง ฝึกฝีมือ สู่การเป็นตำนาน</p>
 
-  <nav>
-    <a href="leaderboard.html" class="nav-button">🏆 Leaderboard</a>
-    <a href="quests.html" class="nav-button">🗺️ Quest Board</a>
-    <a href="ranks.html" class="nav-button">📈 Rank Info</a>
-    <a href="party.html" class="nav-button">👥 Party</a>
-    <a href="https://forms.gle/g71apZo9ixNUYDpb6" class="nav-button" target="_blank">📝 สมัครสมาชิก</a>
-  </nav>
-
-  <div class="highlight-section">
-    <h2 style="margin-top: 0;">🔥 เควสเด่นวันนี้</h2>
-    <p>🎯 แข่งครบ 2 รอบกับเพื่อนในคลับ<br>🎁 รับ EXP และแต้มปาร์ตี้ทันที!</p>
+  <div class="btn-container">
+    <a href="/" class="btn">🏆 Leaderboard</a>
+    <a href="/quests" class="btn">📘 Quest Board</a>
+    <a href="https://forms.gle/7B4sBLxiXLivbfdA6" class="btn">✍️ สมัครสมาชิก</a>
   </div>
 
-  <footer>
-    &copy; 2025 Up Level Guild System. Powered by Netlify + Google Sheets
-  </footer>
+  <div class="highlight-box">
+    <h3>🔥 เควสเด่นวันนี้</h3>
+    <ul id="featured-list"><li>🔄 กำลังโหลด...</li></ul>
+  </div>
+
+  <div class="log-stream">
+    <h4>📜 ผู้ที่ทำเควสล่าสุด</h4>
+    <ul id="quest-log"></ul>
+  </div>
+
+  <script>
+    fetch('https://script.google.com/macros/s/AKfycbwJoXR9EFLngOAyA_WjQJNE0zT3MmL2afwlwvxmnMQ88WYzjlD-l2c_LXjg-k3bFWj9/exec?func=getFeaturedQuestsRandom')
+      .then(res => res.json())
+      .then(data => {
+        const ul = document.getElementById('featured-list');
+        ul.innerHTML = '';
+        data.forEach(q => {
+          const li = document.createElement('li');
+          li.textContent = `🧩 ${q['ชื่อเควส']}: ${q['รายละเอียด']}`;
+          ul.appendChild(li);
+        });
+      });
+
+    fetch('https://script.google.com/macros/s/AKfycbwJoXR9EFLngOAyA_WjQJNE0zT3MmL2afwlwvxmnMQ88WYzjlD-l2c_LXjg-k3bFWj9/exec?func=getQuestActivityLog')
+      .then(res => res.json())
+      .then(data => {
+        const ul = document.getElementById('quest-log');
+        ul.innerHTML = '';
+        data.forEach(entry => {
+          const li = document.createElement('li');
+          li.textContent = `🧩 ${entry.Codename} ทำเควส: ${entry.QuestName}`;
+          ul.appendChild(li);
+        });
+      });
+  </script>
+
+  <p style="font-size: 0.8rem; color: #999; margin-top: 3rem;">© 2025 Up Level Guild System. Powered by Netlify + Google Sheets.</p>
 </body>
 </html>
