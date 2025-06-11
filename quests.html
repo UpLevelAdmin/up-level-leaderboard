@@ -76,6 +76,23 @@
       text-align: left;
       padding-top: 0.5rem;
     }
+    .desc-toggle {
+      color: #6b46c1;
+      cursor: pointer;
+      font-size: 0.85rem;
+      display: block;
+      margin-top: 0.3rem;
+    }
+    .submit-hint {
+      margin-top: 1rem;
+      text-align: center;
+      font-size: 0.9rem;
+      color: #444;
+    }
+    .submit-hint a {
+      color: #2563eb;
+      text-decoration: underline;
+    }
   </style>
 </head>
 <body>
@@ -101,6 +118,12 @@
     </tbody>
   </table>
 
+  <div class="submit-hint">
+    📸 ทำเควสแล้ว? แคปหน้าจอ/ภาพหลักฐาน แล้วส่งให้แอดมินตรวจได้ที่:<br>
+    👉 <a href="https://m.me/uplevelguild" target="_blank">แชท Facebook Page</a> หรือ 
+    👉 <a href="https://lin.ee/your-line-link" target="_blank">LINE Official Account</a>
+  </div>
+
   <script>
     fetch('https://script.google.com/macros/s/AKfycbwJoXR9EFLngOAyA_WjQJNE0zT3MmL2afwlwvxmnMQ88WYzjlD-l2c_LXjg-k3bFWj9/exec?func=getQuestList')
       .then(res => res.json())
@@ -121,11 +144,15 @@
           const row = document.createElement('tr');
           const shortText = q['รายละเอียด'].substring(0, 40) + '...';
           const fullId = `full-desc-${index}`;
+          const shortId = `short-desc-${index}`;
           row.innerHTML = `
             <td>${q['ชื่อเควส']}</td>
             <td>
-              <span class="desc-short" onclick="document.getElementById('${fullId}').style.display='block'; this.style.display='none';">${shortText} <u>ดูเพิ่มเติม</u></span>
-              <div class="desc-full" id="${fullId}">${q['รายละเอียด']}</div>
+              <span class="desc-short" id="${shortId}" onclick="document.getElementById('${fullId}').style.display='block'; this.style.display='none';">${shortText} <u>ดูเพิ่มเติม</u></span>
+              <div class="desc-full" id="${fullId}">
+                ${q['รายละเอียด']}
+                <span class="desc-toggle" onclick="document.getElementById('${shortId}').style.display='inline'; this.parentElement.style.display='none';">🔽 ซ่อน</span>
+              </div>
             </td>
             <td>${q['EXP']}</td>
             <td>${q['Party Point']}</td>
