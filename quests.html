@@ -14,24 +14,30 @@
     }
     header {
       text-align: center;
-      padding: 2rem 0 1rem;
+      padding: 1.5rem 0 1rem;
     }
     h1 {
-      font-size: 2rem;
+      font-size: 1.8rem;
       color: #6b46c1;
+    }
+    p {
+      font-size: 1rem;
+      color: #555;
+      margin-bottom: 1rem;
     }
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 1rem;
       background-color: #fff;
       box-shadow: 0 2px 8px rgba(0,0,0,0.05);
       border-radius: 0.5rem;
       overflow: hidden;
+      font-size: 0.95rem;
     }
     th, td {
-      padding: 0.75rem 1rem;
+      padding: 0.75rem;
       text-align: left;
+      word-break: break-word;
     }
     th {
       background-color: #ede9fe;
@@ -42,13 +48,20 @@
     }
     .type {
       font-weight: bold;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       padding: 0.25rem 0.5rem;
       border-radius: 0.25rem;
+      display: inline-block;
     }
     .กิจกรรม { background-color: #ffe0b2; color: #bf360c; }
     .รายวัน { background-color: #c8e6c9; color: #256029; }
     .รายสัปดาห์ { background-color: #bbdefb; color: #0d47a1; }
+    #loading {
+      text-align: center;
+      font-size: 1rem;
+      color: #888;
+      padding: 2rem 0;
+    }
   </style>
 </head>
 <body>
@@ -57,7 +70,9 @@
     <p>รวมเควสพิเศษ EXP และแต้มปาร์ตี้สำหรับเหล่าสมาชิกกิลด์</p>
   </header>
 
-  <table>
+  <div id="loading">🔄 กำลังโหลดเควส กรุณารอสักครู่...</div>
+
+  <table style="display:none;" id="quest-table-wrapper">
     <thead>
       <tr>
         <th>🎯 เควส</th>
@@ -76,7 +91,18 @@
     fetch('https://script.google.com/macros/s/AKfycbwJoXR9EFLngOAyA_WjQJNE0zT3MmL2afwlwvxmnMQ88WYzjlD-l2c_LXjg-k3bFWj9/exec?func=getQuestList')
       .then(res => res.json())
       .then(data => {
+        const loading = document.getElementById('loading');
+        const tableWrapper = document.getElementById('quest-table-wrapper');
         const tbody = document.getElementById('quest-table');
+
+        if (data.length === 0) {
+          loading.innerText = '🕹️ ยังไม่มีเควสที่เปิดอยู่ในตอนนี้';
+          return;
+        }
+
+        loading.style.display = 'none';
+        tableWrapper.style.display = 'table';
+
         data.forEach(q => {
           const row = document.createElement('tr');
           row.innerHTML = `
@@ -88,6 +114,9 @@
           `;
           tbody.appendChild(row);
         });
+      })
+      .catch(() => {
+        document.getElementById('loading').innerText = '❌ โหลดเควสไม่สำเร็จ กรุณาลองใหม่ภายหลัง';
       });
   </script>
 </body>
