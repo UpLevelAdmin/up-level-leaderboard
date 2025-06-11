@@ -65,10 +65,10 @@
 
       data.forEach((player, index) => {
         const row = document.createElement("tr");
-        const codename = player.Codename || "-";
-        const rank = player.Rank || "-";
-        const exp = player.EXP || 0;
-        const party = player.Party || "-";
+        const codename = player["Codename"] || "-";
+        const rank = player["Rank"] || "-";
+        const exp = player["EXP"] || 0;
+        const party = player["Party"] || "-";
         const emoji = rankEmojis[rank] || "";
         const rankDisplay = `<span style='white-space: nowrap;'>${emoji} ${rank} ${emoji}</span>`;
         [index + 1, codename, rankDisplay, exp, party].forEach(cell => {
