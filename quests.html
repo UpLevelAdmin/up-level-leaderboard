@@ -93,6 +93,15 @@
       color: #2563eb;
       text-decoration: underline;
     }
+    button {
+      background-color: #6b46c1;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 0.25rem 0.75rem;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -111,6 +120,7 @@
         <th class="nowrap">🍎 EXP</th>
         <th class="nowrap">🍀 Party Point</th>
         <th class="nowrap">🧩 ประเภท</th>
+        <th class="nowrap">📤 ส่งเควส</th>
       </tr>
     </thead>
     <tbody id="quest-table">
@@ -125,6 +135,24 @@
   </div>
 
   <script>
+    function normalizePhone(p) {
+      return p.replace(/[^\d]/g, '').replace(/^([1-9]\d{8})$/, '0$1');
+    }
+
+    function submitQuest(questId) {
+      const phone = prompt("📱 กรอกเบอร์โทรเพื่อส่งเควสนี้:");
+      if (!phone) return;
+      const clean = normalizePhone(phone);
+      if (clean.length !== 10 || !clean.startsWith("0")) {
+        alert("❌ เบอร์โทรไม่ถูกต้อง (ควรมี 10 หลักขึ้นต้นด้วย 0)");
+        return;
+      }
+      fetch(`https://script.google.com/macros/s/AKfycbwJoXR9EFLngOAyA_WjQJNE0zT3MmL2afwlwvxmnMQ88WYzjlD-l2c_LXjg-k3bFWj9/exec?func=submitQuestToLog&phone=${clean}&questId=${questId}`)
+        .then(res => res.text())
+        .then(msg => alert(msg))
+        .catch(() => alert("❌ เกิดข้อผิดพลาดขณะส่งเควส"));
+    }
+
     fetch('https://script.google.com/macros/s/AKfycbwJoXR9EFLngOAyA_WjQJNE0zT3MmL2afwlwvxmnMQ88WYzjlD-l2c_LXjg-k3bFWj9/exec?func=getQuestList')
       .then(res => res.json())
       .then(data => {
@@ -157,6 +185,7 @@
             <td>${q['EXP']}</td>
             <td>${q['Party Point']}</td>
             <td><span class="type ${q['ประเภท']}">${q['ประเภท']}</span></td>
+            <td><button onclick="submitQuest('${q['Quest ID']}')">ส่งเควส</button></td>
           `;
           tbody.appendChild(row);
         });
