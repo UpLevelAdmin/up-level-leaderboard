@@ -1,137 +1,111 @@
-
 <!DOCTYPE html>
 <html lang="th">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Up Level Guild - Quest Board</title>
   <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
   <style>
     body {
       font-family: 'Sarabun', sans-serif;
+      background-color: #f9f9f9;
       margin: 0;
-      padding: 0;
-      background-color: #fffef5;
-      color: #333;
+      padding: 20px;
       text-align: center;
     }
-    header {
-      padding: 20px;
-    }
+
     header img {
       width: 100px;
-    }
-    h1 {
-      font-size: 26px;
       margin-top: 10px;
     }
+
+    h1 {
+      font-size: 24px;
+      margin-top: 10px;
+      color: #333;
+    }
+
     .quest-container {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      padding: 10px;
-      gap: 20px;
-    }
-    .quest-card {
-      background: #ffffff;
+      max-width: 800px;
+      margin: 30px auto;
+      background: #fff;
       border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      width: 300px;
       padding: 20px;
-      text-align: left;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
-    .quest-card h3 {
-      margin-top: 0;
-      color: #f57c00;
-    }
-    .quest-card p {
-      margin: 5px 0;
-    }
-    .submit-form {
-      margin-top: 15px;
-    }
-    .submit-form input {
-      padding: 8px;
+
+    table {
       width: 100%;
-      box-sizing: border-box;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      margin-bottom: 6px;
+      border-collapse: collapse;
+      margin-top: 10px;
     }
-    .submit-form button {
+
+    th, td {
+      padding: 12px 8px;
+      border: 1px solid #ddd;
+    }
+
+    th {
+      background-color: #f1f1f1;
+    }
+
+    .exp-badge {
       background-color: #ffc107;
-      color: #222;
-      padding: 8px 12px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 8px;
       font-weight: bold;
-      width: 100%;
     }
+
     footer {
       font-size: 12px;
-      padding: 20px;
       color: #aaa;
+      margin-top: 40px;
     }
   </style>
 </head>
 <body>
   <header>
-    <img src="https://i.postimg.cc/wjzpnxjB/Up-Level-01-1.png" alt="Logo" />
-    <h1>🗺️ Quest Board</h1>
+    <img src="https://i.postimg.cc/wjzpnxjB/Up-Level-01-1.png" alt="Up Level Guild Logo" />
+    <h1>📜 กระดานเควส Guild</h1>
   </header>
 
-  <div id="quests" class="quest-container">
-    <p>Loading quests...</p>
-  </div>
+  <main>
+    <div class="quest-container" id="questBoard">
+      <p>กำลังโหลดเควส...</p>
+    </div>
+  </main>
 
   <footer>
-    &copy; 2025 Up Level Guild System. Powered by Netlify + Google Sheets
+    &copy; 2025 Up Level Guild. Powered by Netlify + Google Sheets.
   </footer>
 
   <script>
     async function loadQuests() {
-      const res = await fetch("https://script.google.com/macros/s/AKfycbwJoXR9EFLngOAyA_WjQJNE0zT3MmL2afwlwvxmnMQ88WYzjlD-l2c_LXjg-k3bFWj9/exec?func=getQuestList");
-      const quests = await res.json();
-      const container = document.getElementById("quests");
-      container.innerHTML = "";
+      const container = document.getElementById("questBoard");
+      try {
+        const res = await fetch("https://script.google.com/macros/s/AKfycbwJoXR9EFLngOAyA_WjQJNE0zT3MmL2afwlwvxmnMQ88WYzjlD-l2c_LXjg-k3bFWj9/exec?func=getQuestList");
+        const quests = await res.json();
 
-      if (!quests.length) {
-        container.innerHTML = "<p>ยังไม่มีเควสในตอนนี้</p>";
-        return;
+        if (!quests.length) {
+          container.innerHTML = "<p>ยังไม่มีเควสในตอนนี้</p>";
+          return;
+        }
+
+        let html = "<table><thead><tr><th>ชื่อเควส</th><th>คำอธิบาย</th><th>รางวัล</th></tr></thead><tbody>";
+        quests.forEach(q => {
+          html += `<tr>
+            <td>${q["ชื่อเควส"] || "-"}</td>
+            <td>${q["คำอธิบาย"] || "-"}</td>
+            <td><span class="exp-badge">${q["EXP"] || 0} EXP</span></td>
+          </tr>`;
+        });
+        html += "</tbody></table>";
+        container.innerHTML = html;
+      } catch (err) {
+        container.innerHTML = "<p>เกิดข้อผิดพลาดในการโหลดเควส</p>";
+        console.error(err);
       }
-
-      quests.forEach(q => {
-        const card = document.createElement("div");
-        card.className = "quest-card";
-        card.innerHTML = `
-          <h3>${q["ชื่อเควส"]}</h3>
-          <p>${q["รายละเอียด"]}</p>
-          <p>🎯 EXP: ${q["EXP"]} | 🧩 Party Point: ${q["Party Point"]}</p>
-          <p><strong>ประเภท:</strong> ${q["ประเภท"]}</p>
-          <div class="submit-form">
-            <input type="text" placeholder="เบอร์โทรสมาชิก" maxlength="10" id="phone-${q["Quest ID"]}" />
-            <button onclick="submitQuest('${q["Quest ID"]}')">ส่งเควสนี้</button>
-          </div>
-        `;
-        container.appendChild(card);
-      });
-    }
-
-    async function submitQuest(questId) {
-      const phoneInput = document.getElementById(`phone-${questId}`);
-      const phone = phoneInput.value.trim();
-      if (phone.length !== 10 || !phone.startsWith("0")) {
-        alert("กรุณากรอกเบอร์โทรให้ถูกต้อง (10 หลัก)");
-        return;
-      }
-
-      const res = await fetch(
-        "https://script.google.com/macros/s/AKfycbwJoXR9EFLngOAyA_WjQJNE0zT3MmL2afwlwvxmnMQ88WYzjlD-l2c_LXjg-k3bFWj9/exec?func=submitQuest&phone=" + phone + "&questId=" + questId
-      );
-      const result = await res.text();
-      alert(result);
-      phoneInput.value = "";
     }
 
     loadQuests();
