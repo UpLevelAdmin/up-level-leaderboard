@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>สร้างคำท้า | Up Level Guild</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="form-container">
+    <h2>สร้างการท้าแข่ง</h2>
+    <label for="phone">📱 เบอร์โทร</label>
+    <input type="tel" id="phone" placeholder="08XXXXXXXX">
+    <button onclick="lookupCodename()">ตรวจ Codename</button>
+
+    <div id="codename-area" style="display:none;">
+      <p><strong>รหัส Codename:</strong> <span id="codename"></span></p>
+
+      <label for="type">🏖️ ประเภทคำท้า</label>
+      <select id="type" onchange="toggleTargetSelect()">
+        <option value="open">🔓 Open Challenge</option>
+        <option value="direct">🎯 Direct Challenge</option>
+      </select>
+
+      <div id="target-area" style="display:none;">
+        <label for="target">👤 ผู้ถูกท้า</label>
+        <select id="target"></select>
+      </div>
+
+      <label for="mode">🏀 รูปแบบการแข่ง</label>
+      <select id="mode">
+        <option>Standard BO1</option>
+        <option>Standard BO3</option>
+        <option>Standard BO5</option>
+        <option>Asia Wide</option>
+      </select>
+
+      <label for="wager">⚖️ เดิมพัน / เรื่อยเกิน</label>
+      <textarea id="wager" rows="2" placeholder="ตัวอย่างเช่น: เลี้ยงน้ำ / EXP 5 / โพสต์ยอมรับความพ่ายแพ้"></textarea>
+
+      <label for="title">📖 ตั้งชื่อคำท้า (ถ้าว่างจะสุ่มให้)</label>
+      <input id="title" placeholder="เช่น ศึกสายเลือด...">
+
+      <button onclick="submitChallenge()">ส่งคำท้าสำหรับตรวจสอบ</button>
+    </div>
+  </div>
+
+  <p style="text-align:center; margin-top:2rem; font-size:0.9rem;">
+    ✨ ส่งแล้วแจ้งแอดมิน ที่:
+    <a href="https://m.me/uplevel.acad" target="_blank">Facebook Page</a> |
+    <a href="https://lin.ee/YT87E65" target="_blank">LINE Official</a>
+  </p>
+
+  <script>
+    const scriptId = 'AKfycbwJoXR9EFLngOAyA_WjQJNE0zT3MmL2afwlwvxmnMQ88WYzjlD-l2c_LXjg-k3bFWj9';
+
+    function lookupCodename() {
+      const phone = document.getElementById('phone').value.trim();
+      if (!phone.match(/^0\d{9}$/)) return alert("เบอร์โทรไม่ถูกต้อง");
+      fetch(`https://script.google.com/macros/s/${scriptId}/exec?func=getCodename&phone=${phone}`)
+        .then(res => res.text())
+        .then(name => {
+          if (name === "ไม่พบชื่อ") return alert("ไม่พบผู้ใช้นี้");
+          document.getElementById('codename').innerText = name;
+          document.getElementById('codename-area').style.display = 'block';
+          fetch(`https://script.google.com/macros/s/${scriptId}/exec?func=getCodenameList`)
+            .then(res => res.json())
+            .then(data => {
+              const select = document.getElementById('target');
+              select.innerHTML = '';
+              data.forEach(name => {
+                const opt = document.createElement('option');
+                opt.value = name;
+                opt.textContent = name;
+                select.appendChild(opt);
+              });
+            });
+        });
+    }
+
+    function toggleTargetSelect() {
+      const type = document.getElementById('type').value;
+      document.getElementById('target-area').style.display = (type === 'direct') ? 'block' : 'none';
+    }
+
+    function submitChallenge() {
+      const phone = document.getElementById('phone').value.trim();
+      const type = document.getElementById('type').value;
+      const target = document.getElementById('target').value || '';
+      const mode = document.getElementById('mode').value;
+      const wager = document.getElementById('wager').value.trim();
+      let title = document.getElementById('title').value.trim();
+      if (!title) {
+        const codename = document.getElementById('codename').innerText;
+        const formats = [
+          "ศึกของ %s กับโชคชะตา", "%s อยากวัดฝีมือ", "%s จะไม่ทนแล้ว!", "%s ขอท้าทุกคน!",
+          "สนามประลองของ %s", "%s ประกาศศักดา", "ภารกิจล้างแค้นของ %s", "%s Challenge!",
+          "%s vs ???", "ถึงเวลาโชว์ของของ %s", "ศึกกลางคลับโดย %s", "%s ขอสู้ด้วยศักดิ์ศรี",
+          "%s อยากรู้ว่าใครแน่จริง", "%s เปิดสนามท้า", "%s ปะทะโชคชะตา", "%s วัดดวง!",
+          "มาดูกันว่าใครแน่กว่า %s", "%s VS โลกทั้งใบ", "ภารกิจลับของ %s", "%s ลุยแล้ว!"
+        ];
+        const format = formats[Math.floor(Math.random() * formats.length)];
+        title = format.replace('%s', codename);
+      }
+      fetch(`https://script.google.com/macros/s/${scriptId}/exec?func=submitChallengeRequest`, {
+        method: 'POST',
+        body: JSON.stringify({ phone, type, target, mode, wager, title }),
+        headers: { 'Content-Type': 'application/json' }
+      })
+        .then(res => res.text())
+        .then(msg => alert(msg))
+        .catch(() => alert("เกิดข้อผิดพลาด"));
+    }
+  </script>
+</body>
+</html>
