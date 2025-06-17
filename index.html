@@ -45,14 +45,14 @@
     const scriptId = 'AKfycbwJoXR9EFLngOAyA_WjQJNE0zT3MmL2afwlwvxmnMQ88WYzjlD-l2c_LXjg-k3bFWj9';
 
     function fetchDailyQuests() {
-      fetch(`https://script.google.com/macros/s/${scriptId}/exec?func=getQuestList`)
+      fetch(`https://script.google.com/macros/s/${scriptId}/exec?func=getFeaturedQuestsRandom`)
         .then(res => res.json())
         .then(data => {
           const list = document.getElementById("daily-quests");
           list.innerHTML = "";
           data.forEach(q => {
             const li = document.createElement("li");
-            li.innerHTML = `🎯 <strong>${q.name}</strong>: ${q.detail} (+${q.exp} EXP / +${q.point} Party Point)`;
+            li.innerHTML = `🎯 <strong>${q["ชื่อเควส"]}</strong>: ${q["รายละเอียด"]} (+${q["EXP"]} EXP / +${q["Party Point"]} Party Point)`;
             list.appendChild(li);
           });
         });
@@ -66,7 +66,7 @@
           list.innerHTML = "";
           data.forEach(log => {
             const li = document.createElement("li");
-            li.textContent = `🧑‍🚀 ${log.codename} - ${log.quest}`;
+            li.textContent = `🧑‍🚀 ${log.Codename} - ${log.QuestName}`;
             list.appendChild(li);
           });
         });
