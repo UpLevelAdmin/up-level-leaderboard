@@ -12,10 +12,6 @@
       text-align: center;
       padding: 20px;
     }
-    h1 {
-      font-size: 1.8rem;
-      margin-bottom: 0.5rem;
-    }
     .challenge-card {
       background: white;
       border-radius: 10px;
@@ -24,9 +20,6 @@
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
       max-width: 600px;
       text-align: left;
-    }
-    .challenge-card p {
-      margin: 0.3rem 0;
     }
     .button-primary {
       background-color: #4caf50;
@@ -38,9 +31,7 @@
       margin-top: 1rem;
       cursor: pointer;
     }
-    .hidden {
-      display: none;
-    }
+    .hidden { display: none; }
     form {
       margin-top: 1rem;
       padding: 1rem;
@@ -56,7 +47,7 @@
       text-align: left;
       margin: 0.5rem 0 0.2rem;
     }
-    select, input[type="text"], input[type="number"] {
+    select, input[type="text"] {
       width: 100%;
       padding: 0.4rem;
       border-radius: 5px;
@@ -75,32 +66,34 @@
     <label>📱 เบอร์โทร:</label>
     <input type="text" id="phone" placeholder="กรอกเบอร์โทร 10 หลัก" required />
 
-    <p>💥 ประเภทคำท้า</p>
-    <select id="type">
-      <option value="open">Open Challenge</option>
-      <option value="direct">Direct Challenge</option>
-    </select>
+    <div id="form-fields" class="hidden">
+      <p>💥 ประเภทคำท้า</p>
+      <select id="type">
+        <option value="open">Open Challenge</option>
+        <option value="direct">Direct Challenge</option>
+      </select>
 
-    <div id="target-select-container" class="hidden">
-      <label>🎯 เลือกผู้ถูกท้า:</label>
-      <select id="target"></select>
+      <div id="target-select-container" class="hidden">
+        <label>🎯 เลือกผู้ถูกท้า:</label>
+        <select id="target"></select>
+      </div>
+
+      <label>⚔️ รูปแบบการแข่ง:</label>
+      <select id="mode">
+        <option value="Standard BO1">Standard BO1</option>
+        <option value="Standard BO3">Standard BO3</option>
+        <option value="Standard BO5">Standard BO5</option>
+        <option value="Asia Wide">Asia Wide</option>
+      </select>
+
+      <label>🎁 เดิมพัน / เงื่อนไข:</label>
+      <input type="text" id="wager" placeholder="เช่น EXP 1, เลี้ยงน้ำ, โพสต์ชื่นชม" />
+
+      <label>📝 ชื่อคำท้า (ถ้าจะตั้งชื่อ):</label>
+      <input type="text" id="title" placeholder="ถ้าไม่ตั้งจะสุ่มชื่อให้" />
+
+      <button type="submit" class="button-primary">✨ ส่งคำท้าสำหรับตรวจสอบ</button>
     </div>
-
-    <label>⚔️ รูปแบบการแข่ง:</label>
-    <select id="mode">
-      <option value="Standard BO1">Standard BO1</option>
-      <option value="Standard BO3">Standard BO3</option>
-      <option value="Standard BO5">Standard BO5</option>
-      <option value="Asia Wide">Asia Wide</option>
-    </select>
-
-    <label>🎁 เดิมพัน / เงื่อนไข:</label>
-    <input type="text" id="wager" placeholder="เช่น EXP 1, เลี้ยงน้ำ, โพสต์ชื่นชม" />
-
-    <label>📝 ชื่อคำท้า (ถ้าจะตั้งชื่อ):</label>
-    <input type="text" id="title" placeholder="ถ้าไม่ตั้งจะสุ่มชื่อให้" />
-
-    <button type="submit" class="button-primary">✨ ส่งคำท้าสำหรับตรวจสอบ</button>
   </form>
 
   <p>📲 ติดต่อแอดมินเพื่อยืนยันคำท้า: 
@@ -112,8 +105,28 @@
     const listDiv = document.getElementById("challenge-list");
     const form = document.getElementById("challenge-form");
     const showFormBtn = document.getElementById("show-form-btn");
+    const formFields = document.getElementById("form-fields");
+
+    let myCodename = "";
 
     showFormBtn.onclick = () => form.classList.toggle("hidden");
+
+    document.getElementById("phone").addEventListener("change", async () => {
+      const phone = document.getElementById("phone").value.trim();
+      if (phone.length === 10 && phone.startsWith("0")) {
+        const res = await fetch(endpoint + "?func=getCodename&phone=" + phone);
+        myCodename = await res.text();
+        formFields.classList.remove("hidden");
+
+        const resNames = await fetch(endpoint + "?func=getCodenameList");
+        const names = await resNames.json();
+        const targetSelect = document.getElementById("target");
+        const filtered = names.filter(name => name !== myCodename);
+        targetSelect.innerHTML = filtered.length > 0
+          ? filtered.map(name => `<option value="${name}">${name}</option>`).join("")
+          : `<option disabled selected>ไม่พบชื่อผู้เล่นอื่น</option>`;
+      }
+    });
 
     document.getElementById("type").onchange = e => {
       document.getElementById("target-select-container").classList.toggle("hidden", e.target.value !== "direct");
@@ -144,37 +157,29 @@
 
     async function loadChallenges() {
       listDiv.innerHTML = "🔄 กำลังโหลดคำท้า...";
-
       try {
-        const resNames = await fetch(endpoint + "?func=getCodenameList");
-        const names = await resNames.json();
-
         const res = await fetch(endpoint + "?func=getChallengeList");
-        const allChallenges = await res.json();
-        const approved = allChallenges.filter(row => row["สถานะคำท้า"] === "อนุมัติ");
+        const all = await res.json();
+        const approved = all.filter(row => row["สถานะคำท้า"] === "อนุมัติ");
 
         if (approved.length === 0) {
-          listDiv.innerHTML = "<p>📭 ยังไม่มีคำท้าที่รออนุมัติ</p>";
-          return;
+          listDiv.innerHTML = "<p>📭 ยังไม่มีการประกาศท้าทาย<br>คุณสามารถเป็นคนแรกที่เปิดคำท้าได้เลย!</p>";
+        } else {
+          listDiv.innerHTML = "";
+          for (let row of approved) {
+            const card = document.createElement("div");
+            card.className = "challenge-card";
+            card.innerHTML = `
+              <p>👑 <b>${row["Codename"]}</b></p>
+              <p>💥 ประเภท: ${row["ประเภท"]}</p>
+              <p>🎮 รูปแบบ: ${row["รูปแบบ"]}</p>
+              <p>🎁 เดิมพัน: ${row["เดิมพัน"]}</p>
+              <p>📝 ชื่อคำท้า: ${row["ชื่อคำท้า"]}</p>
+            `;
+            listDiv.appendChild(card);
+          }
         }
-
-        listDiv.innerHTML = "";
-        for (let row of approved) {
-          const card = document.createElement("div");
-          card.className = "challenge-card";
-          card.innerHTML = `
-            <p>👑 <b>${row["Codename"]}</b></p>
-            <p>💥 ประเภท: ${row["ประเภท"]}</p>
-            <p>🎮 รูปแบบ: ${row["รูปแบบ"]}</p>
-            <p>🎁 เดิมพัน: ${row["เดิมพัน"]}</p>
-            <p>📝 ชื่อคำท้า: ${row["ชื่อคำท้า"]}</p>
-          `;
-          listDiv.appendChild(card);
-        }
-
-        const targetSelect = document.getElementById("target");
-        targetSelect.innerHTML = names.map(name => `<option value="${name}">${name}</option>`).join("");
-      } catch (e) {
+      } catch {
         listDiv.innerHTML = "<p>❌ ไม่สามารถโหลดข้อมูลคำท้าได้</p>";
       }
     }
