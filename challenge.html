@@ -150,15 +150,16 @@
         const names = await resNames.json();
 
         const res = await fetch(endpoint + "?func=getChallengeList");
-        const pending = await res.json();
+        const allChallenges = await res.json();
+        const approved = allChallenges.filter(row => row["สถานะคำท้า"] === "อนุมัติ");
 
-        if (pending.length === 0) {
+        if (approved.length === 0) {
           listDiv.innerHTML = "<p>📭 ยังไม่มีคำท้าที่รออนุมัติ</p>";
           return;
         }
 
         listDiv.innerHTML = "";
-        for (let row of pending) {
+        for (let row of approved) {
           const card = document.createElement("div");
           card.className = "challenge-card";
           card.innerHTML = `
