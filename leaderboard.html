@@ -25,19 +25,41 @@
   </table>
 
   <footer class="footer">
-    📢 ดูข้อมูลอื่น ๆ ที่
-    <a href="index.html">หน้าแรก</a>
+    📢 ดูข้อมูลอื่น ๆ ที่ <a href="index.html">หน้าแรก</a>
   </footer>
 
   <script>
+    const rankEmojis = {
+      "Rookie": "🌱",
+      "Bronze": "🥉",
+      "Silver": "🥈",
+      "Gold": "🥇",
+      "Platinum": "💎",
+      "Diamond": "🔷",
+      "Grandmaster": "🔥",
+      "Legend": "👑"
+    };
+
+    function getEmoji(rank) {
+      return rankEmojis[rank] || "";
+    }
+
     fetch("https://script.google.com/macros/s/AKfycbwJoXR9EFLngOAyA_WjQJNE0zT3MmL2afwlwvxmnMQ88WYzjlD-l2c_LXjg-k3bFWj9/exec?func=getLeaderboard")
       .then(res => res.json())
       .then(data => {
         const tbody = document.querySelector("#leaderboard-table tbody");
         tbody.innerHTML = "";
         data.forEach((row, i) => {
+          const isTopRank = ["Grandmaster", "Legend"].includes(row.Rank);
           const tr = document.createElement("tr");
-          tr.innerHTML = `<td>${i + 1}</td><td>${row.Codename}</td><td>${row.Rank}</td><td>${row.EXP}</td><td>${row.Party}</td>`;
+          tr.style.backgroundColor = i % 2 === 0 ? "#ffffff" : "#f7fafc";
+          tr.innerHTML = `
+            <td>${i + 1}</td>
+            <td style="font-weight: 500; color: #2b6cb0;">${row.Codename}</td>
+            <td style="font-weight:${isTopRank ? 'bold' : 'normal'};">${getEmoji(row.Rank)} ${row.Rank}</td>
+            <td>${row.EXP}</td>
+            <td>${row.Party}</td>
+          `;
           tbody.appendChild(tr);
         });
       });
