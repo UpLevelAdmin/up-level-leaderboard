@@ -2,78 +2,57 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Up Level Guild - Home</title>
-  <link rel="stylesheet" href="style.css"/>
+  <meta charset="UTF-8">
+  <title>🏰 Up Level Guild</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header>
-    <h1>🏰 Up Level Guild</h1>
-    <p>ยินดีต้อนรับเข้าสู่ระบบกิลด์แห่งการเติบโตและมิตรภาพ</p>
-    <nav>
-      <a href="leaderboard.html">🏆 Leaderboard</a>
-      <a href="quests.html">🧩 Quest Board</a>
-      <a href="create-challenge.html">⚔️ สร้างคำท้า</a>
-    </nav>
-  </header>
+  <h1>🏰 Up Level Guild</h1>
+  <p>ยินดีต้อนรับเข้าสู่ระบบภารกิจแห่งการเติบโตและมิตรภาพ</p>
+  <p>
+    🏆 <a href="/leaderboard.html">Leaderboard</a>
+    🌿 <a href="/quests.html">Quest Board</a>
+    ✖ <a href="/challenge.html">สร้างคำท้า</a>
+  </p>
 
-  <main>
-    <section>
-      <h2>เควสเด่นวันนี้</h2>
-      <ul id="daily-quests">
-        <li>กำลังโหลดเควส...</li>
-      </ul>
-    </section>
+  <h2>เควสเด่นวันนี้</h2>
+  <ul class="featured-quests" id="featured-quests">
+    <li><span class="quest-icon">🎯</span> <strong>Loading...</strong></li>
+  </ul>
 
-    <section>
-      <h2>กิจกรรมล่าสุด</h2>
-      <ul id="exp-log">
-        <li>กำลังโหลดข้อมูล...</li>
-      </ul>
-    </section>
-  </main>
+  <h2>กิจกรรมล่าสุด</h2>
+  <ul id="quest-log">
+    <li>กำลังโหลดข้อมูล...</li>
+  </ul>
 
-  <footer>
-    <p>📢 ติดตามข่าวสารเพิ่มเติมได้ที่ 
-      <a href="https://m.me/uplevel.acad" target="_blank">Facebook Page</a> |
-      <a href="https://lin.ee/YT87E65" target="_blank">LINE Official</a>
-    </p>
-  </footer>
+  <p class="footer">📢 ติดตามข่าวสารเพิ่มเติมได้ที่ 
+    <a href="https://facebook.com/uplevelacademy" target="_blank">Facebook Page</a> |
+    <a href="https://line.me/R/ti/p/@uplevelguild" target="_blank">LINE Official</a>
+  </p>
 
   <script>
-    const scriptId = 'AKfycbwJoXR9EFLngOAyA_WjQJNE0zT3MmL2afwlwvxmnMQ88WYzjlD-l2c_LXjg-k3bFWj9';
-
-    function fetchDailyQuests() {
-      fetch(`https://script.google.com/macros/s/${scriptId}/exec?func=getFeaturedQuestsRandom`)
-        .then(res => res.json())
-        .then(data => {
-          const list = document.getElementById("daily-quests");
-          list.innerHTML = "";
-          data.forEach(q => {
-            const li = document.createElement("li");
-            li.innerHTML = `🎯 <strong>${q["ชื่อเควส"]}</strong>: ${q["รายละเอียด"]} (+${q["EXP"]} EXP / +${q["Party Point"]} Party Point)`;
-            list.appendChild(li);
-          });
+    fetch("https://script.google.com/macros/s/AKfycbwJoXR9EFLngOAyA_WjQJNE0zT3MmL2afwlwvxmnMQ88WYzjlD-l2c_LXjg-k3bFWj9/exec?func=getFeaturedQuestsRandom")
+      .then(res => res.json())
+      .then(data => {
+        const el = document.getElementById("featured-quests");
+        el.innerHTML = "";
+        data.forEach(q => {
+          el.innerHTML += `
+            <li><span class="quest-icon">🎯</span> <strong>${q["ชื่อเควส"]}</strong>: ${q["รายละเอียด"]} 
+            (+${q["EXP"]} EXP / +${q["Party Point"]} Party Point)</li>
+          `;
         });
-    }
+      });
 
-    function fetchRecentEXP() {
-      fetch(`https://script.google.com/macros/s/${scriptId}/exec?func=getRecentQuestLog`)
-        .then(res => res.json())
-        .then(data => {
-          const list = document.getElementById("exp-log");
-          list.innerHTML = "";
-          data.forEach(log => {
-            const li = document.createElement("li");
-            li.textContent = `🧑‍🚀 ${log.Codename} - ${log.QuestName}`;
-            list.appendChild(li);
-          });
+    fetch("https://script.google.com/macros/s/AKfycbwJoXR9EFLngOAyA_WjQJNE0zT3MmL2afwlwvxmnMQ88WYzjlD-l2c_LXjg-k3bFWj9/exec?func=getQuestActivityLog")
+      .then(res => res.json())
+      .then(data => {
+        const el = document.getElementById("quest-log");
+        el.innerHTML = "";
+        data.forEach(q => {
+          el.innerHTML += `<li>🧩 ${q.Codename} ทำเควส "${q.QuestName}"</li>`;
         });
-    }
-
-    fetchDailyQuests();
-    fetchRecentEXP();
+      });
   </script>
 </body>
 </html>

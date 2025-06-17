@@ -1,27 +1,62 @@
+
 body {
-  font-family: 'Sarabun', sans-serif;
+  font-family: "Segoe UI", sans-serif;
   background: #f4f4f4;
-  color: #333;
-  margin: 0;
-  padding: 0;
+  padding: 20px;
   text-align: center;
 }
-table {
+
+h1 {
+  font-size: 28px;
+  margin-bottom: 10px;
+}
+
+a {
+  color: #0000EE;
+  text-decoration: none;
+  margin: 0 10px;
+}
+
+.featured-quests {
+  list-style: none;
+  padding: 0;
   margin: 20px auto;
-  border-collapse: collapse;
-  width: 90%;
-  max-width: 600px;
+  max-width: 700px;
+  text-align: left;
+}
+
+.featured-quests li {
   background: #fff;
-  border-radius: 12px;
-  overflow: hidden;
+  padding: 15px;
+  margin-bottom: 12px;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 15px;
+  line-height: 1.5;
 }
-th, td {
-  padding: 10px;
-  border: 1px solid #ccc;
+
+.quest-icon {
+  font-size: 20px;
 }
-th {
-  background: #ffc107;
+
+ul#quest-log {
+  list-style: none;
+  padding: 0;
+  margin-top: 20px;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
 }
-.rank-system {
+
+ul#quest-log li {
+  padding: 6px;
+  font-size: 14px;
+}
+
+.footer {
   margin-top: 40px;
+  font-size: 14px;
 }
