@@ -172,7 +172,7 @@
         }
 
         const targetSelect = document.getElementById("target");
-        targetSelect.innerHTML = names.map(name => `<option value="\${name}">\${name}</option>`).join("");
+        targetSelect.innerHTML = names.map(name => `<option value="${name}">${name}</option>`).join("");
       } catch (e) {
         listDiv.innerHTML = "<p>❌ ไม่สามารถโหลดข้อมูลคำท้าได้</p>";
       }
