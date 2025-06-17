@@ -1,87 +1,125 @@
-
 <!DOCTYPE html>
 <html lang="th">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>🧩 สร้างคำท้า | Up Level Guild</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ประกาศท้าทาย</title>
   <link rel="stylesheet" href="style.css" />
+  <style>
+    .challenge-card {
+      background-color: #fff;
+      padding: 1rem;
+      border-radius: 1rem;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      margin-bottom: 1rem;
+    }
+    .form-section {
+      margin-top: 2rem;
+      display: none;
+    }
+    button {
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      border: none;
+      background-color: #4f46e5;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #3730a3;
+    }
+  </style>
 </head>
 <body>
   <div class="container">
-    <img src="https://i.postimg.cc/wjzpnxjB/Up-Level-01-1.png" class="logo" />
-    <h1>🧩 สร้างคำท้า</h1>
+    <img src="https://i.postimg.cc/wjzpnxjB/Up-Level-01-1.png" alt="logo" class="logo" />
+    <h2>📣 ประกาศท้าทายที่รออนุมัติ</h2>
+    <div id="challenge-list"></div>
 
-    <form onsubmit="submitChallenge(); return false;">
-      <input type="tel" id="phone" placeholder="เบอร์โทรของคุณ" required /><br />
-      <select id="type" onchange="toggleTargetInput()" required>
-        <option value="">-- เลือกประเภทคำท้า --</option>
-        <option value="open">Open Challenge</option>
-        <option value="direct">Direct Challenge</option>
-      </select><br />
+    <button onclick="toggleForm()">+ สร้างคำท้า</button>
 
-      <div id="targetBox" style="display:none;">
-        <input type="text" id="target" placeholder="Codename ผู้ถูกท้า" />
-      </div>
+    <div class="form-section" id="challenge-form">
+      <h3>แบบฟอร์มสร้างคำท้า</h3>
+      <form id="submit-form">
+        <label>เบอร์โทร:</label><br />
+        <input type="text" name="phone" required /><br />
 
-      <select id="mode" required>
-        <option value="">-- เลือกรูปแบบการแข่งขัน --</option>
-        <option value="Standard BO1">Standard BO1</option>
-        <option value="Standard BO3">Standard BO3</option>
-        <option value="Standard BO5">Standard BO5</option>
-        <option value="Asia Wide">Asia Wide</option>
-      </select><br />
+        <label>ประเภทคำท้า:</label><br />
+        <select name="type">
+          <option value="open">Open</option>
+          <option value="direct">Direct</option>
+        </select><br />
 
-      <input type="text" id="wager" placeholder="เดิมพัน (เช่น เลี้ยงขนม, EXP 3)" /><br />
-      <input type="text" id="title" placeholder="ชื่อคำท้า (ไม่บังคับ)" /><br />
-      <button type="submit">🚀 ส่งคำท้า</button>
-    </form>
+        <label>รูปแบบการแข่ง:</label><br />
+        <select name="mode">
+          <option value="Standard BO1">Standard BO1</option>
+          <option value="Standard BO3">Standard BO3</option>
+          <option value="Asia Wide">Asia Wide</option>
+        </select><br />
 
-    <footer>📣 อย่าลืมแจ้งแอดมินในเพจหรือ LINE OA เพื่ออนุมัติคำท้าของคุณ</footer>
+        <label>เดิมพัน/เรียเกิน:</label><br />
+        <input type="text" name="wager" /><br />
+
+        <label>ตั้งชื่อคำท้า:</label><br />
+        <input type="text" name="title" /><br /><br />
+
+        <button type="submit">ส่งคำท้า</button>
+      </form>
+    </div>
   </div>
 
   <script>
-    const scriptId = 'AKfycbwJoXR9EFLngOAyA_WjQJNE0zT3MmL2afwlwvxmnMQ88WYzjlD-l2c_LXjg-k3bFWj9';
-
-    function toggleTargetInput() {
-      const type = document.getElementById("type").value;
-      document.getElementById("targetBox").style.display = type === "direct" ? "block" : "none";
+    function toggleForm() {
+      const form = document.getElementById("challenge-form");
+      form.style.display = form.style.display === "none" ? "block" : "none";
     }
 
-    function submitChallenge() {
-      const phone = document.getElementById("phone").value.trim();
-      const type = document.getElementById("type").value;
-      const target = document.getElementById("target").value || "-";
-      const mode = document.getElementById("mode").value;
-      const wager = document.getElementById("wager").value || "-";
-      const title = document.getElementById("title").value || generateTitle();
-
-      fetch(`https://script.google.com/macros/s/${scriptId}/exec?func=submitChallengeRequest`, {
-        method: 'POST',
-        body: JSON.stringify({ phone, type, target, mode, wager, title }),
-        headers: { 'Content-Type': 'application/json' },
-        mode: 'no-cors'
-      })
-      .then(() => {
-        alert("✅ ส่งคำท้าเรียบร้อยแล้ว! รอแอดมินอนุมัติ");
-        document.querySelector("form").reset();
-        toggleTargetInput();
-      })
-      .catch(() => {
-        alert("เกิดข้อผิดพลาด");
+    async function fetchChallenges() {
+      const res = await fetch(
+        "https://script.google.com/macros/s/AKfycbwJoXR9EFLngOAyA_WjQJNE0zT3MmL2afwlwvxmnMQ88WYzjlD-l2c_LXjg-k3bFWj9/exec?func=getChallengeList"
+      );
+      const data = await res.json();
+      const container = document.getElementById("challenge-list");
+      container.innerHTML = "";
+      data.filter(c => c[8] === "รออนุมัติ").forEach(item => {
+        const card = document.createElement("div");
+        card.className = "challenge-card";
+        card.innerHTML = `<strong>${item[2]}</strong> ท้า <em>${item[4] || "สาธาร"}</em><br />
+          รูปแบบ: ${item[5]}<br />
+          เดิมพัน: ${item[6]}<br />
+          ชื่อคำท้า: ${item[7]}`;
+        container.appendChild(card);
       });
     }
 
-    function generateTitle() {
-      const formats = [
-        "🔥 ดวลไฟ เดือดแน่นอน", "⚡ ศึกสายฟ้า", "💥 ตัดสินศึก!", "🎯 เป้าหมายมีไว้พิชิต",
-        "🥊 พร้อมซัด!", "🌀 วนลูปแห่งชัย", "🌈 ปะทะสายรุ้ง", "☠️ ศึกเดือดไร้พ่าย",
-        "🧠 ดวลปัญญา", "💫 กระหน่ำใส่ไม่ยั้ง", "📣 ศึกข้ามตี้", "🧩 ดวลมันส์พันธุ์แท้",
-        "👑 ชิงบัลลังก์", "🕹️ เกมนี้ต้องชนะ", "🗡️ แทงใจดำ!", "🚨 ดวลไม่ยั้ง!",
-        "🏆 ใครจะเป็นที่ 1?", "🤺 ศึกคู่แค้น", "🌟 ท้าพิสูจน์ฝีมือ", "💣 ปะทะครั้งสุดท้าย"
-      ];
-      return formats[Math.floor(Math.random() * formats.length)];
-    }
+    document.getElementById("submit-form").addEventListener("submit", async function (e) {
+      e.preventDefault();
+      const form = e.target;
+      const data = {
+        phone: form.phone.value,
+        type: form.type.value,
+        target: "-",
+        mode: form.mode.value,
+        wager: form.wager.value,
+        title: form.title.value
+      };
+
+      const res = await fetch(
+        "https://script.google.com/macros/s/AKfycbwJoXR9EFLngOAyA_WjQJNE0zT3MmL2afwlwvxmnMQ88WYzjlD-l2c_LXjg-k3bFWj9/exec?func=submitChallengeRequest",
+        {
+          method: "POST",
+          body: JSON.stringify(data),
+          headers: { "Content-Type": "application/json" }
+        }
+      );
+      const text = await res.text();
+      alert(text);
+      form.reset();
+      fetchChallenges();
+    });
+
+    window.onload = fetchChallenges;
   </script>
 </body>
 </html>
