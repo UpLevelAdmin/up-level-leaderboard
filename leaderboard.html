@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -41,7 +40,7 @@
 
   <script>
     async function fetchLeaderboard() {
-      const response = await fetch("https://script.google.com/macros/s/AKfycbwJoXR9EFLngOAyA_WjQJNE0zT3MmL2afwlwvxmnMQ88WYzjlD-l2c_LXjg-k3bFWj9/exec?func=getLeaderboard");
+      const response = await fetch("https://script.google.com/macros/s/AKfycbwJoXR9EFLngOAyA_WjQJNE0zT3MmL2afwlwvxmnMQ88WYzjlD-l2c_LXjg-k3bFWj9/exec");
       const data = await response.json();
       const container = document.getElementById("leaderboard");
       if (!data || data.length === 0) {
@@ -58,20 +57,11 @@
       });
       table.appendChild(headerRow);
 
-      const rankEmojis = {
-        "Rookie": "🐣", "Bronze": "🛡️", "Silver": "⚔️", "Gold": "🥇",
-        "Platinum": "⭐", "Diamond": "💎", "Grandmaster": "👑", "Legend": "🐉"
-      };
-
       data.forEach((player, index) => {
         const row = document.createElement("tr");
-        const codename = player["Codename"] || "-";
-        const rank = player["Rank"] || "-";
-        const exp = player["EXP"] || 0;
-        const party = player["Party"] || "-";
-        const emoji = rankEmojis[rank] || "";
-        const rankDisplay = `<span style='white-space: nowrap;'>${emoji} ${rank} ${emoji}</span>`;
-        [index + 1, codename, rankDisplay, exp, party].forEach(cell => {
+        const rankEmoji = player.rankEmoji || "";
+        const rankDisplay = `<span style='white-space: nowrap;'>${rankEmoji} ${player.rank} ${rankEmoji}</span>`;
+        [index + 1, player.codename, rankDisplay, player.exp, player.party].forEach(cell => {
           const td = document.createElement("td");
           td.innerHTML = cell;
           row.appendChild(td);
