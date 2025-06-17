@@ -3,55 +3,58 @@ body {
   font-family: "Segoe UI", sans-serif;
   background: #f0f4f8;
   padding: 20px;
-  text-align: center;
+  margin: 0;
   color: #333;
 }
 
-h1 {
-  font-size: 32px;
-  margin-bottom: 10px;
-  color: #4a5568;
-}
-
-h2 {
+h1, h2 {
+  text-align: center;
   color: #2d3748;
-  margin-top: 30px;
 }
 
-a {
+nav, p a {
+  text-align: center;
+  margin-top: 10px;
+  display: inline-block;
   color: #3182ce;
-  text-decoration: none;
-  margin: 0 10px;
   font-weight: 500;
+  text-decoration: none;
 }
 
-nav a:hover {
+nav a:hover, p a:hover {
   text-decoration: underline;
 }
 
-.featured-quests,
-#quest-log {
+footer, .footer {
+  margin-top: 50px;
+  text-align: center;
+  font-size: 14px;
+  color: #718096;
+}
+
+ul, ol {
   list-style: none;
   padding: 0;
-  margin: 20px auto;
+  margin: 0 auto;
   max-width: 700px;
-  text-align: left;
 }
 
 .featured-quests li,
-#quest-log li {
+#quest-log li,
+.quest-card {
   background: #ffffff;
-  border-left: 8px solid #90cdf4;
   padding: 16px 20px;
   margin-bottom: 15px;
   border-radius: 12px;
   box-shadow: 0 3px 10px rgba(0,0,0,0.06);
+  border-left: 6px solid #90cdf4;
   transition: transform 0.2s ease;
 }
 
 .featured-quests li:hover,
-#quest-log li:hover {
-  transform: translateY(-2px);
+#quest-log li:hover,
+.quest-card:hover {
+  transform: translateY(-3px);
 }
 
 .quest-icon {
@@ -59,24 +62,85 @@ nav a:hover {
   margin-right: 8px;
 }
 
-.footer {
-  margin-top: 50px;
-  font-size: 14px;
-  color: #718096;
+table {
+  border-collapse: collapse;
+  width: 95%;
+  margin: 20px auto;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.05);
 }
 
-button {
+th, td {
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid #edf2f7;
+}
+
+th {
+  background: #ebf8ff;
+  color: #2c5282;
+}
+
+tr:hover {
+  background-color: #f0f8ff;
+}
+
+.form-container {
+  background: #ffffff;
+  max-width: 500px;
+  margin: 30px auto;
+  padding: 25px;
+  border-radius: 15px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+  text-align: left;
+}
+
+.form-container h2 {
+  margin-bottom: 20px;
+  color: #2d3748;
+  text-align: center;
+}
+
+.form-container label {
+  display: block;
+  margin-top: 15px;
+  font-weight: 500;
+  color: #4a5568;
+}
+
+.form-container input,
+.form-container select,
+.form-container textarea {
+  width: 100%;
+  padding: 10px;
+  margin-top: 5px;
+  border: 1px solid #cbd5e0;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  background: #f7fafc;
+}
+
+.form-container textarea {
+  resize: vertical;
+}
+
+.form-container button {
+  width: 100%;
+  margin-top: 20px;
   background-color: #63b3ed;
   color: white;
   border: none;
   border-radius: 8px;
   padding: 10px 18px;
-  font-size: 14px;
+  font-size: 16px;
   cursor: pointer;
-  margin-top: 12px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  transition: background 0.2s;
 }
 
-button:hover {
+.form-container button:hover {
   background-color: #4299e1;
 }
