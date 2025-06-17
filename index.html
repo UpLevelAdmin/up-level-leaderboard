@@ -2,55 +2,116 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8">
-  <title>🏰 Up Level Guild</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Up Level Guild - Home</title>
+  <link rel="stylesheet" href="style.css"/>
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background: #f0f4f8;
+      margin: 0;
+      padding: 20px;
+      text-align: center;
+    }
+    header img {
+      width: 120px;
+      margin-bottom: 10px;
+    }
+    h1 {
+      font-size: 28px;
+      color: #2d3748;
+      margin-bottom: 5px;
+    }
+    .motto {
+      font-size: 16px;
+      color: #4a5568;
+      margin-bottom: 30px;
+    }
+    .nav-buttons {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      max-width: 300px;
+      margin: 0 auto 30px;
+    }
+    .nav-buttons a {
+      display: block;
+      width: 100%;
+      background: #ffffff;
+      padding: 14px;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      text-decoration: none;
+      color: #2b6cb0;
+      font-weight: 500;
+      transition: background 0.2s;
+    }
+    .nav-buttons a:hover {
+      background: #ebf8ff;
+    }
+    section {
+      margin-top: 40px;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+      max-width: 400px;
+      margin: 0 auto;
+    }
+    li {
+      background: #ffffff;
+      margin-bottom: 10px;
+      padding: 12px;
+      border-radius: 8px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    }
+    footer {
+      margin-top: 50px;
+      font-size: 14px;
+      color: #718096;
+    }
+  </style>
 </head>
 <body>
-  <h1>🏰 Up Level Guild</h1>
-  <p>ยินดีต้อนรับเข้าสู่ระบบภารกิจแห่งการเติบโตและมิตรภาพ</p>
-  <p>
-    🏆 <a href="/leaderboard.html">Leaderboard</a>
-    🌿 <a href="/quests.html">Quest Board</a>
-    ✖ <a href="/challenge.html">สร้างคำท้า</a>
-  </p>
+  <header>
+    <img src="https://i.postimg.cc/wjzpnxjB/Up-Level-01-1.png" alt="Up Level Guild Logo">
+    <h1>🏰 Up Level Guild</h1>
+    <div class="motto">Up Level Guild ไปด้วยกัน ความมันส์ ความสนุกรอคุณอยู่</div>
+    <div class="nav-buttons">
+      <a href="leaderboard.html">🏆 Leaderboard</a>
+      <a href="quests.html">🧩 Quest Board</a>
+      <a href="challenge.html">⚔️ สร้างคำท้า</a>
+    </div>
+  </header>
 
-  <h2>เควสเด่นวันนี้</h2>
-  <ul class="featured-quests" id="featured-quests">
-    <li><span class="quest-icon">🎯</span> <strong>Loading...</strong></li>
-  </ul>
+  <main>
+    <section>
+      <h2>📌 เควสเด่นวันนี้</h2>
+      <ul id="daily-quests">
+        <li>กำลังโหลดเควส...</li>
+      </ul>
+    </section>
+  </main>
 
-  <h2>กิจกรรมล่าสุด</h2>
-  <ul id="quest-log">
-    <li>กำลังโหลดข้อมูล...</li>
-  </ul>
-
-  <p class="footer">📢 ติดตามข่าวสารเพิ่มเติมได้ที่ 
-    <a href="https://facebook.com/uplevelacademy" target="_blank">Facebook Page</a> |
-    <a href="https://line.me/R/ti/p/@uplevelguild" target="_blank">LINE Official</a>
-  </p>
+  <footer>
+    📢 ติดต่อแอดมิน:
+    <a href="https://m.me/uplevel.acad" target="_blank">Facebook</a> |
+    <a href="https://lin.ee/YT87E65" target="_blank">LINE OA</a>
+  </footer>
 
   <script>
-    fetch("https://script.google.com/macros/s/AKfycbwJoXR9EFLngOAyA_WjQJNE0zT3MmL2afwlwvxmnMQ88WYzjlD-l2c_LXjg-k3bFWj9/exec?func=getFeaturedQuestsRandom")
+    const scriptId = 'AKfycbwJoXR9EFLngOAyA_WjQJNE0zT3MmL2afwlwvxmnMQ88WYzjlD-l2c_LXjg-k3bFWj9';
+    fetch(`https://script.google.com/macros/s/${scriptId}/exec?func=getFeaturedQuestsRandom`)
       .then(res => res.json())
       .then(data => {
-        const el = document.getElementById("featured-quests");
-        el.innerHTML = "";
+        const list = document.getElementById("daily-quests");
+        list.innerHTML = "";
         data.forEach(q => {
-          el.innerHTML += `
-            <li><span class="quest-icon">🎯</span> <strong>${q["ชื่อเควส"]}</strong>: ${q["รายละเอียด"]} 
-            (+${q["EXP"]} EXP / +${q["Party Point"]} Party Point)</li>
-          `;
-        });
-      });
-
-    fetch("https://script.google.com/macros/s/AKfycbwJoXR9EFLngOAyA_WjQJNE0zT3MmL2afwlwvxmnMQ88WYzjlD-l2c_LXjg-k3bFWj9/exec?func=getQuestActivityLog")
-      .then(res => res.json())
-      .then(data => {
-        const el = document.getElementById("quest-log");
-        el.innerHTML = "";
-        data.forEach(q => {
-          el.innerHTML += `<li>🧩 ${q.Codename} ทำเควส "${q.QuestName}"</li>`;
+          const li = document.createElement("li");
+          li.textContent = q["ชื่อเควส"];
+          list.appendChild(li);
         });
       });
   </script>
