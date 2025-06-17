@@ -4,73 +4,58 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Leaderboard | Up Level Guild</title>
+  <title>🏆 Leaderboard</title>
   <link rel="stylesheet" href="style.css" />
-  <script>
-    async function loadLeaderboard() {
-      const res = await fetch("https://script.google.com/macros/s/AKfycbwJoXR9EFLngOAyA_WjQJNE0zT3MmL2afwlwvxmnMQ88WYzjlD-l2c_LXjg-k3bFWj9/exec?func=getLeaderboard");
-      const data = await res.json();
-      const emoji = {
-        "Rookie": "🐣", "Bronze": "🛡️", "Silver": "⚔️",
-        "Gold": "🥇", "Platinum": "✨", "Diamond": "💎",
-        "Grandmaster": "👑", "Legend": "🐉"
-      };
-      const rankClass = {
-        "Rookie": "rank-rookie", "Bronze": "rank-bronze", "Silver": "rank-silver",
-        "Gold": "rank-gold", "Platinum": "rank-platinum", "Diamond": "rank-diamond",
-        "Grandmaster": "rank-grandmaster", "Legend": "rank-legend"
-      };
-
-      const table = document.getElementById("leaderboard-body");
-      data.forEach((row, index) => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${index + 1}</td>
-          <td class="codename">${row.Codename}</td>
-          <td class="${rankClass[row.Rank]}">${emoji[row.Rank] || ""} ${row.Rank} ${emoji[row.Rank] || ""}</td>
-          <td>${row.EXP}</td>
-          <td>${row.Party || "-"}</td>
-        `;
-        table.appendChild(tr);
-      });
-    }
-    window.onload = loadLeaderboard;
-  </script>
 </head>
 <body>
   <div class="container">
-    <img src="https://i.postimg.cc/wjzpnxjB/Up-Level-01-1.png" class="logo" />
+    <img src="https://i.postimg.cc/wjzpnxjB/Up-Level-01-1.png" alt="Up Level Logo" class="logo" />
     <h1>🏆 Leaderboard</h1>
-    <div class="table-container">
-      <table>
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Codename</th>
-            <th>Rank</th>
-            <th>EXP</th>
-            <th>Party</th>
-          </tr>
-        </thead>
-        <tbody id="leaderboard-body"></tbody>
-      </table>
-    </div>
-
+    <div id="tableContainer">Loading...</div>
     <h2>🥇 Rank System</h2>
-    <div class="centered">
-      <table class="rank-table">
-        <tr><th>Rank</th><th>EXP Range</th></tr>
-        <tr><td>🐣 Rookie</td><td>0–4</td></tr>
-        <tr><td>🛡️ Bronze</td><td>5–14</td></tr>
-        <tr><td>⚔️ Silver</td><td>15–29</td></tr>
-        <tr><td>🥇 Gold</td><td>30–49</td></tr>
-        <tr><td>✨ Platinum</td><td>50–74</td></tr>
-        <tr><td>💎 Diamond</td><td>75–119</td></tr>
-        <tr><td>👑 Grandmaster</td><td>120–199</td></tr>
-        <tr><td>🐉 Legend</td><td>200+</td></tr>
-      </table>
-    </div>
-    <footer>&copy; 2025 Up Level Guild System. Powered by Netlify + Google Sheets</footer>
+    <table class="rank-system">
+      <tr><th>Rank</th><th>EXP Range</th></tr>
+      <tr><td>🐣 Rookie</td><td>0–4</td></tr>
+      <tr><td>🛡️ Bronze</td><td>5–14</td></tr>
+      <tr><td>⚔️ Silver</td><td>15–29</td></tr>
+      <tr><td>🥇 Gold</td><td>30–49</td></tr>
+      <tr><td>✨ Platinum</td><td>50–74</td></tr>
+      <tr><td>💎 Diamond</td><td>75–119</td></tr>
+      <tr><td>👑 Grandmaster</td><td>120–199</td></tr>
+      <tr><td>🐉 Legend</td><td>200+</td></tr>
+    </table>
   </div>
+
+  <script>
+    const rankEmojis = {
+      "Rookie": "🐣",
+      "Bronze": "🛡️",
+      "Silver": "⚔️",
+      "Gold": "🥇",
+      "Platinum": "✨",
+      "Diamond": "💎",
+      "Grandmaster": "👑",
+      "Legend": "🐉"
+    };
+
+    fetch("https://script.google.com/macros/s/AKfycbwJoXR9EFLngOAyA_WjQJNE0zT3MmL2afwlwvxmnMQ88WYzjlD-l2c_LXjg-k3bFWj9/exec?func=getLeaderboard")
+      .then(res => res.json())
+      .then(data => {
+        let html = '<table><tr><th>#</th><th>Codename</th><th>Rank</th><th>EXP</th><th>Party</th></tr>';
+        data.forEach((row, index) => {
+          const rank = row.Rank;
+          const emoji = rankEmojis[rank] || "";
+          html += `<tr>
+            <td>${index + 1}</td>
+            <td class="codename">${row.Codename}</td>
+            <td class="rank-cell">${emoji} ${rank} ${emoji}</td>
+            <td>${row.EXP}</td>
+            <td>${row.Party || "-"}</td>
+          </tr>`;
+        });
+        html += '</table>';
+        document.getElementById("tableContainer").innerHTML = html;
+      });
+  </script>
 </body>
 </html>

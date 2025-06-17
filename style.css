@@ -1,77 +1,63 @@
 
 body {
-  font-family: "Segoe UI", sans-serif;
-  background-color: #f1f3f5;
+  font-family: 'Segoe UI', sans-serif;
+  background: #f4f6f8;
   margin: 0;
-  padding: 20px;
+  padding: 1rem;
   text-align: center;
 }
-.logo {
-  width: 120px;
-  margin-bottom: 10px;
-}
-h1, h2 {
-  color: #333;
-}
+
 .container {
-  max-width: 900px;
+  max-width: 700px;
   margin: auto;
 }
-.table-container {
-  overflow-x: auto;
+
+.logo {
+  width: 100px;
+  margin-bottom: 1rem;
 }
+
+h1, h2 {
+  margin: 1rem 0 0.5rem;
+}
+
 table {
   width: 100%;
   border-collapse: collapse;
-  background: white;
-  margin-bottom: 30px;
-  border-radius: 10px;
+  background: #fff;
+  margin: 1rem 0;
+  border-radius: 12px;
   overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
+
+th, td {
+  padding: 10px;
+  text-align: center;
+  border-bottom: 1px solid #eee;
+}
+
 th {
   background: #ffc107;
-  padding: 10px;
   font-weight: bold;
 }
-td {
-  padding: 8px;
-  text-align: center;
+
+.rank-cell {
+  white-space: nowrap;
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+  justify-content: center;
 }
+
 tr:nth-child(even) {
-  background-color: #f9f9f9;
+  background: #f9f9f9;
 }
+
+.rank-system {
+  margin-top: 2rem;
+}
+
 .codename {
   font-weight: 500;
-}
-.rank-rookie { color: #999; }
-.rank-bronze { color: #cd7f32; }
-.rank-silver { color: #aaa; }
-.rank-gold { color: #daa520; font-weight: bold; }
-.rank-platinum { color: #00bcd4; font-weight: bold; }
-.rank-diamond { color: #4fc3f7; font-weight: bold; }
-.rank-grandmaster { color: #673ab7; font-weight: bold; }
-.rank-legend { color: #e91e63; font-weight: bold; }
-
-footer {
-  font-size: 0.9em;
-  color: #666;
-}
-
-.centered {
-  display: flex;
-  justify-content: center;
-  width: 100%;
-}
-
-.rank-table {
-  width: 100%;
-  max-width: 500px;
-  border-collapse: collapse;
-}
-.rank-table th {
-  background-color: #ffc107;
-}
-.rank-table td, .rank-table th {
-  border: 1px solid #ddd;
-  padding: 8px;
 }
