@@ -111,8 +111,9 @@
 
     showFormBtn.onclick = () => form.classList.toggle("hidden");
 
-    document.getElementById("phone").addEventListener("change", async () => {
-      const phone = document.getElementById("phone").value.trim();
+    document.getElementById("phone").addEventListener("blur", async () => {
+      let phone = document.getElementById("phone").value.trim();
+      if (phone.length === 9 && !phone.startsWith("0")) phone = "0" + phone;
       if (phone.length === 10 && phone.startsWith("0")) {
         const res = await fetch(endpoint + "?func=getCodename&phone=" + phone);
         myCodename = await res.text();
@@ -121,7 +122,7 @@
         const resNames = await fetch(endpoint + "?func=getCodenameList");
         const names = await resNames.json();
         const targetSelect = document.getElementById("target");
-        const filtered = names.filter(name => name !== myCodename);
+        const filtered = names.filter(name => name.trim().toLowerCase() !== myCodename.trim().toLowerCase());
         targetSelect.innerHTML = filtered.length > 0
           ? filtered.map(name => `<option value="${name}">${name}</option>`).join("")
           : `<option disabled selected>ไม่พบชื่อผู้เล่นอื่น</option>`;
@@ -134,7 +135,8 @@
 
     form.onsubmit = async (e) => {
       e.preventDefault();
-      const phone = document.getElementById("phone").value.trim();
+      let phone = document.getElementById("phone").value.trim();
+      if (phone.length === 9 && !phone.startsWith("0")) phone = "0" + phone;
       const type = document.getElementById("type").value;
       const target = document.getElementById("target").value;
       const mode = document.getElementById("mode").value;
