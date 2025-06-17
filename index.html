@@ -1,139 +1,79 @@
+
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Up Level Guild</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      text-align: center;
-      background: #fffdf5;
-      color: #333;
-      margin: 0;
-      padding: 2rem 1rem;
-    }
-    img.logo {
-      width: 150px;
-      margin-bottom: 1rem;
-    }
-    h1 {
-      font-size: 2rem;
-      color: #2c2c2c;
-      margin-bottom: 0.25rem;
-    }
-    p.intro {
-      max-width: 420px;
-      margin: 0 auto 2rem;
-      font-size: 1rem;
-      color: #555;
-    }
-    .btn-container {
-      margin-bottom: 2rem;
-    }
-    .btn {
-      display: inline-block;
-      margin: 0.25rem;
-      padding: 0.5rem 1rem;
-      border-radius: 30px;
-      background: #ffcc00;
-      color: #000;
-      font-weight: bold;
-      text-decoration: none;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-    .highlight-box {
-      background: #fff3e0;
-      border-left: 6px solid #ff6f00;
-      padding: 1rem;
-      max-width: 400px;
-      margin: 0 auto 2rem;
-      border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-    }
-    .highlight-box h3 {
-      margin: 0 0 0.5rem;
-      color: #d84315;
-      font-size: 1.2rem;
-    }
-    .highlight-box ul {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-      color: #444;
-    }
-    .log-stream {
-      max-width: 420px;
-      margin: 0 auto;
-      font-size: 0.9rem;
-      color: #444;
-      overflow: hidden;
-      height: 100px;
-      position: relative;
-    }
-    .log-stream ul {
-      padding: 0;
-      margin: 0;
-      list-style: none;
-      text-align: left;
-      animation: scroll-up 10s linear infinite;
-    }
-    .log-stream li {
-      padding: 0.25rem 0;
-    }
-    @keyframes scroll-up {
-      0% { transform: translateY(0); }
-      100% { transform: translateY(-100%); }
-    }
-  </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Up Level Guild - Home</title>
+  <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
-  <img class="logo" src="https://i.postimg.cc/wjzpnxjB/Up-Level-01-1.png" alt="Up Level Logo" />
-  <h1>Up Level Guild</h1>
-  <p class="intro">ที่นี่ไม่ใช่แค่คลับ...แต่คือสนามฝึกของเหล่าเทรนเนอร์ตัวจริง<br>เริ่มต้นการผจญภัยในโลกเต็มพลัง สะสมพลัง ฝึกฝีมือ สู่การเป็นตำนาน</p>
+  <header>
+    <h1>🏰 Up Level Guild</h1>
+    <p>ยินดีต้อนรับเข้าสู่ระบบกิลด์แห่งการเติบโตและมิตรภาพ</p>
+    <nav>
+      <a href="leaderboard.html">🏆 Leaderboard</a>
+      <a href="quests.html">🧩 Quest Board</a>
+      <a href="create-challenge.html">⚔️ สร้างคำท้า</a>
+    </nav>
+  </header>
 
-  <div class="btn-container">
-    <a href="/leaderboard" class="btn">🏆 Leaderboard</a>
-    <a href="/quests" class="btn">📘 Quest Board</a>
-    <a href="https://forms.gle/7B4sBLxiXLivbfdA6" class="btn">✍️ สมัครสมาชิก</a>
-  </div>
+  <main>
+    <section>
+      <h2>เควสเด่นวันนี้</h2>
+      <ul id="daily-quests">
+        <li>กำลังโหลดเควส...</li>
+      </ul>
+    </section>
 
-  <div class="highlight-box">
-    <h3>🔥 เควสเด่นวันนี้</h3>
-    <ul id="featured-list"><li>🔄 กำลังโหลด...</li></ul>
-  </div>
+    <section>
+      <h2>กิจกรรมล่าสุด</h2>
+      <ul id="exp-log">
+        <li>กำลังโหลดข้อมูล...</li>
+      </ul>
+    </section>
+  </main>
 
-  <div class="log-stream">
-    <h4>📜 ผู้ที่ทำเควสล่าสุด</h4>
-    <ul id="quest-log"></ul>
-  </div>
+  <footer>
+    <p>📢 ติดตามข่าวสารเพิ่มเติมได้ที่ 
+      <a href="https://m.me/uplevel.acad" target="_blank">Facebook Page</a> |
+      <a href="https://lin.ee/YT87E65" target="_blank">LINE Official</a>
+    </p>
+  </footer>
 
   <script>
-    fetch('https://script.google.com/macros/s/AKfycbwJoXR9EFLngOAyA_WjQJNE0zT3MmL2afwlwvxmnMQ88WYzjlD-l2c_LXjg-k3bFWj9/exec?func=getFeaturedQuestsRandom')
-      .then(res => res.json())
-      .then(data => {
-        const ul = document.getElementById('featured-list');
-        ul.innerHTML = '';
-        data.forEach(q => {
-          const li = document.createElement('li');
-          li.textContent = `🧩 ${q['ชื่อเควส']}`;
-          ul.appendChild(li);
-        });
-      });
+    const scriptId = 'AKfycbwJoXR9EFLngOAyA_WjQJNE0zT3MmL2afwlwvxmnMQ88WYzjlD-l2c_LXjg-k3bFWj9';
 
-    fetch('https://script.google.com/macros/s/AKfycbwJoXR9EFLngOAyA_WjQJNE0zT3MmL2afwlwvxmnMQ88WYzjlD-l2c_LXjg-k3bFWj9/exec?func=getQuestActivityLog')
-      .then(res => res.json())
-      .then(data => {
-        const ul = document.getElementById('quest-log');
-        ul.innerHTML = '';
-        data.forEach(entry => {
-          const li = document.createElement('li');
-          li.textContent = `🧩 ${entry.Codename} ทำเควส: ${entry.QuestName}`;
-          ul.appendChild(li);
+    function fetchDailyQuests() {
+      fetch(`https://script.google.com/macros/s/${scriptId}/exec?func=getQuestList`)
+        .then(res => res.json())
+        .then(data => {
+          const list = document.getElementById("daily-quests");
+          list.innerHTML = "";
+          data.forEach(q => {
+            const li = document.createElement("li");
+            li.innerHTML = `🎯 <strong>${q.name}</strong>: ${q.detail} (+${q.exp} EXP / +${q.point} Party Point)`;
+            list.appendChild(li);
+          });
         });
-      });
+    }
+
+    function fetchRecentEXP() {
+      fetch(`https://script.google.com/macros/s/${scriptId}/exec?func=getRecentQuestLog`)
+        .then(res => res.json())
+        .then(data => {
+          const list = document.getElementById("exp-log");
+          list.innerHTML = "";
+          data.forEach(log => {
+            const li = document.createElement("li");
+            li.textContent = `🧑‍🚀 ${log.codename} - ${log.quest}`;
+            list.appendChild(li);
+          });
+        });
+    }
+
+    fetchDailyQuests();
+    fetchRecentEXP();
   </script>
-
-  <p style="font-size: 0.8rem; color: #999; margin-top: 3rem;">© 2025 Up Level Guild System. Powered by Netlify + Google Sheets.</p>
 </body>
 </html>
