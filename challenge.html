@@ -153,7 +153,8 @@
         alert(text);
         form.reset();
         location.reload();
-      } catch {
+      } catch (err) {
+        console.error("❌ โหลดข้อมูลล้มเหลว:", err);
         alert("เกิดข้อผิดพลาด");
       }
     };
@@ -161,8 +162,11 @@
     async function loadChallenges() {
       listDiv.innerHTML = "🔄 กำลังโหลดคำท้า...";
       try {
+        console.log("🔍 เรียก API:", endpoint + "?func=getChallengeList");
         const res = await fetch(endpoint + "?func=getChallengeList");
-        const all = await res.json();
+        const text = await res.text();
+        console.log("📦 ข้อมูลที่ได้:", text);
+        const all = JSON.parse(text);
         const approved = all.filter(row => row["สถานะคำท้า"] === "อนุมัติ");
 
         if (approved.length === 0) {
@@ -182,7 +186,8 @@
             listDiv.appendChild(card);
           }
         }
-      } catch {
+      } catch (err) {
+        console.error("❌ โหลดข้อมูลล้มเหลว:", err);
         listDiv.innerHTML = "<p>❌ ไม่สามารถโหลดข้อมูลคำท้าได้</p>";
       }
     }
