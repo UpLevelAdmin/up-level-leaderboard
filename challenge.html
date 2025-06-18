@@ -148,7 +148,7 @@
       try {
         const res = await fetch(endpoint + "?func=submitChallengeRequest", {
           method: "POST",
-          body: JSON.stringify({ phone, type, target, mode, wager, title })
+          body: JSON.stringify({ phone: phone.toString(), type, target, mode, wager, title })
         });
         const text = await res.text();
         alert(text);
