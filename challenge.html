@@ -1,155 +1,195 @@
+
 <!DOCTYPE html>
-<html>
+<html lang="th">
 <head>
-  <meta charset="UTF-8">
-  <title>📢 ประกาศท้าทาย | Up Level Guild</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ประกาศท้าทาย | Up Level Guild</title>
   <style>
     body {
       font-family: "Segoe UI", sans-serif;
-      background: #f2f2f2;
+      background-color: #f0f2f5;
       text-align: center;
       padding: 20px;
     }
-    .logo {
-      width: 120px;
-      margin-bottom: 10px;
+    .challenge-card {
+      background: white;
+      border-radius: 10px;
+      padding: 1rem;
+      margin: 1rem auto;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      max-width: 600px;
+      text-align: left;
     }
-    h2 {
-      font-size: 24px;
-      margin-bottom: 10px;
+    .button-primary {
+      background-color: #4caf50;
+      color: white;
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      border: none;
+      border-radius: 5px;
+      margin-top: 1rem;
+      cursor: pointer;
     }
-    .challenge-box {
+    .hidden { display: none; }
+    form {
+      margin-top: 1rem;
+      padding: 1rem;
       background: #fff;
       border-radius: 10px;
-      padding: 20px;
-      max-width: 500px;
-      margin: auto;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
     }
-    select, input, textarea {
-      width: 90%;
-      padding: 8px;
-      margin: 8px 0;
+    label {
+      display: block;
+      text-align: left;
+      margin: 0.5rem 0 0.2rem;
+    }
+    select, input[type="text"] {
+      width: 100%;
+      padding: 0.4rem;
       border-radius: 5px;
       border: 1px solid #ccc;
     }
-    button {
-      background: #4CAF50;
-      color: white;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    .challenge-item {
-      background: #fafafa;
-      margin: 10px auto;
-      padding: 10px;
-      border-radius: 8px;
-      border: 1px solid #ddd;
-      text-align: left;
-      max-width: 500px;
-    }
-    .hidden { display: none; }
   </style>
 </head>
 <body>
-  <img src="https://i.ibb.co/WFyzmdr/uplogo.png" class="logo" />
-  <h2>📢 ประกาศท้าทาย</h2>
-  <div id="challenge-list">
-    <p>กำลังโหลด...</p>
-  </div>
-  <button onclick="toggleForm()">+ สร้างคำท้า</button>
-  <div id="challenge-form" class="challenge-box hidden">
-    <h3>🧙‍♂️ สร้างคำท้าของคุณ</h3>
-    <input id="phone" placeholder="📱 เบอร์โทร:" />
-    <button id="verify-btn">🔍 ตรวจสอบ</button>
-    <p id="codename-display" style="margin-top:10px; font-weight:bold;"></p>
+  <img src="https://i.postimg.cc/wjzpnxjB/Up-Level-01-1.png" alt="Up Level Guild" style="width: 150px; margin-bottom: 10px;" />
+  <h1>📢 ประกาศท้าทาย</h1>
+  <div id="challenge-list">กำลังโหลด...</div>
+
+  <button id="show-form-btn" class="button-primary">+ สร้างคำท้า</button>
+
+  <form id="challenge-form" class="hidden">
+    <label>📱 เบอร์โทร:</label>
+    <input type="text" id="phone" placeholder="กรอกเบอร์โทร 10 หลัก" required />
+    <button type="button" id="verify-btn" class="button-primary">🔍 ตรวจสอบ</button>
+
+    <p id="codename-display" style="font-weight:bold;"></p>
     <div id="form-fields" class="hidden">
+      <p>💥 ประเภทคำท้า</p>
       <select id="type">
         <option value="open">Open Challenge</option>
         <option value="direct">Direct Challenge</option>
       </select>
-      <select id="target"></select>
+
+      <div id="target-select-container" class="hidden">
+        <label>🎯 เลือกผู้ถูกท้า:</label>
+        <select id="target"></select>
+      </div>
+
+      <label>⚔️ รูปแบบการแข่ง:</label>
       <select id="mode">
-        <option>Standard BO1</option>
-        <option>Standard BO3</option>
-        <option>Standard BO5</option>
-        <option>Asia Wide</option>
+        <option value="Standard BO1">Standard BO1</option>
+        <option value="Standard BO3">Standard BO3</option>
+        <option value="Standard BO5">Standard BO5</option>
+        <option value="Asia Wide">Asia Wide</option>
       </select>
-      <input id="wager" placeholder="🎯 เดิมพัน / เงื่อนไข (เช่น EXP 1, เลี้ยงน้ำ, โพสต์ชื่นชม)" />
-      <input id="title" placeholder="📝 ชื่อคำท้า (ถ้าจะตั้งชื่อ):" />
-      <button onclick="submitChallenge()">✨ ส่งคำท้าสำหรับตรวจสอบ</button>
+
+      <label>🎁 เดิมพัน / เงื่อนไข:</label>
+      <input type="text" id="wager" placeholder="เช่น EXP 1, เลี้ยงน้ำ, โพสต์ชื่นชม" />
+
+      <label>📝 ชื่อคำท้า (ถ้าจะตั้งชื่อ):</label>
+      <input type="text" id="title" placeholder="ถ้าไม่ตั้งจะสุ่มชื่อให้" />
+
+      <button type="submit" class="button-primary">✨ ส่งคำท้าสำหรับตรวจสอบ</button>
     </div>
-    <p style="margin-top:10px;">📲 ติดต่อแอดมินเพื่อยืนยันคำท้า: 
-      <a href="https://facebook.com/uplevelacademy" target="_blank">Facebook Page</a> |
-      <a href="https://lin.ee/yourlineoa" target="_blank">LINE Official</a>
-    </p>
-  </div>
-<script>
-const endpoint = "https://script.google.com/macros/s/AKfycbwJoXR9EFLngOAyA_WjQJNE0zT3MmL2afwlwvxmnMQ88WYzjlD-l2c_LXjg-k3bFWj9/exec";
+  </form>
 
-let myCodename = "";
+  <p>📲 ติดต่อแอดมินเพื่อยืนยันคำท้า: 
+    <a href="https://www.facebook.com/uplevelacademy" target="_blank">Facebook Page</a> | 
+    <a href="https://lin.ee/qlM5nVG" target="_blank">LINE Official</a></p>
 
-function toggleForm() {
-  document.getElementById("challenge-form").classList.toggle("hidden");
-}
+  <script>
+    const endpoint = "https://script.google.com/macros/s/AKfycbwJoXR9EFLngOAyA_WjQJNE0zT3MmL2afwlwvxmnMQ88WYzjlD-l2c_LXjg-k3bFWj9/exec";
+    const listDiv = document.getElementById("challenge-list");
+    const form = document.getElementById("challenge-form");
+    const showFormBtn = document.getElementById("show-form-btn");
+    const formFields = document.getElementById("form-fields");
 
-document.getElementById("verify-btn").addEventListener("click", async () => {
-  let phone = document.getElementById("phone").value.trim();
-  if (phone.length === 9 && !phone.startsWith("0")) phone = "0" + phone;
-  const res = await fetch(endpoint + "?func=getCodename&phone=" + phone);
-  myCodename = await res.text();
-  document.getElementById("codename-display").innerText = `🔎 Codename ของคุณคือ: ${myCodename}`;
-  formFields.classList.remove("hidden");
+    let myCodename = "";
 
-  const resNames = await fetch(endpoint + "?func=getCodenameList");
-  const names = await resNames.json();
-  const targetSelect = document.getElementById("target");
-  const filtered = names.filter(name => name.trim().toLowerCase() !== myCodename.trim().toLowerCase());
-  targetSelect.innerHTML = filtered.map(name => `<option value="${name}">${name}</option>`).join("");
-});
+    showFormBtn.onclick = () => form.classList.toggle("hidden");
 
-async function submitChallenge() {
-  const payload = {
-    phone: document.getElementById("phone").value.trim(),
-    type: document.getElementById("type").value,
-    target: document.getElementById("type").value === "direct" ? document.getElementById("target").value : "",
-    mode: document.getElementById("mode").value,
-    wager: document.getElementById("wager").value.trim(),
-    title: document.getElementById("title").value.trim()
-  };
-  const res = await fetch(endpoint + "?func=submitChallengeRequest", {
-    method: "POST",
-    body: JSON.stringify(payload)
-  });
-  const msg = await res.text();
-  alert(msg);
-  location.reload();
-}
+    document.getElementById("verify-btn").addEventListener("click", async () => {
+      let phone = document.getElementById("phone").value.trim();
+      if (phone.length === 9 && !phone.startsWith("0")) phone = "0" + phone;
 
-async function loadChallengeBoard() {
-  const res = await fetch(endpoint + "?func=getChallengeList");
-  const data = await res.json();
-  const listDiv = document.getElementById("challenge-list");
-  if (data.length === 0) {
-    listDiv.innerHTML = "<p>📣 ยังไม่มีคำท้าที่รออนุมัติ</p>";
-    return;
-  }
-  listDiv.innerHTML = "";
-  data.forEach(c => {
-    const div = document.createElement("div");
-    div.className = "challenge-item";
-    div.innerHTML = `
-      🧙‍♂️ ${c.Codename} (${c.ประเภท})<br>
-      🎯 ${c.ชื่อคำท้า}<br>
-      ✨ ${c.เดิมพัน}<br>
-      ⚔️ ${c.รูปแบบ}
-    `;
-    listDiv.appendChild(div);
-  });
-}
-window.onload = loadChallengeBoard;
-</script>
+      const res = await fetch(endpoint + "?func=getCodename&phone=" + phone);
+      myCodename = await res.text();
+      document.getElementById("codename-display").innerText = `🔎 Codename ของคุณคือ: ${myCodename}`;
+      formFields.classList.remove("hidden");
+
+      const resNames = await fetch(endpoint + "?func=getCodenameList");
+      const names = await resNames.json();
+      const targetSelect = document.getElementById("target");
+      const filtered = names.filter(name => name.trim().toLowerCase() !== myCodename.trim().toLowerCase());
+      targetSelect.innerHTML = filtered.length > 0
+        ? filtered.map(name => `<option value="${name}">${name}</option>`).join("")
+        : `<option disabled selected>ไม่พบชื่อผู้เล่นอื่น</option>`;
+    });
+
+    document.getElementById("type").onchange = e => {
+      const showTarget = e.target.value === "direct";
+      document.getElementById("target-select-container").classList.toggle("hidden", !showTarget);
+    };
+
+    form.onsubmit = async (e) => {
+      e.preventDefault();
+      const phone = document.getElementById("phone").value.trim();
+      const type = document.getElementById("type").value;
+      const type = document.getElementById("type").value;
+      const target = type === "direct" ? document.getElementById("target").value : "";
+      const mode = document.getElementById("mode").value;
+      const wager = document.getElementById("wager").value;
+      const title = document.getElementById("title").value;
+
+      try {
+        const res = await fetch(endpoint + "?func=submitChallengeRequest", {
+          method: "POST",
+          body: JSON.stringify({ phone, type, target, mode, wager, title })
+        });
+        const text = await res.text();
+        alert(text);
+        form.reset();
+        location.reload();
+      } catch {
+        alert("เกิดข้อผิดพลาด");
+      }
+    };
+
+    async function loadChallenges() {
+      listDiv.innerHTML = "🔄 กำลังโหลดคำท้า...";
+      try {
+        const res = await fetch(endpoint + "?func=getChallengeList");
+        const all = await res.json();
+        const approved = all.filter(row => row["สถานะคำท้า"] === "อนุมัติ");
+
+        if (approved.length === 0) {
+          listDiv.innerHTML = "<p>📭 ยังไม่มีการประกาศท้าทาย<br>คุณสามารถเป็นคนแรกที่เปิดคำท้าได้เลย!</p>";
+        } else {
+          listDiv.innerHTML = "";
+          for (let row of approved) {
+            const card = document.createElement("div");
+            card.className = "challenge-card";
+            card.innerHTML = `
+              <p>👑 <b>${row["Codename"]}</b></p>
+              <p>💥 ประเภท: ${row["ประเภท"]}</p>
+              <p>🎮 รูปแบบ: ${row["รูปแบบ"]}</p>
+              <p>🎁 เดิมพัน: ${row["เดิมพัน"]}</p>
+              <p>📝 ชื่อคำท้า: ${row["ชื่อคำท้า"]}</p>
+            `;
+            listDiv.appendChild(card);
+          }
+        }
+      } catch {
+        listDiv.innerHTML = "<p>❌ ไม่สามารถโหลดข้อมูลคำท้าได้</p>";
+      }
+    }
+
+    loadChallenges();
+  </script>
 </body>
 </html>
