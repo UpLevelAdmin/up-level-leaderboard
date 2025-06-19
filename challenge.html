@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="th">
 <head>
@@ -64,7 +63,7 @@
 
   <form id="challenge-form" class="hidden">
     <label>📱 เบอร์โทร:</label>
-    <input type="text" id="phone" placeholder="กรอกเบอร์โทร 10 หลัก" required />
+    <input type="text" id="phone" pattern="\d*" placeholder="กรอกเบอร์โทร 10 หลัก" required />
     <button type="button" id="verify-btn" class="button-primary">🔍 ตรวจสอบ</button>
 
     <p id="codename-display" style="font-weight:bold;"></p>
@@ -138,7 +137,10 @@
 
     form.onsubmit = async (e) => {
       e.preventDefault();
-      const phone = document.getElementById("phone").value.trim();
+      let phone = document.getElementById("phone").value.trim();
+      if (phone.length === 9 && !phone.startsWith("0")) phone = "0" + phone;
+      console.log("📞 เบอร์ก่อนส่ง:", phone);
+
       const type = document.getElementById("type").value;
       const target = type === "direct" ? document.getElementById("target").value : "";
       const mode = document.getElementById("mode").value;
