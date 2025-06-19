@@ -101,6 +101,18 @@
     <a href="https://www.facebook.com/uplevelacademy" target="_blank">Facebook Page</a> | 
     <a href="https://lin.ee/qlM5nVG" target="_blank">LINE Official</a></p>
 
+  <div id="accept-form" class="hidden">
+    <h3>✅ รับคำท้า</h3>
+    <label>📱 เบอร์โทร:</label>
+    <input type="text" id="accept-phone" placeholder="กรอกเบอร์โทร 10 หลัก" />
+
+    <label>👤 ชื่อ-นามสกุล:</label>
+    <input type="text" id="accept-fullname" placeholder="ต้องตรงกับที่ลงทะเบียน" />
+
+    <input type="hidden" id="accept-id" />
+    <button onclick="submitAccept()" class="button-primary">ยืนยันการรับคำท้า</button>
+  </div>
+
   <script>
     const endpoint = "https://script.google.com/macros/s/AKfycbwJoXR9EFLngOAyA_WjQJNE0zT3MmL2afwlwvxmnMQ88WYzjlD-l2c_LXjg-k3bFWj9/exec";
     const listDiv = document.getElementById("challenge-list");
@@ -181,12 +193,41 @@
               <p>🎮 รูปแบบ: ${row["รูปแบบ"]}</p>
               <p>🎁 เดิมพัน: ${row["เดิมพัน"]}</p>
               <p>📝 ชื่อคำท้า: ${row["ชื่อคำท้า"]}</p>
+              ${
+                row["ประเภท"] === "open" && !row["ผู้ตอบรับ"]
+                  ? `<button class="button-primary" onclick="showAcceptForm('${row["ID"]}')">✅ รับคำท้า</button>`
+                  : row["ผู้ตอบรับ"] ? `<p>📌 ผู้ตอบรับแล้ว: ${row["ผู้ตอบรับ"]}</p>` : ""
+              }
             `;
             listDiv.appendChild(card);
           }
         }
       } catch {
         listDiv.innerHTML = "<p>❌ ไม่สามารถโหลดข้อมูลคำท้าได้</p>";
+      }
+    }
+
+    function showAcceptForm(id) {
+      document.getElementById("accept-id").value = id;
+      document.getElementById("accept-form").classList.remove("hidden");
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    }
+
+    async function submitAccept() {
+      const phone = document.getElementById("accept-phone").value.trim();
+      const fullname = document.getElementById("accept-fullname").value.trim();
+      const id = document.getElementById("accept-id").value;
+
+      try {
+        const res = await fetch(endpoint + "?func=acceptChallenge", {
+          method: "POST",
+          body: JSON.stringify({ phone, fullname, id })
+        });
+        const text = await res.text();
+        alert(text);
+        location.reload();
+      } catch {
+        alert("❌ เกิดข้อผิดพลาด");
       }
     }
 
