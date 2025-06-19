@@ -110,16 +110,17 @@
     <input type="text" id="accept-fullname" placeholder="ต้องตรงกับที่ลงทะเบียน" />
 
     <input type="hidden" id="accept-id" />
+    <input type="hidden" id="accept-type" />
+    <input type="hidden" id="accept-target" />
     <button onclick="submitAccept()" class="button-primary">ยืนยันการรับคำท้า</button>
   </div>
 
   <script>
-    const endpoint = "https://script.google.com/macros/s/AKfycbwJoXR9EFLngOAyA_WjQJNE0zT3MmL2afwlwvxmnMQ88WYzjlD-l2c_LXjg-k3bFWj9/exec";
+    const endpoint = "https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec"; // ใส่ Script ID จริง
     const listDiv = document.getElementById("challenge-list");
     const form = document.getElementById("challenge-form");
     const showFormBtn = document.getElementById("show-form-btn");
     const formFields = document.getElementById("form-fields");
-
     let myCodename = "";
 
     showFormBtn.onclick = () => form.classList.toggle("hidden");
@@ -151,7 +152,6 @@
       e.preventDefault();
       let phone = document.getElementById("phone").value.trim();
       if (phone.length === 9 && !phone.startsWith("0")) phone = "0" + phone;
-      console.log("📞 เบอร์ก่อนส่ง:", phone);
 
       const type = document.getElementById("type").value;
       const target = type === "direct" ? document.getElementById("target").value : "";
@@ -162,7 +162,7 @@
       try {
         const res = await fetch(endpoint + "?func=submitChallengeRequest", {
           method: "POST",
-          body: JSON.stringify({ phone: phone.toString(), type, target, mode, wager, title })
+          body: JSON.stringify({ phone, type, target, mode, wager, title })
         });
         const text = await res.text();
         alert(text);
@@ -172,6 +172,34 @@
         alert("เกิดข้อผิดพลาด");
       }
     };
+
+    function showAcceptForm(id, type, target) {
+      document.getElementById("accept-id").value = id;
+      document.getElementById("accept-type").value = type;
+      document.getElementById("accept-target").value = target;
+      document.getElementById("accept-form").classList.remove("hidden");
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    }
+
+    async function submitAccept() {
+      const phone = document.getElementById("accept-phone").value.trim();
+      const fullname = document.getElementById("accept-fullname").value.trim();
+      const id = document.getElementById("accept-id").value;
+      const type = document.getElementById("accept-type").value;
+      const target = document.getElementById("accept-target").value;
+
+      try {
+        const res = await fetch(endpoint + "?func=acceptChallenge", {
+          method: "POST",
+          body: JSON.stringify({ phone, fullname, id, type, target })
+        });
+        const text = await res.text();
+        alert(text.includes("สำเร็จ") ? "✅ รับคำท้าเรียบร้อย พร้อมดวล !!" : text);
+        location.reload();
+      } catch {
+        alert("❌ เกิดข้อผิดพลาด");
+      }
+    }
 
     async function loadChallenges() {
       listDiv.innerHTML = "🔄 กำลังโหลดคำท้า...";
@@ -190,13 +218,16 @@
             card.innerHTML = `
               <p>👑 <b>${row["Codename"]}</b></p>
               <p>💥 ประเภท: ${row["ประเภท"]}</p>
+              ${
+                row["ประเภท"] === "direct" ? `<p>🎯 ผู้ถูกท้า: ${row["ผู้ถูกท้า"] || "-"}</p>` : ""
+              }
               <p>🎮 รูปแบบ: ${row["รูปแบบ"]}</p>
               <p>🎁 เดิมพัน: ${row["เดิมพัน"]}</p>
               <p>📝 ชื่อคำท้า: ${row["ชื่อคำท้า"]}</p>
               ${
-                row["ประเภท"] === "open" && !row["ผู้ตอบรับ"]
-                  ? `<button class="button-primary" onclick="showAcceptForm('${row["ID"]}')">✅ รับคำท้า</button>`
-                  : row["ผู้ตอบรับ"] ? `<p>📌 ผู้ตอบรับแล้ว: ${row["ผู้ตอบรับ"]}</p>` : ""
+                !row["ผู้ตอบรับ"]
+                  ? `<button class="button-primary" onclick="showAcceptForm('${row["ID"]}', '${row["ประเภท"]}', '${row["ผู้ถูกท้า"] || ""}')">✅ รับคำท้า</button>`
+                  : `<p>📌 ผู้ตอบรับแล้ว: ${row["ผู้ตอบรับ"]}</p>`
               }
             `;
             listDiv.appendChild(card);
@@ -204,30 +235,6 @@
         }
       } catch {
         listDiv.innerHTML = "<p>❌ ไม่สามารถโหลดข้อมูลคำท้าได้</p>";
-      }
-    }
-
-    function showAcceptForm(id) {
-      document.getElementById("accept-id").value = id;
-      document.getElementById("accept-form").classList.remove("hidden");
-      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-    }
-
-    async function submitAccept() {
-      const phone = document.getElementById("accept-phone").value.trim();
-      const fullname = document.getElementById("accept-fullname").value.trim();
-      const id = document.getElementById("accept-id").value;
-
-      try {
-        const res = await fetch(endpoint + "?func=acceptChallenge", {
-          method: "POST",
-          body: JSON.stringify({ phone, fullname, id })
-        });
-        const text = await res.text();
-        alert(text);
-        location.reload();
-      } catch {
-        alert("❌ เกิดข้อผิดพลาด");
       }
     }
 
