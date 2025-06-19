@@ -116,129 +116,128 @@
   </div>
 
   <script>
-    const endpoint = "https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec"; // ใส่ Script ID จริง
-    const listDiv = document.getElementById("challenge-list");
-    const form = document.getElementById("challenge-form");
-    const showFormBtn = document.getElementById("show-form-btn");
-    const formFields = document.getElementById("form-fields");
-    let myCodename = "";
+  const endpoint = "https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec";
+  const listDiv = document.getElementById("challenge-list");
+  const form = document.getElementById("challenge-form");
+  const showFormBtn = document.getElementById("show-form-btn");
+  const formFields = document.getElementById("form-fields");
+  let myCodename = "";
 
-    showFormBtn.onclick = () => form.classList.toggle("hidden");
+  showFormBtn.onclick = () => form.classList.toggle("hidden");
 
-    document.getElementById("verify-btn").addEventListener("click", async () => {
-      let phone = document.getElementById("phone").value.trim();
-      if (phone.length === 9 && !phone.startsWith("0")) phone = "0" + phone;
+  document.getElementById("verify-btn").addEventListener("click", async () => {
+    let phone = document.getElementById("phone").value.trim();
+    if (phone.length === 9 && !phone.startsWith("0")) phone = "0" + phone;
 
-      const res = await fetch(endpoint + "?func=getCodename&phone=" + phone);
-      myCodename = await res.text();
-      document.getElementById("codename-display").innerText = `🔎 Codename ของคุณคือ: ${myCodename}`;
-      formFields.classList.remove("hidden");
+    const res = await fetch(endpoint + "?func=getCodename&phone=" + phone);
+    myCodename = await res.text();
+    document.getElementById("codename-display").innerText = `🔎 Codename ของคุณคือ: ${myCodename}`;
+    formFields.classList.remove("hidden");
 
-      const resNames = await fetch(endpoint + "?func=getCodenameList");
-      const names = await resNames.json();
-      const targetSelect = document.getElementById("target");
-      const filtered = names.filter(name => name.trim().toLowerCase() !== myCodename.trim().toLowerCase());
-      targetSelect.innerHTML = filtered.length > 0
-        ? filtered.map(name => `<option value="${name}">${name}</option>`).join("")
-        : `<option disabled selected>ไม่พบชื่อผู้เล่นอื่น</option>`;
-    });
+    const resNames = await fetch(endpoint + "?func=getCodenameList");
+    const names = await resNames.json();
+    const targetSelect = document.getElementById("target");
+    const filtered = names.filter(name => name.trim().toLowerCase() !== myCodename.trim().toLowerCase());
+    targetSelect.innerHTML = filtered.length > 0
+      ? filtered.map(name => `<option value="${name}">${name}</option>`).join("")
+      : `<option disabled selected>ไม่พบชื่อผู้เล่นอื่น</option>`;
+  });
 
-    document.getElementById("type").onchange = e => {
-      const showTarget = e.target.value === "direct";
-      document.getElementById("target-select-container").classList.toggle("hidden", !showTarget);
-    };
+  document.getElementById("type").onchange = e => {
+    const showTarget = e.target.value === "direct";
+    document.getElementById("target-select-container").classList.toggle("hidden", !showTarget);
+  };
 
-    form.onsubmit = async (e) => {
-      e.preventDefault();
-      let phone = document.getElementById("phone").value.trim();
-      if (phone.length === 9 && !phone.startsWith("0")) phone = "0" + phone;
+  form.onsubmit = async (e) => {
+    e.preventDefault();
+    let phone = document.getElementById("phone").value.trim();
+    if (phone.length === 9 && !phone.startsWith("0")) phone = "0" + phone;
 
-      const type = document.getElementById("type").value;
-      const target = type === "direct" ? document.getElementById("target").value : "";
-      const mode = document.getElementById("mode").value;
-      const wager = document.getElementById("wager").value;
-      const title = document.getElementById("title").value;
+    const type = document.getElementById("type").value;
+    const target = type === "direct" ? document.getElementById("target").value : "";
+    const mode = document.getElementById("mode").value;
+    const wager = document.getElementById("wager").value;
+    const title = document.getElementById("title").value;
 
-      try {
-        const res = await fetch(endpoint + "?func=submitChallengeRequest", {
-          method: "POST",
-          body: JSON.stringify({ phone, type, target, mode, wager, title })
-        });
-        const text = await res.text();
-        alert(text);
-        form.reset();
-        location.reload();
-      } catch {
-        alert("เกิดข้อผิดพลาด");
-      }
-    };
-
-    function showAcceptForm(id, type, target) {
-      document.getElementById("accept-id").value = id;
-      document.getElementById("accept-type").value = type;
-      document.getElementById("accept-target").value = target;
-      document.getElementById("accept-form").classList.remove("hidden");
-      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    try {
+      const res = await fetch(endpoint + "?func=submitChallengeRequest", {
+        method: "POST",
+        body: JSON.stringify({ phone, type, target, mode, wager, title })
+      });
+      const text = await res.text();
+      alert(text);
+      form.reset();
+      location.reload();
+    } catch {
+      alert("เกิดข้อผิดพลาด");
     }
+  };
 
-    async function submitAccept() {
-      const phone = document.getElementById("accept-phone").value.trim();
-      const fullname = document.getElementById("accept-fullname").value.trim();
-      const id = document.getElementById("accept-id").value;
-      const type = document.getElementById("accept-type").value;
-      const target = document.getElementById("accept-target").value;
+  function showAcceptForm(id, type, target) {
+    document.getElementById("accept-id").value = id;
+    document.getElementById("accept-type").value = type;
+    document.getElementById("accept-target").value = target;
+    document.getElementById("accept-form").classList.remove("hidden");
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+  }
 
-      try {
-        const res = await fetch(endpoint + "?func=acceptChallenge", {
-          method: "POST",
-          body: JSON.stringify({ phone, fullname, id, type, target })
-        });
-        const text = await res.text();
-        alert(text.includes("สำเร็จ") ? "✅ รับคำท้าเรียบร้อย พร้อมดวล !!" : text);
-        location.reload();
-      } catch {
-        alert("❌ เกิดข้อผิดพลาด");
-      }
+  async function submitAccept() {
+    const phone = document.getElementById("accept-phone").value.trim();
+    const fullname = document.getElementById("accept-fullname").value.trim();
+    const id = document.getElementById("accept-id").value;
+    const type = document.getElementById("accept-type").value;
+    const target = document.getElementById("accept-target").value;
+
+    try {
+      const res = await fetch(endpoint + "?func=acceptChallenge", {
+        method: "POST",
+        body: JSON.stringify({ phone, fullname, id, type, target })
+      });
+      const text = await res.text();
+      alert(text.includes("สำเร็จ") ? "✅ รับคำท้าเรียบร้อย พร้อมดวล !!" : text);
+      location.reload();
+    } catch {
+      alert("❌ เกิดข้อผิดพลาด");
     }
+  }
 
-    async function loadChallenges() {
-      listDiv.innerHTML = "🔄 กำลังโหลดคำท้า...";
-      try {
-        const res = await fetch(endpoint + "?func=getChallengeList");
-        const all = await res.json();
-        const approved = all.filter(row => row["สถานะคำท้า"] === "อนุมัติ");
+  async function loadChallenges() {
+    listDiv.innerHTML = "🔄 กำลังโหลดคำท้า...";
+    try {
+      const res = await fetch(endpoint + "?func=getChallengeList");
+      const all = await res.json();
+      const approved = all.filter(row => row["สถานะคำท้า"] === "อนุมัติ");
 
-        if (approved.length === 0) {
-          listDiv.innerHTML = "<p>📭 ยังไม่มีการประกาศท้าทาย<br>คุณสามารถเป็นคนแรกที่เปิดคำท้าได้เลย!</p>";
-        } else {
-          listDiv.innerHTML = "";
-          for (let row of approved) {
-            const card = document.createElement("div");
-            card.className = "challenge-card";
-            card.innerHTML = `
-              <p>👑 <b>${row["Codename"]}</b></p>
-              <p>💥 ประเภท: ${row["ประเภท"]}</p>
-              ${
-                row["ประเภท"] === "direct" ? `<p>🎯 ผู้ถูกท้า: ${row["ผู้ถูกท้า"] || "-"}</p>` : ""
-              }
-              <p>🎮 รูปแบบ: ${row["รูปแบบ"]}</p>
-              <p>🎁 เดิมพัน: ${row["เดิมพัน"]}</p>
-              <p>📝 ชื่อคำท้า: ${row["ชื่อคำท้า"]}</p>
-              ${
-                !row["ผู้ตอบรับ"]
-                  ? `<button class="button-primary" onclick="showAcceptForm('${row["ID"]}', '${row["ประเภท"]}', '${row["ผู้ถูกท้า"] || ""}')">✅ รับคำท้า</button>`
-                  : `<p>📌 ผู้ตอบรับแล้ว: ${row["ผู้ตอบรับ"]}</p>`
-              }
-            `;
-            listDiv.appendChild(card);
-          }
+      if (approved.length === 0) {
+        listDiv.innerHTML = "<p>📭 ยังไม่มีการประกาศท้าทาย<br>คุณสามารถเป็นคนแรกที่เปิดคำท้าได้เลย!</p>";
+      } else {
+        listDiv.innerHTML = "";
+        for (let row of approved) {
+          const targetName = row["ผู้ถูกท้า"]?.trim() || "-";
+          const card = document.createElement("div");
+          card.className = "challenge-card";
+          card.innerHTML = `
+            <p>👑 <b>${row["Codename"]}</b></p>
+            <p>💥 ประเภท: ${row["ประเภท"]}</p>
+            ${row["ประเภท"] === "direct" ? `<p>🎯 ผู้ถูกท้า: ${targetName}</p>` : ""}
+            <p>🎮 รูปแบบ: ${row["รูปแบบ"]}</p>
+            <p>🎁 เดิมพัน: ${row["เดิมพัน"]}</p>
+            <p>📝 ชื่อคำท้า: ${row["ชื่อคำท้า"]}</p>
+            ${
+              !row["ผู้ตอบรับ"]
+                ? `<button class="button-primary" onclick="showAcceptForm('${row["ID"]}', '${row["ประเภท"]}', '${targetName}')">✅ รับคำท้า</button>`
+                : `<p>📌 ผู้ตอบรับแล้ว: ${row["ผู้ตอบรับ"]}</p>`
+            }
+          `;
+          listDiv.appendChild(card);
         }
-      } catch {
-        listDiv.innerHTML = "<p>❌ ไม่สามารถโหลดข้อมูลคำท้าได้</p>";
       }
+    } catch {
+      listDiv.innerHTML = "<p>❌ ไม่สามารถโหลดข้อมูลคำท้าได้</p>";
     }
+  }
 
-    loadChallenges();
-  </script>
+  loadChallenges();
+</script>
 </body>
 </html>
