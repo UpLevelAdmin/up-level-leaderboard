@@ -66,6 +66,28 @@
     padding: 0;
     font-size: 0.8rem;
   }
+    @media (max-width: 480px) {
+  .challenge-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .challenge-main {
+    width: 100%;
+  }
+
+  .challenge-actions {
+    width: 100%;
+    justify-content: flex-end;
+    margin-top: 0.5rem;
+  }
+
+  .button-primary, .button-secondary {
+    font-size: 0.95rem;
+    width: 100%;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -188,6 +210,33 @@
   }
 
   loadChallenges();
+  function showAcceptForm(id, type, target) {
+    document.getElementById("accept-id").value = id;
+    document.getElementById("accept-type").value = type;
+    document.getElementById("accept-target").value = target;
+    document.getElementById("accept-form").classList.remove("hidden");
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+  }
+
+  async function submitAccept() {
+    const phone = document.getElementById("accept-phone").value.trim();
+    const fullname = document.getElementById("accept-fullname").value.trim();
+    const id = document.getElementById("accept-id").value;
+    const type = document.getElementById("accept-type").value;
+    const target = document.getElementById("accept-target").value;
+
+    try {
+      const res = await fetch(endpoint + "?func=acceptChallenge", {
+        method: "POST",
+        body: JSON.stringify({ phone, fullname, id, type, target })
+      });
+      const text = await res.text();
+      alert(text.includes("สำเร็จ") ? "✅ รับคำท้าเรียบร้อย พร้อมดวล !!" : text);
+      location.reload();
+    } catch {
+      alert("❌ เกิดข้อผิดพลาด");
+    }
+  }
 </script>
 
 
