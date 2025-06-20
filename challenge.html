@@ -279,73 +279,88 @@
       "ขอแค่มีใจ มาดวลกัน!"
     ];
     // โหลดรายการคำท้า
-   async function loadChallenges() {
-  console.log("⏳ เริ่มโหลด challenge list...");
+async function loadChallenges() {
+  console.log("🚀 เริ่มโหลดฟังก์ชัน loadChallenges()");
+  const listDiv = document.getElementById("challenge-list");
   listDiv.innerHTML = "🔄 กำลังโหลดคำท้า...";
 
   try {
-    console.log("📥 Fetching challenge list from:", endpoint + "?func=getChallengeList");
-    const res = await fetch(endpoint + "?func=getChallengeList");
+    const res = await fetch("https://script.google.com/macros/s/AKfycbwJoXR9EFLngOAyA_WjQJNE0zT3MmL2afwlwvxmnMQ88WYzjlD-l2c_LXjg-k3bFWj9/exec?func=getChallengeList");
     const all = await res.json();
-    console.log("✅ ข้อมูลทั้งหมดจาก API:", all);
-
     const approved = all.filter(row => row["สถานะคำท้า"] === "อนุมัติ");
-    console.log("📌 รายการที่ผ่านการอนุมัติ:", approved);
 
     if (approved.length === 0) {
       listDiv.innerHTML = "<p>📭 ยังไม่มีการประกาศท้าทาย<br>คุณสามารถเป็นคนแรกที่เปิดคำท้าได้เลย!</p>";
-      return;
-    }
+    } else {
+      const openPhrases = [
+        "ประกาศท้าใครก็ได้ มาเหอะ!!", "ท้าใครก็ได้ที่ใจกล้าพอ!", "ใครเจ๋ง มาดวลกัน!", "เปิดสนามรออยู่!",
+        "วัดกันหน่อยไหม!", "ใครก็ได้ มาขอแค่กล้า!", "พร้อมชนทุกระดับ!", "ไม่เลือกหน้า ท้าแบบไม่กลัวใคร!",
+        "อย่าหนี มาสู้กัน!", "ขอแค่มีใจ มาดวลกัน!", "ใครแน่ มาดวล!", "พร้อมท้าชน!", "ทุกคนคือเป้าหมาย!",
+        "ขอคนกล้า!", "พร้อมชน!", "ไม่หวั่นแม้วันพายุ!", "เชิญรับคำท้า!", "ขอท้าแบบไม่มีข้อแม้!", "ใครก็ได้มารับคำท้า!", "อย่าหนี มารับคำท้า!"
+      ];
 
-    listDiv.innerHTML = "";
-    for (let row of approved) {
-      const type = row["ประเภท"] || "open";
-      const codename = row["Codename"] || "-";
-      const wager = row["เดิมพัน"] || "-";
-      const targetName = row["ผู้ถูกท้า"] || "-";
-      const title = row["ชื่อคำท้า"] || "-";
-      const mode = row["รูปแบบ"] || "-";
-      const accepted = row["ผู้ตอบรับ"];
-      const detailId = `detail-${row["ID"]}`;
+      listDiv.innerHTML = "";
 
-      const description =
-        type === "direct"
-          ? `👑 ${codename} ประกาศท้า ${targetName}`
-          : title && title.trim() !== ""
-          ? `👑 ${codename} ท้า: ${title}`
-          : `👑 ${codename} ${openPhrases[Math.floor(Math.random() * openPhrases.length)]}`;
+      approved.forEach(row => {
+        const type = row["ประเภท"] || "open";
+        const codename = row["Codename"] || "-";
+        const wager = row["เดิมพัน"] || "-";
+        const targetName = row["ผู้ถูกท้า"] || "-";
+        const title = row["ชื่อคำท้า"] || "-";
+        const mode = row["รูปแบบ"] || "-";
+        const accepted = row["ผู้ตอบรับ"];
+        const detailId = `detail-${row["ID"]}`;
 
-      console.log("🎯 แสดงคำท้า:", description);
+        const description =
+          type === "direct"
+            ? `👑 ${codename} ประกาศท้า ${targetName}`
+            : title && title.trim() !== ""
+              ? `👑 ${codename} ท้า: ${title}`
+              : `👑 ${codename} ${openPhrases[Math.floor(Math.random() * openPhrases.length)]}`;
 
-      const card = document.createElement("div");
-      card.className = "challenge-card";
+        const card = document.createElement("div");
+        card.className = "challenge-card";
 
-      card.innerHTML = `
-        <span class="challenge-type ${type}">${type.toUpperCase()}</span>
-        <div class="challenge-main">
-          <p>${description} เดิมพัน: ${wager}</p>
-          <button class="button-secondary" onclick="toggleDetail('${detailId}')">🔎 ดูรายละเอียด</button>
-          <div id="${detailId}" class="detail-section hidden">
-            ${type === "direct" ? `🎯 ผู้ถูกท้า: ${targetName}<br>` : ""}
-            📝 ชื่อคำท้า: ${title}<br>
-            🎮 รูปแบบ: ${mode}<br>
-            ${accepted ? `📌 ผู้ตอบรับ: ${accepted}` : ""}
+        card.innerHTML = `
+          <span class="challenge-type ${type}">${type.toUpperCase()}</span>
+          <div class="challenge-main">
+            <p>${description} เดิมพัน: ${wager}</p>
+            <button class="button-secondary" onclick="toggleDetail('${detailId}')">🔎 ดูรายละเอียด</button>
+            <div id="${detailId}" class="detail-section hidden">
+              ${type === "direct" ? `🎯 ผู้ถูกท้า: ${targetName}<br>` : ""}
+              📝 ชื่อคำท้า: ${title}<br>
+              🎮 รูปแบบ: ${mode}<br>
+              ${accepted ? `📌 ผู้ตอบรับ: ${accepted}` : ""}
+            </div>
           </div>
-        </div>
-        <div class="challenge-actions">
-          ${!accepted
-            ? `<button class="button-accept" onclick="showAcceptForm('${row["ID"]}', '${type}', '${targetName}')">✅ รับคำท้า</button>`
-            : `<p class="duel-ready">🔥 พร้อมดวล</p>`
-          }
-        </div>
-      `;
-      listDiv.appendChild(card);
+          <div class="challenge-actions">
+            ${
+              !accepted
+                ? `<button class="button-accept" onclick="showAcceptForm('${row["ID"]}', '${type}', '${targetName}')">✅ รับคำท้า</button>`
+                : `<p class="duel-ready">🔥 พร้อมดวล</p>`
+            }
+          </div>
+        `;
+
+        listDiv.appendChild(card);
+      });
     }
   } catch (err) {
     console.error("❌ โหลดข้อมูลล้มเหลว:", err);
     listDiv.innerHTML = "<p>❌ ไม่สามารถโหลดข้อมูลคำท้าได้</p>";
   }
 }
+
+function toggleDetail(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.toggle("hidden");
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  console.log("📦 DOM Loaded → เรียก loadChallenges()");
+  loadChallenges();
+});
+
 
 
     // แก้ปุ่มดูรายละเอียด
