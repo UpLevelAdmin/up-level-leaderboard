@@ -279,63 +279,74 @@
       "ขอแค่มีใจ มาดวลกัน!"
     ];
     // โหลดรายการคำท้า
-    async function loadChallenges() {
-      listDiv.innerHTML = "🔄 กำลังโหลดคำท้า...";
-      try {
-        const res = await fetch(endpoint + "?func=getChallengeList");
-        const all = await res.json();
-        const approved = all.filter(row => row["สถานะคำท้า"] === "อนุมัติ");
+   async function loadChallenges() {
+  console.log("⏳ เริ่มโหลด challenge list...");
+  listDiv.innerHTML = "🔄 กำลังโหลดคำท้า...";
 
-        if (approved.length === 0) {
-          listDiv.innerHTML = "<p>📭 ยังไม่มีการประกาศท้าทาย<br>คุณสามารถเป็นคนแรกที่เปิดคำท้าได้เลย!</p>";
-        } else {
-          listDiv.innerHTML = "";
-          for (let row of approved) {
-            const type = row["ประเภท"] || "open";
-            const codename = row["Codename"] || "-";
-            const wager = row["เดิมพัน"] || "-";
-            const targetName = row["ผู้ถูกท้า"] || "-";
-            const title = row["ชื่อคำท้า"] || "-";
-            const mode = row["รูปแบบ"] || "-";
-            const accepted = row["ผู้ตอบรับ"];
-            const detailId = `detail-${row["ID"]}`;
-           const description =
-              type === "direct"
-              ? `👑 ${codename} ประกาศท้า ${targetName}`
-            : title && title.trim() !== ""
-            ? `👑 ${codename} ท้า: ${title}`
-            : `👑 ${codename} ${openPhrases[Math.floor(Math.random() * openPhrases.length)]}`;
+  try {
+    console.log("📥 Fetching challenge list from:", endpoint + "?func=getChallengeList");
+    const res = await fetch(endpoint + "?func=getChallengeList");
+    const all = await res.json();
+    console.log("✅ ข้อมูลทั้งหมดจาก API:", all);
 
+    const approved = all.filter(row => row["สถานะคำท้า"] === "อนุมัติ");
+    console.log("📌 รายการที่ผ่านการอนุมัติ:", approved);
 
-            const card = document.createElement("div");
-            card.className = "challenge-card";
-
-            card.innerHTML = `
-              <span class="challenge-type ${type}">${type.toUpperCase()}</span>
-              <div class="challenge-main">
-                <p>${description} เดิมพัน: ${wager}</p>
-                <button class="button-secondary" onclick="toggleDetail('${detailId}')">🔎 ดูรายละเอียด</button>
-                <div id="${detailId}" class="detail-section hidden">
-                  ${type === "direct" ? `🎯 ผู้ถูกท้า: ${targetName}<br>` : ""}
-                  📝 ชื่อคำท้า: ${title}<br>
-                  🎮 รูปแบบ: ${mode}<br>
-                  ${accepted ? `📌 ผู้ตอบรับ: ${accepted}` : ""}
-                </div>
-              </div>
-              <div class="challenge-actions">
-                ${!accepted
-                  ? `<button class="button-accept" onclick="showAcceptForm('${row["ID"]}', '${type}', '${targetName}')">✅ รับคำท้า</button>`
-                  : `<p class="duel-ready">🔥 พร้อมดวล</p>`
-                }
-              </div>
-            `;
-            listDiv.appendChild(card);
-          }
-        }
-      } catch {
-        listDiv.innerHTML = "<p>❌ ไม่สามารถโหลดข้อมูลคำท้าได้</p>";
-      }
+    if (approved.length === 0) {
+      listDiv.innerHTML = "<p>📭 ยังไม่มีการประกาศท้าทาย<br>คุณสามารถเป็นคนแรกที่เปิดคำท้าได้เลย!</p>";
+      return;
     }
+
+    listDiv.innerHTML = "";
+    for (let row of approved) {
+      const type = row["ประเภท"] || "open";
+      const codename = row["Codename"] || "-";
+      const wager = row["เดิมพัน"] || "-";
+      const targetName = row["ผู้ถูกท้า"] || "-";
+      const title = row["ชื่อคำท้า"] || "-";
+      const mode = row["รูปแบบ"] || "-";
+      const accepted = row["ผู้ตอบรับ"];
+      const detailId = `detail-${row["ID"]}`;
+
+      const description =
+        type === "direct"
+          ? `👑 ${codename} ประกาศท้า ${targetName}`
+          : title && title.trim() !== ""
+          ? `👑 ${codename} ท้า: ${title}`
+          : `👑 ${codename} ${openPhrases[Math.floor(Math.random() * openPhrases.length)]}`;
+
+      console.log("🎯 แสดงคำท้า:", description);
+
+      const card = document.createElement("div");
+      card.className = "challenge-card";
+
+      card.innerHTML = `
+        <span class="challenge-type ${type}">${type.toUpperCase()}</span>
+        <div class="challenge-main">
+          <p>${description} เดิมพัน: ${wager}</p>
+          <button class="button-secondary" onclick="toggleDetail('${detailId}')">🔎 ดูรายละเอียด</button>
+          <div id="${detailId}" class="detail-section hidden">
+            ${type === "direct" ? `🎯 ผู้ถูกท้า: ${targetName}<br>` : ""}
+            📝 ชื่อคำท้า: ${title}<br>
+            🎮 รูปแบบ: ${mode}<br>
+            ${accepted ? `📌 ผู้ตอบรับ: ${accepted}` : ""}
+          </div>
+        </div>
+        <div class="challenge-actions">
+          ${!accepted
+            ? `<button class="button-accept" onclick="showAcceptForm('${row["ID"]}', '${type}', '${targetName}')">✅ รับคำท้า</button>`
+            : `<p class="duel-ready">🔥 พร้อมดวล</p>`
+          }
+        </div>
+      `;
+      listDiv.appendChild(card);
+    }
+  } catch (err) {
+    console.error("❌ โหลดข้อมูลล้มเหลว:", err);
+    listDiv.innerHTML = "<p>❌ ไม่สามารถโหลดข้อมูลคำท้าได้</p>";
+  }
+}
+
 
     // แก้ปุ่มดูรายละเอียด
     function toggleDetail(id) {
