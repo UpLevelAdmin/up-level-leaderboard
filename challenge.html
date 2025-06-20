@@ -5,54 +5,68 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>ประกาศท้าทาย | Up Level Guild</title>
   <style>
-    body {
-      font-family: "Segoe UI", sans-serif;
-      background-color: #f0f2f5;
-      text-align: center;
-      padding: 20px;
-    }
-    .challenge-card {
-      background: white;
-      border-radius: 10px;
-      padding: 1rem;
-      margin: 1rem auto;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      max-width: 600px;
-      text-align: left;
-    }
-    .button-primary {
-      background-color: #4caf50;
-      color: white;
-      padding: 0.5rem 1rem;
-      font-size: 1rem;
-      border: none;
-      border-radius: 5px;
-      margin-top: 1rem;
-      cursor: pointer;
-    }
-    .hidden { display: none; }
-    form {
-      margin-top: 1rem;
-      padding: 1rem;
-      background: #fff;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      max-width: 600px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-    label {
-      display: block;
-      text-align: left;
-      margin: 0.5rem 0 0.2rem;
-    }
-    select, input[type="text"] {
-      width: 100%;
-      padding: 0.4rem;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-    }
-  </style>
+  .challenge-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: white;
+    border-radius: 10px;
+    padding: 0.75rem;
+    margin: 0.75rem auto;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.05);
+    max-width: 600px;
+    font-size: 0.95rem;
+    flex-wrap: wrap;
+  }
+  .challenge-type {
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 6px;
+    color: white;
+    margin-right: 10px;
+    font-size: 0.8rem;
+  }
+  .challenge-type.open { background: #007bff; }
+  .challenge-type.direct { background: #ff4136; }
+  .challenge-main {
+    flex-grow: 1;
+    margin: 5px 0;
+  }
+  .challenge-main p {
+    margin: 2px 0;
+  }
+  .challenge-actions {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .button-primary {
+    background-color: #4caf50;
+    color: white;
+    padding: 0.4rem 0.8rem;
+    font-size: 0.85rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  .detail-section {
+    width: 100%;
+    padding: 0.5rem;
+    background: #f9f9f9;
+    border-radius: 8px;
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+    display: none;
+  }
+  .button-secondary {
+    background: none;
+    border: none;
+    color: #007bff;
+    cursor: pointer;
+    padding: 0;
+    font-size: 0.8rem;
+  }
+</style>
 </head>
 <body>
   <img src="https://i.postimg.cc/wjzpnxjB/Up-Level-01-1.png" alt="Up Level Guild" style="width: 150px; margin-bottom: 10px;" />
@@ -115,91 +129,73 @@
     <button onclick="submitAccept()" class="button-primary">ยืนยันการรับคำท้า</button>
   </div>
 
-  <script>
+  <style>
+  .challenge-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: white;
+    border-radius: 10px;
+    padding: 0.75rem;
+    margin: 0.75rem auto;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.05);
+    max-width: 600px;
+    font-size: 0.95rem;
+    flex-wrap: wrap;
+  }
+  .challenge-type {
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 6px;
+    color: white;
+    margin-right: 10px;
+    font-size: 0.8rem;
+  }
+  .challenge-type.open { background: #007bff; }
+  .challenge-type.direct { background: #ff4136; }
+  .challenge-main {
+    flex-grow: 1;
+    margin: 5px 0;
+  }
+  .challenge-main p {
+    margin: 2px 0;
+  }
+  .challenge-actions {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .button-primary {
+    background-color: #4caf50;
+    color: white;
+    padding: 0.4rem 0.8rem;
+    font-size: 0.85rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  .detail-section {
+    width: 100%;
+    padding: 0.5rem;
+    background: #f9f9f9;
+    border-radius: 8px;
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+    display: none;
+  }
+  .button-secondary {
+    background: none;
+    border: none;
+    color: #007bff;
+    cursor: pointer;
+    padding: 0;
+    font-size: 0.8rem;
+  }
+</style>
+
+<script>
   const endpoint = "https://script.google.com/macros/s/AKfycbwJoXR9EFLngOAyA_WjQJNE0zT3MmL2afwlwvxmnMQ88WYzjlD-l2c_LXjg-k3bFWj9/exec";
   const listDiv = document.getElementById("challenge-list");
-  const form = document.getElementById("challenge-form");
-  const showFormBtn = document.getElementById("show-form-btn");
-  const formFields = document.getElementById("form-fields");
-  let myCodename = "";
-
-  showFormBtn.onclick = () => form.classList.toggle("hidden");
-
-  document.getElementById("verify-btn").addEventListener("click", async () => {
-    let phone = document.getElementById("phone").value.trim();
-    if (phone.length === 9 && !phone.startsWith("0")) phone = "0" + phone;
-
-    const res = await fetch(endpoint + "?func=getCodename&phone=" + phone);
-    myCodename = await res.text();
-    document.getElementById("codename-display").innerText = `🔎 Codename ของคุณคือ: ${myCodename}`;
-    formFields.classList.remove("hidden");
-
-    const resNames = await fetch(endpoint + "?func=getCodenameList");
-    const names = await resNames.json();
-    const targetSelect = document.getElementById("target");
-    const filtered = names.filter(name => name.trim().toLowerCase() !== myCodename.trim().toLowerCase());
-    targetSelect.innerHTML = filtered.length > 0
-      ? filtered.map(name => `<option value="${name}">${name}</option>`).join("")
-      : `<option disabled selected>ไม่พบชื่อผู้เล่นอื่น</option>`;
-  });
-
-  document.getElementById("type").onchange = e => {
-    const showTarget = e.target.value === "direct";
-    document.getElementById("target-select-container").classList.toggle("hidden", !showTarget);
-  };
-
-  form.onsubmit = async (e) => {
-    e.preventDefault();
-    let phone = document.getElementById("phone").value.trim();
-    if (phone.length === 9 && !phone.startsWith("0")) phone = "0" + phone;
-
-    const type = document.getElementById("type").value;
-    const target = type === "direct" ? document.getElementById("target").value : "";
-    const mode = document.getElementById("mode").value;
-    const wager = document.getElementById("wager").value;
-    const title = document.getElementById("title").value;
-
-    try {
-      const res = await fetch(endpoint + "?func=submitChallengeRequest", {
-        method: "POST",
-        body: JSON.stringify({ phone, type, target, mode, wager, title })
-      });
-      const text = await res.text();
-      alert(text);
-      form.reset();
-      location.reload();
-    } catch {
-      alert("เกิดข้อผิดพลาด");
-    }
-  };
-
-  function showAcceptForm(id, type, target) {
-    document.getElementById("accept-id").value = id;
-    document.getElementById("accept-type").value = type;
-    document.getElementById("accept-target").value = target;
-    document.getElementById("accept-form").classList.remove("hidden");
-    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-  }
-
-  async function submitAccept() {
-    const phone = document.getElementById("accept-phone").value.trim();
-    const fullname = document.getElementById("accept-fullname").value.trim();
-    const id = document.getElementById("accept-id").value;
-    const type = document.getElementById("accept-type").value;
-    const target = document.getElementById("accept-target").value;
-
-    try {
-      const res = await fetch(endpoint + "?func=acceptChallenge", {
-        method: "POST",
-        body: JSON.stringify({ phone, fullname, id, type, target })
-      });
-      const text = await res.text();
-      alert(text.includes("สำเร็จ") ? "✅ รับคำท้าเรียบร้อย พร้อมดวล !!" : text);
-      location.reload();
-    } catch {
-      alert("❌ เกิดข้อผิดพลาด");
-    }
-  }
 
   async function loadChallenges() {
     listDiv.innerHTML = "🔄 กำลังโหลดคำท้า...";
@@ -213,24 +209,38 @@
       } else {
         listDiv.innerHTML = "";
         for (let row of approved) {
-          const targetName = row["ผู้ถูกท้า"]?.trim() || "-";
-          const isAccepted = !!row["ผู้ตอบรับ"];
+          const type = row["ประเภท"] || "open";
+          const codename = row["Codename"] || "-";
+          const wager = row["เดิมพัน"] || "-";
+          const targetName = row["ผู้ถูกท้า"] || "-";
+          const title = row["ชื่อคำท้า"] || "-";
+          const mode = row["รูปแบบ"] || "-";
+          const accepted = row["ผู้ตอบรับ"];
 
           const card = document.createElement("div");
-          card.className = "challenge-card" + (isAccepted ? " accepted" : "");
+          card.className = "challenge-card";
+
+          const typeTag = `<span class="challenge-type ${type}">${type.toUpperCase()}</span>`;
+          const detailId = `detail-${row["ID"]}`;
 
           card.innerHTML = `
-            <p>👑 <b>${row["Codename"]}</b></p>
-            <p>💥 ประเภท: ${row["ประเภท"]}</p>
-            ${row["ประเภท"] === "direct" ? `<p>🎯 ผู้ถูกท้า: ${targetName}</p>` : ""}
-            <p>🎮 รูปแบบ: ${row["รูปแบบ"]}</p>
-            <p>🎁 เดิมพัน: ${row["เดิมพัน"]}</p>
-            <p>📝 ชื่อคำท้า: ${row["ชื่อคำท้า"]}</p>
-            ${
-              !isAccepted
-                ? `<button class="button-primary" onclick="showAcceptForm('${row["ID"]}', '${row["ประเภท"]}', '${targetName}')">✅ รับคำท้า</button>`
-                : `<p class="duel-ready">🔥 พร้อมดวล!</p>`
-            }
+            ${typeTag}
+            <div class="challenge-main">
+              <p>👑 ${codename} ประกาศท้า เดิมพัน: ${wager}</p>
+              <button class="button-secondary" onclick="document.getElementById('${detailId}').classList.toggle('hidden')">🔎 ดูรายละเอียด</button>
+              <div id="${detailId}" class="detail-section hidden">
+                ${type === "direct" ? `🎯 ผู้ถูกท้า: ${targetName}<br>` : ""}
+                📝 ชื่อคำท้า: ${title}<br>
+                🎮 รูปแบบ: ${mode}<br>
+                ${accepted ? `📌 ผู้ตอบรับ: ${accepted}` : ""}
+              </div>
+            </div>
+            <div class="challenge-actions">
+              ${!accepted
+                ? `<button class="button-primary" onclick="showAcceptForm('${row["ID"]}', '${type}', '${targetName}')">✅ รับคำท้า</button>`
+                : `<p class="duel-ready">🔥 พร้อมดวล</p>`
+              }
+            </div>
           `;
 
           listDiv.appendChild(card);
@@ -243,28 +253,7 @@
 
   loadChallenges();
 </script>
-<style>
-  .challenge-card.accepted {
-    background: #ffe6e6;
-    border: 2px solid #ff0000;
-    animation: pulseFire 1s infinite;
-  }
-  .duel-ready {
-    color: red;
-    font-weight: bold;
-    animation: flash 0.8s infinite alternate;
-    text-align: center;
-    font-size: 1.2em;
-  }
-  @keyframes flash {
-    from { opacity: 1; }
-    to { opacity: 0.3; }
-  }
-  @keyframes pulseFire {
-    0% { box-shadow: 0 0 5px #ff3333; }
-    50% { box-shadow: 0 0 20px #ff0000; }
-    100% { box-shadow: 0 0 5px #ff3333; }
-  }
-</style>
+
+
 </body>
 </html>
