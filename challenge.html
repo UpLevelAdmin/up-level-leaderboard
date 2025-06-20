@@ -116,7 +116,7 @@
   </div>
 
   <script>
-  const endpoint = "https://script.google.com/macros/s/AKfycbwJoXR9EFLngOAyA_WjQJNE0zT3MmL2afwlwvxmnMQ88WYzjlD-l2c_LXjg-k3bFWj9/exec";
+  const endpoint = "https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec";
   const listDiv = document.getElementById("challenge-list");
   const form = document.getElementById("challenge-form");
   const showFormBtn = document.getElementById("show-form-btn");
@@ -214,8 +214,11 @@
         listDiv.innerHTML = "";
         for (let row of approved) {
           const targetName = row["ผู้ถูกท้า"]?.trim() || "-";
+          const isAccepted = !!row["ผู้ตอบรับ"];
+
           const card = document.createElement("div");
-          card.className = "challenge-card";
+          card.className = "challenge-card" + (isAccepted ? " accepted" : "");
+
           card.innerHTML = `
             <p>👑 <b>${row["Codename"]}</b></p>
             <p>💥 ประเภท: ${row["ประเภท"]}</p>
@@ -224,11 +227,12 @@
             <p>🎁 เดิมพัน: ${row["เดิมพัน"]}</p>
             <p>📝 ชื่อคำท้า: ${row["ชื่อคำท้า"]}</p>
             ${
-              !row["ผู้ตอบรับ"]
+              !isAccepted
                 ? `<button class="button-primary" onclick="showAcceptForm('${row["ID"]}', '${row["ประเภท"]}', '${targetName}')">✅ รับคำท้า</button>`
-                : `<p>📌 ผู้ตอบรับแล้ว: ${row["ผู้ตอบรับ"]}</p>`
+                : `<p class="duel-ready">🔥 พร้อมดวล!</p>`
             }
           `;
+
           listDiv.appendChild(card);
         }
       }
@@ -239,5 +243,28 @@
 
   loadChallenges();
 </script>
+<style>
+  .challenge-card.accepted {
+    background: #ffe6e6;
+    border: 2px solid #ff0000;
+    animation: pulseFire 1s infinite;
+  }
+  .duel-ready {
+    color: red;
+    font-weight: bold;
+    animation: flash 0.8s infinite alternate;
+    text-align: center;
+    font-size: 1.2em;
+  }
+  @keyframes flash {
+    from { opacity: 1; }
+    to { opacity: 0.3; }
+  }
+  @keyframes pulseFire {
+    0% { box-shadow: 0 0 5px #ff3333; }
+    50% { box-shadow: 0 0 20px #ff0000; }
+    100% { box-shadow: 0 0 5px #ff3333; }
+  }
+</style>
 </body>
 </html>
