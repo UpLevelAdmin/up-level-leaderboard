@@ -333,13 +333,16 @@
       detailBtn.textContent = "🔍 ดูรายละเอียด";
       detailBtn.addEventListener("click", () => {
         const el = document.getElementById(detailId);
-        if (el) el.classList.toggle("hidden");
+        if (el) {
+          el.style.display = (el.style.display === "none" || !el.style.display) ? "block" : "none";
+        }
       });
 
       // กล่องรายละเอียด
       const detailDiv = document.createElement("div");
       detailDiv.id = detailId;
-      detailDiv.className = "detail-section hidden";
+      detailDiv.className = "detail-section";
+      detailDiv.style.display = "none"; // ซ่อนไว้เริ่มต้น
       detailDiv.innerHTML = `
         ${type === "direct" ? `🎯 ผู้ถูกท้า: ${targetName}<br>` : ""}
         📝 ชื่อคำท้า: ${title}<br>
@@ -379,6 +382,7 @@
     listDiv.innerHTML = "<p>❌ ไม่สามารถโหลดข้อมูลคำท้าได้</p>";
   }
 }
+
 
 
   function toggleDetail(id) {
