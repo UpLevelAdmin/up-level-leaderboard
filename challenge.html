@@ -5,106 +5,166 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>ประกาศท้าทาย | Up Level Guild</title>
   <style>
-  .challenge-card {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: white;
-    border-radius: 10px;
-    padding: 0.75rem;
-    margin: 0.75rem auto;
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.05);
-    max-width: 600px;
-    font-size: 0.95rem;
-    flex-wrap: wrap;
-  }
-  .challenge-type {
-    font-weight: bold;
-    padding: 2px 6px;
-    border-radius: 6px;
-    color: white;
-    margin-right: 10px;
-    font-size: 0.8rem;
-  }
-  .challenge-type.open { background: #007bff; }
-  .challenge-type.direct { background: #ff4136; }
-  .challenge-main {
-    flex-grow: 1;
-    margin: 5px 0;
-  }
-  .challenge-main p {
-    margin: 2px 0;
-  }
-  .challenge-actions {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-  }
-  .button-primary {
-    background-color: #4caf50;
-    color: white;
-    padding: 0.4rem 0.8rem;
-    font-size: 0.85rem;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-  .detail-section {
-    width: 100%;
-    padding: 0.5rem;
-    background: #f9f9f9;
-    border-radius: 8px;
-    margin-top: 0.5rem;
-    font-size: 0.85rem;
-    display: none;
-  }
-  .button-secondary {
-    background: none;
-    border: none;
-    color: #007bff;
-    cursor: pointer;
-    padding: 0;
-    font-size: 0.8rem;
-  }
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background-color: #f0f2f5;
+      text-align: center;
+      padding: 20px;
+      margin: 0;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    img.logo {
+      width: 150px;
+      margin-bottom: 10px;
+    }
+
+    .challenge-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: white;
+      border-radius: 10px;
+      padding: 0.75rem;
+      margin: 0.75rem auto;
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.05);
+      max-width: 600px;
+      font-size: 0.95rem;
+      flex-wrap: wrap;
+    }
+
+    .challenge-type {
+      font-weight: bold;
+      padding: 2px 6px;
+      border-radius: 6px;
+      color: white;
+      margin-right: 10px;
+      font-size: 0.75rem;
+      line-height: 1;
+    }
+
+    .challenge-type.open { background: #007bff; }
+    .challenge-type.direct { background: #ff4136; }
+
+    .challenge-main {
+      flex-grow: 1;
+      margin: 5px 0;
+      text-align: left;
+    }
+
+    .challenge-actions {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .button-primary {
+      background-color: #4caf50;
+      color: white;
+      padding: 0.4rem 0.8rem;
+      font-size: 0.85rem;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .button-secondary {
+      background: none;
+      border: none;
+      color: #007bff;
+      cursor: pointer;
+      padding: 0;
+      font-size: 0.8rem;
+      margin-top: 4px;
+    }
+
+    .detail-section {
+      width: 100%;
+      padding: 0.5rem;
+      background: #f9f9f9;
+      border-radius: 8px;
+      margin-top: 0.5rem;
+      font-size: 0.85rem;
+      display: none;
+    }
+
+    form {
+      max-width: 600px;
+      margin: 1rem auto;
+      padding: 1rem;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+      text-align: left;
+    }
+
+    form.hidden {
+      display: none;
+    }
+
+    form label {
+      display: block;
+      margin-top: 0.75rem;
+      font-size: 0.9rem;
+    }
+
+    form input, form select {
+      width: 100%;
+      padding: 0.4rem;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      margin-top: 0.25rem;
+    }
+
     @media (max-width: 480px) {
-  .challenge-card {
-    flex-direction: column;
-    align-items: flex-start;
-  }
+      .challenge-card {
+        flex-direction: column;
+        align-items: flex-start;
+      }
 
-  .challenge-main {
-    width: 100%;
-  }
+      .challenge-main {
+        width: 100%;
+        text-align: left;
+      }
 
-  .challenge-actions {
-    width: 100%;
-    justify-content: flex-end;
-    margin-top: 0.5rem;
-  }
+      .challenge-actions {
+        width: 100%;
+        justify-content: flex-end;
+        margin-top: 0.5rem;
+      }
 
-  .button-primary, .button-secondary {
-    font-size: 0.95rem;
-    width: 100%;
-  }
-}
-
-</style>
+      .button-primary, .button-secondary {
+        font-size: 0.95rem;
+        width: 100%;
+      }
+    }
+  </style>
 </head>
+
 <body>
-  <img src="https://i.postimg.cc/wjzpnxjB/Up-Level-01-1.png" alt="Up Level Guild" style="width: 150px; margin-bottom: 10px;" />
+  <img src="https://i.postimg.cc/wjzpnxjB/Up-Level-01-1.png" alt="Up Level Guild" class="logo" />
   <h1>📢 ประกาศท้าทาย</h1>
+
+  <!-- รายการคำท้า -->
   <div id="challenge-list">กำลังโหลด...</div>
 
+  <!-- ปุ่มสร้างคำท้า -->
   <button id="show-form-btn" class="button-primary">+ สร้างคำท้า</button>
 
+    <!-- ฟอร์มสร้างคำท้า -->
   <form id="challenge-form" class="hidden">
     <label>📱 เบอร์โทร:</label>
     <input type="text" id="phone" pattern="\d*" placeholder="กรอกเบอร์โทร 10 หลัก" required />
+
     <button type="button" id="verify-btn" class="button-primary">🔍 ตรวจสอบ</button>
 
     <p id="codename-display" style="font-weight:bold;"></p>
+
     <div id="form-fields" class="hidden">
-      <p>💥 ประเภทคำท้า</p>
+      <label>💥 ประเภทคำท้า</label>
       <select id="type">
         <option value="open">Open Challenge</option>
         <option value="direct">Direct Challenge</option>
@@ -133,12 +193,11 @@
     </div>
   </form>
 
-  <p>📲 ติดต่อแอดมินเพื่อยืนยันคำท้า: 
-    <a href="https://www.facebook.com/uplevelacademy" target="_blank">Facebook Page</a> | 
-    <a href="https://lin.ee/qlM5nVG" target="_blank">LINE Official</a></p>
 
+   <!-- ฟอร์มรับคำท้า -->
   <div id="accept-form" class="hidden">
     <h3>✅ รับคำท้า</h3>
+
     <label>📱 เบอร์โทร:</label>
     <input type="text" id="accept-phone" placeholder="กรอกเบอร์โทร 10 หลัก" />
 
@@ -148,13 +207,21 @@
     <input type="hidden" id="accept-id" />
     <input type="hidden" id="accept-type" />
     <input type="hidden" id="accept-target" />
+
     <button onclick="submitAccept()" class="button-primary">ยืนยันการรับคำท้า</button>
   </div>
+
+  <!-- ช่องทางติดต่อ -->
+  <p>📲 ติดต่อแอดมินเพื่อยืนยันคำท้า:
+    <a href="https://www.facebook.com/uplevelacademy" target="_blank">Facebook Page</a> |
+    <a href="https://lin.ee/qlM5nVG" target="_blank">LINE Official</a>
+  </p>
 
 <script>
   const endpoint = "https://script.google.com/macros/s/AKfycbwJoXR9EFLngOAyA_WjQJNE0zT3MmL2afwlwvxmnMQ88WYzjlD-l2c_LXjg-k3bFWj9/exec";
   const listDiv = document.getElementById("challenge-list");
 
+  // โหลดรายการคำท้า
   async function loadChallenges() {
     listDiv.innerHTML = "🔄 กำลังโหลดคำท้า...";
     try {
@@ -174,18 +241,16 @@
           const title = row["ชื่อคำท้า"] || "-";
           const mode = row["รูปแบบ"] || "-";
           const accepted = row["ผู้ตอบรับ"];
+          const detailId = `detail-${row["ID"]}`;
 
           const card = document.createElement("div");
           card.className = "challenge-card";
 
-          const typeTag = `<span class="challenge-type ${type}">${type.toUpperCase()}</span>`;
-          const detailId = `detail-${row["ID"]}`;
-
           card.innerHTML = `
-            ${typeTag}
+            <span class="challenge-type ${type}">${type.toUpperCase()}</span>
             <div class="challenge-main">
               <p>👑 ${codename} ประกาศท้า เดิมพัน: ${wager}</p>
-              <button class="button-secondary" onclick="document.getElementById('${detailId}').classList.toggle('hidden')">🔎 ดูรายละเอียด</button>
+              <button class="button-secondary" onclick="document.getElementById('${detailId}').classList.toggle('detail-section')">🔎 ดูรายละเอียด</button>
               <div id="${detailId}" class="detail-section hidden">
                 ${type === "direct" ? `🎯 ผู้ถูกท้า: ${targetName}<br>` : ""}
                 📝 ชื่อคำท้า: ${title}<br>
@@ -200,7 +265,6 @@
               }
             </div>
           `;
-
           listDiv.appendChild(card);
         }
       }
@@ -209,7 +273,7 @@
     }
   }
 
-  loadChallenges();
+  // แสดงฟอร์มรับคำท้า
   function showAcceptForm(id, type, target) {
     document.getElementById("accept-id").value = id;
     document.getElementById("accept-type").value = type;
@@ -218,6 +282,7 @@
     window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
   }
 
+  // ส่งข้อมูลรับคำท้า
   async function submitAccept() {
     const phone = document.getElementById("accept-phone").value.trim();
     const fullname = document.getElementById("accept-fullname").value.trim();
@@ -237,8 +302,65 @@
       alert("❌ เกิดข้อผิดพลาด");
     }
   }
-</script>
 
+  // เปิด/ปิดฟอร์มสร้างคำท้า
+  document.getElementById("show-form-btn").onclick = () =>
+    document.getElementById("challenge-form").classList.toggle("hidden");
+
+  // ตรวจสอบเบอร์โทร → ดึง codename และรายชื่อ
+  document.getElementById("verify-btn").addEventListener("click", async () => {
+    let phone = document.getElementById("phone").value.trim();
+    if (phone.length === 9 && !phone.startsWith("0")) phone = "0" + phone;
+
+    const res = await fetch(endpoint + "?func=getCodename&phone=" + phone);
+    const codename = await res.text();
+    document.getElementById("codename-display").innerText = `🔎 Codename ของคุณคือ: ${codename}`;
+    document.getElementById("form-fields").classList.remove("hidden");
+
+    const resNames = await fetch(endpoint + "?func=getCodenameList");
+    const names = await resNames.json();
+    const targetSelect = document.getElementById("target");
+    const filtered = names.filter(name => name.trim().toLowerCase() !== codename.trim().toLowerCase());
+    targetSelect.innerHTML = filtered.length > 0
+      ? filtered.map(name => `<option value="${name}">${name}</option>`).join("")
+      : `<option disabled selected>ไม่พบชื่อผู้เล่นอื่น</option>`;
+  });
+
+  // เปลี่ยนการแสดงรายชื่อเมื่อเลือกประเภทคำท้า
+  document.getElementById("type").onchange = e => {
+    const showTarget = e.target.value === "direct";
+    document.getElementById("target-select-container").classList.toggle("hidden", !showTarget);
+  };
+
+  // ส่งฟอร์มสร้างคำท้า
+  document.getElementById("challenge-form").onsubmit = async (e) => {
+    e.preventDefault();
+    let phone = document.getElementById("phone").value.trim();
+    if (phone.length === 9 && !phone.startsWith("0")) phone = "0" + phone;
+
+    const type = document.getElementById("type").value;
+    const target = type === "direct" ? document.getElementById("target").value : "";
+    const mode = document.getElementById("mode").value;
+    const wager = document.getElementById("wager").value;
+    const title = document.getElementById("title").value;
+
+    try {
+      const res = await fetch(endpoint + "?func=submitChallengeRequest", {
+        method: "POST",
+        body: JSON.stringify({ phone, type, target, mode, wager, title })
+      });
+      const text = await res.text();
+      alert(text);
+      e.target.reset();
+      location.reload();
+    } catch {
+      alert("❌ เกิดข้อผิดพลาด");
+    }
+  };
+
+  // โหลดทันทีเมื่อเปิดหน้า
+  loadChallenges();
+</script>
 
 </body>
 </html>
