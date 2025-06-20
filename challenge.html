@@ -36,17 +36,7 @@
       flex-wrap: wrap;
     }
 
-    .challenge-card.ready {
-      border-left: 5px solid red;
-      background-color: #ffe5e5;
-      animation: pulse 1.2s infinite;
-    }
-
-    @keyframes pulse {
-      0% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.4); }
-      70% { box-shadow: 0 0 0 10px rgba(255, 0, 0, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); }
-    }
+   
 
     .duel-ready {
       font-weight: bold;
@@ -177,7 +167,17 @@
       border: 1px solid #ccc;
       margin-top: 0.25rem;
     }
+ .challenge-card.ready {
+      border-left: 5px solid red;
+      background-color: #ffe5e5;
+      animation: pulse 1.2s infinite;
+    }
 
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.4); }
+      70% { box-shadow: 0 0 0 10px rgba(255, 0, 0, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); }
+    }
     @media (max-width: 480px) {
       .challenge-card {
         flex-direction: column;
