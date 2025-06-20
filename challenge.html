@@ -251,10 +251,33 @@
     <a href="https://www.facebook.com/uplevelacademy" target="_blank">Facebook Page</a> |
     <a href="https://lin.ee/qlM5nVG" target="_blank">LINE Official</a>
   </p>
+
   <script>
     const endpoint = "https://script.google.com/macros/s/AKfycbwJoXR9EFLngOAyA_WjQJNE0zT3MmL2afwlwvxmnMQ88WYzjlD-l2c_LXjg-k3bFWj9/exec";
     const listDiv = document.getElementById("challenge-list");
 
+    const openPhrases = [
+      "ประกาศท้าใครก็ได้ มาเหอะ!!",
+      "ท้าใครก็ได้ที่ใจกล้าพอ!",
+      "พร้อมลุยกับทุกคน ไม่เว้นแม้แต่แอดมิน!",
+      "ใครเจ๋ง มาดวลกัน!",
+      "เปิดสนามรออยู่!",
+      "ท้าทั่วทิศ ทุกเพศทุกวัย!",
+      "วัดกันหน่อยไหม!",
+      "ใครก็ได้ มาขอแค่กล้า!",
+      "พร้อมชนทุกระดับ!",
+      "ไม่เลือกหน้า ท้าแบบไม่กลัวใคร!",
+      "อย่าหนี มาสู้กัน!",
+      "รออยู่ที่สนาม มาเลย!",
+      "ท้าแบบจัดเต็ม!",
+      "ใครว่าง มารับคำท้าด่วน!",
+      "ใครเจ๋ง มาดวลให้รู้ดำรู้แดง!",
+      "ประกาศศักดา ท้าทั่วราชอาณาจักร!",
+      "ว่างเมื่อไหร่ มาเจอกัน!",
+      "ไม่มีกรอบ ไม่มีพรมแดน มาเลย!",
+      "พร้อมท้าชน!",
+      "ขอแค่มีใจ มาดวลกัน!"
+    ];
     // โหลดรายการคำท้า
     async function loadChallenges() {
       listDiv.innerHTML = "🔄 กำลังโหลดคำท้า...";
@@ -276,6 +299,13 @@
             const mode = row["รูปแบบ"] || "-";
             const accepted = row["ผู้ตอบรับ"];
             const detailId = `detail-${row["ID"]}`;
+           const description =
+              type === "direct"
+              ? `👑 ${codename} ประกาศท้า ${targetName}`
+            : title && title.trim() !== ""
+            ? `👑 ${codename} ท้า: ${title}`
+            : `👑 ${codename} ${openPhrases[Math.floor(Math.random() * openPhrases.length)]}`;
+
 
             const card = document.createElement("div");
             card.className = "challenge-card";
@@ -283,8 +313,8 @@
             card.innerHTML = `
               <span class="challenge-type ${type}">${type.toUpperCase()}</span>
               <div class="challenge-main">
-                <p>👑 ${codename} ประกาศท้า เดิมพัน: ${wager}</p>
-                <button class="button-secondary" onclick="document.getElementById('${detailId}').classList.toggle('hidden')">🔎 ดูรายละเอียด</button>
+                <p>${description} เดิมพัน: ${wager}</p>
+                <button class="button-secondary" onclick="toggleDetail('${detailId}')">🔎 ดูรายละเอียด</button>
                 <div id="${detailId}" class="detail-section hidden">
                   ${type === "direct" ? `🎯 ผู้ถูกท้า: ${targetName}<br>` : ""}
                   📝 ชื่อคำท้า: ${title}<br>
@@ -307,9 +337,11 @@
       }
     }
 
-    // โหลดทันทีเมื่อเปิดหน้า
-    loadChallenges();
-
+    // แก้ปุ่มดูรายละเอียด
+    function toggleDetail(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.toggle("hidden");
+    }
     // แสดงฟอร์มรับคำท้า
     function showAcceptForm(id, type, target) {
       document.getElementById("accept-id").value = id;
@@ -339,6 +371,61 @@
         alert("❌ เกิดข้อผิดพลาด");
       }
     }
+
+    // เปิด/ปิดฟอร์มสร้างคำท้า
+    document.getElementById("show-form-btn").onclick = () =>
+      document.getElementById("challenge-form").classList.toggle("hidden");
+
+    // ตรวจสอบเบอร์โทร → ดึง codename และรายชื่อ
+    document.getElementById("verify-btn").addEventListener("click", async () => {
+      let phone = document.getElementById("phone").value.trim();
+      if (phone.length === 9 && !phone.startsWith("0")) phone = "0" + phone;
+
+      const res = await fetch(endpoint + "?func=getCodename&phone=" + phone);
+      const codename = await res.text();
+      document.getElementById("codename-display").innerText = `🔎 Codename ของคุณคือ: ${codename}`;
+      document.getElementById("form-fields").classList.remove("hidden");
+
+      const resNames = await fetch(endpoint + "?func=getCodenameList");
+      const names = await resNames.json();
+      const targetSelect = document.getElementById("target");
+      const filtered = names.filter(name => name.trim().toLowerCase() !== codename.trim().toLowerCase());
+      targetSelect.innerHTML = filtered.length > 0
+        ? filtered.map(name => `<option value="${name}">${name}</option>`).join("")
+        : `<option disabled selected>ไม่พบชื่อผู้เล่นอื่น</option>`;
+    });
+
+    // เปลี่ยนการแสดงรายชื่อเมื่อเลือกประเภทคำท้า
+    document.getElementById("type").onchange = e => {
+      const showTarget = e.target.value === "direct";
+      document.getElementById("target-select-container").classList.toggle("hidden", !showTarget);
+    };
+    // ส่งฟอร์มสร้างคำท้า
+    document.getElementById("challenge-form").onsubmit = async (e) => {
+      e.preventDefault();
+      let phone = document.getElementById("phone").value.trim();
+      if (phone.length === 9 && !phone.startsWith("0")) phone = "0" + phone;
+
+      const type = document.getElementById("type").value;
+      const target = type === "direct" ? document.getElementById("target").value : "";
+      const mode = document.getElementById("mode").value;
+      const wager = document.getElementById("wager").value;
+      const title = document.getElementById("title").value;
+
+      try {
+        const res = await fetch(endpoint + "?func=submitChallengeRequest", {
+          method: "POST",
+          body: JSON.stringify({ phone, type, target, mode, wager, title })
+        });
+        const text = await res.text();
+        alert(text);
+        e.target.reset();
+        location.reload();
+      } catch {
+        alert("❌ เกิดข้อผิดพลาด");
+      }
+    };
+
   </script>
 </body>
 </html>
