@@ -36,6 +36,24 @@
       flex-wrap: wrap;
     }
 
+    .challenge-card.ready {
+      border-left: 5px solid red;
+      background-color: #ffe5e5;
+      animation: pulse 1.2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.4); }
+      70% { box-shadow: 0 0 0 10px rgba(255, 0, 0, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); }
+    }
+
+    .duel-ready {
+      font-weight: bold;
+      color: red;
+      font-size: 1rem;
+    }
+
     .challenge-type {
       font-weight: bold;
       padding: 2px 6px;
@@ -56,14 +74,14 @@
       min-width: 200px;
     }
 
-  .challenge-actions {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  justify-content: flex-end;
-  width: 100%;
-  margin-top: 10px;
-}
+    .challenge-actions {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      justify-content: flex-end;
+      width: 100%;
+      margin-top: 10px;
+    }
 
     .button-create {
       background-color: #3f51b5;
@@ -181,18 +199,6 @@
         font-size: 0.95rem;
         width: 100%;
       }
-      .challenge-card.ready {
-  border-left: 5px solid red;
-  background-color: #ffe5e5;
-  animation: pulse 1.2s infinite;
-}
-
-@keyframes pulse {
-  0% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.4); }
-  70% { box-shadow: 0 0 0 10px rgba(255, 0, 0, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); }
-}
-
     }
   </style>
 </head>
@@ -243,7 +249,6 @@
       <button type="submit" class="button-submit">✨ ส่งคำท้าสำหรับตรวจสอบ</button>
     </div>
   </form>
-
   <!-- ฟอร์มรับคำท้า -->
   <div id="accept-form" class="hidden">
     <form>
@@ -272,143 +277,126 @@
   const listDiv = document.getElementById("challenge-list");
 
   const openPhrases = [
-  "อยากวัดฝีมือกับใครก็ได้!",
-  "เปิดรับทุกความกล้า ใครก็ได้ มาสู้กัน!",
-  "เบื่อแล้วอย่าดอง อยากลองฟอร์มาลีน!",
-  "พร้อมชนทุกคนที่กล้ารับ!",
-  "ขอท้า มาดิค้าบ ใครก็ได้!",
-  "ท้าทุกคน มากันหน่อยสิ!",
-  "พร้อมมันส์กับทุกคน!",
-  "อยากดวล ใครแน่ๆ มาดวลหน่อย!",
-  "เปิดสนาม รอท้าอยู่!",
-  "อยากบวกใครก็ได้ มาขอแค่ใจถึง!",
-  "ขอดวลกับคนกล้าสักคน!",
-  "อยากลองของแข็ง มาจัดให้หน่อยดิ๊!",
-  "เบื่อแล้วนอนหมอน อยากนอน ICU! ใครก็ได้มาดิ๊",
-  "เบื่อแล้วน้ำพริกลงเรือ อยากกินน้ำเกลือโรงบาล!",
-  "ใครคิดว่าแน่ มาลอง!",
-  "อยากลุยกับใครก็ได้!",
-  "ไม่หลับ ไม่ง่วง แต่อยากร่วงจังค้าบ!",
-  "เปิดโต๊ะรออยู่ ใครก็ได้!",
-  "พร้อมลุยไม่เลือกหน้า!",
-  "ไม่ใช่น้ำทะเล แต่ก็ซัดหน้าคนได้เหมือนกัน!"
-]
-;
+    "อยากวัดฝีมือกับใครก็ได้!",
+    "เปิดรับทุกความกล้า ใครก็ได้ มาสู้กัน!",
+    "เบื่อแล้วอย่าดอง อยากลองฟอร์มาลีน!",
+    "พร้อมชนทุกคนที่กล้ารับ!",
+    "ขอท้า มาดิค้าบ ใครก็ได้!",
+    "ท้าทุกคน มากันหน่อยสิ!",
+    "พร้อมมันส์กับทุกคน!",
+    "อยากดวล ใครแน่ๆ มาดวลหน่อย!",
+    "เปิดสนาม รอท้าอยู่!",
+    "อยากบวกใครก็ได้ มาขอแค่ใจถึง!",
+    "ขอดวลกับคนกล้าสักคน!",
+    "อยากลองของแข็ง มาจัดให้หน่อยดิ๊!",
+    "เบื่อแล้วนอนหมอน อยากนอน ICU! ใครก็ได้มาดิ๊",
+    "เบื่อแล้วน้ำพริกลงเรือ อยากกินน้ำเกลือโรงบาล!",
+    "ใครคิดว่าแน่ มาลอง!",
+    "อยากลุยกับใครก็ได้!",
+    "ไม่หลับ ไม่ง่วง แต่อยากร่วงจังค้าบ!",
+    "เปิดโต๊ะรออยู่ ใครก็ได้!",
+    "พร้อมลุยไม่เลือกหน้า!",
+    "ไม่ใช่น้ำทะเล แต่ก็ซัดหน้าคนได้เหมือนกัน!"
+  ];
 
   async function loadChallenges() {
-  const listDiv = document.getElementById("challenge-list");
-  listDiv.innerHTML = "🔄 กำลังโหลดคำท้า...";
+    listDiv.innerHTML = "🔄 กำลังโหลดคำท้า...";
 
-  try {
-    const res = await fetch(endpoint + "?func=getChallengeList");
-    const all = await res.json();
+    try {
+      const res = await fetch(endpoint + "?func=getChallengeList");
+      const all = await res.json();
 
-    // ✅ โชว์เฉพาะคำท้าที่ “อนุมัติ” หรือ “พร้อมดวล”
-    const approved = all.filter(row => ["อนุมัติ", "พร้อมดวล"].includes(row["สถานะคำท้า"]));
+      const approved = all.filter(row =>
+        row["สถานะคำท้า"] === "อนุมัติ" || row["สถานะคำท้า"] === "พร้อมดวล"
+      );
 
-    if (approved.length === 0) {
-      listDiv.innerHTML = "<p>📭 ยังไม่มีการประกาศท้าทาย<br>คุณสามารถเป็นคนแรกที่เปิดคำท้าได้เลย!</p>";
-      return;
-    }
-
-    listDiv.innerHTML = "";
-
-    approved.forEach(row => {
-      const type = row["ประเภท"] || "open";
-      const codename = row["Codename"] || "-";
-      const wager = row["เดิมพัน"] || "-";
-      const targetName = row["ผู้ถูกท้า"] || "-";
-      const title = row["ชื่อคำท้า"] || "-";
-      const mode = row["รูปแบบ"] || "-";
-      const accepted = row["ผู้ตอบรับ"];
-      const status = row["สถานะคำท้า"];
-      const detailId = `detail-${row["ID"]}`;
-
-      // สร้างข้อความท้า
-      const description = type === "direct"
-        ? `👑 ${codename} ประกาศท้า ${targetName}`
-        : `👑 ${codename} ${openPhrases[Math.floor(Math.random() * openPhrases.length)]}`;
-
-      // === สร้าง Card
-      const card = document.createElement("div");
-      card.className = "challenge-card";
-
-      // ถ้าพร้อมดวล → เติม class "ready"
-      if (status === "พร้อมดวล") {
-        card.classList.add("ready");
+      if (approved.length === 0) {
+        listDiv.innerHTML = "<p>📭 ยังไม่มีการประกาศท้าทาย<br>คุณสามารถเป็นคนแรกที่เปิดคำท้าได้เลย!</p>";
+        return;
       }
 
-      // ป้ายประเภท
-      const typeSpan = document.createElement("span");
-      typeSpan.className = `challenge-type ${type}`;
-      typeSpan.textContent = type.toUpperCase();
+      listDiv.innerHTML = "";
 
-      // Main content
-      const mainDiv = document.createElement("div");
-      mainDiv.className = "challenge-main";
+      approved.forEach(row => {
+        const type = row["ประเภท"] || "open";
+        const codename = row["Codename"] || "-";
+        const wager = row["เดิมพัน"] || "-";
+        const targetName = row["ผู้ถูกท้า"] || "-";
+        const title = row["ชื่อคำท้า"] || "-";
+        const mode = row["รูปแบบ"] || "-";
+        const accepted = row["ผู้ตอบรับ"];
+        const status = row["สถานะคำท้า"];
+        const detailId = `detail-${row["ID"]}`;
 
-      const descP = document.createElement("p");
-      descP.textContent = `${description} เดิมพัน: ${wager}`;
+        const description = type === "direct"
+          ? `👑 ${codename} ประกาศท้า ${targetName}`
+          : `👑 ${codename} ${openPhrases[Math.floor(Math.random() * openPhrases.length)]}`;
 
-      // ปุ่มดูรายละเอียด
-      const detailBtn = document.createElement("button");
-      detailBtn.className = "button-secondary";
-      detailBtn.textContent = "🔍 ดูรายละเอียด";
-      detailBtn.addEventListener("click", () => {
-        const el = document.getElementById(detailId);
-        if (el) {
-          el.style.display = (el.style.display === "none" || !el.style.display) ? "block" : "none";
+        const card = document.createElement("div");
+        card.className = "challenge-card";
+        if (status === "พร้อมดวล") card.classList.add("ready");
+
+        const typeSpan = document.createElement("span");
+        typeSpan.className = `challenge-type ${type}`;
+        typeSpan.textContent = type.toUpperCase();
+
+        const mainDiv = document.createElement("div");
+        mainDiv.className = "challenge-main";
+
+        const descP = document.createElement("p");
+        descP.textContent = `${description} เดิมพัน: ${wager}`;
+
+        const detailBtn = document.createElement("button");
+        detailBtn.className = "button-secondary";
+        detailBtn.textContent = "🔍 ดูรายละเอียด";
+        detailBtn.addEventListener("click", () => {
+          const el = document.getElementById(detailId);
+          if (el) {
+            el.style.display = (el.style.display === "none" || !el.style.display) ? "block" : "none";
+          }
+        });
+
+        const detailDiv = document.createElement("div");
+        detailDiv.id = detailId;
+        detailDiv.className = "detail-section";
+        detailDiv.innerHTML = `
+          ${type === "direct" ? `🎯 ผู้ถูกท้า: ${targetName}<br>` : ""}
+          📝 ชื่อคำท้า: ${title}<br>
+          🎮 รูปแบบ: ${mode}<br>
+          ${accepted ? `📌 ผู้ตอบรับ: ${accepted}` : ""}
+        `;
+
+        mainDiv.appendChild(descP);
+        mainDiv.appendChild(detailBtn);
+        mainDiv.appendChild(detailDiv);
+
+        const actionDiv = document.createElement("div");
+        actionDiv.className = "challenge-actions";
+
+        if (!accepted) {
+          const acceptBtn = document.createElement("button");
+          acceptBtn.className = "button-accept";
+          acceptBtn.textContent = "✅ รับคำท้า";
+          acceptBtn.onclick = () => showAcceptForm(row["ID"], type, targetName);
+          actionDiv.appendChild(acceptBtn);
+        } else {
+          const ready = document.createElement("p");
+          ready.className = "duel-ready";
+          ready.textContent = "🔥 พร้อมดวล";
+          actionDiv.appendChild(ready);
         }
+
+        card.appendChild(typeSpan);
+        card.appendChild(mainDiv);
+        card.appendChild(actionDiv);
+
+        listDiv.appendChild(card);
       });
-
-      // กล่องรายละเอียด
-      const detailDiv = document.createElement("div");
-      detailDiv.id = detailId;
-      detailDiv.className = "detail-section";
-      detailDiv.style.display = "none";
-      detailDiv.innerHTML = `
-        ${type === "direct" ? `🎯 ผู้ถูกท้า: ${targetName}<br>` : ""}
-        📝 ชื่อคำท้า: ${title}<br>
-        🎮 รูปแบบ: ${mode}<br>
-        ${accepted ? `📌 ผู้ตอบรับ: ${accepted}` : ""}
-      `;
-
-      mainDiv.appendChild(descP);
-      mainDiv.appendChild(detailBtn);
-      mainDiv.appendChild(detailDiv);
-
-      // Action: ปุ่มรับคำท้า / ข้อความพร้อมดวล
-      const actionDiv = document.createElement("div");
-      actionDiv.className = "challenge-actions";
-
-      if (!accepted) {
-        const acceptBtn = document.createElement("button");
-        acceptBtn.className = "button-accept";
-        acceptBtn.textContent = "✅ รับคำท้า";
-        acceptBtn.onclick = () => showAcceptForm(row["ID"], type, targetName);
-        actionDiv.appendChild(acceptBtn);
-      } else {
-        const ready = document.createElement("p");
-        ready.className = "duel-ready";
-        ready.textContent = "🔥 พร้อมดวล";
-        actionDiv.appendChild(ready);
-      }
-
-      // ประกอบทั้งหมด
-      card.appendChild(typeSpan);
-      card.appendChild(mainDiv);
-      card.appendChild(actionDiv);
-
-      listDiv.appendChild(card);
-    });
-  } catch (err) {
-    console.error("❌ โหลดข้อมูลล้มเหลว:", err);
-    listDiv.innerHTML = "<p>❌ ไม่สามารถโหลดข้อมูลคำท้าได้</p>";
+    } catch (err) {
+      console.error("❌ โหลดข้อมูลล้มเหลว:", err);
+      listDiv.innerHTML = "<p>❌ ไม่สามารถโหลดข้อมูลคำท้าได้</p>";
+    }
   }
-}
-
-
-
 
   window.addEventListener("DOMContentLoaded", () => {
     console.log("📦 DOM Loaded → เรียก loadChallenges()");
