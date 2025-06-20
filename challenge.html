@@ -385,13 +385,6 @@
 
 
 
-  function toggleDetail(id) {
-    const el = document.getElementById(id);
-    if (el) el.classList.toggle("hidden");
-  }
-
-  window.toggleDetail = toggleDetail;
-
   window.addEventListener("DOMContentLoaded", () => {
     console.log("📦 DOM Loaded → เรียก loadChallenges()");
     loadChallenges();
