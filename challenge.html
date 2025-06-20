@@ -352,10 +352,15 @@ async function loadChallenges() {
 }
 
 function toggleDetail(id) {
+  console.log("🔍 toggle detail:", id);
   const el = document.getElementById(id);
-  if (!el) return;
+  if (!el) {
+    console.warn("❌ ไม่พบ element:", id);
+    return;
+  }
   el.classList.toggle("hidden");
 }
+
 
 
 window.addEventListener("DOMContentLoaded", () => {
