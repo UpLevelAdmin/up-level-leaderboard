@@ -61,7 +61,28 @@
       gap: 5px;
     }
 
-    .button-primary {
+    .button-create {
+      background-color: #3f51b5;
+      color: white;
+      padding: 0.4rem 0.8rem;
+      font-size: 0.85rem;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .button-verify {
+      background-color: #00bcd4;
+      color: white;
+      padding: 0.4rem 0.8rem;
+      font-size: 0.85rem;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+
+    .button-submit {
       background-color: #4caf50;
       color: white;
       padding: 0.4rem 0.8rem;
@@ -69,6 +90,18 @@
       border: none;
       border-radius: 5px;
       cursor: pointer;
+      margin-top: 1rem;
+    }
+
+    .button-accept {
+      background-color: #ff9800;
+      color: white;
+      padding: 0.4rem 0.8rem;
+      font-size: 0.85rem;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 1rem;
     }
 
     .button-secondary {
@@ -89,6 +122,10 @@
       margin-top: 0.5rem;
       font-size: 0.85rem;
       display: none;
+    }
+
+    .hidden {
+      display: none !important;
     }
 
     form {
@@ -136,14 +173,13 @@
         margin-top: 0.5rem;
       }
 
-      .button-primary, .button-secondary {
+      .button-create, .button-verify, .button-submit, .button-accept, .button-secondary {
         font-size: 0.95rem;
         width: 100%;
       }
     }
   </style>
 </head>
-
 <body>
   <img src="https://i.postimg.cc/wjzpnxjB/Up-Level-01-1.png" alt="Up Level Guild" class="logo" />
   <h1>📢 ประกาศท้าทาย</h1>
@@ -152,14 +188,13 @@
   <div id="challenge-list">กำลังโหลด...</div>
 
   <!-- ปุ่มสร้างคำท้า -->
-  <button id="show-form-btn" class="button-primary">+ สร้างคำท้า</button>
+  <button id="show-form-btn" class="button-create">+ สร้างคำท้า</button>
 
-    <!-- ฟอร์มสร้างคำท้า -->
+  <!-- ฟอร์มสร้างคำท้า -->
   <form id="challenge-form" class="hidden">
     <label>📱 เบอร์โทร:</label>
     <input type="text" id="phone" pattern="\d*" placeholder="กรอกเบอร์โทร 10 หลัก" required />
-
-    <button type="button" id="verify-btn" class="button-primary">🔍 ตรวจสอบ</button>
+    <button type="button" id="verify-btn" class="button-verify">🔍 ตรวจสอบ</button>
 
     <p id="codename-display" style="font-weight:bold;"></p>
 
@@ -189,26 +224,26 @@
       <label>📝 ชื่อคำท้า (ถ้าจะตั้งชื่อ):</label>
       <input type="text" id="title" placeholder="ถ้าไม่ตั้งจะสุ่มชื่อให้" />
 
-      <button type="submit" class="button-primary">✨ ส่งคำท้าสำหรับตรวจสอบ</button>
+      <button type="submit" class="button-submit">✨ ส่งคำท้าสำหรับตรวจสอบ</button>
     </div>
   </form>
 
-
-   <!-- ฟอร์มรับคำท้า -->
+  <!-- ฟอร์มรับคำท้า -->
   <div id="accept-form" class="hidden">
-    <h3>✅ รับคำท้า</h3>
+    <form>
+      <h3>✅ รับคำท้า</h3>
+      <label>📱 เบอร์โทร:</label>
+      <input type="text" id="accept-phone" placeholder="กรอกเบอร์โทร 10 หลัก" />
 
-    <label>📱 เบอร์โทร:</label>
-    <input type="text" id="accept-phone" placeholder="กรอกเบอร์โทร 10 หลัก" />
+      <label>👤 ชื่อ-นามสกุล:</label>
+      <input type="text" id="accept-fullname" placeholder="ต้องตรงกับที่ลงทะเบียน" />
 
-    <label>👤 ชื่อ-นามสกุล:</label>
-    <input type="text" id="accept-fullname" placeholder="ต้องตรงกับที่ลงทะเบียน" />
+      <input type="hidden" id="accept-id" />
+      <input type="hidden" id="accept-type" />
+      <input type="hidden" id="accept-target" />
 
-    <input type="hidden" id="accept-id" />
-    <input type="hidden" id="accept-type" />
-    <input type="hidden" id="accept-target" />
-
-    <button onclick="submitAccept()" class="button-primary">ยืนยันการรับคำท้า</button>
+      <button type="button" onclick="submitAccept()" class="button-accept">ยืนยันการรับคำท้า</button>
+    </form>
   </div>
 
   <!-- ช่องทางติดต่อ -->
@@ -216,151 +251,94 @@
     <a href="https://www.facebook.com/uplevelacademy" target="_blank">Facebook Page</a> |
     <a href="https://lin.ee/qlM5nVG" target="_blank">LINE Official</a>
   </p>
+  <script>
+    const endpoint = "https://script.google.com/macros/s/AKfycbwJoXR9EFLngOAyA_WjQJNE0zT3MmL2afwlwvxmnMQ88WYzjlD-l2c_LXjg-k3bFWj9/exec";
+    const listDiv = document.getElementById("challenge-list");
 
-<script>
-  const endpoint = "https://script.google.com/macros/s/AKfycbwJoXR9EFLngOAyA_WjQJNE0zT3MmL2afwlwvxmnMQ88WYzjlD-l2c_LXjg-k3bFWj9/exec";
-  const listDiv = document.getElementById("challenge-list");
+    // โหลดรายการคำท้า
+    async function loadChallenges() {
+      listDiv.innerHTML = "🔄 กำลังโหลดคำท้า...";
+      try {
+        const res = await fetch(endpoint + "?func=getChallengeList");
+        const all = await res.json();
+        const approved = all.filter(row => row["สถานะคำท้า"] === "อนุมัติ");
 
-  // โหลดรายการคำท้า
-  async function loadChallenges() {
-    listDiv.innerHTML = "🔄 กำลังโหลดคำท้า...";
-    try {
-      const res = await fetch(endpoint + "?func=getChallengeList");
-      const all = await res.json();
-      const approved = all.filter(row => row["สถานะคำท้า"] === "อนุมัติ");
+        if (approved.length === 0) {
+          listDiv.innerHTML = "<p>📭 ยังไม่มีการประกาศท้าทาย<br>คุณสามารถเป็นคนแรกที่เปิดคำท้าได้เลย!</p>";
+        } else {
+          listDiv.innerHTML = "";
+          for (let row of approved) {
+            const type = row["ประเภท"] || "open";
+            const codename = row["Codename"] || "-";
+            const wager = row["เดิมพัน"] || "-";
+            const targetName = row["ผู้ถูกท้า"] || "-";
+            const title = row["ชื่อคำท้า"] || "-";
+            const mode = row["รูปแบบ"] || "-";
+            const accepted = row["ผู้ตอบรับ"];
+            const detailId = `detail-${row["ID"]}`;
 
-      if (approved.length === 0) {
-        listDiv.innerHTML = "<p>📭 ยังไม่มีการประกาศท้าทาย<br>คุณสามารถเป็นคนแรกที่เปิดคำท้าได้เลย!</p>";
-      } else {
-        listDiv.innerHTML = "";
-        for (let row of approved) {
-          const type = row["ประเภท"] || "open";
-          const codename = row["Codename"] || "-";
-          const wager = row["เดิมพัน"] || "-";
-          const targetName = row["ผู้ถูกท้า"] || "-";
-          const title = row["ชื่อคำท้า"] || "-";
-          const mode = row["รูปแบบ"] || "-";
-          const accepted = row["ผู้ตอบรับ"];
-          const detailId = `detail-${row["ID"]}`;
+            const card = document.createElement("div");
+            card.className = "challenge-card";
 
-          const card = document.createElement("div");
-          card.className = "challenge-card";
-
-          card.innerHTML = `
-            <span class="challenge-type ${type}">${type.toUpperCase()}</span>
-            <div class="challenge-main">
-              <p>👑 ${codename} ประกาศท้า เดิมพัน: ${wager}</p>
-              <button class="button-secondary" onclick="document.getElementById('${detailId}').classList.toggle('detail-section')">🔎 ดูรายละเอียด</button>
-              <div id="${detailId}" class="detail-section hidden">
-                ${type === "direct" ? `🎯 ผู้ถูกท้า: ${targetName}<br>` : ""}
-                📝 ชื่อคำท้า: ${title}<br>
-                🎮 รูปแบบ: ${mode}<br>
-                ${accepted ? `📌 ผู้ตอบรับ: ${accepted}` : ""}
+            card.innerHTML = `
+              <span class="challenge-type ${type}">${type.toUpperCase()}</span>
+              <div class="challenge-main">
+                <p>👑 ${codename} ประกาศท้า เดิมพัน: ${wager}</p>
+                <button class="button-secondary" onclick="document.getElementById('${detailId}').classList.toggle('hidden')">🔎 ดูรายละเอียด</button>
+                <div id="${detailId}" class="detail-section hidden">
+                  ${type === "direct" ? `🎯 ผู้ถูกท้า: ${targetName}<br>` : ""}
+                  📝 ชื่อคำท้า: ${title}<br>
+                  🎮 รูปแบบ: ${mode}<br>
+                  ${accepted ? `📌 ผู้ตอบรับ: ${accepted}` : ""}
+                </div>
               </div>
-            </div>
-            <div class="challenge-actions">
-              ${!accepted
-                ? `<button class="button-primary" onclick="showAcceptForm('${row["ID"]}', '${type}', '${targetName}')">✅ รับคำท้า</button>`
-                : `<p class="duel-ready">🔥 พร้อมดวล</p>`
-              }
-            </div>
-          `;
-          listDiv.appendChild(card);
+              <div class="challenge-actions">
+                ${!accepted
+                  ? `<button class="button-accept" onclick="showAcceptForm('${row["ID"]}', '${type}', '${targetName}')">✅ รับคำท้า</button>`
+                  : `<p class="duel-ready">🔥 พร้อมดวล</p>`
+                }
+              </div>
+            `;
+            listDiv.appendChild(card);
+          }
         }
+      } catch {
+        listDiv.innerHTML = "<p>❌ ไม่สามารถโหลดข้อมูลคำท้าได้</p>";
       }
-    } catch {
-      listDiv.innerHTML = "<p>❌ ไม่สามารถโหลดข้อมูลคำท้าได้</p>";
     }
-  }
 
-  // แสดงฟอร์มรับคำท้า
-  function showAcceptForm(id, type, target) {
-    document.getElementById("accept-id").value = id;
-    document.getElementById("accept-type").value = type;
-    document.getElementById("accept-target").value = target;
-    document.getElementById("accept-form").classList.remove("hidden");
-    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-  }
+    // โหลดทันทีเมื่อเปิดหน้า
+    loadChallenges();
 
-  // ส่งข้อมูลรับคำท้า
-  async function submitAccept() {
-    const phone = document.getElementById("accept-phone").value.trim();
-    const fullname = document.getElementById("accept-fullname").value.trim();
-    const id = document.getElementById("accept-id").value;
-    const type = document.getElementById("accept-type").value;
-    const target = document.getElementById("accept-target").value;
-
-    try {
-      const res = await fetch(endpoint + "?func=acceptChallenge", {
-        method: "POST",
-        body: JSON.stringify({ phone, fullname, id, type, target })
-      });
-      const text = await res.text();
-      alert(text.includes("สำเร็จ") ? "✅ รับคำท้าเรียบร้อย พร้อมดวล !!" : text);
-      location.reload();
-    } catch {
-      alert("❌ เกิดข้อผิดพลาด");
+    // แสดงฟอร์มรับคำท้า
+    function showAcceptForm(id, type, target) {
+      document.getElementById("accept-id").value = id;
+      document.getElementById("accept-type").value = type;
+      document.getElementById("accept-target").value = target;
+      document.getElementById("accept-form").classList.remove("hidden");
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
     }
-  }
 
-  // เปิด/ปิดฟอร์มสร้างคำท้า
-  document.getElementById("show-form-btn").onclick = () =>
-    document.getElementById("challenge-form").classList.toggle("hidden");
+    // ส่งข้อมูลรับคำท้า
+    async function submitAccept() {
+      const phone = document.getElementById("accept-phone").value.trim();
+      const fullname = document.getElementById("accept-fullname").value.trim();
+      const id = document.getElementById("accept-id").value;
+      const type = document.getElementById("accept-type").value;
+      const target = document.getElementById("accept-target").value;
 
-  // ตรวจสอบเบอร์โทร → ดึง codename และรายชื่อ
-  document.getElementById("verify-btn").addEventListener("click", async () => {
-    let phone = document.getElementById("phone").value.trim();
-    if (phone.length === 9 && !phone.startsWith("0")) phone = "0" + phone;
-
-    const res = await fetch(endpoint + "?func=getCodename&phone=" + phone);
-    const codename = await res.text();
-    document.getElementById("codename-display").innerText = `🔎 Codename ของคุณคือ: ${codename}`;
-    document.getElementById("form-fields").classList.remove("hidden");
-
-    const resNames = await fetch(endpoint + "?func=getCodenameList");
-    const names = await resNames.json();
-    const targetSelect = document.getElementById("target");
-    const filtered = names.filter(name => name.trim().toLowerCase() !== codename.trim().toLowerCase());
-    targetSelect.innerHTML = filtered.length > 0
-      ? filtered.map(name => `<option value="${name}">${name}</option>`).join("")
-      : `<option disabled selected>ไม่พบชื่อผู้เล่นอื่น</option>`;
-  });
-
-  // เปลี่ยนการแสดงรายชื่อเมื่อเลือกประเภทคำท้า
-  document.getElementById("type").onchange = e => {
-    const showTarget = e.target.value === "direct";
-    document.getElementById("target-select-container").classList.toggle("hidden", !showTarget);
-  };
-
-  // ส่งฟอร์มสร้างคำท้า
-  document.getElementById("challenge-form").onsubmit = async (e) => {
-    e.preventDefault();
-    let phone = document.getElementById("phone").value.trim();
-    if (phone.length === 9 && !phone.startsWith("0")) phone = "0" + phone;
-
-    const type = document.getElementById("type").value;
-    const target = type === "direct" ? document.getElementById("target").value : "";
-    const mode = document.getElementById("mode").value;
-    const wager = document.getElementById("wager").value;
-    const title = document.getElementById("title").value;
-
-    try {
-      const res = await fetch(endpoint + "?func=submitChallengeRequest", {
-        method: "POST",
-        body: JSON.stringify({ phone, type, target, mode, wager, title })
-      });
-      const text = await res.text();
-      alert(text);
-      e.target.reset();
-      location.reload();
-    } catch {
-      alert("❌ เกิดข้อผิดพลาด");
+      try {
+        const res = await fetch(endpoint + "?func=acceptChallenge", {
+          method: "POST",
+          body: JSON.stringify({ phone, fullname, id, type, target })
+        });
+        const text = await res.text();
+        alert(text.includes("สำเร็จ") ? "✅ รับคำท้าเรียบร้อย พร้อมดวล !!" : text);
+        location.reload();
+      } catch {
+        alert("❌ เกิดข้อผิดพลาด");
+      }
     }
-  };
-
-  // โหลดทันทีเมื่อเปิดหน้า
-  loadChallenges();
-</script>
-
+  </script>
 </body>
 </html>
