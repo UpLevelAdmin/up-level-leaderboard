@@ -181,6 +181,18 @@
         font-size: 0.95rem;
         width: 100%;
       }
+      .challenge-card.ready {
+  border-left: 5px solid red;
+  background-color: #ffe5e5;
+  animation: pulse 1.2s infinite;
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(255, 0, 0, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); }
+}
+
     }
   </style>
 </head>
@@ -290,7 +302,9 @@
   try {
     const res = await fetch(endpoint + "?func=getChallengeList");
     const all = await res.json();
-    const approved = all.filter(row => row["สถานะคำท้า"] === "อนุมัติ");
+
+    // ✅ โชว์เฉพาะคำท้าที่ “อนุมัติ” หรือ “พร้อมดวล”
+    const approved = all.filter(row => ["อนุมัติ", "พร้อมดวล"].includes(row["สถานะคำท้า"]));
 
     if (approved.length === 0) {
       listDiv.innerHTML = "<p>📭 ยังไม่มีการประกาศท้าทาย<br>คุณสามารถเป็นคนแรกที่เปิดคำท้าได้เลย!</p>";
@@ -307,7 +321,10 @@
       const title = row["ชื่อคำท้า"] || "-";
       const mode = row["รูปแบบ"] || "-";
       const accepted = row["ผู้ตอบรับ"];
+      const status = row["สถานะคำท้า"];
       const detailId = `detail-${row["ID"]}`;
+
+      // สร้างข้อความท้า
       const description = type === "direct"
         ? `👑 ${codename} ประกาศท้า ${targetName}`
         : `👑 ${codename} ${openPhrases[Math.floor(Math.random() * openPhrases.length)]}`;
@@ -315,6 +332,11 @@
       // === สร้าง Card
       const card = document.createElement("div");
       card.className = "challenge-card";
+
+      // ถ้าพร้อมดวล → เติม class "ready"
+      if (status === "พร้อมดวล") {
+        card.classList.add("ready");
+      }
 
       // ป้ายประเภท
       const typeSpan = document.createElement("span");
@@ -343,7 +365,7 @@
       const detailDiv = document.createElement("div");
       detailDiv.id = detailId;
       detailDiv.className = "detail-section";
-      detailDiv.style.display = "none"; // ซ่อนไว้เริ่มต้น
+      detailDiv.style.display = "none";
       detailDiv.innerHTML = `
         ${type === "direct" ? `🎯 ผู้ถูกท้า: ${targetName}<br>` : ""}
         📝 ชื่อคำท้า: ${title}<br>
@@ -355,9 +377,10 @@
       mainDiv.appendChild(detailBtn);
       mainDiv.appendChild(detailDiv);
 
-      // Action: รับคำท้า / พร้อมดวล
+      // Action: ปุ่มรับคำท้า / ข้อความพร้อมดวล
       const actionDiv = document.createElement("div");
       actionDiv.className = "challenge-actions";
+
       if (!accepted) {
         const acceptBtn = document.createElement("button");
         acceptBtn.className = "button-accept";
@@ -383,6 +406,7 @@
     listDiv.innerHTML = "<p>❌ ไม่สามารถโหลดข้อมูลคำท้าได้</p>";
   }
 }
+
 
 
 
