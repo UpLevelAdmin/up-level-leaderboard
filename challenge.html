@@ -326,7 +326,7 @@ async function loadChallenges() {
           <div class="challenge-main">
             <p>${description} เดิมพัน: ${wager}</p>
             <button class="button-secondary" onclick="toggleDetail('${detailId}')">🔎 ดูรายละเอียด</button>
-            <div id="${detailId}" class="detail-section hidden">
+            <div id="${detailId}" class="detail-section" style="display: none;">
               ${type === "direct" ? `🎯 ผู้ถูกท้า: ${targetName}<br>` : ""}
               📝 ชื่อคำท้า: ${title}<br>
               🎮 รูปแบบ: ${mode}<br>
@@ -352,14 +352,11 @@ async function loadChallenges() {
 }
 
 function toggleDetail(id) {
-  console.log("🔍 toggle detail:", id);
   const el = document.getElementById(id);
-  if (!el) {
-    console.warn("❌ ไม่พบ element:", id);
-    return;
-  }
-  el.classList.toggle("hidden");
+  if (!el) return;
+  el.style.display = (el.style.display === "none" || !el.style.display) ? "block" : "none";
 }
+
 
 
 
