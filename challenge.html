@@ -283,68 +283,110 @@
   ];
 
   async function loadChallenges() {
-    console.log("🚀 เริ่มโหลดฟังก์ชัน loadChallenges()");
-    listDiv.innerHTML = "🔄 กำลังโหลดคำท้า...";
-    try {
-      const res = await fetch(endpoint + "?func=getChallengeList");
-      const all = await res.json();
-      const approved = all.filter(row => row["สถานะคำท้า"] === "อนุมัติ");
+  const listDiv = document.getElementById("challenge-list");
+  listDiv.innerHTML = "🔄 กำลังโหลดคำท้า...";
 
-      if (approved.length === 0) {
-        listDiv.innerHTML = "<p>📭 ยังไม่มีการประกาศท้าทาย<br>คุณสามารถเป็นคนแรกที่เปิดคำท้าได้เลย!</p>";
-      } else {
-        listDiv.innerHTML = "";
-        approved.forEach(row => {
-          const type = row["ประเภท"] || "open";
-          const codename = row["Codename"] || "-";
-          const wager = row["เดิมพัน"] || "-";
-          const targetName = row["ผู้ถูกท้า"] || "-";
-          const title = row["ชื่อคำท้า"] || "-";
-          const mode = row["รูปแบบ"] || "-";
-          const accepted = row["ผู้ตอบรับ"];
-          const detailId = `detail-${row["ID"]}`;
+  try {
+    const res = await fetch(endpoint + "?func=getChallengeList");
+    const all = await res.json();
+    const approved = all.filter(row => row["สถานะคำท้า"] === "อนุมัติ");
 
-          const description = type === "direct"
-  ? `👑 ${codename} ประกาศท้า ${targetName}`
-  : `👑 ${codename} ${openPhrases[Math.floor(Math.random() * openPhrases.length)]}`;
-
-
-          const card = document.createElement("div");
-          card.className = "challenge-card";
-
-          card.innerHTML = `
-            <span class="challenge-type ${type}">${type.toUpperCase()}</span>
-            <div class="challenge-main">
-              <p>${description} เดิมพัน: ${wager}</p>
-              <button class="button-secondary" onclick="toggleDetail('${detailId}')">🔎 ดูรายละเอียด</button>
-              <div id="${detailId}" class="detail-section hidden">
-                ${type === "direct" ? `🎯 ผู้ถูกท้า: ${targetName}<br>` : ""}
-                📝 ชื่อคำท้า: ${title}<br>
-                🎮 รูปแบบ: ${mode}<br>
-                ${accepted ? `📌 ผู้ตอบรับ: ${accepted}` : ""}
-              </div>
-            </div>
-            <div class="challenge-actions">
-              ${!accepted
-                ? `<button class="button-accept" onclick="showAcceptForm('${row["ID"]}', '${type}', '${targetName}')">✅ รับคำท้า</button>`
-                : `<p class="duel-ready">🔥 พร้อมดวล</p>`}
-            </div>
-          `;
-          listDiv.appendChild(card);
-        });
-      }
-    } catch (err) {
-      console.error("❌ โหลดข้อมูลล้มเหลว:", err);
-      listDiv.innerHTML = "<p>❌ ไม่สามารถโหลดข้อมูลคำท้าได้</p>";
+    if (approved.length === 0) {
+      listDiv.innerHTML = "<p>📭 ยังไม่มีการประกาศท้าทาย<br>คุณสามารถเป็นคนแรกที่เปิดคำท้าได้เลย!</p>";
+      return;
     }
+
+    listDiv.innerHTML = "";
+
+    approved.forEach(row => {
+      const type = row["ประเภท"] || "open";
+      const codename = row["Codename"] || "-";
+      const wager = row["เดิมพัน"] || "-";
+      const targetName = row["ผู้ถูกท้า"] || "-";
+      const title = row["ชื่อคำท้า"] || "-";
+      const mode = row["รูปแบบ"] || "-";
+      const accepted = row["ผู้ตอบรับ"];
+      const detailId = `detail-${row["ID"]}`;
+      const description = type === "direct"
+        ? `👑 ${codename} ประกาศท้า ${targetName}`
+        : `👑 ${codename} ${openPhrases[Math.floor(Math.random() * openPhrases.length)]}`;
+
+      // === สร้าง Card
+      const card = document.createElement("div");
+      card.className = "challenge-card";
+
+      // ป้ายประเภท
+      const typeSpan = document.createElement("span");
+      typeSpan.className = `challenge-type ${type}`;
+      typeSpan.textContent = type.toUpperCase();
+
+      // Main content
+      const mainDiv = document.createElement("div");
+      mainDiv.className = "challenge-main";
+
+      const descP = document.createElement("p");
+      descP.textContent = `${description} เดิมพัน: ${wager}`;
+
+      // ปุ่มดูรายละเอียด
+      const detailBtn = document.createElement("button");
+      detailBtn.className = "button-secondary";
+      detailBtn.textContent = "🔍 ดูรายละเอียด";
+      detailBtn.addEventListener("click", () => {
+        const el = document.getElementById(detailId);
+        if (el) el.classList.toggle("hidden");
+      });
+
+      // กล่องรายละเอียด
+      const detailDiv = document.createElement("div");
+      detailDiv.id = detailId;
+      detailDiv.className = "detail-section hidden";
+      detailDiv.innerHTML = `
+        ${type === "direct" ? `🎯 ผู้ถูกท้า: ${targetName}<br>` : ""}
+        📝 ชื่อคำท้า: ${title}<br>
+        🎮 รูปแบบ: ${mode}<br>
+        ${accepted ? `📌 ผู้ตอบรับ: ${accepted}` : ""}
+      `;
+
+      mainDiv.appendChild(descP);
+      mainDiv.appendChild(detailBtn);
+      mainDiv.appendChild(detailDiv);
+
+      // Action: รับคำท้า / พร้อมดวล
+      const actionDiv = document.createElement("div");
+      actionDiv.className = "challenge-actions";
+      if (!accepted) {
+        const acceptBtn = document.createElement("button");
+        acceptBtn.className = "button-accept";
+        acceptBtn.textContent = "✅ รับคำท้า";
+        acceptBtn.onclick = () => showAcceptForm(row["ID"], type, targetName);
+        actionDiv.appendChild(acceptBtn);
+      } else {
+        const ready = document.createElement("p");
+        ready.className = "duel-ready";
+        ready.textContent = "🔥 พร้อมดวล";
+        actionDiv.appendChild(ready);
+      }
+
+      // ประกอบทั้งหมด
+      card.appendChild(typeSpan);
+      card.appendChild(mainDiv);
+      card.appendChild(actionDiv);
+
+      listDiv.appendChild(card);
+    });
+  } catch (err) {
+    console.error("❌ โหลดข้อมูลล้มเหลว:", err);
+    listDiv.innerHTML = "<p>❌ ไม่สามารถโหลดข้อมูลคำท้าได้</p>";
   }
+}
+
 
   function toggleDetail(id) {
     const el = document.getElementById(id);
     if (el) el.classList.toggle("hidden");
-    window.toggleDetail = toggleDetail;
-
   }
+
+  window.toggleDetail = toggleDetail;
 
   window.addEventListener("DOMContentLoaded", () => {
     console.log("📦 DOM Loaded → เรียก loadChallenges()");
