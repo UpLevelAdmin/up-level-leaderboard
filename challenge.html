@@ -353,8 +353,10 @@ async function loadChallenges() {
 
 function toggleDetail(id) {
   const el = document.getElementById(id);
-  if (el) el.classList.toggle("hidden");
+  if (!el) return;
+  el.classList.toggle("hidden");
 }
+
 
 window.addEventListener("DOMContentLoaded", () => {
   console.log("📦 DOM Loaded → เรียก loadChallenges()");
@@ -363,11 +365,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
 
 
-    // แก้ปุ่มดูรายละเอียด
-    function toggleDetail(id) {
-      const el = document.getElementById(id);
-      if (el) el.classList.toggle("hidden");
-    }
+
     // แสดงฟอร์มรับคำท้า
     function showAcceptForm(id, type, target) {
       document.getElementById("accept-id").value = id;
