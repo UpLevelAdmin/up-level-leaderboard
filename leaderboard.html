@@ -55,12 +55,10 @@
 
     table {
       width: 100%;
-      /* Revert to collapse for stable layout */
       border-collapse: collapse;
       background: #fff;
       margin: 1rem 0;
       border-radius: 15px;
-      /* Re-add overflow:hidden to clip corners */
       overflow: hidden;
       box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
       border: 2px solid #f0f0f0;
@@ -71,6 +69,8 @@
       text-align: center;
       border-bottom: 1px solid #eee;
       font-size: 1rem;
+      /* Keep table content on one line */
+      white-space: nowrap;
     }
 
     th {
@@ -83,26 +83,22 @@
     }
 
     .rank-cell {
-      white-space: nowrap;
       display: inline-flex;
       gap: 6px;
       align-items: center;
       justify-content: center;
       font-weight: bold;
-      padding: 0;
     }
 
     .party-cell {
       min-width: 100px;
     }
 
-    /* --- Top Ranks Styling (Simplified) --- */
+    /* --- Top Ranks Styling (Simplified & Stable) --- */
     .rank-1, .rank-2, .rank-3 {
       font-weight: bold;
-      transition: all 0.3s ease;
     }
 
-    /* Keep the background gradients, remove glow animations */
     .rank-1 {
       background: linear-gradient(135deg, #ffd700, #ffec80);
     }
@@ -120,17 +116,8 @@
       border-left: 4px solid #3b82f6;
     }
 
-    /* --- Alternating rows for others --- */
     tr:not(.rank-1):not(.rank-2):not(.rank-3):not(.rank-top-10):nth-child(even) {
       background: #f9f9f9;
-    }
-
-    /* --- Hover Effect --- */
-    tbody tr:hover {
-      transform: scale(1.02);
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-      z-index: 10;
-      position: relative;
     }
 
     .rank-1 td:first-child {
@@ -173,26 +160,19 @@
     /* Responsive */
     @media (max-width: 768px) {
       .container {
-        padding: 1rem;
-        margin: 0.5rem;
+        /* Remove horizontal padding to allow table to touch edges */
+        padding: 1rem 0;
       }
       
-      h1 {
-        font-size: 2rem;
+      h1, h2 {
+        /* Add padding back to headers within the container */
+        padding: 0 1rem;
       }
       
-      th, td {
-        padding: 12px 5px;
-        font-size: 0.8rem;
-        vertical-align: middle;
-      }
-
-      .codename, .party-cell {
-        word-break: break-word;
-      }
-      
-      .rank-1 td:first-child {
-        font-size: 1.3rem;
+      /* Make the container of the table scrollable */
+      #tableContainer {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch; /* Smooth scrolling for iOS */
       }
     }
   </style>
