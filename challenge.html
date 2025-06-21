@@ -239,6 +239,12 @@
   <!-- ปุ่มสร้างคำท้า -->
   <button id="show-form-btn" class="button-create">+ สร้างคำท้า</button>
 
+  <!-- ปุ่มทดสอบเอฟเฟกต์ -->
+  <button id="test-effect-btn" class="button-create" style="background-color: #ff6b6b; margin-left: 10px;">🧪 ทดสอบเอฟเฟกต์</button>
+
+  <!-- ปุ่มแอดมิน (สำหรับทดสอบ) -->
+  <button id="admin-btn" class="button-create" style="background-color: #e74c3c; margin-left: 10px;">🔧 แอดมิน</button>
+
   <!-- ฟอร์มสร้างคำท้า -->
   <form id="challenge-form" class="hidden">
     <label>📱 เบอร์โทร:</label>
@@ -428,7 +434,72 @@
   window.addEventListener("DOMContentLoaded", () => {
     console.log("📦 DOM Loaded → เรียก loadChallenges()");
     loadChallenges();
+    
+    // เพิ่มปุ่มทดสอบเอฟเฟกต์
+    document.getElementById("test-effect-btn").addEventListener("click", createTestCard);
+    
+    // เพิ่มปุ่มแอดมิน
+    document.getElementById("admin-btn").addEventListener("click", showAdminPanel);
   });
+
+  // ฟังก์ชันสร้างการ์ดทดสอบ
+  function createTestCard() {
+    const testCard = document.createElement("div");
+    testCard.className = "challenge-card ready";
+    
+    testCard.innerHTML = `
+      <span class="challenge-type open">OPEN</span>
+      <div class="challenge-main">
+        <p>👑 TestPlayer อยากวัดฝีมือกับใครก็ได้! เดิมพัน: EXP 1</p>
+        <button class="button-secondary">🔍 ดูรายละเอียด</button>
+        <div class="detail-section" style="display: none;">
+          📝 ชื่อคำท้า: ทดสอบเอฟเฟกต์<br>
+          🎮 รูปแบบ: Standard BO1<br>
+          📌 ผู้ตอบรับ: TestAccepter
+        </div>
+      </div>
+      <div class="challenge-actions">
+        <p class="duel-ready">🔥 พร้อมดวล</p>
+      </div>
+    `;
+    
+    // เพิ่มการ์ดทดสอบไว้ด้านบนสุด
+    const listDiv = document.getElementById("challenge-list");
+    listDiv.insertBefore(testCard, listDiv.firstChild);
+    
+    // ลบการ์ดทดสอบหลังจาก 10 วินาที
+    setTimeout(() => {
+      if (testCard.parentNode) {
+        testCard.parentNode.removeChild(testCard);
+      }
+    }, 10000);
+  }
+
+  // ฟังก์ชันแสดงแผงแอดมิน
+  function showAdminPanel() {
+    const challengeId = prompt("🔧 กรอก ID ของคำท้าที่ต้องการอัพเดทสถานะ:");
+    if (!challengeId) return;
+    
+    const newStatus = prompt("📝 กรอกสถานะใหม่ (อนุมัติ/พร้อมดวล/ยกเลิก):");
+    if (!newStatus) return;
+    
+    updateChallengeStatus(challengeId, newStatus);
+  }
+
+  // ฟังก์ชันอัพเดทสถานะคำท้า
+  async function updateChallengeStatus(id, status) {
+    try {
+      const res = await fetch(endpoint + "?func=updateChallengeStatus", {
+        method: "POST",
+        body: JSON.stringify({ id, status })
+      });
+      const text = await res.text();
+      alert(text);
+      location.reload();
+    } catch {
+      alert("❌ เกิดข้อผิดพลาด");
+    }
+  }
 </script>
 <script>
   // แสดงฟอร์มรับคำท้า
