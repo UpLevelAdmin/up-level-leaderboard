@@ -69,8 +69,6 @@
       text-align: center;
       border-bottom: 1px solid #eee;
       font-size: 1rem;
-      /* Keep table content on one line */
-      white-space: nowrap;
     }
 
     th {
@@ -160,19 +158,37 @@
     /* Responsive */
     @media (max-width: 768px) {
       .container {
-        /* Remove horizontal padding to allow table to touch edges */
-        padding: 1rem 0;
+        padding: 1rem;
+        margin: 0.5rem;
       }
       
-      h1, h2 {
-        /* Add padding back to headers within the container */
-        padding: 0 1rem;
+      h1 {
+        font-size: 2rem;
       }
       
-      /* Make the container of the table scrollable */
-      #tableContainer {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch; /* Smooth scrolling for iOS */
+      /* Use fixed layout and allow word breaking for a clean grid */
+      table {
+          table-layout: fixed;
+          width: 100%;
+      }
+
+      th, td {
+        padding: 12px 2px; /* Minimal horizontal padding */
+        font-size: 0.75rem;
+        vertical-align: middle;
+        overflow-wrap: break-word;
+        word-wrap: break-word; /* fallback */
+      }
+      
+      /* Set explicit column widths for a stable layout */
+      th:nth-child(1), td:nth-child(1) { width: 10%; } /* Rank # */
+      th:nth-child(2), td:nth-child(2) { width: 30%; } /* Codename */
+      th:nth-child(3), td:nth-child(3) { width: 25%; } /* Rank */
+      th:nth-child(4), td:nth-child(4) { width: 10%; } /* EXP */
+      th:nth-child(5), td:nth-child(5) { width: 25%; } /* Party */
+      
+      .rank-1 td:first-child {
+        font-size: 1.2rem;
       }
     }
   </style>
