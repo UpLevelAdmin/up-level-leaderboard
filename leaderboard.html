@@ -239,6 +239,35 @@
         color: #1a202c !important;
       }
       
+      /* แก้ไข: อนุญาตให้เอฟเฟกต์การเรืองแสงทำงานในมือถือ */
+      .rank-1, .rank-2, .rank-3 {
+        animation: none; /* ปิด animation เพื่อประหยัดแบตเตอรี่ */
+      }
+      
+      /* เอฟเฟกต์การเรืองแสงสำหรับมือถือ */
+      .rank-1 {
+        background: linear-gradient(135deg, #ffd700, #ffec80);
+        box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+      }
+
+      .rank-2 {
+        background: linear-gradient(135deg, #c0c0c0, #e8e8e8);
+        box-shadow: 0 0 15px rgba(192, 192, 192, 0.4);
+      }
+
+      .rank-3 {
+        background: linear-gradient(135deg, #cd7f32, #e8b388);
+        box-shadow: 0 0 15px rgba(205, 127, 50, 0.4);
+      }
+      
+      /* เอฟเฟกต์พิเศษสำหรับอันดับ 1 ในมือถือ */
+      .rank-1 td:first-child {
+        font-size: 1.3rem;
+        font-weight: bold;
+        color: #a16207;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      }
+      
       tbody tr td .rank-cell {
         padding: 0;
         font-size: 0.75rem;
