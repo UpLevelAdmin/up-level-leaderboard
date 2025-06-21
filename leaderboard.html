@@ -161,8 +161,6 @@
       font-weight: 600;
       color: #333;
       transition: all 0.3s ease;
-      background: linear-gradient(135deg, #1e3a8a, #1e3a8a);
-      color: white;
     }
 
     .rank-1 .codename {
@@ -237,6 +235,10 @@
         word-break: break-word;
       }
       
+      tbody tr td:nth-child(3) {
+        color: #1a202c !important;
+      }
+      
       tbody tr td .rank-cell {
         padding: 0;
         font-size: 0.75rem;
@@ -245,12 +247,15 @@
         box-shadow: none !important;
         animation: none !important;
         border: none;
-        color: #1a202c !important;
+        color: inherit !important;
       }
     }
   </style>
 </head>
 <body>
+  <div style="padding: 8px; background-color: #fef08a; color: #854d0e; font-weight: bold; text-align: center;">
+    Version: 5.0 (Mobile Fix)
+  </div>
   <div class="container">
     <img src="https://i.postimg.cc/wjzpnxjB/Up-Level-01-1.png" alt="Up Level Logo" class="logo" />
     <h1>🏆 Leaderboard</h1>
