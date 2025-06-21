@@ -243,6 +243,73 @@
         font-size: 2rem;
       }
     }
+
+    /* --- Modal Styles --- */
+    .modal-backdrop {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      backdrop-filter: blur(5px);
+      animation: fadeIn 0.3s ease;
+    }
+    .modal-content {
+      background: #ffffff;
+      padding: 2rem;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      width: 100%;
+      max-width: 500px;
+      text-align: left;
+      position: relative;
+      animation: slideIn 0.4s ease-out;
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideIn { from { transform: translateY(-30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .modal-close-btn {
+      position: absolute;
+      top: 10px; right: 20px;
+      font-size: 2.2rem;
+      font-weight: bold;
+      color: #aaa;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+    .modal-close-btn:hover { color: #333; }
+    .modal-content h2 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #6b46c1;
+      margin-top: 0;
+      margin-bottom: 1rem;
+      padding-right: 30px; /* Space for close button */
+    }
+    .modal-content .modal-desc {
+      font-size: 1rem;
+      line-height: 1.6;
+      color: #333;
+      margin-bottom: 1.5rem;
+      white-space: pre-wrap;
+      max-height: 50vh;
+      overflow-y: auto;
+    }
+    .modal-quest-rewards {
+      display: flex;
+      gap: 20px;
+      font-size: 1rem;
+      margin-bottom: 2rem;
+    }
+    .modal-quest-rewards span { font-weight: 500; color: #555; }
+    #modal-submit-btn {
+      width: 100%;
+      padding: 0.8rem;
+      font-size: 1.1rem;
+    }
   </style>
 </head>
 <body>
@@ -281,6 +348,20 @@
     </div>
   </div>
 
+  <!-- Modal Structure -->
+  <div id="quest-modal" class="modal-backdrop" style="display: none;">
+    <div class="modal-content">
+      <span class="modal-close-btn">&times;</span>
+      <h2 id="modal-quest-name"></h2>
+      <div id="modal-quest-desc" class="modal-desc"></div>
+      <div class="modal-quest-rewards">
+        <span>✨ EXP: <strong id="modal-quest-exp"></strong></span>
+        <span>🥳 Party Point: <strong id="modal-quest-pp"></strong></span>
+      </div>
+      <button id="modal-submit-btn">ส่งเควสนี้</button>
+    </div>
+  </div>
+
   <script>
     function normalizePhone(p) {
       return p.replace(/[^\d]/g, '').replace(/^([1-9]\d{8})$/, '0$1');
@@ -296,9 +377,36 @@
       }
       fetch(`https://script.google.com/macros/s/AKfycbwJoXR9EFLngOAyA_WjQJNE0zT3MmL2afwlwvxmnMQ88WYzjlD-l2c_LXjg-k3bFWj9/exec?func=submitQuestToLog&phone=${clean}&questId=${questId}`)
         .then(res => res.text())
-        .then(msg => alert(msg))
+        .then(msg => {
+          alert(msg);
+          hideModal();
+        })
         .catch(() => alert("❌ เกิดข้อผิดพลาดขณะส่งเควส"));
     }
+
+    const modal = document.getElementById('quest-modal');
+    const modalCloseBtn = document.querySelector('.modal-close-btn');
+
+    function showQuestModal(rowElement) {
+      const questData = JSON.parse(rowElement.dataset.quest);
+      document.getElementById('modal-quest-name').innerText = questData['ชื่อเควส'];
+      document.getElementById('modal-quest-desc').innerHTML = questData['รายละเอียด'].replace(/\n/g, '<br>');
+      document.getElementById('modal-quest-exp').innerText = questData['EXP'];
+      document.getElementById('modal-quest-pp').innerText = questData['Party Point'];
+      document.getElementById('modal-submit-btn').onclick = () => submitQuest(questData['Quest ID']);
+      modal.style.display = 'flex';
+    }
+
+    function hideModal() {
+      modal.style.display = 'none';
+    }
+
+    modalCloseBtn.addEventListener('click', hideModal);
+    modal.addEventListener('click', (event) => {
+      if (event.target === modal) {
+        hideModal();
+      }
+    });
 
     fetch('https://script.google.com/macros/s/AKfycbwJoXR9EFLngOAyA_WjQJNE0zT3MmL2afwlwvxmnMQ88WYzjlD-l2c_LXjg-k3bFWj9/exec?func=getQuestList')
       .then(res => res.json())
@@ -309,7 +417,7 @@
         const tbody = document.getElementById('quest-table');
 
         if (data.length === 0) {
-          loading.innerHTML = '<span class="loading-spinner"></span>🕹️ ยังไม่มีเควสที่เปิดอยู่ในตอนนี้';
+          loading.innerHTML = '🕹️ ยังไม่มีเควสที่เปิดอยู่ในตอนนี้';
           return;
         }
 
@@ -319,17 +427,17 @@
 
         data.forEach((q, index) => {
           const row = document.createElement('tr');
+          row.dataset.quest = JSON.stringify(q);
           const shortText = q['รายละเอียด'].substring(0, 40) + '...';
           const fullId = `full-desc-${index}`;
           const shortId = `short-desc-${index}`;
           row.innerHTML = `
             <td class="nowrap">${q['ชื่อเควส']}</td>
             <td>
-              <span class="desc-short" id="${shortId}" onclick="document.getElementById('${fullId}').style.display='block'; this.style.display='none';">${shortText} <u>ดูเพิ่มเติม</u></span>
-              <div class="desc-full" id="${fullId}">
-                ${q['รายละเอียด']}
-                <span class="desc-toggle" onclick="document.getElementById('${shortId}').style.display='inline'; this.parentElement.style.display='none';">🔽 ซ่อน</span>
-              </div>
+              <span class="desc-short" id="${shortId}" onclick="showQuestModal(this.closest('tr'))">
+                ${q['รายละเอียด'].length > 40 ? shortText : q['รายละเอียด']}
+                ${q['รายละเอียด'].length > 40 ? '<u>ดูเพิ่มเติม</u>' : ''}
+              </span>
             </td>
             <td>${q['EXP']}</td>
             <td>${q['Party Point']}</td>
@@ -340,7 +448,7 @@
         });
       })
       .catch(() => {
-        document.getElementById('loading').innerHTML = '<span class="loading-spinner"></span>❌ โหลดเควสไม่สำเร็จ กรุณาลองใหม่ภายหลัง';
+        document.getElementById('loading').innerHTML = '❌ โหลดเควสไม่สำเร็จ';
       });
   </script>
 </body>
