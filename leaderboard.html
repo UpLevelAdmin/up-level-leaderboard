@@ -3,6 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  
+  <!-- Add Cache-Control Headers -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+
   <title>🏆 Leaderboard</title>
   <style>
     body {
@@ -275,7 +281,7 @@
 </head>
 <body>
   <div style="background: #ff0000; color: white; text-align: center; padding: 5px; font-weight: bold;">
-    Version: Mobile Glow Fix
+    Version: Cache Bust Fix
   </div>
   <div class="container">
     <img src="https://i.postimg.cc/wjzpnxjB/Up-Level-01-1.png" alt="Up Level Logo" class="logo" />
@@ -309,7 +315,11 @@
       "Legend": "🐉"
     };
 
-    fetch("https://script.google.com/macros/s/AKfycbwJoXR9EFLngOAyA_WjQJNE0zT3MmL2afwlwvxmnMQ88WYzjlD-l2c_LXjg-k3bFWj9/exec?func=getLeaderboard")
+    // Add cache-busting parameter to the fetch URL
+    const url = "https://script.google.com/macros/s/AKfycbwJoXR9EFLngOAyA_WjQJNE0zT3MmL2afwlwvxmnMQ88WYzjlD-l2c_LXjg-k3bFWj9/exec?func=getLeaderboard";
+    const cacheBustedUrl = url + '&v=' + new Date().getTime();
+
+    fetch(cacheBustedUrl)
       .then(res => res.json())
       .then(data => {
         let html = '<table><thead><tr><th>#</th><th>Codename</th><th>Rank</th><th>EXP</th><th>Party</th></tr></thead><tbody>';
