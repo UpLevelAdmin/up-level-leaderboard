@@ -53,6 +53,12 @@
       font-weight: 400;
     }
 
+    .table-scroll-wrapper {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      margin: 1rem 0;
+    }
+    
     table {
       width: 100%;
       border-collapse: collapse;
@@ -62,6 +68,7 @@
       overflow: hidden;
       font-size: 0.95rem;
       border: 2px solid #f0f0f0;
+      min-width: 700px; /* Force table to be wide, enabling horizontal scroll */
     }
 
     th, td {
@@ -163,6 +170,7 @@
       padding: 1rem;
       margin-top: 0.5rem;
       border-left: 4px solid #667eea;
+      white-space: normal;
     }
 
     .desc-toggle {
@@ -234,19 +242,6 @@
       h1 {
         font-size: 2rem;
       }
-      
-      table {
-        font-size: 0.8rem;
-      }
-      
-      th, td {
-        padding: 0.5rem 0.3rem;
-      }
-      
-      .type {
-        font-size: 0.75rem;
-        padding: 0.3rem 0.6rem;
-      }
     }
   </style>
 </head>
@@ -261,21 +256,23 @@
       <span class="loading-spinner"></span>🔄 กำลังโหลดเควส กรุณารอสักครู่...
     </div>
 
-    <table style="display:none;" id="quest-table-wrapper">
-      <thead>
-        <tr>
-          <th class="nowrap">🎯 เควส</th>
-          <th class="nowrap">📘 รายละเอียด</th>
-          <th class="nowrap">�� EXP</th>
-          <th class="nowrap">🍀 Party Point</th>
-          <th class="nowrap">🧩 ประเภท</th>
-          <th class="nowrap">📤 ส่งเควส</th>
-        </tr>
-      </thead>
-      <tbody id="quest-table">
-        <!-- Filled by JS -->
-      </tbody>
-    </table>
+    <div class="table-scroll-wrapper">
+      <table style="display:none;" id="quest-table-wrapper">
+        <thead>
+          <tr>
+            <th class="nowrap">🎯 เควส</th>
+            <th class="nowrap">📘 รายละเอียด</th>
+            <th class="nowrap">✨ EXP</th>
+            <th class="nowrap">🥳 Party Point</th>
+            <th class="nowrap">🧩 ประเภท</th>
+            <th class="nowrap">📤 ส่งเควส</th>
+          </tr>
+        </thead>
+        <tbody id="quest-table">
+          <!-- Filled by JS -->
+        </tbody>
+      </table>
+    </div>
 
     <div class="submit-hint">
       📸 ทำเควสแล้ว? แคปหน้าจอ/ภาพหลักฐาน แล้วส่งให้แอดมินตรวจได้ที่:<br>
@@ -307,7 +304,8 @@
       .then(res => res.json())
       .then(data => {
         const loading = document.getElementById('loading');
-        const tableWrapper = document.getElementById('quest-table-wrapper');
+        const tableWrapper = document.querySelector('.table-scroll-wrapper');
+        const table = document.getElementById('quest-table-wrapper');
         const tbody = document.getElementById('quest-table');
 
         if (data.length === 0) {
@@ -316,7 +314,8 @@
         }
 
         loading.style.display = 'none';
-        tableWrapper.style.display = 'table';
+        table.style.display = 'table';
+        tableWrapper.style.visibility = 'visible'; // Make wrapper visible
 
         data.forEach((q, index) => {
           const row = document.createElement('tr');
@@ -324,7 +323,7 @@
           const fullId = `full-desc-${index}`;
           const shortId = `short-desc-${index}`;
           row.innerHTML = `
-            <td>${q['ชื่อเควส']}</td>
+            <td class="nowrap">${q['ชื่อเควส']}</td>
             <td>
               <span class="desc-short" id="${shortId}" onclick="document.getElementById('${fullId}').style.display='block'; this.style.display='none';">${shortText} <u>ดูเพิ่มเติม</u></span>
               <div class="desc-full" id="${fullId}">
