@@ -65,7 +65,7 @@
     }
 
     th {
-      background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+      background: #1e3a8a;
       font-weight: bold;
       color: #ffffff;
       font-size: 1.1rem;
@@ -80,9 +80,10 @@
       align-items: center;
       justify-content: center;
       font-weight: bold;
-      padding: 8px 12px;
-      border-radius: 20px;
-      transition: all 0.3s ease;
+      padding: 0;
+      background: none;
+      border-radius: 0;
+      transition: none;
     }
 
     .party-cell {
@@ -129,11 +130,12 @@
     }
 
     /* --- Special Cell Styling --- */
-    .rank-1 .rank-cell {
-      background: linear-gradient(45deg, #ffbf00, #fde047);
-      color: #333;
-      box-shadow: 0 4px 15px rgba(255, 215, 0, 0.5);
-      animation: championPulse 1.5s ease-in-out infinite;
+    .rank-1 .rank-cell,
+    .rank-2 .rank-cell,
+    .rank-3 .rank-cell {
+      background: none;
+      box-shadow: none;
+      animation: none;
     }
 
     .rank-1 td:first-child {
@@ -144,21 +146,23 @@
     }
     
     .rank-2 .rank-cell {
-      background: linear-gradient(45deg, #c0c0c0, #e5e5e5);
+      background: none;
       color: #333;
-      box-shadow: 0 4px 15px rgba(192, 192, 192, 0.5);
+      box-shadow: none;
     }
 
     .rank-3 .rank-cell {
-      background: linear-gradient(45deg, #cd7f32, #daa520);
-      color: #fff;
-      box-shadow: 0 4px 15px rgba(205, 127, 50, 0.5);
+      background: none;
+      color: #333;
+      box-shadow: none;
     }
 
     .codename {
       font-weight: 600;
       color: #333;
       transition: all 0.3s ease;
+      background: linear-gradient(135deg, #1e3a8a, #1e3a8a);
+      color: white;
     }
 
     .rank-1 .codename {
@@ -189,18 +193,21 @@
 
     /* Animations */
     @keyframes goldGlow {
-      0% { box-shadow: 0 0 15px rgba(255, 215, 0, 0.4); }
-      100% { box-shadow: 0 0 25px rgba(255, 215, 0, 0.7); }
+      0% { box-shadow: 0 0 10px rgba(255, 215, 0, 0.3); }
+      50% { box-shadow: 0 0 30px 10px rgba(255, 215, 0, 0.7); }
+      100% { box-shadow: 0 0 10px rgba(255, 215, 0, 0.3); }
     }
 
     @keyframes silverGlow {
-      0% { box-shadow: 0 0 15px rgba(192, 192, 192, 0.4); }
-      100% { box-shadow: 0 0 25px rgba(192, 192, 192, 0.7); }
+      0% { box-shadow: 0 0 10px rgba(192, 192, 192, 0.3); }
+      50% { box-shadow: 0 0 30px 10px rgba(192, 192, 192, 0.6); }
+      100% { box-shadow: 0 0 10px rgba(192, 192, 192, 0.3); }
     }
 
     @keyframes bronzeGlow {
-      0% { box-shadow: 0 0 15px rgba(205, 127, 50, 0.4); }
-      100% { box-shadow: 0 0 25px rgba(205, 127, 50, 0.7); }
+      0% { box-shadow: 0 0 10px rgba(205, 127, 50, 0.3); }
+      50% { box-shadow: 0 0 30px 10px rgba(205, 127, 50, 0.6); }
+      100% { box-shadow: 0 0 10px rgba(205, 127, 50, 0.3); }
     }
 
     @keyframes championPulse {
@@ -231,15 +238,14 @@
       }
       
       .rank-cell {
-        padding: 6px 8px;
+        padding: 0;
         font-size: 0.75rem;
         white-space: nowrap;
         background: none !important;
         box-shadow: none !important;
         animation: none !important;
-        color: #333 !important;
-        border-radius: 8px;
-        border: 1px solid #ddd;
+        border: none;
+        color: inherit !important;
       }
     }
   </style>
@@ -305,7 +311,7 @@
           html += `<tr class="${rowClass}">
             <td>${positionDisplay}</td>
             <td class="codename">${row.Codename}</td>
-            <td class="rank-cell">${emoji} ${rank}</td>
+            <td><span class="rank-cell">${emoji} ${rank}</span></td>
             <td>${row.EXP}</td>
             <td class="party-cell">${row.Party || "-"}</td>
           </tr>`;
