@@ -1,11 +1,233 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>🏆 Leaderboard</title>
-  <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      margin: 0;
+      padding: 1rem;
+      text-align: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 20px;
+      padding: 2rem;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      backdrop-filter: blur(10px);
+    }
+
+    .logo {
+      width: 120px;
+      margin-bottom: 1rem;
+      filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+    }
+
+    h1 {
+      margin: 1rem 0 1.5rem;
+      font-size: 2.5rem;
+      background: linear-gradient(45deg, #ffd700, #ffed4e);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+      margin: 2rem 0 1rem;
+      color: #333;
+      font-size: 1.5rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      margin: 1rem 0;
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+      border: 2px solid #f0f0f0;
+    }
+
+    th, td {
+      padding: 15px 10px;
+      text-align: center;
+      border-bottom: 1px solid #eee;
+      font-size: 1rem;
+    }
+
+    th {
+      background: linear-gradient(135deg, #ffd700, #ffed4e);
+      font-weight: bold;
+      color: #333;
+      font-size: 1.1rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .rank-cell {
+      white-space: nowrap;
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      padding: 8px 12px;
+      border-radius: 20px;
+      transition: all 0.3s ease;
+    }
+
+    /* เอฟเฟกต์พิเศษสำหรับอันดับ 1-3 */
+    tr:nth-child(1) {
+      background: linear-gradient(135deg, #ffd700, #ffed4e);
+      animation: goldGlow 2s ease-in-out infinite alternate;
+    }
+
+    tr:nth-child(2) {
+      background: linear-gradient(135deg, #c0c0c0, #e5e5e5);
+      animation: silverGlow 2s ease-in-out infinite alternate;
+    }
+
+    tr:nth-child(3) {
+      background: linear-gradient(135deg, #cd7f32, #daa520);
+      animation: bronzeGlow 2s ease-in-out infinite alternate;
+    }
+
+    /* เอฟเฟกต์สำหรับอันดับ 4-10 */
+    tr:nth-child(n+4):nth-child(-n+10) {
+      background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+      border-left: 4px solid #007bff;
+    }
+
+    /* เอฟเฟกต์สำหรับอันดับอื่นๆ */
+    tr:nth-child(n+11):nth-child(even) {
+      background: #f9f9f9;
+    }
+
+    tr:nth-child(n+11):nth-child(odd) {
+      background: #fff;
+    }
+
+    /* เอฟเฟกต์ hover */
+    tr:hover {
+      transform: scale(1.02);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      transition: all 0.3s ease;
+    }
+
+    /* เอฟเฟกต์พิเศษสำหรับอันดับ 1 */
+    tr:nth-child(1) .rank-cell {
+      background: linear-gradient(45deg, #ffd700, #ffed4e);
+      color: #333;
+      box-shadow: 0 4px 15px rgba(255, 215, 0, 0.5);
+      animation: championPulse 1.5s ease-in-out infinite;
+    }
+
+    tr:nth-child(1) td:first-child {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #ffd700;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    /* เอฟเฟกต์พิเศษสำหรับอันดับ 2 */
+    tr:nth-child(2) .rank-cell {
+      background: linear-gradient(45deg, #c0c0c0, #e5e5e5);
+      color: #333;
+      box-shadow: 0 4px 15px rgba(192, 192, 192, 0.5);
+    }
+
+    /* เอฟเฟกต์พิเศษสำหรับอันดับ 3 */
+    tr:nth-child(3) .rank-cell {
+      background: linear-gradient(45deg, #cd7f32, #daa520);
+      color: #fff;
+      box-shadow: 0 4px 15px rgba(205, 127, 50, 0.5);
+    }
+
+    .codename {
+      font-weight: 600;
+      color: #333;
+      transition: all 0.3s ease;
+    }
+
+    tr:nth-child(1) .codename {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #333;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .rank-system {
+      margin-top: 2rem;
+      background: #fff;
+      border-radius: 15px;
+      padding: 1.5rem;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    .rank-system table {
+      margin: 0;
+      box-shadow: none;
+      border: 1px solid #eee;
+    }
+
+    .rank-system th {
+      background: linear-gradient(135deg, #007bff, #0056b3);
+      color: white;
+    }
+
+    /* Animations */
+    @keyframes goldGlow {
+      0% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.3); }
+      100% { box-shadow: 0 0 30px rgba(255, 215, 0, 0.6); }
+    }
+
+    @keyframes silverGlow {
+      0% { box-shadow: 0 0 20px rgba(192, 192, 192, 0.3); }
+      100% { box-shadow: 0 0 30px rgba(192, 192, 192, 0.6); }
+    }
+
+    @keyframes bronzeGlow {
+      0% { box-shadow: 0 0 20px rgba(205, 127, 50, 0.3); }
+      100% { box-shadow: 0 0 30px rgba(205, 127, 50, 0.6); }
+    }
+
+    @keyframes championPulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .container {
+        padding: 1rem;
+        margin: 0.5rem;
+      }
+      
+      h1 {
+        font-size: 2rem;
+      }
+      
+      th, td {
+        padding: 10px 5px;
+        font-size: 0.9rem;
+      }
+      
+      .rank-cell {
+        padding: 6px 8px;
+        font-size: 0.9rem;
+      }
+    }
+  </style>
 </head>
 <body>
   <div class="container">
@@ -13,17 +235,19 @@
     <h1>🏆 Leaderboard</h1>
     <div id="tableContainer">Loading...</div>
     <h2>🥇 Rank System</h2>
-    <table class="rank-system">
-      <tr><th>Rank</th><th>EXP Range</th></tr>
-      <tr><td>🐣 Rookie</td><td>0–4</td></tr>
-      <tr><td>🛡️ Bronze</td><td>5–14</td></tr>
-      <tr><td>⚔️ Silver</td><td>15–29</td></tr>
-      <tr><td>🥇 Gold</td><td>30–49</td></tr>
-      <tr><td>✨ Platinum</td><td>50–74</td></tr>
-      <tr><td>💎 Diamond</td><td>75–119</td></tr>
-      <tr><td>👑 Grandmaster</td><td>120–199</td></tr>
-      <tr><td>🐉 Legend</td><td>200+</td></tr>
-    </table>
+    <div class="rank-system">
+      <table>
+        <tr><th>Rank</th><th>EXP Range</th></tr>
+        <tr><td>🐣 Rookie</td><td>0–4</td></tr>
+        <tr><td>🛡️ Bronze</td><td>5–14</td></tr>
+        <tr><td>⚔️ Silver</td><td>15–29</td></tr>
+        <tr><td>🥇 Gold</td><td>30–49</td></tr>
+        <tr><td>✨ Platinum</td><td>50–74</td></tr>
+        <tr><td>💎 Diamond</td><td>75–119</td></tr>
+        <tr><td>👑 Grandmaster</td><td>120–199</td></tr>
+        <tr><td>🐉 Legend</td><td>200+</td></tr>
+      </table>
+    </div>
   </div>
 
   <script>
@@ -45,8 +269,16 @@
         data.forEach((row, index) => {
           const rank = row.Rank;
           const emoji = rankEmojis[rank] || "";
+          const position = index + 1;
+          
+          // เพิ่มเอฟเฟกต์พิเศษสำหรับอันดับ 1-3
+          let positionDisplay = position;
+          if (position === 1) positionDisplay = "🥇";
+          else if (position === 2) positionDisplay = "🥈";
+          else if (position === 3) positionDisplay = "🥉";
+          
           html += `<tr>
-            <td>${index + 1}</td>
+            <td>${positionDisplay}</td>
             <td class="codename">${row.Codename}</td>
             <td class="rank-cell">${emoji} ${rank} ${emoji}</td>
             <td>${row.EXP}</td>
