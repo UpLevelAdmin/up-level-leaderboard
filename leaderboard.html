@@ -190,11 +190,12 @@
         white-space: normal;
       }
       
-      #tableContainer th:nth-child(1), #tableContainer td:nth-child(1) { width: 12%; } /* Rank # */
-      #tableContainer th:nth-child(2), #tableContainer td:nth-child(2) { width: 30%; } /* Codename */
-      #tableContainer th:nth-child(3), #tableContainer td:nth-child(3) { width: 28%; } /* Rank */
-      #tableContainer th:nth-child(4), #tableContainer td:nth-child(4) { width: 10%; } /* EXP */
-      #tableContainer th:nth-child(5), #tableContainer td:nth-child(5) { width: 20%; } /* Party */
+      /* Set explicit column widths for a stable layout */
+      th:nth-child(1), td:nth-child(1) { width: 12%; } /* Rank # */
+      th:nth-child(2), td:nth-child(2) { width: 28%; } /* Codename */
+      th:nth-child(3), td:nth-child(3) { width: 30%; } /* Rank */
+      th:nth-child(4), td:nth-child(4) { width: 10%; } /* EXP */
+      th:nth-child(5), td:nth-child(5) { width: 20%; } /* Party */
       
       .rank-1 td:first-child {
         font-size: 1.2rem;
@@ -268,7 +269,7 @@
           html += `<tr class="${rowClass}">
             <td>${positionDisplay}</td>
             <td class="codename">${row.Codename}</td>
-            <td><span class="rank-cell">${emoji} ${rank}</span></td>
+            <td><span class="rank-cell">${emoji} ${rank} ${emoji}</span></td>
             <td>${row.EXP}</td>
             <td class="party-cell">${row.Party || "-"}</td>
           </tr>`;
