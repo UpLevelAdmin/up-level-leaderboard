@@ -8,7 +8,7 @@
   <!-- Add Google Font 'Kanit' -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600;700&display=swap" rel="stylesheet">
   
   <style>
     body {
@@ -68,14 +68,13 @@
       overflow: hidden;
       font-size: 0.95rem;
       border: 2px solid #f0f0f0;
-      min-width: 700px; /* Force table to be wide, enabling horizontal scroll */
+      min-width: 600px;
     }
 
     th, td {
       padding: 1rem 0.8rem;
       text-align: center;
       vertical-align: middle;
-      word-break: break-word;
     }
 
     th {
@@ -88,13 +87,26 @@
     }
 
     tr:nth-child(even) {
-      background: linear-gradient(135deg, #f9f9ff 0%, #f0f4ff 100%);
+      background: #f9f9ff;
     }
 
     tr:hover {
-      background: linear-gradient(135deg, #ebf8ff 0%, #bee3f8 100%);
+      background: #ebf8ff;
       transform: scale(1.01);
-      transition: all 0.3s ease;
+      transition: all 0.2s ease-in-out;
+    }
+
+    .quest-name-cell {
+      text-align: left;
+      padding-left: 1.2rem !important;
+      font-weight: 600;
+    }
+
+    .quest-rewards-inline {
+      font-size: 0.85rem;
+      color: #555;
+      font-weight: 500;
+      margin-top: 4px;
     }
 
     .type {
@@ -124,9 +136,6 @@
       font-size: 1.1rem;
       color: #666;
       padding: 3rem 0;
-      background: rgba(255, 255, 255, 0.8);
-      border-radius: 15px;
-      margin: 1rem 0;
     }
 
     .loading-spinner {
@@ -149,41 +158,15 @@
       white-space: nowrap;
     }
 
-    .desc-short {
+    .details-link {
       cursor: pointer;
       color: #4c1d95;
       font-weight: 500;
       transition: color 0.3s ease;
+      text-decoration: underline;
     }
 
-    .desc-short:hover {
-      color: #667eea;
-    }
-
-    .desc-full {
-      display: none;
-      color: #333;
-      text-align: left;
-      padding-top: 0.8rem;
-      background: #f8f9fa;
-      border-radius: 8px;
-      padding: 1rem;
-      margin-top: 0.5rem;
-      border-left: 4px solid #667eea;
-      white-space: normal;
-    }
-
-    .desc-toggle {
-      color: #6b46c1;
-      cursor: pointer;
-      font-size: 0.85rem;
-      display: block;
-      margin-top: 0.5rem;
-      font-weight: 600;
-      transition: color 0.3s ease;
-    }
-
-    .desc-toggle:hover {
+    .details-link:hover {
       color: #667eea;
     }
 
@@ -195,18 +178,13 @@
       background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
       padding: 1.5rem;
       border-radius: 15px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
     }
 
     .submit-hint a {
       color: #2563eb;
       text-decoration: none;
       font-weight: 600;
-      transition: color 0.3s ease;
-    }
-
-    .submit-hint a:hover {
-      color: #667eea;
     }
 
     button {
@@ -219,17 +197,12 @@
       cursor: pointer;
       font-weight: 600;
       transition: all 0.3s ease;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
 
     button:hover {
-      background: linear-gradient(135deg, #805ad5 0%, #9f7aea 100%);
       transform: translateY(-2px);
-      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
-    }
-
-    button:active {
-      transform: translateY(0);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.2);
     }
 
     /* Responsive */
@@ -327,10 +300,8 @@
       <table style="display:none;" id="quest-table-wrapper">
         <thead>
           <tr>
-            <th class="nowrap">🎯 เควส</th>
+            <th class="nowrap" style="text-align: left; padding-left: 1.2rem;">🎯 เควส</th>
             <th class="nowrap">📘 รายละเอียด</th>
-            <th class="nowrap">✨ EXP</th>
-            <th class="nowrap">🥳 Party Point</th>
             <th class="nowrap">🧩 ประเภท</th>
             <th class="nowrap">📤 ส่งเควส</th>
           </tr>
@@ -412,35 +383,30 @@
       .then(res => res.json())
       .then(data => {
         const loading = document.getElementById('loading');
-        const tableWrapper = document.querySelector('.table-scroll-wrapper');
         const table = document.getElementById('quest-table-wrapper');
         const tbody = document.getElementById('quest-table');
 
         if (data.length === 0) {
-          loading.innerHTML = '🕹️ ยังไม่มีเควสที่เปิดอยู่ในตอนนี้';
+          loading.innerHTML = '��️ ยังไม่มีเควสที่เปิดอยู่ในตอนนี้';
           return;
         }
 
         loading.style.display = 'none';
         table.style.display = 'table';
-        tableWrapper.style.visibility = 'visible'; // Make wrapper visible
 
         data.forEach((q, index) => {
           const row = document.createElement('tr');
           row.dataset.quest = JSON.stringify(q);
-          const shortText = q['รายละเอียด'].substring(0, 40) + '...';
-          const fullId = `full-desc-${index}`;
-          const shortId = `short-desc-${index}`;
           row.innerHTML = `
-            <td class="nowrap">${q['ชื่อเควส']}</td>
+            <td class="quest-name-cell">
+              <div>${q['ชื่อเควส']}</div>
+              <div class="quest-rewards-inline">(✨ ${q['EXP']} EXP, 🥳 ${q['Party Point']} PP)</div>
+            </td>
             <td>
-              <span class="desc-short" id="${shortId}" onclick="showQuestModal(this.closest('tr'))">
-                ${q['รายละเอียด'].length > 40 ? shortText : q['รายละเอียด']}
-                ${q['รายละเอียด'].length > 40 ? '<u>ดูเพิ่มเติม</u>' : ''}
+              <span class="details-link" onclick="showQuestModal(this.closest('tr'))">
+                ดูเพิ่มเติม
               </span>
             </td>
-            <td>${q['EXP']}</td>
-            <td>${q['Party Point']}</td>
             <td><span class="type ${q['ประเภท']}">${q['ประเภท']}</span></td>
             <td><button onclick="submitQuest('${q['Quest ID']}')">ส่งเควส</button></td>
           `;
