@@ -81,6 +81,7 @@
     }
 
     .rank-cell {
+      white-space: nowrap;
       display: inline-flex;
       gap: 6px;
       align-items: center;
@@ -166,26 +167,30 @@
         font-size: 2rem;
       }
       
-      /* Use fixed layout and allow word breaking for a clean grid */
       table {
-          table-layout: fixed;
-          width: 100%;
+        table-layout: fixed;
+        width: 100%;
       }
 
       th, td {
-        padding: 12px 2px; /* Minimal horizontal padding */
-        font-size: 0.75rem;
+        padding: 12px 2px;
+        font-size: 0.8rem;
         vertical-align: middle;
-        overflow-wrap: break-word;
-        word-wrap: break-word; /* fallback */
+      }
+      
+      /* Allow these specific columns to wrap */
+      td:nth-child(2), /* Codename */
+      td:nth-child(5)  /* Party */ {
+        word-break: break-word;
+        white-space: normal;
       }
       
       /* Set explicit column widths for a stable layout */
-      th:nth-child(1), td:nth-child(1) { width: 10%; } /* Rank # */
+      th:nth-child(1), td:nth-child(1) { width: 12%; } /* Rank # */
       th:nth-child(2), td:nth-child(2) { width: 30%; } /* Codename */
-      th:nth-child(3), td:nth-child(3) { width: 25%; } /* Rank */
+      th:nth-child(3), td:nth-child(3) { width: 28%; } /* Rank */
       th:nth-child(4), td:nth-child(4) { width: 10%; } /* EXP */
-      th:nth-child(5), td:nth-child(5) { width: 25%; } /* Party */
+      th:nth-child(5), td:nth-child(5) { width: 20%; } /* Party */
       
       .rank-1 td:first-child {
         font-size: 1.2rem;
