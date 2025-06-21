@@ -33,7 +33,7 @@
     h1 {
       margin: 1rem 0 1.5rem;
       font-size: 2.5rem;
-      background: linear-gradient(45deg, #ffd700, #ffed4e);
+      background: linear-gradient(45deg, #ffbf00, #fde047);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
@@ -65,9 +65,9 @@
     }
 
     th {
-      background: linear-gradient(135deg, #ffd700, #ffed4e);
+      background: linear-gradient(135deg, #1e3a8a, #3b82f6);
       font-weight: bold;
-      color: #333;
+      color: #ffffff;
       font-size: 1.1rem;
       text-transform: uppercase;
       letter-spacing: 1px;
@@ -85,68 +85,71 @@
       transition: all 0.3s ease;
     }
 
-    /* เอฟเฟกต์พิเศษสำหรับอันดับ 1-3 */
-    tr:nth-child(1) {
-      background: linear-gradient(135deg, #ffd700, #ffed4e);
-      animation: goldGlow 2s ease-in-out infinite alternate;
+    .party-cell {
+      min-width: 100px;
     }
 
-    tr:nth-child(2) {
-      background: linear-gradient(135deg, #c0c0c0, #e5e5e5);
-      animation: silverGlow 2s ease-in-out infinite alternate;
-    }
-
-    tr:nth-child(3) {
-      background: linear-gradient(135deg, #cd7f32, #daa520);
-      animation: bronzeGlow 2s ease-in-out infinite alternate;
-    }
-
-    /* เอฟเฟกต์สำหรับอันดับ 4-10 */
-    tr:nth-child(n+4):nth-child(-n+10) {
-      background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-      border-left: 4px solid #007bff;
-    }
-
-    /* เอฟเฟกต์สำหรับอันดับอื่นๆ */
-    tr:nth-child(n+11):nth-child(even) {
-      background: #f9f9f9;
-    }
-
-    tr:nth-child(n+11):nth-child(odd) {
-      background: #fff;
-    }
-
-    /* เอฟเฟกต์ hover */
-    tr:hover {
-      transform: scale(1.02);
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    /* --- Top Ranks Styling --- */
+    .rank-1, .rank-2, .rank-3 {
+      font-weight: bold;
       transition: all 0.3s ease;
     }
 
-    /* เอฟเฟกต์พิเศษสำหรับอันดับ 1 */
-    tr:nth-child(1) .rank-cell {
-      background: linear-gradient(45deg, #ffd700, #ffed4e);
+    .rank-1 {
+      background: linear-gradient(135deg, #ffd700, #ffec80);
+      animation: goldGlow 2s ease-in-out infinite alternate;
+    }
+
+    .rank-2 {
+      background: linear-gradient(135deg, #c0c0c0, #e8e8e8);
+      animation: silverGlow 2s ease-in-out infinite alternate;
+    }
+
+    .rank-3 {
+      background: linear-gradient(135deg, #cd7f32, #e8b388);
+      animation: bronzeGlow 2s ease-in-out infinite alternate;
+    }
+
+    .rank-top-10 {
+      background: #f8f9fa;
+      border-left: 4px solid #3b82f6;
+    }
+
+    /* --- Alternating rows for others --- */
+    tr:not(.rank-1):not(.rank-2):not(.rank-3):not(.rank-top-10):nth-child(even) {
+      background: #f9f9f9;
+    }
+
+    /* --- Hover Effect --- */
+    tbody tr:hover {
+      transform: scale(1.02);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      z-index: 10;
+      position: relative;
+    }
+
+    /* --- Special Cell Styling --- */
+    .rank-1 .rank-cell {
+      background: linear-gradient(45deg, #ffbf00, #fde047);
       color: #333;
       box-shadow: 0 4px 15px rgba(255, 215, 0, 0.5);
       animation: championPulse 1.5s ease-in-out infinite;
     }
 
-    tr:nth-child(1) td:first-child {
+    .rank-1 td:first-child {
       font-size: 1.5rem;
       font-weight: bold;
-      color: #ffd700;
-      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      color: #a16207;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     }
-
-    /* เอฟเฟกต์พิเศษสำหรับอันดับ 2 */
-    tr:nth-child(2) .rank-cell {
+    
+    .rank-2 .rank-cell {
       background: linear-gradient(45deg, #c0c0c0, #e5e5e5);
       color: #333;
       box-shadow: 0 4px 15px rgba(192, 192, 192, 0.5);
     }
 
-    /* เอฟเฟกต์พิเศษสำหรับอันดับ 3 */
-    tr:nth-child(3) .rank-cell {
+    .rank-3 .rank-cell {
       background: linear-gradient(45deg, #cd7f32, #daa520);
       color: #fff;
       box-shadow: 0 4px 15px rgba(205, 127, 50, 0.5);
@@ -158,7 +161,7 @@
       transition: all 0.3s ease;
     }
 
-    tr:nth-child(1) .codename {
+    .rank-1 .codename {
       font-size: 1.2rem;
       font-weight: bold;
       color: #333;
@@ -180,24 +183,24 @@
     }
 
     .rank-system th {
-      background: linear-gradient(135deg, #007bff, #0056b3);
+      background: linear-gradient(135deg, #1e3a8a, #3b82f6);
       color: white;
     }
 
     /* Animations */
     @keyframes goldGlow {
-      0% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.3); }
-      100% { box-shadow: 0 0 30px rgba(255, 215, 0, 0.6); }
+      0% { box-shadow: 0 0 15px rgba(255, 215, 0, 0.4); }
+      100% { box-shadow: 0 0 25px rgba(255, 215, 0, 0.7); }
     }
 
     @keyframes silverGlow {
-      0% { box-shadow: 0 0 20px rgba(192, 192, 192, 0.3); }
-      100% { box-shadow: 0 0 30px rgba(192, 192, 192, 0.6); }
+      0% { box-shadow: 0 0 15px rgba(192, 192, 192, 0.4); }
+      100% { box-shadow: 0 0 25px rgba(192, 192, 192, 0.7); }
     }
 
     @keyframes bronzeGlow {
-      0% { box-shadow: 0 0 20px rgba(205, 127, 50, 0.3); }
-      100% { box-shadow: 0 0 30px rgba(205, 127, 50, 0.6); }
+      0% { box-shadow: 0 0 15px rgba(205, 127, 50, 0.4); }
+      100% { box-shadow: 0 0 25px rgba(205, 127, 50, 0.7); }
     }
 
     @keyframes championPulse {
@@ -218,13 +221,25 @@
       }
       
       th, td {
-        padding: 10px 5px;
-        font-size: 0.9rem;
+        padding: 12px 5px;
+        font-size: 0.8rem;
+        vertical-align: middle;
+      }
+
+      .codename, .party-cell {
+        word-break: break-word;
       }
       
       .rank-cell {
         padding: 6px 8px;
-        font-size: 0.9rem;
+        font-size: 0.75rem;
+        white-space: nowrap;
+        background: none !important;
+        box-shadow: none !important;
+        animation: none !important;
+        color: #333 !important;
+        border-radius: 8px;
+        border: 1px solid #ddd;
       }
     }
   </style>
@@ -265,27 +280,37 @@
     fetch("https://script.google.com/macros/s/AKfycbwJoXR9EFLngOAyA_WjQJNE0zT3MmL2afwlwvxmnMQ88WYzjlD-l2c_LXjg-k3bFWj9/exec?func=getLeaderboard")
       .then(res => res.json())
       .then(data => {
-        let html = '<table><tr><th>#</th><th>Codename</th><th>Rank</th><th>EXP</th><th>Party</th></tr>';
+        let html = '<table><thead><tr><th>#</th><th>Codename</th><th>Rank</th><th>EXP</th><th>Party</th></tr></thead><tbody>';
         data.forEach((row, index) => {
           const rank = row.Rank;
           const emoji = rankEmojis[rank] || "";
           const position = index + 1;
           
-          // เพิ่มเอฟเฟกต์พิเศษสำหรับอันดับ 1-3
           let positionDisplay = position;
-          if (position === 1) positionDisplay = "🥇";
-          else if (position === 2) positionDisplay = "🥈";
-          else if (position === 3) positionDisplay = "🥉";
+          let rowClass = '';
+
+          if (position === 1) {
+            positionDisplay = "🥇";
+            rowClass = 'rank-1';
+          } else if (position === 2) {
+            positionDisplay = "🥈";
+            rowClass = 'rank-2';
+          } else if (position === 3) {
+            positionDisplay = "🥉";
+            rowClass = 'rank-3';
+          } else if (position <= 10) {
+            rowClass = 'rank-top-10';
+          }
           
-          html += `<tr>
+          html += `<tr class="${rowClass}">
             <td>${positionDisplay}</td>
             <td class="codename">${row.Codename}</td>
-            <td class="rank-cell">${emoji} ${rank} ${emoji}</td>
+            <td class="rank-cell">${emoji} ${rank}</td>
             <td>${row.EXP}</td>
-            <td>${row.Party || "-"}</td>
+            <td class="party-cell">${row.Party || "-"}</td>
           </tr>`;
         });
-        html += '</table>';
+        html += '</tbody></table>';
         document.getElementById("tableContainer").innerHTML = html;
       });
   </script>
