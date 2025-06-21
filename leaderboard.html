@@ -12,7 +12,7 @@
   <title>🏆 Leaderboard</title>
   <style>
     body {
-      /* FIX: Add emoji-compatible fonts */
+      /* FIX: Add emoji-compatible fonts to fix broken icons */
       font-family: 'Segoe UI', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       margin: 0;
@@ -55,23 +55,16 @@
 
     table {
       width: 100%;
-      /* FIX: Use 'separate' to allow box-shadow on TRs */
-      border-collapse: separate;
-      border-spacing: 0;
+      /* Revert to collapse for stable layout */
+      border-collapse: collapse;
       background: #fff;
       margin: 1rem 0;
       border-radius: 15px;
+      /* Re-add overflow:hidden to clip corners */
+      overflow: hidden;
       box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
       border: 2px solid #f0f0f0;
-      /* FIX: Ensure overflow is visible for shadows */
-      overflow: visible;
     }
-
-    /* Round corners on table cells to match table's border-radius */
-    thead tr:first-child th:first-child { border-top-left-radius: 13px; }
-    thead tr:first-child th:last-child { border-top-right-radius: 13px; }
-    tbody tr:last-child td:first-child { border-bottom-left-radius: 13px; }
-    tbody tr:last-child td:last-child { border-bottom-right-radius: 13px; }
 
     th, td {
       padding: 15px 10px;
@@ -97,34 +90,29 @@
       justify-content: center;
       font-weight: bold;
       padding: 0;
-      background: none;
-      border-radius: 0;
-      transition: none;
     }
 
     .party-cell {
       min-width: 100px;
     }
 
-    /* --- Top Ranks Styling --- */
+    /* --- Top Ranks Styling (Simplified) --- */
     .rank-1, .rank-2, .rank-3 {
       font-weight: bold;
       transition: all 0.3s ease;
     }
 
+    /* Keep the background gradients, remove glow animations */
     .rank-1 {
       background: linear-gradient(135deg, #ffd700, #ffec80);
-      animation: goldGlow 2s ease-in-out infinite alternate;
     }
 
     .rank-2 {
       background: linear-gradient(135deg, #c0c0c0, #e8e8e8);
-      animation: silverGlow 2s ease-in-out infinite alternate;
     }
 
     .rank-3 {
       background: linear-gradient(135deg, #cd7f32, #e8b388);
-      animation: bronzeGlow 2s ease-in-out infinite alternate;
     }
 
     .rank-top-10 {
@@ -155,13 +143,11 @@
     .codename {
       font-weight: 600;
       color: #333;
-      transition: all 0.3s ease;
     }
 
     .rank-1 .codename {
       font-size: 1.2rem;
       font-weight: bold;
-      color: #333;
       text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 
@@ -183,32 +169,7 @@
       background: linear-gradient(135deg, #1e3a8a, #3b82f6);
       color: white;
     }
-
-    /* Animations */
-    @keyframes goldGlow {
-      0% { box-shadow: 0 0 10px rgba(255, 215, 0, 0.3); }
-      50% { box-shadow: 0 0 30px 10px rgba(255, 215, 0, 0.7); }
-      100% { box-shadow: 0 0 10px rgba(255, 215, 0, 0.3); }
-    }
-
-    @keyframes silverGlow {
-      0% { box-shadow: 0 0 10px rgba(192, 192, 192, 0.3); }
-      50% { box-shadow: 0 0 30px 10px rgba(192, 192, 192, 0.6); }
-      100% { box-shadow: 0 0 10px rgba(192, 192, 192, 0.3); }
-    }
-
-    @keyframes bronzeGlow {
-      0% { box-shadow: 0 0 10px rgba(205, 127, 50, 0.3); }
-      50% { box-shadow: 0 0 30px 10px rgba(205, 127, 50, 0.6); }
-      100% { box-shadow: 0 0 10px rgba(205, 127, 50, 0.3); }
-    }
-
-    @keyframes championPulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.05); }
-      100% { transform: scale(1); }
-    }
-
+    
     /* Responsive */
     @media (max-width: 768px) {
       .container {
@@ -230,40 +191,8 @@
         word-break: break-word;
       }
       
-      tbody tr td:nth-child(3) {
-        color: #1a202c !important;
-      }
-      
-      /* Use high-specificity selector for mobile glow */
-      body .container table tbody tr.rank-1,
-      body .container table tbody tr.rank-2,
-      body .container table tbody tr.rank-3 {
-        animation: none !important;
-      }
-
-      body .container table tbody tr.rank-1 {
-        background: linear-gradient(135deg, #ffd700, #ffec80) !important;
-        /* FIX: Increased glow strength for mobile */
-        box-shadow: 0 0 20px 5px rgba(255, 215, 0, 0.6) !important;
-      }
-
-      body .container table tbody tr.rank-2 {
-        background: linear-gradient(135deg, #c0c0c0, #e8e8e8) !important;
-        /* FIX: Increased glow strength for mobile */
-        box-shadow: 0 0 20px 5px rgba(192, 192, 192, 0.5) !important;
-      }
-
-      body .container table tbody tr.rank-3 {
-        background: linear-gradient(135deg, #cd7f32, #e8b388) !important;
-        /* FIX: Increased glow strength for mobile */
-        box-shadow: 0 0 20px 5px rgba(205, 127, 50, 0.5) !important;
-      }
-      
-      body .container table tbody tr.rank-1 td:first-child {
-        font-size: 1.3rem !important;
-        font-weight: bold !important;
-        color: #a16207 !important;
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+      .rank-1 td:first-child {
+        font-size: 1.3rem;
       }
     }
   </style>
