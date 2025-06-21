@@ -10,10 +10,16 @@
   <meta http-equiv="Expires" content="0" />
 
   <title>🏆 Leaderboard</title>
+  
+  <!-- Add Google Font 'Kanit' -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;700&display=swap" rel="stylesheet">
+
   <style>
     body {
-      /* FIX: Add emoji-compatible fonts to fix broken icons */
-      font-family: 'Segoe UI', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
+      /* Use new 'Kanit' font */
+      font-family: 'Kanit', 'Segoe UI', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       margin: 0;
       padding: 1rem;
@@ -40,6 +46,7 @@
     h1 {
       margin: 1rem 0 1.5rem;
       font-size: 2.5rem;
+      font-weight: 700;
       background: linear-gradient(45deg, #ffbf00, #fde047);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
@@ -51,6 +58,7 @@
       margin: 2rem 0 1rem;
       color: #333;
       font-size: 1.5rem;
+      font-weight: 700;
     }
 
     table {
@@ -73,7 +81,7 @@
 
     th {
       background: #1e3a8a;
-      font-weight: bold;
+      font-weight: 600;
       color: #ffffff;
       font-size: 1.1rem;
       text-transform: uppercase;
@@ -86,7 +94,7 @@
       gap: 6px;
       align-items: center;
       justify-content: center;
-      font-weight: bold;
+      font-weight: 600;
     }
 
     .party-cell {
@@ -95,7 +103,7 @@
 
     /* --- Top Ranks Styling (Simplified & Stable) --- */
     .rank-1, .rank-2, .rank-3 {
-      font-weight: bold;
+      font-weight: 600;
     }
 
     .rank-1 {
@@ -121,7 +129,6 @@
 
     .rank-1 td:first-child {
       font-size: 1.5rem;
-      font-weight: bold;
       color: #a16207;
       text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     }
@@ -133,7 +140,6 @@
 
     .rank-1 .codename {
       font-size: 1.2rem;
-      font-weight: bold;
       text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 
@@ -167,33 +173,36 @@
         font-size: 2rem;
       }
       
-      table {
+      #tableContainer table {
         table-layout: fixed;
         width: 100%;
       }
 
-      th, td {
+      #tableContainer th, #tableContainer td {
         padding: 12px 2px;
         font-size: 0.8rem;
         vertical-align: middle;
       }
       
-      /* Allow these specific columns to wrap */
-      td:nth-child(2), /* Codename */
-      td:nth-child(5)  /* Party */ {
+      #tableContainer td:nth-child(2), /* Codename */
+      #tableContainer td:nth-child(5)  /* Party */ {
         word-break: break-word;
         white-space: normal;
       }
       
-      /* Set explicit column widths for a stable layout */
-      th:nth-child(1), td:nth-child(1) { width: 12%; } /* Rank # */
-      th:nth-child(2), td:nth-child(2) { width: 30%; } /* Codename */
-      th:nth-child(3), td:nth-child(3) { width: 28%; } /* Rank */
-      th:nth-child(4), td:nth-child(4) { width: 10%; } /* EXP */
-      th:nth-child(5), td:nth-child(5) { width: 20%; } /* Party */
+      #tableContainer th:nth-child(1), #tableContainer td:nth-child(1) { width: 12%; } /* Rank # */
+      #tableContainer th:nth-child(2), #tableContainer td:nth-child(2) { width: 30%; } /* Codename */
+      #tableContainer th:nth-child(3), #tableContainer td:nth-child(3) { width: 28%; } /* Rank */
+      #tableContainer th:nth-child(4), #tableContainer td:nth-child(4) { width: 10%; } /* EXP */
+      #tableContainer th:nth-child(5), #tableContainer td:nth-child(5) { width: 20%; } /* Party */
       
       .rank-1 td:first-child {
         font-size: 1.2rem;
+      }
+
+      /* Fix Rank System table number wrapping */
+      .rank-system th, .rank-system td {
+          white-space: nowrap;
       }
     }
   </style>
