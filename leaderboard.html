@@ -12,7 +12,8 @@
   <title>🏆 Leaderboard</title>
   <style>
     body {
-      font-family: 'Segoe UI', sans-serif;
+      /* FIX: Add emoji-compatible fonts */
+      font-family: 'Segoe UI', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       margin: 0;
       padding: 1rem;
@@ -242,17 +243,20 @@
 
       body .container table tbody tr.rank-1 {
         background: linear-gradient(135deg, #ffd700, #ffec80) !important;
-        box-shadow: 0 0 15px rgba(255, 215, 0, 0.5) !important;
+        /* FIX: Increased glow strength for mobile */
+        box-shadow: 0 0 20px 5px rgba(255, 215, 0, 0.6) !important;
       }
 
       body .container table tbody tr.rank-2 {
         background: linear-gradient(135deg, #c0c0c0, #e8e8e8) !important;
-        box-shadow: 0 0 15px rgba(192, 192, 192, 0.4) !important;
+        /* FIX: Increased glow strength for mobile */
+        box-shadow: 0 0 20px 5px rgba(192, 192, 192, 0.5) !important;
       }
 
       body .container table tbody tr.rank-3 {
         background: linear-gradient(135deg, #cd7f32, #e8b388) !important;
-        box-shadow: 0 0 15px rgba(205, 127, 50, 0.4) !important;
+        /* FIX: Increased glow strength for mobile */
+        box-shadow: 0 0 20px 5px rgba(205, 127, 50, 0.5) !important;
       }
       
       body .container table tbody tr.rank-1 td:first-child {
@@ -265,9 +269,6 @@
   </style>
 </head>
 <body>
-  <div style="background: #007bff; color: white; text-align: center; padding: 5px; font-weight: bold;">
-    Version: Final Fix (20:30)
-  </div>
   <div class="container">
     <img src="https://i.postimg.cc/wjzpnxjB/Up-Level-01-1.png" alt="Up Level Logo" class="logo" />
     <h1>🏆 Leaderboard</h1>
