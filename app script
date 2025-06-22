@@ -31,9 +31,103 @@ function onOpen() {
     .addItem("🏆 อัปเดต Leaderboard", "updateLeaderboard")
     .addItem("🗑️ ลบข้อมูลซ้ำ", "clearDuplicateEntriesDebug")
     .addItem("❌ ลบข้อมูลสมาชิก", "removeMember")
+    .addItem("🔑 เพิ่มแอดมินใหม่", "addAdminEmail")
     .addToUi();
 }
 
+/**
+ * Checks if the given email belongs to an admin.
+ * Admins are defined in the 'Admin Settings' sheet.
+ * Uses CacheService to reduce sheet reads.
+ * @param {string} email The email to check.
+ * @returns {boolean} True if the user is an admin.
+ */
+function isAdmin(email) {
+  if (!email) {
+    return false;
+  }
+  
+  const cache = CacheService.getScriptCache();
+  const CACHE_KEY = 'admin_emails';
+  let cachedAdmins = cache.get(CACHE_KEY);
+  
+  if (cachedAdmins) {
+    const adminList = JSON.parse(cachedAdmins);
+    return adminList.includes(email.toLowerCase());
+  }
+
+  try {
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Admin Settings");
+    if (!sheet) {
+      console.log("Admin Settings sheet not found. No users will be considered admins.");
+      return false;
+    }
+    const adminEmails = sheet.getRange("A:A").getValues()
+                          .flat()
+                          .map(e => String(e).trim().toLowerCase())
+                          .filter(e => e); 
+
+    if (adminEmails.length > 0) {
+      // Cache for 1 hour
+      cache.put(CACHE_KEY, JSON.stringify(adminEmails), 3600);
+    }
+    
+    return adminEmails.includes(email.toLowerCase());
+
+  } catch (e) {
+    console.error("Error checking admin status: " + e.toString());
+    return false;
+  }
+}
+
+/**
+ * Adds a new email to the admin list.
+ * Only an existing admin can perform this action.
+ */
+function addAdminEmail() {
+  const ui = SpreadsheetApp.getUi();
+  const currentUserEmail = Session.getActiveUser().getEmail();
+
+  if (!isAdmin(currentUserEmail)) {
+    ui.alert("🔒 Access Denied", "You do not have permission to add new admins.", ui.ButtonSet.OK);
+    return;
+  }
+  
+  const prompt = ui.prompt("➕ Add New Admin", "Enter the email address of the new admin:", ui.ButtonSet.OK_CANCEL);
+  
+  if (prompt.getSelectedButton() === ui.Button.OK) {
+    const newAdminEmail = prompt.getResponseText().trim().toLowerCase();
+    
+    if (!newAdminEmail || !/^\S+@\S+\.\S+$/.test(newAdminEmail)) {
+      ui.alert("❌ Invalid Email", "Please enter a valid email address.", ui.ButtonSet.OK);
+      return;
+    }
+    
+    try {
+      const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Admin Settings");
+      if (!sheet) {
+        ui.alert("❌ Error", "The 'Admin Settings' sheet could not be found.", ui.ButtonSet.OK);
+        return;
+      }
+      
+      const existingAdmins = sheet.getRange("A:A").getValues().flat().map(e => String(e).trim().toLowerCase());
+      if (existingAdmins.includes(newAdminEmail)) {
+        ui.alert("ℹ️ Already Exists", "This email is already an admin.", ui.ButtonSet.OK);
+        return;
+      }
+      
+      sheet.appendRow([newAdminEmail]);
+      
+      CacheService.getScriptCache().remove('admin_emails');
+      
+      ui.alert("✅ Success", `Successfully added ${newAdminEmail} as a new admin.`, ui.ButtonSet.OK);
+      
+    } catch (e) {
+      ui.alert("❌ Error", "An error occurred: " + e.message, ui.ButtonSet.OK);
+      console.error("addAdminEmail Error: " + e.toString());
+    }
+  }
+}
 
 function logAdminAction(functionName, details = "", admin = "Unknown") {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Admin Log");
@@ -1099,6 +1193,11 @@ function getCodenameFromPhone(phone) {
 }
 
 function doGet(e) {
+  // Route for the admin panel
+  if (e.parameter.page === 'admin') {
+    return showAdminPage();
+  }
+
   const func = e?.parameter?.func;
   if (func === "getLeaderboard") return getLeaderboardData();
   if (func === "getQuestList") return getQuestList();
@@ -1109,6 +1208,7 @@ function doGet(e) {
   if (func === "getCodename") return getCodename(e);
   if (func === "getCodenameList") return getCodenameList();
   if (func === "getChallengeList") return getChallengeList();
+  if (func === "getPartyByPhone") return getPartyByPhone(e); // Added for completeness
   return HtmlService.createHtmlOutput("<p>✅ Up Level Guild System Web App</p>");
 }
 
@@ -1190,9 +1290,9 @@ function submitQuestToLog(e) {
   for (let i = 1; i < questData.length; i++) {
     if (questData[i][0] === questId) {
       questName = questData[i][1];
-      break;
+        break;
+      }
     }
-  }
 
   if (!questName) {
     return ContentService.createTextOutput("❌ ไม่พบ Quest นี้").setMimeType(ContentService.MimeType.TEXT);
@@ -1273,9 +1373,9 @@ function approveQuestByPhone() {
     if (normalizePhone(dashData[i][1]) === phone) {
       const currentExp = Number(dashData[i][4]);
       dashSheet.getRange(i + 1, 5).setValue(currentExp + exp);
-      break;
+        break;
+      }
     }
-  }
 
   const now = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "dd/MM/yyyy HH:mm:ss");
   expLogSheet.appendRow([phone, codename, now, `ทำเควส: ${selectedQuest.name}`, exp]);
@@ -1309,7 +1409,7 @@ function getCodename(e) {
 }
 
 function getCodenameList() {
-  const dashSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Member Dashboard");
+      const dashSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Member Dashboard");
   const data = dashSheet.getDataRange().getValues();
   const codenames = data.slice(1).map(row => row[2]).filter(name => name);
   return ContentService.createTextOutput(JSON.stringify(codenames)).setMimeType(ContentService.MimeType.JSON);
@@ -1453,7 +1553,7 @@ function approveChallenge() {
 
 
 function acceptChallenge(e) {
-  const ss = SpreadsheetApp.getActive();
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = ss.getSheetByName("Challenge");
   const data = sheet.getDataRange().getValues();
   const headers = data[0];
@@ -1502,7 +1602,7 @@ function acceptChallenge(e) {
 
 function recordChallengeResult() {
   const ui = SpreadsheetApp.getUi();
-  const sheet = SpreadsheetApp.getActive().getSheetByName("Challenge");
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Challenge");
   const data = sheet.getDataRange().getValues();
   const headers = data[0];
 
@@ -1585,21 +1685,25 @@ function normalizePhone(phone) {
 }
 
 function getPhoneByCodename(codename) {
-  const sheet = SpreadsheetApp.getActive().getSheetByName("Member Database");
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Member Dashboard");
   const data = sheet.getDataRange().getValues();
-  const codenameIndex = data[0].indexOf("Codename");
-  const phoneIndex = data[0].indexOf("เบอร์โทร");
-  const row = data.find(r => r[codenameIndex]?.toLowerCase() === codename.toLowerCase());
-  return row ? normalizePhone(row[phoneIndex]) : "";
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][2]).toLowerCase().trim() === codename.toLowerCase().trim()) {
+      return normalizePhone(data[i][1]);
+    }
+  }
+  return "";
 }
 
 function getCodenameByPhone(phone) {
-  const sheet = SpreadsheetApp.getActive().getSheetByName("Member Database");
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Member Dashboard");
   const data = sheet.getDataRange().getValues();
-  const phoneIndex = data[0].indexOf("เบอร์โทร");
-  const codenameIndex = data[0].indexOf("Codename");
-  const row = data.find(r => normalizePhone(r[phoneIndex]) === normalizePhone(phone));
-  return row ? row[codenameIndex] : "";
+  for (let i = 1; i < data.length; i++) {
+    if (normalizePhone(data[i][1]) === normalizePhone(phone)) {
+      return data[i][2];
+    }
+  }
+  return "";
 }
 
 function giveExpAndParty(phone, note, exp = 1) {
@@ -1608,19 +1712,48 @@ function giveExpAndParty(phone, note, exp = 1) {
 }
 
 function giveExp(phone, note, amount) {
-  const sheet = SpreadsheetApp.getActive().getSheetByName("Exp Log");
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("EXP Log");
   const time = new Date();
   const codename = getCodenameByPhone(phone);
-  sheet.appendRow([time, phone, codename, note, amount]);
+  sheet.appendRow([phone, codename, time, note, amount]);
+  sheet.getRange(sheet.getLastRow(), 1).setNumberFormat("@");
   updateRanks();
   updateLeaderboard();
 }
 
 function givePartyPoint(phone, note, amount) {
-  const sheet = SpreadsheetApp.getActive().getSheetByName("Party Tracker");
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Party Log");
   const time = new Date();
   const codename = getCodenameByPhone(phone);
-  sheet.appendRow([time, phone, codename, note, amount]);
+  const partyName = getPartyByPhone(phone);
+  
+  sheet.appendRow([time, partyName, codename, note, amount, "เพิ่มจากระบบ"]);
+  sheet.getRange(sheet.getLastRow(), 3).setNumberFormat("@");
+  
+  // อัปเดต Party Point ในชีท Party
+  if (partyName) {
+    const partySheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Party");
+    const partyData = partySheet.getDataRange().getValues();
+    for (let i = 1; i < partyData.length; i++) {
+      if (partyData[i][0] === partyName) {
+        const currentPoint = Number(partyData[i][2]) || 0;
+        partySheet.getRange(i + 1, 3).setValue(currentPoint + amount);
+        break;
+      }
+    }
+  }
+}
+
+// ✅ helper: หาชื่อปาร์ตี้จากเบอร์โทร
+function getPartyByPhone(phone) {
+  const dashSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Member Dashboard");
+  const data = dashSheet.getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) {
+    if (normalizePhone(data[i][1]) === normalizePhone(phone)) {
+      return data[i][5] || "";
+    }
+  }
+  return "";
 }
 
 // เพิ่มฟังก์ชันเหล่านี้ต่อท้ายไฟล์ app script ของคุณ (หลังบรรทัดสุดท้าย)
@@ -1648,7 +1781,7 @@ function updateChallengeStatus(request) {
         break;
       }
     }
-    
+
     if (rowIndex === -1) {
       return ContentService.createTextOutput("❌ ไม่พบคำท้าที่มี ID นี้");
     }
@@ -1665,10 +1798,247 @@ function updateChallengeStatus(request) {
 
 // ฟังก์ชันช่วยเหลือ - หาชื่อเต็มจากเบอร์โทร
 function getFullNameByPhone(phone) {
-  const sheet = SpreadsheetApp.getActive().getSheetByName("Member Database");
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Member Dashboard");
   const data = sheet.getDataRange().getValues();
-  const phoneIndex = data[0].indexOf("เบอร์โทร");
-  const nameIndex = data[0].indexOf("ชื่อ-นามสกุล");
-  const row = data.find(r => normalizePhone(r[phoneIndex]) === normalizePhone(phone));
-  return row ? row[nameIndex] : "";
+  for (let i = 1; i < data.length; i++) {
+    if (normalizePhone(data[i][1]) === normalizePhone(phone)) {
+      return data[i][0]; // ชื่อเล่น
+    }
+  }
+  return "";
+}
+
+/**
+ * Handles the form submission event.
+ * This function should be set as the "On form submit" trigger for the spreadsheet.
+ * @param {Object} e The event object.
+ */
+function handleFormSubmit(e) {
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(15000)) {
+    console.log("Server is busy, submission for " + e.namedValues['เบอร์โทร'] + " will be processed later if needed, but the row is already in the sheet.");
+    return;
+  }
+
+  try {
+    const dbSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Member Database");
+    const newRowRange = e.range;
+    const newRowIndex = newRowRange.getRow();
+    
+    // --- Get data from the submitted form ---
+    // Make sure the keys here EXACTLY match your Google Form question titles
+    const codename = e.namedValues['Codename'][0].trim();
+    const phone = normalizePhone(e.namedValues['เบอร์โทร'][0].trim());
+    const rank = e.namedValues['Rank'][0].trim();
+    const isPremium = e.namedValues['Premium?'][0] === 'Yes'; // Adjust 'Yes' if your form uses a different value
+    const referrer = e.namedValues['เบอร์ผู้แนะนำ (ถ้ามี)'] ? normalizePhone(e.namedValues['เบอร์ผู้แนะนำ (ถ้ามี)'][0].trim()) : "";
+
+    // --- Search for duplicates (excluding the newly added row) ---
+    const dbData = dbSheet.getDataRange().getValues();
+    let originalRowIndex = -1;
+
+    for (let i = 1; i < dbData.length; i++) {
+      // Skip the row that was just added
+      if (i + 1 === newRowIndex) continue;
+      
+      if (normalizePhone(dbData[i][3]) === phone) { // Assuming phone is in column D (index 3)
+        originalRowIndex = i + 1;
+        break;
+      }
+    }
+
+    if (originalRowIndex !== -1) {
+      // --- DUPLICATE FOUND ---
+      // 1. Update the original row with new data
+      dbSheet.getRange(originalRowIndex, 1).setValue(new Date()); // Update timestamp
+      dbSheet.getRange(originalRowIndex, 2).setValue(codename);   // Update Codename
+      dbSheet.getRange(originalRowIndex, 5).setValue(rank);       // Update Rank
+      
+      // 2. CRITICAL: Delete the new row that the form just added
+      dbSheet.deleteRow(newRowIndex);
+      
+      // 3. Update other sheets
+      updateDashboardAndLeaderboardForExistingUser(phone, codename, rank);
+
+    } else {
+      // --- NEW MEMBER ---
+      // The row is already in Member Database, just fill in other details
+      const initialExp = isPremium ? 2 : 1;
+      dbSheet.getRange(newRowIndex, 3).setValue("Member");
+      dbSheet.getRange(newRowIndex, 6).setValue(initialExp);
+      dbSheet.getRange(newRowIndex, 7).setValue(isPremium);
+      dbSheet.getRange(newRowIndex, 8).setValue(referrer);
+      
+      // Add to other sheets
+      const dashSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Member Dashboard");
+      dashSheet.appendRow([new Date(), phone, codename, rank, initialExp, ""]);
+
+      const lbSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Leaderboard");
+      lbSheet.appendRow([new Date(), phone, codename, rank, initialExp, ""]);
+
+      logExp(phone, "สมัครสมาชิก", initialExp);
+
+      if (isPremium && referrer) {
+        const referrerData = dbData.find(row => normalizePhone(row[3]) === referrer);
+        if (referrerData) {
+          logExp(referrer, "แนะนำเพื่อนสมัคร (Premium)", 2);
+        }
+      }
+    }
+
+    updateLeaderboard();
+
+  } catch (err) {
+    // Log error to know if something goes wrong
+    console.error("handleFormSubmit Error: " + err.toString());
+    console.error("Event Object: " + JSON.stringify(e));
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+// You can keep this helper function as it is still useful
+function updateDashboardAndLeaderboardForExistingUser(phone, codename, rank) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const dashSheet = ss.getSheetByName("Member Dashboard");
+  const lbSheet = ss.getSheetByName("Leaderboard");
+  
+  // อัปเดต Member Dashboard
+  const dashData = dashSheet.getDataRange().getValues();
+  for (let i = 1; i < dashData.length; i++) {
+    if (normalizePhone(dashData[i][1]) === phone) {
+      dashSheet.getRange(i + 1, 3).setValue(codename); // อัปเดต Codename
+      dashSheet.getRange(i + 1, 4).setValue(rank);     // อัปเดต Rank
+      break;
+    }
+  }
+  
+  // อัปเดต Leaderboard
+  const lbData = lbSheet.getDataRange().getValues();
+  for (let i = 1; i < lbData.length; i++) {
+    if (normalizePhone(lbData[i][1]) === phone) {
+      lbSheet.getRange(i + 1, 3).setValue(codename); // อัปเดต Codename
+      lbSheet.getRange(i + 1, 4).setValue(rank);     // อัปเดต Rank
+      break;
+    }
+  }
+  
+  updateRanks();
+  updateLeaderboard();
+}
+
+// ✅ ลบข้อมูลซ้ำในระบบ
+function clearDuplicateEntriesDebug() {
+  const ui = SpreadsheetApp.getUi();
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const dashSheet = ss.getSheetByName("Member Dashboard");
+  const dbSheet = ss.getSheetByName("Member Database");
+  
+  const adminPrompt = ui.prompt("ชื่อแอดมิน", "กรุณากรอกชื่อแอดมิน (สำหรับบันทึก log)", ui.ButtonSet.OK_CANCEL);
+  if (adminPrompt.getSelectedButton() !== ui.Button.OK) return;
+  const admin = adminPrompt.getResponseText().trim();
+
+  const dashData = dashSheet.getDataRange().getValues();
+  const phones = new Map();
+  const codenames = new Map();
+  let duplicates = [];
+
+  // ตรวจสอบข้อมูลซ้ำ
+  for (let i = 1; i < dashData.length; i++) {
+    const phone = normalizePhone(dashData[i][1]);
+    const codename = String(dashData[i][2]).toLowerCase().trim();
+    
+    if (phones.has(phone)) {
+      duplicates.push({ row: i + 1, type: "phone", value: phone, existing: phones.get(phone) });
+    } else {
+      phones.set(phone, i + 1);
+    }
+    
+    if (codenames.has(codename)) {
+      duplicates.push({ row: i + 1, type: "codename", value: codename, existing: codenames.get(codename) });
+    } else {
+      codenames.set(codename, i + 1);
+    }
+  }
+
+  if (duplicates.length === 0) {
+    ui.alert("✅ ไม่พบข้อมูลซ้ำในระบบ");
+    return;
+  }
+
+  // แสดงรายการข้อมูลซ้ำ
+  let message = `พบข้อมูลซ้ำ ${duplicates.length} รายการ:\n\n`;
+  duplicates.forEach((dup, index) => {
+    const member = dashData[dup.row - 1];
+    message += `${index + 1}. แถว ${dup.row}: ${member[0]} (${dup.type}: ${dup.value})\n`;
+  });
+
+  const confirm = ui.alert("🗑️ ลบข้อมูลซ้ำ", message + "\nต้องการลบข้อมูลซ้ำหรือไม่?", ui.ButtonSet.YES_NO);
+  if (confirm !== ui.Button.YES) return;
+
+  // ลบข้อมูลซ้ำ (จากล่างขึ้นบน)
+  duplicates.sort((a, b) => b.row - a.row);
+  let deletedCount = 0;
+  
+  for (const dup of duplicates) {
+    try {
+      dashSheet.deleteRow(dup.row);
+      deletedCount++;
+    } catch (e) {
+      console.error(`ไม่สามารถลบแถว ${dup.row}: ${e.message}`);
+    }
+  }
+
+  updateLeaderboard();
+  logAdminAction("ลบข้อมูลซ้ำ", `ลบ ${deletedCount} รายการ`, admin);
+  ui.alert(`✅ ลบข้อมูลซ้ำเรียบร้อยแล้ว ${deletedCount} รายการ`);
+}
+
+function getPartyByPhone(e) {
+  const phone = normalizePhone(e.parameter.phone);
+  const partyName = getPartyNameByPhone(phone); // Assuming you rename the original for clarity
+  return ContentService.createTextOutput(partyName).setMimeType(ContentService.MimeType.TEXT);
+}
+
+// Renamed for clarity from previous steps. 
+// If you have 'getPartyByPhone', you can rename it to this.
+function getPartyNameByPhone(phone) {
+  const dashSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Member Dashboard");
+  const data = dashSheet.getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) {
+    if (normalizePhone(data[i][1]) === normalizePhone(phone)) {
+      return data[i][5] || "";
+    }
+  }
+  return "";
+}
+
+/**
+ * Serves the Admin Panel web page.
+ * It checks for admin privileges before serving the page.
+ */
+function showAdminPage() {
+  const userEmail = Session.getActiveUser().getEmail();
+  // Server-side check for security. If not an admin, show a generic access denied page.
+  if (!isAdmin(userEmail)) {
+     return HtmlService.createHtmlOutput('<h1>Access Denied</h1><p>You are not authorized to view this page.</p>');
+  }
+  // If user is an admin, serve the actual admin panel page.
+  return HtmlService.createHtmlOutputFromFile('Admin.html')
+    .setTitle("Up Level Admin Panel")
+    .addMetaTag('viewport', 'width=device-width, initial-scale=1.0');
+}
+
+/**
+ * Called by the Admin Web App to get initial data.
+ * It returns the user's email and their admin status.
+ * This allows the web app to display the correct UI (admin tools or access denied message).
+ */
+function getAdminWebAppInitialData() {
+  const email = Session.getActiveUser().getEmail();
+  const userIsAdmin = isAdmin(email);
+  return {
+    isAdmin: userIsAdmin,
+    email: email
+  };
 }

@@ -346,7 +346,7 @@
         alert("❌ เบอร์โทรไม่ถูกต้อง (ควรมี 10 หลักขึ้นต้นด้วย 0)");
         return;
       }
-      fetch(`https://script.google.com/macros/s/AKfycbwJoXR9EFLngOAyA_WjQJNE0zT3MmL2afwlwvxmnMQ88WYzjlD-l2c_LXjg-k3bFWj9/exec?func=submitQuestToLog&phone=${clean}&questId=${questId}`)
+      fetch(`https://script.google.com/macros/s/AKfycbxtjsDwHI6nJU4OIHExUxMaZwUn3qwakvdkzwbQO7C8Trzz5Gh84SX6F1gqb4BOFQcn/exec?func=submitQuestToLog&phone=${clean}&questId=${questId}`)
         .then(res => res.text())
         .then(msg => {
           alert(msg);
@@ -379,7 +379,7 @@
       }
     });
 
-    fetch('https://script.google.com/macros/s/AKfycbwJoXR9EFLngOAyA_WjQJNE0zT3MmL2afwlwvxmnMQ88WYzjlD-l2c_LXjg-k3bFWj9/exec?func=getQuestList')
+    fetch('https://script.google.com/macros/s/AKfycbxtjsDwHI6nJU4OIHExUxMaZwUn3qwakvdkzwbQO7C8Trzz5Gh84SX6F1gqb4BOFQcn/exec?func=getQuestList')
       .then(res => res.json())
       .then(data => {
         const loading = document.getElementById('loading');
