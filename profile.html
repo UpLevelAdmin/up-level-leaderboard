@@ -46,6 +46,7 @@
     </div>
 
     <script>
+      const GAS_URL = "https://script.google.com/macros/s/AKfycbxtjsDwHI6nJU4OIHExUxMaZwUn3qwakvdkzwbQO7C8Trzz5Gh84SX6F1gqb4BOFQcn/exec";
       document.getElementById("search-btn").addEventListener("click", searchMember);
       document.getElementById("phone-input").addEventListener("keypress", function(event) {
         if (event.key === "Enter") {
@@ -64,10 +65,10 @@
         document.getElementById("profile-card").style.display = "none";
         document.getElementById("error-message").textContent = "";
 
-        google.script.run
-          .withSuccessHandler(displayProfile)
-          .withFailureHandler(displayError)
-          .getMemberProfile(phone);
+        fetch(`${GAS_URL}?func=getMemberProfile&phone=${encodeURIComponent(phone)}`)
+          .then(res => res.json())
+          .then(displayProfile)
+          .catch(error => displayError({ message: error.message }));
       }
 
       function displayProfile(data) {
