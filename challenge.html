@@ -428,12 +428,6 @@
   window.addEventListener("DOMContentLoaded", () => {
     console.log("📦 DOM Loaded → เรียก loadChallenges()");
     loadChallenges();
-    
-    // เพิ่มปุ่มทดสอบเอฟเฟกต์
-    document.getElementById("test-effect-btn").addEventListener("click", createTestCard);
-    
-    // เพิ่มปุ่มแอดมิน
-    document.getElementById("admin-btn").addEventListener("click", showAdminPanel);
   });
 
   // ฟังก์ชันสร้างการ์ดทดสอบ
@@ -467,32 +461,6 @@
         testCard.parentNode.removeChild(testCard);
       }
     }, 10000);
-  }
-
-  // ฟังก์ชันแสดงแผงแอดมิน
-  function showAdminPanel() {
-    const challengeId = prompt("🔧 กรอก ID ของคำท้าที่ต้องการอัพเดทสถานะ:");
-    if (!challengeId) return;
-    
-    const newStatus = prompt("📝 กรอกสถานะใหม่ (อนุมัติ/พร้อมดวล/ยกเลิก):");
-    if (!newStatus) return;
-    
-    updateChallengeStatus(challengeId, newStatus);
-  }
-
-  // ฟังก์ชันอัพเดทสถานะคำท้า
-  async function updateChallengeStatus(id, status) {
-    try {
-      const res = await fetch(endpoint + "?func=updateChallengeStatus", {
-        method: "POST",
-        body: JSON.stringify({ id, status })
-      });
-      const text = await res.text();
-      alert(text);
-      location.reload();
-    } catch {
-      alert("❌ เกิดข้อผิดพลาด");
-    }
   }
 </script>
 <script>
