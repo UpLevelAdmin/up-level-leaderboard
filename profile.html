@@ -5,21 +5,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Member Profile</title>
     <style>
-      body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 20px; background-color: #f0f2f5; color: #1c1e21; }
-      .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-      h1 { text-align: center; color: #1c1e21; font-size: 24px; }
-      .search-box { display: flex; gap: 10px; margin-bottom: 20px; }
-      #phone-input { flex-grow: 1; padding: 12px; border: 1px solid #dddfe2; border-radius: 6px; font-size: 16px; }
-      #phone-input:focus { border-color: #1877f2; outline: none; box-shadow: 0 0 0 2px #e7f3ff; }
-      #search-btn { padding: 12px 24px; background-color: #1877f2; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; transition: background-color 0.2s; }
-      #search-btn:hover { background-color: #166fe5; }
-      #result-container { margin-top: 20px; border-top: 1px solid #e9ebee; padding-top: 20px; }
-      #loading { text-align: center; display: none; padding: 20px; }
-      .profile-card { border: 1px solid #dddfe2; border-radius: 8px; padding: 20px; display: none; background: #f7f8fa; }
-      .profile-card h2 { margin-top: 0; color: #1877f2; border-bottom: 2px solid #e9ebee; padding-bottom: 10px; margin-bottom: 15px; }
-      .profile-info p { margin: 10px 0; font-size: 16px; display: flex; justify-content: space-between; }
+      body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 20px; background: linear-gradient(135deg, #e0e7ff 0%, #f0f2f5 100%); color: #1c1e21; }
+      .container { max-width: 600px; margin: auto; background: white; padding: 32px 24px 24px 24px; border-radius: 16px; box-shadow: 0 8px 32px rgba(80,120,255,0.10), 0 1.5px 8px rgba(0,0,0,0.07); }
+      h1 { text-align: center; color: #1c1e21; font-size: 28px; font-weight: 700; letter-spacing: 1px; margin-bottom: 28px; }
+      .search-box { display: flex; gap: 10px; margin-bottom: 24px; }
+      #phone-input { flex-grow: 1; padding: 14px; border: 1.5px solid #b6c0d1; border-radius: 8px; font-size: 17px; transition: border 0.2s; }
+      #phone-input:focus { border-color: #4f8cff; outline: none; box-shadow: 0 0 0 2px #e7f3ff; }
+      #search-btn { padding: 14px 28px; background: linear-gradient(90deg, #4f8cff 60%, #6ee7b7 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 17px; font-weight: bold; box-shadow: 0 2px 8px rgba(80,120,255,0.08); transition: background 0.2s; }
+      #search-btn:hover { background: linear-gradient(90deg, #2563eb 60%, #10b981 100%); }
+      #result-container { margin-top: 24px; border-top: 1.5px solid #e9ebee; padding-top: 24px; }
+      #loading { text-align: center; display: none; padding: 20px; color: #4f8cff; font-size: 18px; }
+      .profile-card { border: 1.5px solid #e0e7ff; border-radius: 14px; padding: 28px 20px; display: none; background: #f7f8fa; box-shadow: 0 2px 12px rgba(80,120,255,0.07); animation: fadeIn 0.5s; }
+      .profile-card h2 { margin-top: 0; color: #1877f2; border-bottom: 2px solid #e9ebee; padding-bottom: 10px; margin-bottom: 18px; font-size: 22px; font-weight: 700; letter-spacing: 0.5px; }
+      .profile-info p { margin: 12px 0; font-size: 17px; display: flex; justify-content: space-between; align-items: center; }
       .profile-info strong { font-weight: 600; color: #606770; }
-      .error { color: #fa383e; text-align: center; font-weight: bold; padding: 15px; background: #ffebee; border-radius: 6px; }
+      .profile-rank-emoji { font-size: 1.3em; margin-right: 6px; }
+      .party-link { color: #10b981; font-weight: bold; cursor: pointer; text-decoration: underline; transition: color 0.2s; }
+      .party-link:hover { color: #2563eb; }
+      .error { color: #fa383e; text-align: center; font-weight: bold; padding: 15px; background: #ffebee; border-radius: 6px; margin-top: 10px; }
+      /* Modal styles */
+      .modal-bg { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100vw; height: 100vh; background: rgba(30,41,59,0.18); }
+      .modal { background: #fff; border-radius: 16px; max-width: 420px; margin: 80px auto; padding: 28px 20px 20px 20px; box-shadow: 0 8px 32px rgba(80,120,255,0.13); position: relative; animation: fadeIn 0.4s; }
+      .modal h3 { margin-top: 0; color: #1877f2; font-size: 22px; font-weight: 700; margin-bottom: 18px; }
+      .modal .close-btn { position: absolute; top: 16px; right: 18px; font-size: 22px; color: #888; background: none; border: none; cursor: pointer; }
+      .party-member-list { margin: 0; padding: 0; list-style: none; }
+      .party-member-list li { padding: 10px 0; border-bottom: 1px solid #e9ebee; display: flex; align-items: center; gap: 10px; font-size: 17px; }
+      .party-member-list li:last-child { border-bottom: none; }
+      .party-member-codename { font-weight: 600; color: #2563eb; margin-right: 8px; }
+      .party-member-rank { font-size: 1.1em; margin-right: 4px; }
+      .party-member-nickname { color: #666; font-size: 0.98em; }
+      @keyframes fadeIn { from { opacity: 0; transform: translateY(20px);} to { opacity: 1; transform: none;} }
+      @media (max-width: 600px) { .container { padding: 10px; } .profile-card { padding: 16px 6px; } .modal { margin: 30px 6px; padding: 16px 6px; } }
     </style>
   </head>
   <body>
@@ -43,10 +59,28 @@
         </div>
         <div id="error-message" class="error"></div>
       </div>
+      <!-- Modal for party members -->
+      <div id="modal-bg" class="modal-bg">
+        <div class="modal">
+          <button class="close-btn" onclick="closeModal()">×</button>
+          <h3 id="modal-party-title">สมาชิกปาร์ตี้</h3>
+          <ul id="party-member-list" class="party-member-list"></ul>
+        </div>
+      </div>
     </div>
 
     <script>
       const GAS_URL = "https://script.google.com/macros/s/AKfycbxtjsDwHI6nJU4OIHExUxMaZwUn3qwakvdkzwbQO7C8Trzz5Gh84SX6F1gqb4BOFQcn/exec";
+      const rankEmojis = {
+        "Rookie": "🐣",
+        "Bronze": "🛡️",
+        "Silver": "⚔️",
+        "Gold": "🥇",
+        "Platinum": "✨",
+        "Diamond": "💎",
+        "Grandmaster": "👑",
+        "Legend": "🐉"
+      };
       document.getElementById("search-btn").addEventListener("click", searchMember);
       document.getElementById("phone-input").addEventListener("keypress", function(event) {
         if (event.key === "Enter") {
@@ -81,11 +115,19 @@
 
         document.getElementById("profile-codename").textContent = data.codename;
         document.getElementById("profile-nickname").textContent = data.nickname;
-        document.getElementById("profile-rank").textContent = data.rank;
+        // Rank + emoji
+        document.getElementById("profile-rank").innerHTML = `<span class='profile-rank-emoji'>${rankEmojis[data.rank] || ''}</span>${data.rank}`;
         document.getElementById("profile-exp").textContent = data.exp;
-        document.getElementById("profile-party-name").textContent = data.partyName;
+
+        // Party name: clickable if not 'ไม่มีปาร์ตี้'
+        const partyNameSpan = document.getElementById("profile-party-name");
+        if (data.partyName && data.partyName !== "ไม่มีปาร์ตี้") {
+          partyNameSpan.innerHTML = `<span class='party-link' onclick='showPartyModal("${encodeURIComponent(data.partyName)}")'>${data.partyName}</span>`;
+        } else {
+          partyNameSpan.textContent = data.partyName;
+        }
         document.getElementById("profile-party-points").textContent = data.partyPoints;
-        
+
         document.getElementById("profile-card").style.display = "block";
       }
 
@@ -93,6 +135,37 @@
         document.getElementById("loading").style.display = "none";
         document.getElementById("error-message").textContent = "เกิดข้อผิดพลาด: " + error.message;
       }
+
+      // Modal logic
+      function showPartyModal(partyNameEncoded) {
+        const partyName = decodeURIComponent(partyNameEncoded);
+        document.getElementById("modal-party-title").textContent = `สมาชิกปาร์ตี้: ${partyName}`;
+        document.getElementById("modal-bg").style.display = "block";
+        const list = document.getElementById("party-member-list");
+        list.innerHTML = '<li style="text-align:center;color:#888;">กำลังโหลด...</li>';
+        fetch(`${GAS_URL}?func=getPartyMembers&partyName=${encodeURIComponent(partyName)}`)
+          .then(res => res.json())
+          .then(members => {
+            if (!Array.isArray(members) || members.length === 0) {
+              list.innerHTML = '<li style="text-align:center;color:#fa383e;">ไม่พบสมาชิกในปาร์ตี้นี้</li>';
+              return;
+            }
+            list.innerHTML = '';
+            members.forEach(m => {
+              list.innerHTML += `<li><span class='party-member-rank'>${rankEmojis[m.rank] || ''}</span><span class='party-member-codename'>${m.codename}</span><span class='party-member-nickname'>(${m.nickname})</span> <span style='color:#888;font-size:0.95em;'>${m.rank}</span></li>`;
+            });
+          })
+          .catch(() => {
+            list.innerHTML = '<li style="text-align:center;color:#fa383e;">เกิดข้อผิดพลาดในการโหลดข้อมูล</li>';
+          });
+      }
+      function closeModal() {
+        document.getElementById("modal-bg").style.display = "none";
+      }
+      // ป้องกัน modal ปิดเมื่อคลิกพื้นหลัง
+      document.getElementById("modal-bg").addEventListener("click", function(e) {
+        if (e.target === this) closeModal();
+      });
     </script>
   </body>
 </html> 

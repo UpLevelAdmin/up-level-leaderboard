@@ -1240,6 +1240,7 @@ function doGet(e) {
   if (func === "getChallengeList") return getChallengeList();
   if (func === "getPartyByPhone") return getPartyByPhone(e); // Added for completeness
   if (func === "getMemberProfile") return getMemberProfile(e.parameter.phone);
+  if (func === "getPartyMembers") return getPartyMembers(e.parameter.partyName);
   return HtmlService.createHtmlOutput("<p>✅ Up Level Guild System Web App</p>");
 }
 
@@ -2363,4 +2364,29 @@ function getMemberProfile(phone) {
   const profileData = { ...memberInfo, ...partyInfo };
 
   return ContentService.createTextOutput(JSON.stringify(profileData)).setMimeType(ContentService.MimeType.JSON);
+}
+
+/**
+ * คืนรายชื่อสมาชิกในปาร์ตี้ (Codename, Rank, Nickname)
+ * @param {string} partyName
+ * @returns {ContentService} JSON array
+ */
+function getPartyMembers(partyName) {
+  if (!partyName) {
+    return ContentService.createTextOutput(JSON.stringify({ error: "Party name is required." })).setMimeType(ContentService.MimeType.JSON);
+  }
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const dashSheet = ss.getSheetByName("Member Dashboard");
+  if (!dashSheet) {
+    return ContentService.createTextOutput(JSON.stringify({ error: "Member Dashboard not found." })).setMimeType(ContentService.MimeType.JSON);
+  }
+  const dashData = dashSheet.getDataRange().getValues();
+  const members = dashData.slice(1)
+    .filter(row => row[5] === partyName)
+    .map(row => ({
+      codename: row[2],
+      rank: row[3],
+      nickname: row[0]
+    }));
+  return ContentService.createTextOutput(JSON.stringify(members)).setMimeType(ContentService.MimeType.JSON);
 }
