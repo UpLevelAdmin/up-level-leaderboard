@@ -9,8 +9,8 @@
       .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
       h1 { text-align: center; color: #1c1e21; font-size: 24px; }
       .search-box { display: flex; gap: 10px; margin-bottom: 20px; }
-      #codename-input { flex-grow: 1; padding: 12px; border: 1px solid #dddfe2; border-radius: 6px; font-size: 16px; }
-      #codename-input:focus { border-color: #1877f2; outline: none; box-shadow: 0 0 0 2px #e7f3ff; }
+      #phone-input { flex-grow: 1; padding: 12px; border: 1px solid #dddfe2; border-radius: 6px; font-size: 16px; }
+      #phone-input:focus { border-color: #1877f2; outline: none; box-shadow: 0 0 0 2px #e7f3ff; }
       #search-btn { padding: 12px 24px; background-color: #1877f2; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; transition: background-color 0.2s; }
       #search-btn:hover { background-color: #166fe5; }
       #result-container { margin-top: 20px; border-top: 1px solid #e9ebee; padding-top: 20px; }
@@ -26,7 +26,7 @@
     <div class="container">
       <h1>ค้นหาข้อมูลสมาชิก</h1>
       <div class="search-box">
-        <input type="text" id="codename-input" placeholder="กรอก Codename...">
+        <input type="text" id="phone-input" placeholder="กรอกเบอร์โทร...">
         <button id="search-btn">ค้นหา</button>
       </div>
       <div id="result-container">
@@ -47,16 +47,16 @@
 
     <script>
       document.getElementById("search-btn").addEventListener("click", searchMember);
-      document.getElementById("codename-input").addEventListener("keypress", function(event) {
+      document.getElementById("phone-input").addEventListener("keypress", function(event) {
         if (event.key === "Enter") {
           searchMember();
         }
       });
 
       function searchMember() {
-        const codename = document.getElementById("codename-input").value.trim();
-        if (!codename) {
-          document.getElementById("error-message").textContent = "กรุณากรอก Codename เพื่อค้นหา";
+        const phone = document.getElementById("phone-input").value.trim();
+        if (!phone) {
+          document.getElementById("error-message").textContent = "กรุณากรอกเบอร์โทรเพื่อค้นหา";
           return;
         }
 
@@ -67,7 +67,7 @@
         google.script.run
           .withSuccessHandler(displayProfile)
           .withFailureHandler(displayError)
-          .getMemberProfile(codename);
+          .getMemberProfile(phone);
       }
 
       function displayProfile(data) {

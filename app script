@@ -1239,7 +1239,7 @@ function doGet(e) {
   if (func === "getCodenameList") return getCodenameList();
   if (func === "getChallengeList") return getChallengeList();
   if (func === "getPartyByPhone") return getPartyByPhone(e); // Added for completeness
-  if (func === "getMemberProfile") return getMemberProfile(e.parameter.codename);
+  if (func === "getMemberProfile") return getMemberProfile(e.parameter.phone);
   return HtmlService.createHtmlOutput("<p>✅ Up Level Guild System Web App</p>");
 }
 
@@ -2318,10 +2318,11 @@ function addPartyPointFromActivity() {
  * @param {string} codename The codename of the member to search for.
  * @returns {ContentService} A JSON object with the member's profile data or an error message.
  */
-function getMemberProfile(codename) {
-  if (!codename) {
-    return ContentService.createTextOutput(JSON.stringify({ error: "Codename is required." })).setMimeType(ContentService.MimeType.JSON);
+function getMemberProfile(phone) {
+  if (!phone) {
+    return ContentService.createTextOutput(JSON.stringify({ error: "Phone number is required." })).setMimeType(ContentService.MimeType.JSON);
   }
+  const normalizedPhone = normalizePhone(phone);
 
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const dashSheet = ss.getSheetByName("Member Dashboard");
@@ -2334,10 +2335,10 @@ function getMemberProfile(codename) {
   const dashData = dashSheet.getDataRange().getValues();
   const partyData = partySheet.getDataRange().getValues();
 
-  const memberRow = dashData.find(row => String(row[2]).trim().toLowerCase() === String(codename).trim().toLowerCase());
+  const memberRow = dashData.find(row => normalizePhone(String(row[1])) === normalizedPhone);
 
   if (!memberRow) {
-    return ContentService.createTextOutput(JSON.stringify({ error: "ไม่พบสมาชิกด้วย Codename นี้" })).setMimeType(ContentService.MimeType.JSON);
+    return ContentService.createTextOutput(JSON.stringify({ error: "ไม่พบสมาชิกด้วยเบอร์โทรนี้" })).setMimeType(ContentService.MimeType.JSON);
   }
 
   const memberInfo = {
