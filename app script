@@ -2367,7 +2367,7 @@ function getMemberProfile(phone) {
 }
 
 /**
- * คืนรายชื่อสมาชิกในปาร์ตี้ (Codename, Rank, Nickname)
+ * คืนรายชื่อสมาชิกในปาร์ตี้ (Codename, Rank, Nickname) จาก Party Tracker
  * @param {string} partyName
  * @returns {ContentService} JSON array
  */
@@ -2376,17 +2376,25 @@ function getPartyMembers(partyName) {
     return ContentService.createTextOutput(JSON.stringify({ error: "Party name is required." })).setMimeType(ContentService.MimeType.JSON);
   }
   const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const trackerSheet = ss.getSheetByName("Party Tracker");
   const dashSheet = ss.getSheetByName("Member Dashboard");
-  if (!dashSheet) {
-    return ContentService.createTextOutput(JSON.stringify({ error: "Member Dashboard not found." })).setMimeType(ContentService.MimeType.JSON);
+  if (!trackerSheet || !dashSheet) {
+    return ContentService.createTextOutput(JSON.stringify({ error: "Required sheet not found." })).setMimeType(ContentService.MimeType.JSON);
   }
+  const trackerData = trackerSheet.getDataRange().getValues();
   const dashData = dashSheet.getDataRange().getValues();
-  const members = dashData.slice(1)
-    .filter(row => row[5] === partyName)
-    .map(row => ({
-      codename: row[2],
-      rank: row[3],
-      nickname: row[0]
-    }));
+  // หาสมาชิกในปาร์ตี้นี้
+  const members = trackerData.slice(1)
+    .filter(row => String(row[0] || '').trim() === String(partyName).trim())
+    .map(row => {
+      const codename = row[1];
+      // หา rank/nickname จาก Member Dashboard
+      const dashRow = dashData.find(d => String(d[2]).trim() === String(codename).trim());
+      return {
+        codename,
+        rank: dashRow ? dashRow[3] : '',
+        nickname: dashRow ? dashRow[0] : ''
+      };
+    });
   return ContentService.createTextOutput(JSON.stringify(members)).setMimeType(ContentService.MimeType.JSON);
 }
