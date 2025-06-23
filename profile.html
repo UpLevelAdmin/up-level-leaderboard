@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Member Profile</title>
+    <style>
+      body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 20px; background-color: #f0f2f5; color: #1c1e21; }
+      .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+      h1 { text-align: center; color: #1c1e21; font-size: 24px; }
+      .search-box { display: flex; gap: 10px; margin-bottom: 20px; }
+      #codename-input { flex-grow: 1; padding: 12px; border: 1px solid #dddfe2; border-radius: 6px; font-size: 16px; }
+      #codename-input:focus { border-color: #1877f2; outline: none; box-shadow: 0 0 0 2px #e7f3ff; }
+      #search-btn { padding: 12px 24px; background-color: #1877f2; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; transition: background-color 0.2s; }
+      #search-btn:hover { background-color: #166fe5; }
+      #result-container { margin-top: 20px; border-top: 1px solid #e9ebee; padding-top: 20px; }
+      #loading { text-align: center; display: none; padding: 20px; }
+      .profile-card { border: 1px solid #dddfe2; border-radius: 8px; padding: 20px; display: none; background: #f7f8fa; }
+      .profile-card h2 { margin-top: 0; color: #1877f2; border-bottom: 2px solid #e9ebee; padding-bottom: 10px; margin-bottom: 15px; }
+      .profile-info p { margin: 10px 0; font-size: 16px; display: flex; justify-content: space-between; }
+      .profile-info strong { font-weight: 600; color: #606770; }
+      .error { color: #fa383e; text-align: center; font-weight: bold; padding: 15px; background: #ffebee; border-radius: 6px; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>ค้นหาข้อมูลสมาชิก</h1>
+      <div class="search-box">
+        <input type="text" id="codename-input" placeholder="กรอก Codename...">
+        <button id="search-btn">ค้นหา</button>
+      </div>
+      <div id="result-container">
+        <div id="loading">กำลังโหลด...</div>
+        <div id="profile-card" class="profile-card">
+          <h2 id="profile-codename"></h2>
+          <div class="profile-info">
+            <p><strong>ชื่อเล่น:</strong> <span id="profile-nickname"></span></p>
+            <p><strong>Rank:</strong> <span id="profile-rank"></span></p>
+            <p><strong>EXP:</strong> <span id="profile-exp"></span></p>
+            <p><strong>Party:</strong> <span id="profile-party-name"></span></p>
+            <p><strong>Party Points:</strong> <span id="profile-party-points"></span></p>
+          </div>
+        </div>
+        <div id="error-message" class="error"></div>
+      </div>
+    </div>
+
+    <script>
+      document.getElementById("search-btn").addEventListener("click", searchMember);
+      document.getElementById("codename-input").addEventListener("keypress", function(event) {
+        if (event.key === "Enter") {
+          searchMember();
+        }
+      });
+
+      function searchMember() {
+        const codename = document.getElementById("codename-input").value.trim();
+        if (!codename) {
+          document.getElementById("error-message").textContent = "กรุณากรอก Codename เพื่อค้นหา";
+          return;
+        }
+
+        document.getElementById("loading").style.display = "block";
+        document.getElementById("profile-card").style.display = "none";
+        document.getElementById("error-message").textContent = "";
+
+        google.script.run
+          .withSuccessHandler(displayProfile)
+          .withFailureHandler(displayError)
+          .getMemberProfile(codename);
+      }
+
+      function displayProfile(data) {
+        document.getElementById("loading").style.display = "none";
+
+        if (data.error) {
+          document.getElementById("error-message").textContent = "❌ " + data.error;
+          return;
+        }
+
+        document.getElementById("profile-codename").textContent = data.codename;
+        document.getElementById("profile-nickname").textContent = data.nickname;
+        document.getElementById("profile-rank").textContent = data.rank;
+        document.getElementById("profile-exp").textContent = data.exp;
+        document.getElementById("profile-party-name").textContent = data.partyName;
+        document.getElementById("profile-party-points").textContent = data.partyPoints;
+        
+        document.getElementById("profile-card").style.display = "block";
+      }
+
+      function displayError(error) {
+        document.getElementById("loading").style.display = "none";
+        document.getElementById("error-message").textContent = "เกิดข้อผิดพลาด: " + error.message;
+      }
+    </script>
+  </body>
+</html> 

@@ -14,8 +14,8 @@ function onOpen() {
     .addSeparator()
 
     // ⚔️ EXP & Party Point
-    .addItem("📥 เพิ่ม EXP จากกิจกรรม (1 คน)", "addExpFromActivity")
-    .addItem("📥 เพิ่ม EXP จากกิจกรรม (หลายคน)", "addExpFromActivityBulk")
+    .addItem("📥 เพิ่ม EXP & Party Point จากกิจกรรม (1 คน)", "addExpFromActivity")
+    .addItem("📥 เพิ่ม EXP & Party Point จากกิจกรรม (หลายคน)", "addExpFromActivityBulk")
     .addItem("🟢 เพิ่ม EXP แบบ Manual", "manualAddExp")
     .addItem("🧩 เพิ่ม Party Point แบบ Manual", "manualAddPartyPoint")
     .addItem("✅ อนุมัติเควส (ระบุเบอร์)", "approveQuestByPhone")
@@ -32,6 +32,7 @@ function onOpen() {
     .addItem("🗑️ ลบข้อมูลซ้ำ", "clearDuplicateEntriesDebug")
     .addItem("❌ ลบข้อมูลสมาชิก", "removeMember")
     .addItem("🔑 เพิ่มแอดมินใหม่", "addAdminEmail")
+    .addItem("🔄 เปลี่ยนเบอร์สมาชิก", "changeMemberPhoneNumber") // 🆕 เพิ่มเมนูใหม่
     .addToUi();
 }
 
@@ -418,6 +419,10 @@ function addMemberToParty() {
   const trackerSheet = ss.getSheetByName("Party Tracker");
   const partyLogSheet = ss.getSheetByName("Party Log");
 
+  const adminPrompt = ui.prompt("ชื่อแอดมิน", "กรุณากรอกชื่อแอดมิน (สำหรับบันทึก log)", ui.ButtonSet.OK_CANCEL);
+  if (adminPrompt.getSelectedButton() !== ui.Button.OK || !adminPrompt.getResponseText().trim()) return;
+  const admin = adminPrompt.getResponseText().trim();
+
   const phonePrompt = ui.prompt("เชิญเข้าปาร์ตี้", "กรอกเบอร์ของสมาชิก", ui.ButtonSet.OK_CANCEL);
   if (phonePrompt.getSelectedButton() !== ui.Button.OK) return;
   const phone = normalizePhone(phonePrompt.getResponseText().trim());
@@ -452,6 +457,7 @@ function addMemberToParty() {
 
   // ✅ Log ลง Party Log พร้อมชื่อปาร์ตี้
   logPartyActivity(selectedParty, codename, `เข้าร่วมปาร์ตี้ ${selectedParty}`, "เชิญผ่านเมนู");
+  logAdminAction("เชิญเข้าปาร์ตี้", `${codename} (${phone}) → ${selectedParty}`, admin);
 
   updateLeaderboard();
   sortAndHighlightPartyTracker();
@@ -700,7 +706,7 @@ function addExpFromActivity() {
   const admin = adminPrompt.getResponseText().trim();
 
 
-  const activityData = activitySheet.getRange(2, 1, activitySheet.getLastRow() - 1, 2).getValues();
+  const activityData = activitySheet.getRange(2, 1, activitySheet.getLastRow() - 1, 3).getValues();
   const activityList = activityData.map((row, i) => `${i + 1}. ${row[0]} (${row[1]} EXP)`).join("\n");
   const activityPrompt = ui.prompt("เลือกกิจกรรม (พิมพ์เลข)", `เลือกกิจกรรม:\n\n${activityList}`, ui.ButtonSet.OK_CANCEL);
   if (activityPrompt.getSelectedButton() !== ui.Button.OK) return;
@@ -709,7 +715,7 @@ function addExpFromActivity() {
     ui.alert("❌ เลือกกิจกรรมไม่ถูกต้อง");
     return;
   }
-  const [activityName, exp] = activityData[activityIndex];
+  const [activityName, exp, pointsConfig] = activityData[activityIndex];
 
   const phonePrompt = ui.prompt("กรอกเบอร์โทร", ui.ButtonSet.OK_CANCEL);
   if (phonePrompt.getSelectedButton() !== ui.Button.OK) return;
@@ -737,31 +743,36 @@ function addExpFromActivity() {
   dashSheet.getRange(rowIndex, 5).setValue(currentExp + Number(exp));
   logExp(phone, activityName, exp);
 
-  const partyPointActivities = {
-    "มาคลับ": 1, "มายิม": 1, "แข่งครบ 2 รอบ": 2,
-    "ได้ที่ 1 ยิม": 2, "ได้ที่ 2 ยิม": 1, "ซื้อของครบ 300": 1
-  };
+  let partyPointMessage = "";
+  // 🆕 ตรรกะใหม่: ให้ Party Point อัตโนมัติถ้ามีกำหนดใน Activity List
+  if (pointsConfig && String(pointsConfig).trim() !== "") {
+    const partyName = dashSheet.getRange(rowIndex, 6).getValue();
+    if (partyName) {
+      let pointAmount = 0;
+      if (String(pointsConfig).trim().toLowerCase() === "ตามจำนวนสมาชิก") {
+        const trackerSheet = ss.getSheetByName("Party Tracker");
+        const trackerData = trackerSheet.getDataRange().getValues();
+        pointAmount = trackerData.filter(row => row[0] === partyName).length;
+      } else {
+        pointAmount = Number(pointsConfig);
+      }
 
-  const partyName = dashSheet.getRange(rowIndex, 6).getValue();
-  const partyGain = partyPointActivities[activityName];
+      if (!isNaN(pointAmount) && pointAmount > 0) {
+        const partyData = partySheet.getDataRange().getValues();
+        const partyIndex = partyData.findIndex(row => row[0] === partyName);
 
-  if (partyName && partyGain) {
-    const partyData = partySheet.getDataRange().getValues();
-    for (let j = 1; j < partyData.length; j++) {
-      if (partyData[j][0] === partyName) {
-        const currentPoint = Number(partySheet.getRange(j + 1, 3).getValue());
-        partySheet.getRange(j + 1, 3).setValue(currentPoint + partyGain);
-        partyLogSheet.appendRow([
-          new Date(), partyName, codename, activityName, partyGain,
-          `เพิ่มอัตโนมัติจากกิจกรรม (${activityName})`
-        ]);
-        break;
+        if (partyIndex !== -1) {
+          const currentPoint = Number(partyData[partyIndex][2]);
+          partySheet.getRange(partyIndex + 1, 3).setValue(currentPoint + pointAmount);
+          partyLogSheet.appendRow([new Date(), partyName, codename, activityName, pointAmount, `อัตโนมัติจากกิจกรรม EXP`]);
+          partyPointMessage = `\n\n✅ และเพิ่ม ${pointAmount} แต้มให้ปาร์ตี้ '${partyName}'`;
+        }
       }
     }
   }
 
-  ui.alert(`✅ เพิ่ม ${exp} EXP ให้ ${codename} (${phone}) เรียบร้อยแล้ว`);
-  logAdminAction("เพิ่ม EXP จากกิจกรรม", `ให้ ${codename} (${phone}) | ${activityName} +${exp}`, admin);
+  ui.alert(`✅ เพิ่ม ${exp} EXP ให้ ${codename} (${phone}) เรียบร้อยแล้ว` + partyPointMessage);
+  logAdminAction("เพิ่ม EXP & Party Point", `ให้ ${codename} (${phone}) | ${activityName} +${exp}`, admin);
   updateRanks();
   updateLeaderboard();
 }
@@ -780,7 +791,7 @@ function addExpFromActivityBulk() {
   const admin = adminPrompt.getResponseText().trim();
 
 
-  const activityData = activitySheet.getRange(2, 1, activitySheet.getLastRow() - 1, 2).getValues();
+  const activityData = activitySheet.getRange(2, 1, activitySheet.getLastRow() - 1, 3).getValues();
   const activityList = activityData.map((row, i) => `${i + 1}. ${row[0]} (${row[1]} EXP)`).join("\n");
 
   const activityPrompt = ui.prompt("เลือกกิจกรรม (พิมพ์เลข)", `เลือกกิจกรรมจากรายการ:\n\n${activityList}`, ui.ButtonSet.OK_CANCEL);
@@ -791,7 +802,7 @@ function addExpFromActivityBulk() {
     return;
   }
 
-  const [activityName, exp] = activityData[activityIndex];
+  const [activityName, exp, pointsConfig] = activityData[activityIndex];
 
   const phonePrompt = ui.prompt("เพิ่ม EXP", "กรอกเบอร์โทร (เว้นวรรค , หรือขึ้นบรรทัดใหม่)", ui.ButtonSet.OK_CANCEL);
   if (phonePrompt.getSelectedButton() !== ui.Button.OK) return;
@@ -801,11 +812,7 @@ function addExpFromActivityBulk() {
 
   const dashData = dashSheet.getDataRange().getValues();
   const updated = [];
-
-  const partyPointActivities = {
-    "มาคลับ": 1, "มายิม": 1, "แข่งครบ 2 รอบ": 2,
-    "ได้ที่ 1 ยิม": 2, "ได้ที่ 2 ยิม": 1, "ซื้อของครบ 300": 1
-  };
+  const partyPointsGiven = new Set(); // ป้องกันการให้แต้มปาร์ตี้ซ้ำซ้อน
 
   for (let phone of phones) {
     for (let i = 1; i < dashData.length; i++) {
@@ -823,20 +830,31 @@ function addExpFromActivityBulk() {
         updated.push(codename);
 
         const partyName = dashData[i][5];
-        const partyGain = partyPointActivities[activityName];
-        if (partyName && partyGain) {
-          const partyData = partySheet.getDataRange().getValues();
-          for (let j = 1; j < partyData.length; j++) {
-            if (partyData[j][0] === partyName) {
-              const currentPoint = Number(partyData[j][2]);
-              partySheet.getRange(j + 1, 3).setValue(currentPoint + partyGain);
-              partyLogSheet.appendRow([
-                new Date(), partyName, codename, activityName, partyGain,
-                `เพิ่มอัตโนมัติจากกิจกรรม (${activityName})`
-              ]);
-              break;
+        // 🆕 ตรรกะใหม่: ให้ Party Point อัตโนมัติถ้ามีกำหนดใน Activity List
+        if (partyName && pointsConfig && String(pointsConfig).trim() !== "" && !partyPointsGiven.has(partyName)) {
+            let pointAmount = 0;
+            if (String(pointsConfig).trim().toLowerCase() === "ตามจำนวนสมาชิก") {
+              const trackerSheet = ss.getSheetByName("Party Tracker");
+              const trackerData = trackerSheet.getDataRange().getValues();
+              pointAmount = trackerData.filter(row => row[0] === partyName).length;
+            } else {
+              pointAmount = Number(pointsConfig);
             }
-          }
+
+            if (!isNaN(pointAmount) && pointAmount > 0) {
+              const partyData = partySheet.getDataRange().getValues();
+              const partyIndex = partyData.findIndex(row => row[0] === partyName);
+
+              if (partyIndex !== -1) {
+                const currentPoint = Number(partyData[partyIndex][2]);
+                partySheet.getRange(partyIndex + 1, 3).setValue(currentPoint + pointAmount);
+                partyLogSheet.appendRow([
+                  new Date(), partyName, codename, activityName, pointAmount,
+                  `อัตโนมัติจากกิจกรรม EXP (Bulk)`
+                ]);
+                partyPointsGiven.add(partyName); // Mark party as having received points
+              }
+            }
         }
         break;
       }
@@ -844,7 +862,7 @@ function addExpFromActivityBulk() {
   }
 
   ui.alert(`✅ เพิ่ม EXP สำเร็จให้กับ: \n${updated.join("\n")}`);
-  logAdminAction("เพิ่ม EXP หลายคน", `${phones.length} คน | ${activityName} +${exp}`, admin);
+  logAdminAction("เพิ่ม EXP & Party Point (หลายคน)", `${phones.length} คน | ${activityName} +${exp}`, admin);
   updateRanks();
   updateLeaderboard();
 }
@@ -1197,6 +1215,18 @@ function doGet(e) {
   if (e.parameter.page === 'admin') {
     return showAdminPage();
   }
+  if (e.parameter.page === 'profile') {
+    return HtmlService.createHtmlOutputFromFile('profile.html').setTitle("Member Profile");
+  }
+  if (e.parameter.page === 'leaderboard') {
+    return HtmlService.createHtmlOutputFromFile('leaderboard.html').setTitle("Leaderboard");
+  }
+  if (e.parameter.page === 'quests') {
+    return HtmlService.createHtmlOutputFromFile('quests.html').setTitle("Quest Board");
+  }
+  if (e.parameter.page === 'challenge') {
+    return HtmlService.createHtmlOutputFromFile('challenge.html').setTitle("Challenge");
+  }
 
   const func = e?.parameter?.func;
   if (func === "getLeaderboard") return getLeaderboardData();
@@ -1209,6 +1239,7 @@ function doGet(e) {
   if (func === "getCodenameList") return getCodenameList();
   if (func === "getChallengeList") return getChallengeList();
   if (func === "getPartyByPhone") return getPartyByPhone(e); // Added for completeness
+  if (func === "getMemberProfile") return getMemberProfile(e.parameter.codename);
   return HtmlService.createHtmlOutput("<p>✅ Up Level Guild System Web App</p>");
 }
 
@@ -1238,25 +1269,47 @@ function getLeaderboardData() {
 
 
 function getFeaturedQuestsRandom() {
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Quest List");
-  const data = sheet.getDataRange().getValues();
-  const headers = data[0];
-  const activeQuests = [];
-
-  for (let i = 1; i < data.length; i++) {
-    if (data[i][6] === "เปิดใช้งาน") {
-      const quest = {};
-      headers.forEach((key, index) => quest[key] = data[i][index]);
-      activeQuests.push(quest);
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = ss.getSheetByName("Quest List");
+    
+    if (!sheet) {
+      console.error("Error: Sheet 'Quest List' not found.");
+      return ContentService.createTextOutput(JSON.stringify([])).setMimeType(ContentService.MimeType.JSON);
     }
+
+    const data = sheet.getDataRange().getValues();
+    if (data.length < 2) {
+      return ContentService.createTextOutput(JSON.stringify([])).setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    const headers = data[0];
+    const activeQuests = [];
+
+    // --- จุดที่แก้ไข ---
+    // เปลี่ยนมาเช็กคอลัมน์ที่ 8 (index 7) ซึ่งเป็น Checkbox ว่ามีค่าเป็น true หรือไม่
+    for (let i = 1; i < data.length; i++) {
+      if (data[i][7] === true) { // เช็กว่าติ๊กถูกที่คอลัมน์ H 'Is Active' หรือไม่
+        const quest = {};
+        headers.forEach((key, index) => {
+          if (key) { quest[key] = data[i][index]; }
+        });
+        activeQuests.push(quest);
+      }
+    }
+
+    // สุ่มเควสขึ้นมา 3 อัน
+    const shuffled = activeQuests.sort(() => 0.5 - Math.random());
+    const selected = shuffled.slice(0, 3);
+    
+    // ส่งข้อมูลกลับไปเป็น Array ตรงๆ
+    return ContentService.createTextOutput(JSON.stringify(selected))
+           .setMimeType(ContentService.MimeType.JSON);
+           
+  } catch (e) {
+    console.error("getFeaturedQuestsRandom Error: " + e.toString());
+    return ContentService.createTextOutput(JSON.stringify([])).setMimeType(ContentService.MimeType.JSON);
   }
-
-  // สุ่ม 3 เควส
-  const shuffled = activeQuests.sort(() => 0.5 - Math.random());
-  const selected = shuffled.slice(0, 3);
-
-  return ContentService.createTextOutput(JSON.stringify(selected))
-    .setMimeType(ContentService.MimeType.JSON);
 }
 
 function getQuestActivityLog() {
@@ -1525,6 +1578,10 @@ function approveChallenge() {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Challenge");
   const data = sheet.getDataRange().getValues();
 
+  const adminPrompt = ui.prompt("ชื่อแอดมิน", "กรุณากรอกชื่อแอดมิน (สำหรับบันทึก log)", ui.ButtonSet.OK_CANCEL);
+  if (adminPrompt.getSelectedButton() !== ui.Button.OK || !adminPrompt.getResponseText().trim()) return;
+  const admin = adminPrompt.getResponseText().trim();
+
   const pending = [];
   for (let i = 1; i < data.length; i++) {
     if (data[i][8] === "รออนุมัติ") {
@@ -1547,8 +1604,12 @@ function approveChallenge() {
   }
 
   const row = pending[choice].index;
+  const challengeTitle = pending[choice].title;
+  const codename = pending[choice].codename;
   sheet.getRange(row, 9).setValue("อนุมัติ");
-  ui.alert(`✅ อนุมัติคำท้าของ ${pending[choice].codename} เรียบร้อยแล้ว`);
+
+  logAdminAction("อนุมัติคำท้า", `อนุมัติคำท้าของ ${codename}: "${challengeTitle}"`, admin);
+  ui.alert(`✅ อนุมัติคำท้าของ ${codename} เรียบร้อยแล้ว`);
 }
 
 
@@ -1606,6 +1667,10 @@ function recordChallengeResult() {
   const data = sheet.getDataRange().getValues();
   const headers = data[0];
 
+  const adminPrompt = ui.prompt("ชื่อแอดมิน", "กรุณากรอกชื่อแอดมิน (สำหรับบันทึก log)", ui.ButtonSet.OK_CANCEL);
+  if (adminPrompt.getSelectedButton() !== ui.Button.OK || !adminPrompt.getResponseText().trim()) return;
+  const admin = adminPrompt.getResponseText().trim();
+
   const idIndex = headers.indexOf("ID");
   const phoneIndex = headers.indexOf("เบอร์โทร");
   const codenameIndex = headers.indexOf("Codename");
@@ -1658,7 +1723,7 @@ function recordChallengeResult() {
     "🎁 EXP ที่เดิมพัน (ถ้ามี)",
     "เช่น 3 หรือ -2 (ถ้าไม่ใส่จะไม่มีผลเดิมพัน)", ui.ButtonSet.OK_CANCEL
   );
-  if (wagerPrompt.getSelectedButton() !== ui.Button.OK) return;
+  if (wagerPrompt.getSelectedButton() !== ui.Button.OK) return; // Allow empty response to proceed
   const expText = wagerPrompt.getResponseText().trim();
   const expAmount = expText ? parseInt(expText) : 0;
 
@@ -1675,6 +1740,8 @@ function recordChallengeResult() {
     giveExp(loserPhone, `แพ้เดิมพัน EXP`, -expAmount);
   }
 
+  const logMessage = `ผล: ${winnerCodename} ชนะ ${acceptorCodename}. EXP เดิมพัน: ${expAmount || 0}`;
+  logAdminAction("บันทึกผลการท้าแข่ง", logMessage, admin);
   ui.alert(`✅ บันทึกผลสำเร็จ: ${winnerCodename} ชนะ\n+1 EXP/Party ทั้งคู่${expAmount ? `\nเดิมพัน EXP: ${expAmount}` : ""}`);
 }
 
@@ -2041,4 +2108,258 @@ function getAdminWebAppInitialData() {
     isAdmin: userIsAdmin,
     email: email
   };
+}
+
+/**
+ * 🆕 Changes a member's phone number across all relevant sheets.
+ * This is an admin-only function.
+ */
+function changeMemberPhoneNumber() {
+  const ui = SpreadsheetApp.getUi();
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+
+  const adminPrompt = ui.prompt("ชื่อแอดมิน", "กรุณากรอกชื่อแอดมิน (สำหรับบันทึก log)", ui.ButtonSet.OK_CANCEL);
+  if (adminPrompt.getSelectedButton() !== ui.Button.OK || !adminPrompt.getResponseText().trim()) {
+    return;
+  }
+  const admin = adminPrompt.getResponseText().trim();
+
+  const oldPhonePrompt = ui.prompt("เปลี่ยนเบอร์สมาชิก", "กรอกเบอร์โทร 'เก่า' ของสมาชิก:", ui.ButtonSet.OK_CANCEL);
+  if (oldPhonePrompt.getSelectedButton() !== ui.Button.OK) return;
+  const oldPhone = normalizePhone(oldPhonePrompt.getResponseText().trim());
+
+  if (!oldPhone) {
+      ui.alert("❌ ไม่ได้กรอกเบอร์โทรเก่า");
+      return;
+  }
+
+  const dashSheet = ss.getSheetByName("Member Dashboard");
+  const dashData = dashSheet.getDataRange().getValues();
+  const memberIndex = dashData.findIndex(row => normalizePhone(row[1]) === oldPhone);
+
+  if (memberIndex === -1) {
+    ui.alert(`❌ ไม่พบเบอร์โทร '${oldPhone}' ในระบบ (Member Dashboard)`);
+    return;
+  }
+
+  const codename = dashData[memberIndex][2];
+
+  const newPhonePrompt = ui.prompt("เปลี่ยนเบอร์สมาชิก", `พบสมาชิก: ${codename}\n\nกรุณากรอกเบอร์โทร 'ใหม่':`, ui.ButtonSet.OK_CANCEL);
+  if (newPhonePrompt.getSelectedButton() !== ui.Button.OK) return;
+  const newPhone = normalizePhone(newPhonePrompt.getResponseText().trim());
+
+  if (!validatePhoneOrAlert(newPhone, ui)) return;
+
+  if (oldPhone === newPhone) {
+      ui.alert("❌ เบอร์โทรใหม่ต้องไม่ซ้ำกับเบอร์โทรเก่า");
+      return;
+  }
+
+  const newPhoneExists = dashData.some((row, index) => index !== memberIndex && normalizePhone(row[1]) === newPhone);
+  if (newPhoneExists) {
+    ui.alert("❌ เบอร์โทรใหม่นี้มีสมาชิกคนอื่นใช้งานอยู่แล้ว");
+    return;
+  }
+  
+  const confirm = ui.alert("⚠️ ยืนยันการเปลี่ยนแปลง", `คุณแน่ใจหรือไม่ว่าต้องการเปลี่ยนเบอร์ของ '${codename}'\n\nจาก: ${oldPhone}\nเป็น: ${newPhone}\n\nการดำเนินการนี้จะอัปเดตข้อมูลในทุกชีทที่เกี่ยวข้อง`, ui.ButtonSet.YES_NO);
+  if (confirm !== ui.Button.YES) {
+    return;
+  }
+
+  try {
+    SpreadsheetApp.getUi().showSidebar(HtmlService.createHtmlOutput("<p>กำลังอัปเดตข้อมูลในชีทต่างๆ โปรดรอสักครู่...</p>").setTitle("Processing..."));
+
+    // --- Define all sheets and columns to update ---
+    const sheetsToUpdate = [
+      { name: "Member Dashboard", col: 2 },
+      { name: "Member Database", col: 4 },
+      { name: "EXP Log", col: 1 },
+      { name: "Party", col: 2 }, // Owner Phone Number
+      { name: "Party Tracker", col: 3 },
+      { name: "Quest Log", col: 2 },
+      { name: "Challenge", col: 2 },
+      { name: "Challenge Log", col: 3 }
+    ];
+
+    for (const config of sheetsToUpdate) {
+        const sheet = ss.getSheetByName(config.name);
+        if (sheet) {
+            const data = sheet.getDataRange().getValues();
+            for (let i = 1; i < data.length; i++) {
+                if (normalizePhone(data[i][config.col - 1]) === oldPhone) {
+                    sheet.getRange(i + 1, config.col).setValue(newPhone).setNumberFormat("@");
+                }
+            }
+        }
+    }
+
+    logAdminAction("เปลี่ยนเบอร์สมาชิก", `เปลี่ยนเบอร์ของ ${codename} จาก ${oldPhone} เป็น ${newPhone}`, admin);
+    ui.alert("✅ เปลี่ยนเบอร์โทรสำเร็จ!");
+
+  } catch (e) {
+    ui.alert("❌ เกิดข้อผิดพลาดขณะอัปเดตข้อมูล: " + e.message);
+    console.error("changeMemberPhoneNumber Error: " + e.toString());
+  }
+}
+
+/**
+ * 🆕 Adds party points based on a predefined list of activities.
+ * This function prompts for admin, activity, and a party member's phone number.
+ */
+function addPartyPointFromActivity() {
+  const ui = SpreadsheetApp.getUi();
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  
+  const adminPrompt = ui.prompt("ชื่อแอดมิน", "กรุณากรอกชื่อแอดมิน (สำหรับบันทึก log)", ui.ButtonSet.OK_CANCEL);
+  if (adminPrompt.getSelectedButton() !== ui.Button.OK || !adminPrompt.getResponseText().trim()) {
+    return;
+  }
+  const admin = adminPrompt.getResponseText().trim();
+
+  const activitySheet = ss.getSheetByName("Party Activity List");
+  if (!activitySheet) {
+    ui.alert("❌ ไม่พบชีท 'Party Activity List'", "กรุณาสร้างชีทใหม่ชื่อ 'Party Activity List' โดยมีคอลัมน์ A เป็น 'กิจกรรมปาร์ตี้' และคอลัมน์ B เป็น 'แต้มที่ได้'", ui.ButtonSet.OK);
+    return;
+  }
+  
+  const activityData = activitySheet.getRange(2, 1, activitySheet.getLastRow() - 1, 2).getValues().filter(r => r[0] && r[1]);
+  if (activityData.length === 0) {
+      ui.alert("❌ ไม่มีรายการกิจกรรมในชีท 'Party Activity List'");
+      return;
+  }
+
+  const activityList = activityData.map((row, i) => `${i + 1}. ${row[0]} (${row[1]} แต้ม)`).join("\n");
+  const activityPrompt = ui.prompt("เลือกกิจกรรมปาร์ตี้ (พิมพ์เลข)", `เลือกกิจกรรม:\n\n${activityList}`, ui.ButtonSet.OK_CANCEL);
+  if (activityPrompt.getSelectedButton() !== ui.Button.OK) return;
+
+  const activityIndex = Number(activityPrompt.getResponseText().trim()) - 1;
+  if (isNaN(activityIndex) || activityIndex < 0 || activityIndex >= activityData.length) {
+    ui.alert("❌ เลือกกิจกรรมไม่ถูกต้อง");
+    return;
+  }
+  
+  const [activityName, points] = activityData[activityIndex];
+  
+  const phonePrompt = ui.prompt("เพิ่ม Party Point", "กรอกเบอร์โทรของสมาชิกในปาร์ตี้ (ใครก็ได้):", ui.ButtonSet.OK_CANCEL);
+  if (phonePrompt.getSelectedButton() !== ui.Button.OK) return;
+  const phone = normalizePhone(phonePrompt.getResponseText().trim());
+
+  if (!validatePhoneOrAlert(phone, ui)) return;
+
+  const dashSheet = ss.getSheetByName("Member Dashboard");
+  const dashData = dashSheet.getDataRange().getValues();
+  const member = dashData.find(row => normalizePhone(row[1]) === phone);
+
+  if (!member) {
+    ui.alert("❌ ไม่พบเบอร์นี้ในระบบ");
+    return;
+  }
+  
+  const codename = member[2];
+  const partyName = member[5];
+
+  if (!partyName) {
+    ui.alert(`❌ สมาชิก '${codename}' ไม่ได้อยู่ในปาร์ตี้ใดๆ`);
+    return;
+  }
+  
+  let pointAmount = 0;
+  // 🆕 ตรรกะใหม่: ตรวจสอบค่า 'points'
+  if (String(points).trim() === "ตามจำนวนสมาชิก") {
+    const trackerSheet = ss.getSheetByName("Party Tracker");
+    if (!trackerSheet) {
+      ui.alert("❌ ไม่พบชีท 'Party Tracker' เพื่อนับจำนวนสมาชิก");
+      return;
+    }
+    const trackerData = trackerSheet.getDataRange().getValues();
+    const memberCount = trackerData.filter(row => row[0] === partyName).length;
+    pointAmount = memberCount > 0 ? memberCount : 1; // ให้คะแนนอย่างน้อย 1
+  } else {
+    pointAmount = Number(points);
+    if (isNaN(pointAmount)) {
+      ui.alert("❌ ค่าแต้มในชีท 'Party Activity List' ไม่ใช่ตัวเลขที่ถูกต้องสำหรับกิจกรรมนี้");
+      return;
+    }
+  }
+
+  // 🆕 ปรับปรุงข้อความยืนยัน
+  const confirmMessage = `สมาชิก: ${codename}\nปาร์ตี้: ${partyName}\n\nคุณต้องการเพิ่ม ${pointAmount} แต้ม จากกิจกรรม '${activityName}' ใช่หรือไม่?`;
+  const confirm = ui.alert("ยืนยันการเพิ่มแต้ม", confirmMessage, ui.ButtonSet.YES_NO);
+  if (confirm !== ui.Button.YES) return;
+
+  const partySheet = ss.getSheetByName("Party");
+  const partyLogSheet = ss.getSheetByName("Party Log");
+  const partyData = partySheet.getDataRange().getValues();
+  const partyIndex = partyData.findIndex(row => row[0] === partyName);
+
+  if (partyIndex === -1) {
+    ui.alert(`❌ ไม่พบปาร์ตี้ '${partyName}' ในชีท Party`);
+    return;
+  }
+
+  const currentPoint = Number(partyData[partyIndex][2]);
+  partySheet.getRange(partyIndex + 1, 3).setValue(currentPoint + pointAmount);
+
+  partyLogSheet.appendRow([
+    new Date(), 
+    partyName, 
+    codename, 
+    activityName, 
+    pointAmount, 
+    `เพิ่มจากกิจกรรมโดย ${admin}`
+  ]);
+  
+  logAdminAction("เพิ่ม Party Point จากกิจกรรม", `ให้ปาร์ตี้ ${partyName} +${pointAmount} แต้ม (ผ่าน ${codename}) | กิจกรรม: ${activityName}`, admin);
+  ui.alert(`✅ เพิ่ม ${pointAmount} แต้มให้ปาร์ตี้ '${partyName}' สำเร็จ!`);
+}
+
+/**
+ * 🆕 Searches for a member's profile data across multiple sheets.
+ * @param {string} codename The codename of the member to search for.
+ * @returns {ContentService} A JSON object with the member's profile data or an error message.
+ */
+function getMemberProfile(codename) {
+  if (!codename) {
+    return ContentService.createTextOutput(JSON.stringify({ error: "Codename is required." })).setMimeType(ContentService.MimeType.JSON);
+  }
+
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const dashSheet = ss.getSheetByName("Member Dashboard");
+  const partySheet = ss.getSheetByName("Party");
+
+  if (!dashSheet || !partySheet) {
+    return ContentService.createTextOutput(JSON.stringify({ error: "Required sheet not found." })).setMimeType(ContentService.MimeType.JSON);
+  }
+
+  const dashData = dashSheet.getDataRange().getValues();
+  const partyData = partySheet.getDataRange().getValues();
+
+  const memberRow = dashData.find(row => String(row[2]).trim().toLowerCase() === String(codename).trim().toLowerCase());
+
+  if (!memberRow) {
+    return ContentService.createTextOutput(JSON.stringify({ error: "ไม่พบสมาชิกด้วย Codename นี้" })).setMimeType(ContentService.MimeType.JSON);
+  }
+
+  const memberInfo = {
+    nickname: memberRow[0],
+    codename: memberRow[2],
+    rank: memberRow[3],
+    exp: memberRow[4],
+    partyName: memberRow[5] || "ไม่มีปาร์ตี้"
+  };
+
+  let partyInfo = {
+    partyPoints: "-"
+  };
+
+  if (memberInfo.partyName !== "ไม่มีปาร์ตี้") {
+    const partyRow = partyData.find(row => row[0] === memberInfo.partyName);
+    if (partyRow) {
+      partyInfo.partyPoints = partyRow[2] || 0;
+    }
+  }
+
+  const profileData = { ...memberInfo, ...partyInfo };
+
+  return ContentService.createTextOutput(JSON.stringify(profileData)).setMimeType(ContentService.MimeType.JSON);
 }

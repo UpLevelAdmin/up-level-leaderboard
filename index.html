@@ -197,9 +197,10 @@
       <h1>🏰 Up Level Guild</h1>
       <div class="motto">Up Level Guild ไปด้วยกัน ความมันส์ ความสนุกรอคุณอยู่</div>
       <div class="nav-buttons">
-        <a href="leaderboard.html">🏆 Leaderboard</a>
-        <a href="quests.html">🧩 Quest Board</a>
-        <a href="challenge.html">⚔️ ประกาศท้าทาย</a>
+        <a href="<?= ScriptApp.getService().getUrl() ?>?page=leaderboard">🏆 Leaderboard</a>
+        <a href="<?= ScriptApp.getService().getUrl() ?>?page=quests">📜 Quests</a>
+        <a href="<?= ScriptApp.getService().getUrl() ?>?page=challenge">⚔️ Challenge</a>
+        <a href="<?= ScriptApp.getService().getUrl() ?>?page=profile">👤 ข้อมูลสมาชิก</a>
       </div>
     </header>
 
