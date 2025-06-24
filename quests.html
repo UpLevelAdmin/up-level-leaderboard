@@ -333,12 +333,51 @@
     </div>
   </div>
 
+  <!-- Confirm Proof Modal -->
+  <div id="proof-modal" class="modal-backdrop" style="display: none; z-index:2000;">
+    <div class="modal-content" style="max-width:400px;text-align:center;">
+      <span class="modal-close-btn" id="proof-modal-close">&times;</span>
+      <h2 style="margin-bottom:1.2rem;">ยืนยันการส่งหลักฐาน</h2>
+      <div class="modal-desc" style="margin-bottom:1.5rem;">
+        📸 คุณได้ส่งรูปหลักฐานให้แอดมินแล้วหรือยัง?<br>หากยัง กรุณาส่งก่อน แล้วค่อยกลับมากดส่งเควสนี้
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <button id="proof-confirm-btn" style="background:#22c55e;">✅ ส่งหลักฐานแล้ว ดำเนินการส่งเควส</button>
+        <a href="https://m.me/uplevel.acad" target="_blank" style="text-decoration:none;">
+          <button style="background:#1877f2;">💬 ส่งผ่าน Facebook Messenger</button>
+        </a>
+        <a href="https://lin.ee/YT87E65" target="_blank" style="text-decoration:none;">
+          <button style="background:#06c755;">💬 ส่งผ่าน LINE OA</button>
+        </a>
+      </div>
+    </div>
+  </div>
+
   <script>
     function normalizePhone(p) {
       return p.replace(/[^\d]/g, '').replace(/^([1-9]\d{8})$/, '0$1');
     }
 
+    let pendingQuestId = null;
+
     function submitQuest(questId) {
+      pendingQuestId = questId;
+      showProofModal();
+    }
+
+    function showProofModal() {
+      document.getElementById('proof-modal').style.display = 'flex';
+    }
+    function hideProofModal() {
+      document.getElementById('proof-modal').style.display = 'none';
+    }
+    document.getElementById('proof-modal-close').onclick = hideProofModal;
+    document.getElementById('proof-confirm-btn').onclick = function() {
+      hideProofModal();
+      doSubmitQuest(pendingQuestId);
+    };
+
+    function doSubmitQuest(questId) {
       const phone = prompt("📱 กรอกเบอร์โทรเพื่อส่งเควสนี้:");
       if (!phone) return;
       const clean = normalizePhone(phone);
