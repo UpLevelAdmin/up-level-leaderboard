@@ -2556,15 +2556,15 @@ function verifyPartyLeader(e) {
   const fullname = (data.fullname || '').trim();
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const trackerSheet = ss.getSheetByName("Party Tracker");
-  const dashSheet = ss.getSheetByName("Member Dashboard");
-  if (!trackerSheet || !dashSheet) return ContentService.createTextOutput("error");
+  const dbSheet = ss.getSheetByName("Member Database");
+  if (!trackerSheet || !dbSheet) return ContentService.createTextOutput("error");
   const trackerData = trackerSheet.getDataRange().getValues();
-  const dashData = dashSheet.getDataRange().getValues();
+  const dbData = dbSheet.getDataRange().getValues();
   // หา row ที่เป็นหัวหน้าปาร์ตี้
   const leaderRow = trackerData.find(row => normalizePhone(row[2]) === phone && row[3] === "หัวหน้าปาร์ตี้");
   if (!leaderRow) return ContentService.createTextOutput("not_leader");
-  // เช็คชื่อ-สกุล
-  const dashRow = dashData.find(row => normalizePhone(row[1]) === phone);
-  if (!dashRow || (dashRow[0] || '').trim() !== fullname) return ContentService.createTextOutput("name_mismatch");
+  // เช็คชื่อ-สกุลจาก Member Database (คอลัมน์ 2)
+  const dbRow = dbData.find(row => normalizePhone(row[3]) === phone);
+  if (!dbRow || (dbRow[1] || '').trim() !== fullname) return ContentService.createTextOutput("name_mismatch");
   return ContentService.createTextOutput("ok");
 }
