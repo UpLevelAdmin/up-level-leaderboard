@@ -624,9 +624,7 @@
         partySelect.innerHTML = `<option disabled selected>ไม่พบปาร์ตี้อื่น</option>`;
       }
       console.log("[DEBUG] party-target innerHTML:", partySelect.innerHTML);
-      alert("[DEBUG] party-target.innerHTML: " + partySelect.innerHTML);
       console.log("[DEBUG] select#party-target count:", document.querySelectorAll('select#party-target').length);
-      console.log("[DEBUG] partySelect.offsetParent (null means hidden):", partySelect.offsetParent);
     } catch (err) {
       const partySelect = document.getElementById("party-target");
       partySelect.innerHTML = `<option disabled selected>เกิดข้อผิดพลาดในการโหลดปาร์ตี้</option>`;
