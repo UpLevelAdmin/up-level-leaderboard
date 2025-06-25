@@ -693,11 +693,12 @@
     const wager = document.getElementById("party-wager").value;
     const title = document.getElementById("party-title").value;
     try {
-      // ส่งข้อมูลแบบ JSON.stringify เหมือนฟอร์มเทรนเนอร์
-      const body = JSON.stringify({ phone, size, type, mode, targetParty, wager, title });
+      // ใช้ URLSearchParams และไม่ตั้ง Content-Type เอง
+      const params = new URLSearchParams({ phone, size, type, mode, targetParty, wager, title });
       const res = await fetch(endpoint + "?func=submitPartyChallenge", {
         method: "POST",
-        body
+        body: params
+        // ไม่ต้องตั้ง Content-Type เอง
       });
       const text = await res.text();
       alert(text);
