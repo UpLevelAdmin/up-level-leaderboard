@@ -81,6 +81,8 @@
       border: none;
       border-radius: 5px;
       cursor: pointer;
+      margin: 0 8px 8px 0;
+      display: inline-block;
     }
 
     .button-create.trainer {
@@ -233,6 +235,12 @@
       .button-create, .button-verify, .button-submit, .button-accept, .button-secondary {
         font-size: 0.95rem;
         width: 100%;
+      }
+
+      .button-create {
+        display: block;
+        width: 100%;
+        margin: 0 0 10px 0;
       }
     }
   </style>
@@ -612,10 +620,11 @@
       console.log("[DEBUG] party list (filtered):", filtered);
       const partySelect = document.getElementById("party-target");
       if (filtered.length > 0) {
-        partySelect.innerHTML = filtered.map(party => `<option value="${party.name}">${party.name} (${party.memberCount} คน)</option>`).join("");
+        partySelect.innerHTML = filtered.map(party => `<option value=\"${party.name}\">${party.name} (${party.memberCount} คน)</option>`).join("");
       } else {
         partySelect.innerHTML = `<option disabled selected>ไม่พบปาร์ตี้อื่น</option>`;
       }
+      console.log("[DEBUG] party-target innerHTML:", partySelect.innerHTML);
     } catch (err) {
       const partySelect = document.getElementById("party-target");
       partySelect.innerHTML = `<option disabled selected>เกิดข้อผิดพลาดในการโหลดปาร์ตี้</option>`;
