@@ -603,11 +603,13 @@
     try {
       const res = await fetch(endpoint + "?func=getPartyList");
       const parties = await res.json();
-      console.log("[DEBUG] party list", parties, "myParty:", myParty);
+      console.log("[DEBUG] party list (raw):", parties);
+      console.log("[DEBUG] myParty:", myParty);
       let filtered = parties;
       if (myParty) {
-        filtered = parties.filter(party => party.name !== myParty);
+        filtered = parties.filter(party => party.name.trim() !== myParty.trim());
       }
+      console.log("[DEBUG] party list (filtered):", filtered);
       const partySelect = document.getElementById("party-target");
       if (filtered.length > 0) {
         partySelect.innerHTML = filtered.map(party => `<option value="${party.name}">${party.name} (${party.memberCount} คน)</option>`).join("");
