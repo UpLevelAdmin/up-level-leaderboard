@@ -288,7 +288,7 @@
 
   <!-- ฟอร์มยืนยันหัวหน้าปาร์ตี้ -->
   <form id="party-auth-form" class="hidden">
-    <label>�� เบอร์หัวหน้าปาร์ตี้:</label>
+    <label>📱 เบอร์หัวหน้าปาร์ตี้:</label>
     <input type="text" id="party-leader-phone" pattern="\d*" placeholder="กรอกเบอร์โทร 10 หลัก" required />
     <label>👤 ชื่อ-นามสกุลหัวหน้าปาร์ตี้:</label>
     <input type="text" id="party-leader-fullname" placeholder="ต้องตรงกับที่ลงทะเบียน" required />
@@ -297,6 +297,7 @@
 
   <!-- ฟอร์มสร้างคำท้า Party vs Party -->
   <form id="party-challenge-form" class="hidden">
+    <div id="my-party-info" style="margin-bottom:10px;color:#3f51b5;"></div>
     <label>จำนวนผู้เล่น:</label>
     <select id="party-size">
       <option value="2v2">2v2</option>
@@ -556,18 +557,49 @@
     if (showParty) loadPartyList();
   };
 
+  let myCodename = "";
+  let myPartyName = "";
+
+  verifyBtn.onclick = async () => {
+    const phone = document.getElementById("party-leader-phone").value.trim();
+    const fullname = document.getElementById("party-leader-fullname").value.trim();
+    if (!phone || !fullname) return alert("กรุณากรอกข้อมูลให้ครบ");
+    const res = await fetch(endpoint + "?func=verifyPartyLeader", {
+      method: "POST",
+      body: JSON.stringify({ phone, fullname })
+    });
+    const result = await res.text();
+    if (result === "ok") {
+      // ดึง codename และชื่อปาร์ตี้ของหัวหน้าตี้
+      const profileRes = await fetch(endpoint + `?func=getMemberProfile&phone=${phone}`);
+      const profile = await profileRes.json();
+      myCodename = profile.codename;
+      myPartyName = profile.partyName;
+      // แสดง codename และชื่อปาร์ตี้บนฟอร์ม
+      document.getElementById("my-party-info").innerHTML = `👤 Codename: <b>${myCodename}</b> | 🛡️ ปาร์ตี้: <b>${myPartyName}</b>`;
+      partyAuthForm.classList.add("hidden");
+      partyChallengeForm.classList.remove("hidden");
+      loadPartyList(phone, profile.partyName);
+    } else {
+      alert("ข้อมูลไม่ถูกต้อง หรือคุณไม่ใช่หัวหน้าปาร์ตี้");
+    }
+  };
+
   async function loadPartyList(myPhone = null, myParty = null) {
     try {
       const res = await fetch(endpoint + "?func=getPartyList");
       const parties = await res.json();
+      console.log("[DEBUG] party list", parties, "myParty:", myParty);
       let filtered = parties;
       if (myParty) {
         filtered = parties.filter(party => party.name !== myParty);
       }
       const partySelect = document.getElementById("party-target");
-      partySelect.innerHTML = filtered.length > 0
-        ? filtered.map(party => `<option value="${party.name}">${party.name} (${party.memberCount} คน)</option>`).join("")
-        : `<option disabled selected>ไม่พบปาร์ตี้อื่น</option>`;
+      if (filtered.length > 0) {
+        partySelect.innerHTML = filtered.map(party => `<option value="${party.name}">${party.name} (${party.memberCount} คน)</option>`).join("");
+      } else {
+        partySelect.innerHTML = `<option disabled selected>ไม่พบปาร์ตี้อื่น</option>`;
+      }
     } catch (err) {
       const partySelect = document.getElementById("party-target");
       partySelect.innerHTML = `<option disabled selected>เกิดข้อผิดพลาดในการโหลดปาร์ตี้</option>`;
@@ -608,50 +640,6 @@
       alert("❌ เกิดข้อผิดพลาด");
     }
   };
-
-  // ยืนยันหัวหน้าปาร์ตี้
-  const verifyBtn = document.getElementById("verify-party-leader-btn");
-  verifyBtn.onclick = async () => {
-    const phone = document.getElementById("party-leader-phone").value.trim();
-    const fullname = document.getElementById("party-leader-fullname").value.trim();
-    if (!phone || !fullname) return alert("กรุณากรอกข้อมูลให้ครบ");
-    const res = await fetch(endpoint + "?func=verifyPartyLeader", {
-      method: "POST",
-      body: JSON.stringify({ phone, fullname })
-    });
-    const result = await res.text();
-    if (result === "ok") {
-      // ดึง codename และชื่อปาร์ตี้ของหัวหน้าตี้
-      const profileRes = await fetch(endpoint + `?func=getMemberProfile&phone=${phone}`);
-      const profile = await profileRes.json();
-      alert(`✅ ยืนยันสำเร็จ!\nCodename: ${profile.codename}\nปาร์ตี้: ${profile.partyName}`);
-      partyAuthForm.classList.add("hidden");
-      partyChallengeForm.classList.remove("hidden");
-      loadPartyList(phone, profile.partyName);
-    } else {
-      alert("ข้อมูลไม่ถูกต้อง หรือคุณไม่ใช่หัวหน้าปาร์ตี้");
-    }
-  };
-
-  // โหลดรายชื่อปาร์ตี้เป้าหมาย (ไม่แสดงปาร์ตี้ของตัวเอง)
-  async function loadPartyList(myPhone = null, myParty = null) {
-    try {
-      const res = await fetch(endpoint + "?func=getPartyList");
-      const parties = await res.json();
-      let filtered = parties;
-      if (myParty) {
-        filtered = parties.filter(party => party.name !== myParty);
-      }
-      const partySelect = document.getElementById("party-target");
-      partySelect.innerHTML = filtered.length > 0
-        ? filtered.map(party => `<option value="${party.name}">${party.name} (${party.memberCount} คน)</option>`).join("")
-        : `<option disabled selected>ไม่พบปาร์ตี้อื่น</option>`;
-    } catch (err) {
-      const partySelect = document.getElementById("party-target");
-      partySelect.innerHTML = `<option disabled selected>เกิดข้อผิดพลาดในการโหลดปาร์ตี้</option>`;
-      console.error("❌ โหลดรายชื่อปาร์ตี้ล้มเหลว:", err);
-    }
-  }
 
   // ส่งฟอร์ม Party vs Party
   partyChallengeForm.onsubmit = async (e) => {
