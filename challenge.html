@@ -686,15 +686,18 @@
   partyChallengeForm.onsubmit = async (e) => {
     e.preventDefault();
     const phone = document.getElementById("party-leader-phone").value.trim();
+    const size = document.getElementById("party-size").value;
+    const type = document.getElementById("party-type").value;
     const mode = document.getElementById("party-mode").value;
     const targetParty = document.getElementById("party-target").value;
     const wager = document.getElementById("party-wager").value;
     const title = document.getElementById("party-title").value;
     try {
-      const formData = new URLSearchParams({ phone, targetParty, mode, wager, title });
+      // ส่งข้อมูลแบบ JSON.stringify เหมือนฟอร์มเทรนเนอร์
+      const body = JSON.stringify({ phone, size, type, mode, targetParty, wager, title });
       const res = await fetch(endpoint + "?func=submitPartyChallenge", {
         method: "POST",
-        body: formData
+        body
       });
       const text = await res.text();
       alert(text);
