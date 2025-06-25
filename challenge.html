@@ -569,27 +569,33 @@
   let myPartyName = "";
 
   document.getElementById("verify-party-leader-btn").onclick = async () => {
+    console.log("[DEBUG] ปุ่มตรวจสอบหัวหน้าปาร์ตี้ถูกกด");
     const phone = document.getElementById("party-leader-phone").value.trim();
     const fullname = document.getElementById("party-leader-fullname").value.trim();
     if (!phone || !fullname) return alert("กรุณากรอกข้อมูลให้ครบ");
-    const res = await fetch(endpoint + "?func=verifyPartyLeader", {
-      method: "POST",
-      body: JSON.stringify({ phone, fullname })
-    });
-    const result = await res.text();
-    if (result === "ok") {
-      // ดึง codename และชื่อปาร์ตี้ของหัวหน้าตี้
-      const profileRes = await fetch(endpoint + `?func=getMemberProfile&phone=${phone}`);
-      const profile = await profileRes.json();
-      myCodename = profile.codename;
-      myPartyName = profile.partyName;
-      // แสดง codename และชื่อปาร์ตี้บนฟอร์ม
-      document.getElementById("my-party-info").innerHTML = `👤 Codename: <b>${myCodename}</b> | 🛡️ ปาร์ตี้: <b>${myPartyName}</b>`;
-      partyAuthForm.classList.add("hidden");
-      partyChallengeForm.classList.remove("hidden");
-      loadPartyList(phone, profile.partyName);
-    } else {
-      alert("ข้อมูลไม่ถูกต้อง หรือคุณไม่ใช่หัวหน้าปาร์ตี้");
+    try {
+      const res = await fetch(endpoint + "?func=verifyPartyLeader", {
+        method: "POST",
+        body: JSON.stringify({ phone, fullname })
+      });
+      const result = await res.text();
+      console.log("[DEBUG] ผลลัพธ์ verifyPartyLeader:", result);
+      if (result === "ok") {
+        // ดึง codename และชื่อปาร์ตี้ของหัวหน้าตี้
+        const profileRes = await fetch(endpoint + `?func=getMemberProfile&phone=${phone}`);
+        const profile = await profileRes.json();
+        myCodename = profile.codename;
+        myPartyName = profile.partyName;
+        document.getElementById("my-party-info").innerHTML = `👤 Codename: <b>${myCodename}</b> | 🛡️ ปาร์ตี้: <b>${myPartyName}</b>`;
+        partyAuthForm.classList.add("hidden");
+        partyChallengeForm.classList.remove("hidden");
+        loadPartyList(phone, profile.partyName);
+      } else {
+        alert("ข้อมูลไม่ถูกต้อง หรือคุณไม่ใช่หัวหน้าปาร์ตี้");
+      }
+    } catch (err) {
+      alert("เกิดข้อผิดพลาด: " + err);
+      console.error("[ERROR] verify-party-leader-btn:", err);
     }
   };
 
