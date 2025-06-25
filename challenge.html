@@ -215,6 +215,12 @@
       0% { left: -100%; }
       100% { left: 100%; }
     }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
     @media (max-width: 480px) {
       .challenge-card {
         flex-direction: column;
@@ -251,6 +257,11 @@
 
   <!-- รายการคำท้า -->
   <div id="challenge-list">กำลังโหลด...</div>
+
+  <!-- Loading Spinner -->
+  <div id="loading-spinner" class="hidden" style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.6);">
+    <div style="border:8px solid #f3f3f3;border-top:8px solid #3f51b5;border-radius:50%;width:60px;height:60px;animation:spin 1s linear infinite;"></div>
+  </div>
 
   <!-- ปุ่มแยก -->
   <button id="show-trainer-form-btn" class="button-create trainer">+ สร้างคำท้าระหว่างเทรนเนอร์</button>
@@ -576,10 +587,12 @@
   let myPartyName = "";
 
   document.getElementById("verify-party-leader-btn").onclick = async () => {
+    const spinner = document.getElementById("loading-spinner");
+    spinner.classList.remove("hidden");
     console.log("[DEBUG] ปุ่มตรวจสอบหัวหน้าปาร์ตี้ถูกกด");
     const phone = document.getElementById("party-leader-phone").value.trim();
     const fullname = document.getElementById("party-leader-fullname").value.trim();
-    if (!phone || !fullname) return alert("กรุณากรอกข้อมูลให้ครบ");
+    if (!phone || !fullname) { spinner.classList.add("hidden"); return alert("กรุณากรอกข้อมูลให้ครบ"); }
     try {
       const res = await fetch(endpoint + "?func=verifyPartyLeader", {
         method: "POST",
@@ -596,7 +609,7 @@
         document.getElementById("my-party-info").innerHTML = `👤 Codename: <b>${myCodename}</b> | 🛡️ ปาร์ตี้: <b>${myPartyName}</b>`;
         partyAuthForm.classList.add("hidden");
         partyChallengeForm.classList.remove("hidden");
-        loadPartyList(phone, profile.partyName);
+        await loadPartyList(phone, profile.partyName, spinner);
       } else {
         alert("ข้อมูลไม่ถูกต้อง หรือคุณไม่ใช่หัวหน้าปาร์ตี้");
       }
@@ -604,9 +617,11 @@
       alert("เกิดข้อผิดพลาด: " + err);
       console.error("[ERROR] verify-party-leader-btn:", err);
     }
+    spinner.classList.add("hidden");
   };
 
-  async function loadPartyList(myPhone = null, myParty = null) {
+  async function loadPartyList(myPhone = null, myParty = null, spinner = null) {
+    if (spinner) spinner.classList.remove("hidden");
     try {
       const res = await fetch(endpoint + "?func=getPartyList");
       const parties = await res.json();
@@ -630,6 +645,7 @@
       partySelect.innerHTML = `<option disabled selected>เกิดข้อผิดพลาดในการโหลดปาร์ตี้</option>`;
       console.error("❌ โหลดรายชื่อปาร์ตี้ล้มเหลว:", err);
     }
+    if (spinner) spinner.classList.add("hidden");
   }
 
   // ส่งฟอร์มสร้างคำท้า
