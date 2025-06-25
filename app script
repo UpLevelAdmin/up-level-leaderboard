@@ -2503,9 +2503,10 @@ function getPartyList() {
   const trackerData = trackerSheet.getDataRange().getValues();
   const parties = [];
   for (let i = 1; i < partyData.length; i++) {
-    const partyName = partyData[i][0];
-    const memberCount = trackerData.filter(row => row[0] === partyName).length;
-    parties.push({ name: partyName, memberCount: memberCount });
+    const partyName = String(partyData[i][0] || '').trim();
+    if (!partyName) continue;
+    const memberCount = trackerData.filter(row => String(row[0] || '').trim() === partyName).length;
+    parties.push({ name: partyName, memberCount });
   }
   return ContentService.createTextOutput(JSON.stringify(parties)).setMimeType(ContentService.MimeType.JSON);
 }

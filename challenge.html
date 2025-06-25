@@ -556,15 +556,21 @@
     if (showParty) loadPartyList();
   };
 
-  async function loadPartyList() {
+  async function loadPartyList(myPhone = null, myParty = null) {
     try {
       const res = await fetch(endpoint + "?func=getPartyList");
       const parties = await res.json();
+      let filtered = parties;
+      if (myParty) {
+        filtered = parties.filter(party => party.name !== myParty);
+      }
       const partySelect = document.getElementById("party-target");
-      partySelect.innerHTML = parties.length > 0
-        ? parties.map(party => `<option value="${party.name}">${party.name} (${party.memberCount} คน)</option>`).join("")
+      partySelect.innerHTML = filtered.length > 0
+        ? filtered.map(party => `<option value="${party.name}">${party.name} (${party.memberCount} คน)</option>`).join("")
         : `<option disabled selected>ไม่พบปาร์ตี้อื่น</option>`;
     } catch (err) {
+      const partySelect = document.getElementById("party-target");
+      partySelect.innerHTML = `<option disabled selected>เกิดข้อผิดพลาดในการโหลดปาร์ตี้</option>`;
       console.error("❌ โหลดรายชื่อปาร์ตี้ล้มเหลว:", err);
     }
   }
@@ -641,6 +647,8 @@
         ? filtered.map(party => `<option value="${party.name}">${party.name} (${party.memberCount} คน)</option>`).join("")
         : `<option disabled selected>ไม่พบปาร์ตี้อื่น</option>`;
     } catch (err) {
+      const partySelect = document.getElementById("party-target");
+      partySelect.innerHTML = `<option disabled selected>เกิดข้อผิดพลาดในการโหลดปาร์ตี้</option>`;
       console.error("❌ โหลดรายชื่อปาร์ตี้ล้มเหลว:", err);
     }
   }
