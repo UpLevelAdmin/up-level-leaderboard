@@ -333,7 +333,9 @@
       <option value="BO5">BO5</option>
     </select>
     <label>🛡️ เลือกปาร์ตี้ที่ถูกท้า:</label>
-    <select id="party-target"></select>
+    <select id="party-target">
+      <option value="test">test</option>
+    </select>
     <label>🎁 เดิมพัน / เงื่อนไข:</label>
     <input type="text" id="party-wager" placeholder="เช่น Party Point 5, รางวัลพิเศษ ฯลฯ" />
     <label>📝 ชื่อคำท้า (ถ้าจะตั้งชื่อ):</label>
@@ -625,6 +627,9 @@
         partySelect.innerHTML = `<option disabled selected>ไม่พบปาร์ตี้อื่น</option>`;
       }
       console.log("[DEBUG] party-target innerHTML:", partySelect.innerHTML);
+      alert("[DEBUG] party-target.innerHTML: " + partySelect.innerHTML);
+      console.log("[DEBUG] select#party-target count:", document.querySelectorAll('select#party-target').length);
+      console.log("[DEBUG] partySelect.offsetParent (null means hidden):", partySelect.offsetParent);
     } catch (err) {
       const partySelect = document.getElementById("party-target");
       partySelect.innerHTML = `<option disabled selected>เกิดข้อผิดพลาดในการโหลดปาร์ตี้</option>`;
