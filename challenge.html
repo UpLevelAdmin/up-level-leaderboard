@@ -560,7 +560,7 @@
   let myCodename = "";
   let myPartyName = "";
 
-  verifyBtn.onclick = async () => {
+  document.getElementById("verify-party-leader-btn").onclick = async () => {
     const phone = document.getElementById("party-leader-phone").value.trim();
     const fullname = document.getElementById("party-leader-fullname").value.trim();
     if (!phone || !fullname) return alert("กรุณากรอกข้อมูลให้ครบ");
