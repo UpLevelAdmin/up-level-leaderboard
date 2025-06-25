@@ -18,6 +18,7 @@ function onOpen() {
     .addItem("📥 เพิ่ม EXP & Party Point จากกิจกรรม (หลายคน)", "addExpFromActivityBulk")
     .addItem("🟢 เพิ่ม EXP แบบ Manual", "manualAddExp")
     .addItem("🧩 เพิ่ม Party Point แบบ Manual", "manualAddPartyPoint")
+    .addItem("🎁 แลกแต้ม Party Point", "redeemPartyPoint")
     .addItem("✅ อนุมัติเควส (ระบุเบอร์)", "approveQuestByPhone")
     .addItem("↩️ ย้อน EXP ล่าสุด (1 คน)", "undoLastExpSingle")
     .addItem("↩️ ย้อน EXP ล่าสุด (หลายคน)", "undoLastExpBulk")
@@ -204,11 +205,15 @@ function onFormSubmit(e) {
     return;
   }
 
-  let initialExp = memberType.includes("Premium") ? 3 : 0;
-
-  // ✅ ถ้ามี referrer อยู่จริงในระบบ → ผู้สมัคร Premium ได้ +1
-  if (memberType.includes("Premium") && referrer && phonesInDash.includes(referrer)) {
-    initialExp += 1;
+  // --- ปรับ logic การบวก EXP ตามที่ต้องการ ---
+  let initialExp = 0;
+  if (memberType.includes("Premium")) {
+    initialExp = 3;
+    if (referrer && phonesInDash.includes(referrer)) {
+      initialExp += 1; // ผู้สมัครได้เพิ่ม 1
+      addExpToPhone(referrer, 2); // referrer ได้ 2 EXP ทันที
+      logExp(referrer, "แนะนำเพื่อนสมัคร Premium (+2 EXP)", 2);
+    }
   }
 
   // ✅ เขียนเข้า Member Dashboard โดย setValues + ล็อกเบอร์
@@ -222,10 +227,7 @@ function onFormSubmit(e) {
 
   logExp(phone, "สมัครสมาชิก", initialExp);
 
-  if (referrer && memberType.includes("Premium") && phonesInDash.includes(referrer)) {
-    addExpToPhone(referrer, 2);
-    logExp(referrer, "แนะนำเพื่อนสมัคร (Premium)", 2);
-  }
+  // --- ลบ logic เดิมที่ referrer ได้ 1 EXP ทุก 2 คน ---
 
   updateRanks();
   updateLeaderboard();
@@ -587,7 +589,7 @@ function removeFromParty() {
   sortAndHighlightPartyTracker();
 }
 
-// ✅ ย้ายสมาชิกไปปาร์ตี้ใหม่ (เช็ก Rank, ความถูกต้อง, จำนวนสมาชิก)
+// ✅ ย้ายสมาชิกไปปาร์ตี้ใหม่ (เพิ่มยืนยันก่อนดำเนินการ)
 function moveToAnotherParty() {
   const ui = SpreadsheetApp.getUi();
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -693,7 +695,7 @@ function rgbToHex(r, g, b) {
   }).join("");
 }
 
-// ✅ เพิ่ม EXP ให้คนเดียวจากกิจกรรม
+// ✅ เพิ่ม EXP ให้คนเดียวจากกิจกรรม (เพิ่มยืนยันก่อนดำเนินการ)
 function addExpFromActivity() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const ui = SpreadsheetApp.getUi();
@@ -704,7 +706,6 @@ function addExpFromActivity() {
   const adminPrompt = ui.prompt("ชื่อแอดมิน", "กรุณากรอกชื่อแอดมิน (สำหรับบันทึก log)", ui.ButtonSet.OK_CANCEL);
   if (adminPrompt.getSelectedButton() !== ui.Button.OK) return;
   const admin = adminPrompt.getResponseText().trim();
-
 
   const activityData = activitySheet.getRange(2, 1, activitySheet.getLastRow() - 1, 3).getValues();
   const activityList = activityData.map((row, i) => `${i + 1}. ${row[0]} (${row[1]} EXP)`).join("\n");
@@ -738,6 +739,14 @@ function addExpFromActivity() {
     ui.alert("❌ ไม่พบเบอร์นี้ในระบบ");
     return;
   }
+
+  // --- ยืนยันก่อนดำเนินการ ---
+  let summary = `คุณกำลังจะเพิ่ม EXP ให้สมาชิก:\n\n- ชื่อ: ${codename}\n- เบอร์: ${phone}\n- กิจกรรม: ${activityName}\n- EXP: ${exp}`;
+  if (pointsConfig && String(pointsConfig).trim() !== "") {
+    summary += `\n- Party Point: ${pointsConfig}`;
+  }
+  const confirm = ui.alert("ยืนยันการเพิ่ม EXP", summary + "\n\nต้องการดำเนินการต่อหรือไม่?", ui.ButtonSet.YES_NO);
+  if (confirm !== ui.Button.YES) return;
 
   const currentExp = Number(dashSheet.getRange(rowIndex, 5).getValue());
   dashSheet.getRange(rowIndex, 5).setValue(currentExp + Number(exp));
@@ -777,7 +786,7 @@ function addExpFromActivity() {
   updateLeaderboard();
 }
 
-// ✅ เพิ่ม EXP ให้หลายคนจากกิจกรรมเดียว
+// ✅ เพิ่ม EXP ให้หลายคนจากกิจกรรมเดียว (เพิ่มยืนยันก่อนดำเนินการ)
 function addExpFromActivityBulk() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const ui = SpreadsheetApp.getUi();
@@ -813,6 +822,26 @@ function addExpFromActivityBulk() {
   const dashData = dashSheet.getDataRange().getValues();
   const updated = [];
   const partyPointsGiven = new Set(); // ป้องกันการให้แต้มปาร์ตี้ซ้ำซ้อน
+  let summaryList = [];
+
+  for (let phone of phones) {
+    for (let i = 1; i < dashData.length; i++) {
+      const dashPhone = normalizePhone(dashData[i][1]);
+      if (dashPhone === phone) {
+        const codename = dashData[i][2];
+        summaryList.push(`- ${codename} (${phone})`);
+        break;
+      }
+    }
+  }
+
+  // --- ยืนยันก่อนดำเนินการ ---
+  let summary = `คุณกำลังจะเพิ่ม EXP ให้กับ:\n\n${summaryList.join("\n")}\n\nกิจกรรม: ${activityName}\nEXP: ${exp}`;
+  if (pointsConfig && String(pointsConfig).trim() !== "") {
+    summary += `\nParty Point: ${pointsConfig}`;
+  }
+  const confirm = ui.alert("ยืนยันการเพิ่ม EXP (หลายคน)", summary + "\n\nต้องการดำเนินการต่อหรือไม่?", ui.ButtonSet.YES_NO);
+  if (confirm !== ui.Button.YES) return;
 
   for (let phone of phones) {
     for (let i = 1; i < dashData.length; i++) {
@@ -868,7 +897,7 @@ function addExpFromActivityBulk() {
 }
 
 
-// ✅ เพิ่ม EXP แบบ manual
+// ✅ เพิ่ม EXP แบบ manual (เพิ่มยืนยันก่อนดำเนินการ)
 function manualAddExp() {
   
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -905,10 +934,15 @@ function manualAddExp() {
   logAdminAction("เพิ่ม EXP (Manual)", `ให้ ${codename} (${phone}) +${exp}`, admin);
   updateRanks();
   updateLeaderboard();
+
+  // --- ยืนยันก่อนดำเนินการ ---
+  let summary = `คุณกำลังจะเพิ่ม EXP แบบ manual ให้กับ:\n\n- ${codename} (${phone})\nEXP: ${exp}`;
+  const confirm = ui.alert("ยืนยันการเพิ่ม EXP (Manual)", summary + "\n\nต้องการดำเนินการต่อหรือไม่?", ui.ButtonSet.YES_NO);
+  if (confirm !== ui.Button.YES) return;
 }
 
 
-// ✅ เพิ่ม Party Point แบบ manual พร้อม Log
+// ✅ เพิ่ม Party Point แบบ manual (เพิ่มยืนยันก่อนดำเนินการ)
 function manualAddPartyPoint() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const ui = SpreadsheetApp.getUi();
@@ -957,6 +991,11 @@ function manualAddPartyPoint() {
 
   logAdminAction("เพิ่ม Party Point", `ให้ปาร์ตี้ ${partyName} +${point} (${codename}) | ${reason}`, admin);
   ui.alert(`✅ เพิ่ม Party Point สำเร็จให้ปาร์ตี้ ${partyName}`);
+
+  // --- ยืนยันก่อนดำเนินการ ---
+  let summary = `คุณกำลังจะเพิ่ม Party Point แบบ manual ให้กับ:\n\n- ปาร์ตี้: ${partyName}\n- สมาชิก: ${codename} (${phone})\n- จำนวน: ${point}\n- เหตุผล: ${reason}`;
+  const confirm = ui.alert("ยืนยันการเพิ่ม Party Point (Manual)", summary + "\n\nต้องการดำเนินการต่อหรือไม่?", ui.ButtonSet.YES_NO);
+  if (confirm !== ui.Button.YES) return;
 }
 
 
@@ -995,7 +1034,9 @@ function disbandParty() {
   const partyName = partyNames[index];
 
   // ⚠️ ยืนยันก่อนยุบ
-  const confirm = ui.alert("⚠️ ยืนยันการยุบปาร์ตี้", `คุณแน่ใจหรือไม่ว่าต้องการยุบปาร์ตี้ "${partyName}"?\n\nสมาชิกทั้งหมดจะถูกลบออกจากปาร์ตี้นี้`, ui.ButtonSet.YES_NO);
+  const trackerData_pre = trackerSheet.getDataRange().getValues();
+  const members = trackerData_pre.filter(row => row[0] === partyName).map(r => r[1]);
+  const confirm = ui.alert("⚠️ ยืนยันการยุบปาร์ตี้", `คุณแน่ใจหรือไม่ว่าต้องการยุบปาร์ตี้ "${partyName}"?\n\nสมาชิก (${members.length} คน): ${members.join(", ")}\n\nสมาชิกทั้งหมดจะถูกลบออกจากปาร์ตี้นี้`, ui.ButtonSet.YES_NO);
   if (confirm !== ui.Button.YES) return;
 
   // ✅ ลบจากชีท Party
@@ -1007,13 +1048,10 @@ function disbandParty() {
     }
   }
 
-  // ✅ ค้นหาสมาชิกทั้งหมดในปาร์ตี้
-  const trackerData = trackerSheet.getDataRange().getValues();
-  const members = trackerData.filter(row => row[0] === partyName);
-
   // ✅ ลบจาก Party Tracker (จากล่างขึ้นบน)
-  for (let i = trackerData.length - 1; i >= 1; i--) {
-    if (trackerData[i][0] === partyName) {
+  const trackerData_post = trackerSheet.getDataRange().getValues();
+  for (let i = trackerData_post.length - 1; i >= 1; i--) {
+    if (trackerData_post[i][0] === partyName) {
       trackerSheet.deleteRow(i + 1);
     }
   }
@@ -1241,6 +1279,9 @@ function doGet(e) {
   if (func === "getPartyByPhone") return getPartyByPhone(e); // Added for completeness
   if (func === "getMemberProfile") return getMemberProfile(e.parameter.phone);
   if (func === "getPartyMembers") return getPartyMembers(e.parameter.partyName);
+  if (func === "getPartyList") return getPartyList();
+  if (func === "submitPartyChallenge") return submitPartyChallenge(e);
+  if (func === "verifyPartyLeader") return verifyPartyLeader(e);
   return HtmlService.createHtmlOutput("<p>✅ Up Level Guild System Web App</p>");
 }
 
@@ -1250,6 +1291,8 @@ function doPost(e) {
   if (func === "submitChallengeRequest") return submitChallengeRequest(e);
   if (func === "acceptChallenge") return acceptChallenge(e);
   if (func === "updateChallengeStatus") return updateChallengeStatus(e);
+  if (func === "submitPartyChallenge") return submitPartyChallenge(e);
+  if (func === "verifyPartyLeader") return verifyPartyLeader(e);
   return ContentService.createTextOutput("❌ Invalid Request").setMimeType(ContentService.MimeType.TEXT);
 }
 
@@ -2397,4 +2440,131 @@ function getPartyMembers(partyName) {
       };
     });
   return ContentService.createTextOutput(JSON.stringify(members)).setMimeType(ContentService.MimeType.JSON);
+}
+
+// ✅ แลกแต้ม Party Point เป็นของรางวัล (เลือกจาก Reward Catalog)
+function redeemPartyPoint() {
+  const ui = SpreadsheetApp.getUi();
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const partySheet = ss.getSheetByName("Party");
+  const partyLogSheet = ss.getSheetByName("Party Log");
+  const rewardSheet = ss.getSheetByName("Reward Catalog");
+
+  // 0. กรอกชื่อแอดมิน
+  const adminPrompt = ui.prompt("ชื่อแอดมิน", "กรุณากรอกชื่อแอดมิน (สำหรับบันทึก log)", ui.ButtonSet.OK_CANCEL);
+  if (adminPrompt.getSelectedButton() !== ui.Button.OK || !adminPrompt.getResponseText().trim()) return;
+  const admin = adminPrompt.getResponseText().trim();
+
+  // 1. เลือกปาร์ตี้ (dropdown แบบพิมพ์เลข)
+  const partyData = partySheet.getDataRange().getValues();
+  const partyNames = partyData.slice(1).map(row => row[0]);
+  if (partyNames.length === 0) return ui.alert("❌ ยังไม่มีปาร์ตี้ในระบบ");
+  const partyList = partyNames.map((p, i) => `${i + 1}. ${p}`).join("\n");
+  const partyPrompt = ui.prompt("แลกแต้ม", `เลือกปาร์ตี้โดยพิมพ์หมายเลข:\n${partyList}`, ui.ButtonSet.OK_CANCEL);
+  if (partyPrompt.getSelectedButton() !== ui.Button.OK) return;
+  const partyIndex = Number(partyPrompt.getResponseText().trim()) - 1;
+  if (isNaN(partyIndex) || partyIndex < 0 || partyIndex >= partyNames.length) return ui.alert("❌ เลือกปาร์ตี้ไม่ถูกต้อง");
+  const partyName = partyNames[partyIndex];
+
+  // 2. เลือกรางวัลจาก Reward Catalog (dropdown แบบพิมพ์เลข)
+  const rewardData = rewardSheet.getDataRange().getValues();
+  if (rewardData.length < 2) return ui.alert("❌ ยังไม่มีรายการรางวัลใน Reward Catalog");
+  const rewardList = rewardData.slice(1).map((row, i) => `${i + 1}. ${row[0]} (${row[1]} แต้ม)`);
+  const rewardPrompt = ui.prompt("เลือกรางวัล", `เลือกของรางวัลโดยพิมพ์หมายเลข:\n${rewardList.join("\n")}`, ui.ButtonSet.OK_CANCEL);
+  if (rewardPrompt.getSelectedButton() !== ui.Button.OK) return;
+  const rewardIndex = Number(rewardPrompt.getResponseText().trim()) - 1;
+  if (isNaN(rewardIndex) || rewardIndex < 0 || rewardIndex >= rewardList.length) return ui.alert("❌ เลือกรางวัลไม่ถูกต้อง");
+  const [rewardName, requiredPoint] = rewardData[rewardIndex + 1];
+  const points = Number(requiredPoint);
+  const currentPoint = Number(partyData[partyIndex + 1][2]);
+  if (points > currentPoint) return ui.alert("❌ แต้มปาร์ตี้ไม่พอ");
+
+  // 3. สรุปข้อมูลก่อนยืนยัน
+  const summary = `ปาร์ตี้: ${partyName}\nของรางวัล: ${rewardName}\nแต้มที่ใช้: ${points}\nแต้มคงเหลือ: ${currentPoint - points}\nแอดมิน: ${admin}\n\nต้องการดำเนินการต่อหรือไม่?`;
+  const confirm = ui.alert("ยืนยันการแลกแต้ม", summary, ui.ButtonSet.YES_NO);
+  if (confirm !== ui.Button.YES) return;
+
+  // 4. หักแต้มและบันทึก log
+  partySheet.getRange(partyIndex + 2, 3).setValue(currentPoint - points);
+  partyLogSheet.appendRow([new Date(), partyName, "", `แลกของรางวัล: ${rewardName}`, -points, `แลกแต้มโดย ${admin}`]);
+  logAdminAction("แลกแต้ม Party Point", `ปาร์ตี้ ${partyName} แลก ${rewardName} (${points} แต้ม) โดย ${admin}`, admin);
+  ui.alert(`✅ แลกแต้มสำเร็จ! ปาร์ตี้ ${partyName} เหลือ ${currentPoint - points} แต้ม`);
+}
+
+// ✅ ดึงรายชื่อปาร์ตี้ทั้งหมด
+function getPartyList() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const partySheet = ss.getSheetByName("Party");
+  const trackerSheet = ss.getSheetByName("Party Tracker");
+  if (!partySheet || !trackerSheet) {
+    return ContentService.createTextOutput(JSON.stringify([])).setMimeType(ContentService.MimeType.JSON);
+  }
+  const partyData = partySheet.getDataRange().getValues();
+  const trackerData = trackerSheet.getDataRange().getValues();
+  const parties = [];
+  for (let i = 1; i < partyData.length; i++) {
+    const partyName = partyData[i][0];
+    const memberCount = trackerData.filter(row => row[0] === partyName).length;
+    parties.push({ name: partyName, memberCount: memberCount });
+  }
+  return ContentService.createTextOutput(JSON.stringify(parties)).setMimeType(ContentService.MimeType.JSON);
+}
+
+// ✅ ส่งคำท้า Party vs Party
+function submitPartyChallenge(e) {
+  let data = e;
+  if (typeof e.postData === 'object') data = JSON.parse(e.postData.contents);
+  const phone = normalizePhone(data.phone);
+  const codename = getCodenameFromPhone(phone);
+  const { size, type, mode, targetParty, wager, title } = data;
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const partySheet = ss.getSheetByName("Party");
+  const partyData = partySheet.getDataRange().getValues();
+  // ตรวจสอบว่าปาร์ตี้เป้าหมายมีอยู่จริง
+  const partyExists = partyData.some(row => row[0] === targetParty);
+  if (!partyExists) {
+    return ContentService.createTextOutput("❌ ไม่พบปาร์ตี้เป้าหมาย").setMimeType(ContentService.MimeType.TEXT);
+  }
+  const challengeSheet = ss.getSheetByName("Party Challenge");
+  const now = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "dd/MM/yyyy HH:mm:ss");
+  const values = [
+    now, // วันที่-เวลา
+    getPartyByPhone(phone), // ปาร์ตี้ผู้ท้า
+    targetParty, // ปาร์ตี้เป้าหมาย
+    `Party vs Party (${size})`, // ประเภท
+    `${type} ${mode}`, // รูปแบบ
+    wager, // เดิมพัน
+    title || "-", // ชื่อคำท้า
+    "รออนุมัติ", // สถานะ
+    "", // ผู้ชนะ
+    "", // คะแนนที่ได้
+    codename // ผู้บันทึก
+  ];
+  try {
+    challengeSheet.appendRow(values);
+    return ContentService.createTextOutput("✅ ส่งคำท้า Party vs Party สำเร็จ รออนุมัติ").setMimeType(ContentService.MimeType.TEXT);
+  } catch (err) {
+    return ContentService.createTextOutput("❌ เกิดข้อผิดพลาด: " + err.message).setMimeType(ContentService.MimeType.TEXT);
+  }
+}
+
+// ✅ ตรวจสอบหัวหน้าปาร์ตี้
+function verifyPartyLeader(e) {
+  let data = e;
+  if (typeof e.postData === 'object') data = JSON.parse(e.postData.contents);
+  const phone = normalizePhone(data.phone);
+  const fullname = (data.fullname || '').trim();
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const trackerSheet = ss.getSheetByName("Party Tracker");
+  const dashSheet = ss.getSheetByName("Member Dashboard");
+  if (!trackerSheet || !dashSheet) return ContentService.createTextOutput("error");
+  const trackerData = trackerSheet.getDataRange().getValues();
+  const dashData = dashSheet.getDataRange().getValues();
+  // หา row ที่เป็นหัวหน้าปาร์ตี้
+  const leaderRow = trackerData.find(row => normalizePhone(row[2]) === phone && row[3] === "หัวหน้าปาร์ตี้");
+  if (!leaderRow) return ContentService.createTextOutput("not_leader");
+  // เช็คชื่อ-สกุล
+  const dashRow = dashData.find(row => normalizePhone(row[1]) === phone);
+  if (!dashRow || (dashRow[0] || '').trim() !== fullname) return ContentService.createTextOutput("name_mismatch");
+  return ContentService.createTextOutput("ok");
 }

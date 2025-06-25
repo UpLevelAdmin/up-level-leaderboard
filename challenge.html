@@ -236,10 +236,11 @@
   <!-- รายการคำท้า -->
   <div id="challenge-list">กำลังโหลด...</div>
 
-  <!-- ปุ่มสร้างคำท้า -->
-  <button id="show-form-btn" class="button-create">+ สร้างคำท้า</button>
+  <!-- ปุ่มแยก -->
+  <button id="show-trainer-form-btn" class="button-create">+ สร้างคำท้าระหว่างเทรนเนอร์</button>
+  <button id="show-party-auth-btn" class="button-create">+ สร้างคำท้าระหว่างปาร์ตี้</button>
 
-  <!-- ฟอร์มสร้างคำท้า -->
+  <!-- ฟอร์มสร้างคำท้าระหว่างเทรนเนอร์ (trainer challenge) -->
   <form id="challenge-form" class="hidden">
     <label>📱 เบอร์โทร:</label>
     <input type="text" id="phone" pattern="\d*" placeholder="กรอกเบอร์โทร 10 หลัก" required />
@@ -252,6 +253,7 @@
       <select id="type">
         <option value="open">Open Challenge</option>
         <option value="direct">Direct Challenge</option>
+        <option value="party">Party vs Party</option>
       </select>
 
       <div id="target-select-container" class="hidden">
@@ -259,12 +261,19 @@
         <select id="target"></select>
       </div>
 
+      <div id="party-select-container" class="hidden">
+        <label>🛡️ เลือกปาร์ตี้ที่ถูกท้า:</label>
+        <select id="party-target"></select>
+      </div>
+
       <label>⚔️ รูปแบบการแข่ง:</label>
       <select id="mode">
         <option value="Standard BO1">Standard BO1</option>
         <option value="Standard BO3">Standard BO3</option>
         <option value="Standard BO5">Standard BO5</option>
-        <option value="Asia Wide">Asia Wide</option>
+        <option value="Asia Wide BO1">Asia Wide BO1</option>
+        <option value="Asia Wide BO3">Asia Wide BO3</option>
+        <option value="Asia Wide BO5">Asia Wide BO5</option>
       </select>
 
       <label>🎁 เดิมพัน / เงื่อนไข:</label>
@@ -276,6 +285,45 @@
       <button type="submit" class="button-submit">✨ ส่งคำท้าสำหรับตรวจสอบ</button>
     </div>
   </form>
+
+  <!-- ฟอร์มยืนยันหัวหน้าปาร์ตี้ -->
+  <form id="party-auth-form" class="hidden">
+    <label>�� เบอร์หัวหน้าปาร์ตี้:</label>
+    <input type="text" id="party-leader-phone" pattern="\d*" placeholder="กรอกเบอร์โทร 10 หลัก" required />
+    <label>👤 ชื่อ-นามสกุลหัวหน้าปาร์ตี้:</label>
+    <input type="text" id="party-leader-fullname" placeholder="ต้องตรงกับที่ลงทะเบียน" required />
+    <button type="button" id="verify-party-leader-btn" class="button-verify">🔍 ตรวจสอบ</button>
+  </form>
+
+  <!-- ฟอร์มสร้างคำท้า Party vs Party -->
+  <form id="party-challenge-form" class="hidden">
+    <label>จำนวนผู้เล่น:</label>
+    <select id="party-size">
+      <option value="2v2">2v2</option>
+      <option value="3v3">3v3</option>
+      <option value="4v4">4v4</option>
+      <option value="5v5">5v5</option>
+    </select>
+    <label>ประเภท:</label>
+    <select id="party-type">
+      <option value="Standard">Standard</option>
+      <option value="Asia Wide">Asia Wide</option>
+    </select>
+    <label>รูปแบบ:</label>
+    <select id="party-mode">
+      <option value="BO1">BO1</option>
+      <option value="BO3">BO3</option>
+      <option value="BO5">BO5</option>
+    </select>
+    <label>🛡️ เลือกปาร์ตี้ที่ถูกท้า:</label>
+    <select id="party-target"></select>
+    <label>🎁 เดิมพัน / เงื่อนไข:</label>
+    <input type="text" id="party-wager" placeholder="เช่น Party Point 5, รางวัลพิเศษ ฯลฯ" />
+    <label>📝 ชื่อคำท้า (ถ้าจะตั้งชื่อ):</label>
+    <input type="text" id="party-title" placeholder="ถ้าไม่ตั้งจะสุ่มชื่อให้" />
+    <button type="submit" class="button-submit">✨ ส่งคำท้า Party vs Party</button>
+  </form>
+
   <!-- ฟอร์มรับคำท้า -->
   <div id="accept-form" class="hidden">
     <form>
@@ -429,39 +477,6 @@
     console.log("📦 DOM Loaded → เรียก loadChallenges()");
     loadChallenges();
   });
-
-  // ฟังก์ชันสร้างการ์ดทดสอบ
-  function createTestCard() {
-    const testCard = document.createElement("div");
-    testCard.className = "challenge-card ready";
-    
-    testCard.innerHTML = `
-      <span class="challenge-type open">OPEN</span>
-      <div class="challenge-main">
-        <p>👑 TestPlayer อยากวัดฝีมือกับใครก็ได้! เดิมพัน: EXP 1</p>
-        <button class="button-secondary">🔍 ดูรายละเอียด</button>
-        <div class="detail-section" style="display: none;">
-          📝 ชื่อคำท้า: ทดสอบเอฟเฟกต์<br>
-          🎮 รูปแบบ: Standard BO1<br>
-          📌 ผู้ตอบรับ: TestAccepter
-        </div>
-      </div>
-      <div class="challenge-actions">
-        <p class="duel-ready">🔥 พร้อมดวล</p>
-      </div>
-    `;
-    
-    // เพิ่มการ์ดทดสอบไว้ด้านบนสุด
-    const listDiv = document.getElementById("challenge-list");
-    listDiv.insertBefore(testCard, listDiv.firstChild);
-    
-    // ลบการ์ดทดสอบหลังจาก 10 วินาที
-    setTimeout(() => {
-      if (testCard.parentNode) {
-        testCard.parentNode.removeChild(testCard);
-      }
-    }, 10000);
-  }
 </script>
 <script>
   // แสดงฟอร์มรับคำท้า
@@ -495,8 +510,22 @@
   }
 
   // เปิด/ปิดฟอร์มสร้างคำท้า
-  document.getElementById("show-form-btn").onclick = () =>
-    document.getElementById("challenge-form").classList.toggle("hidden");
+  const trainerBtn = document.getElementById("show-trainer-form-btn");
+  const partyBtn = document.getElementById("show-party-auth-btn");
+  const trainerForm = document.getElementById("challenge-form");
+  const partyAuthForm = document.getElementById("party-auth-form");
+  const partyChallengeForm = document.getElementById("party-challenge-form");
+
+  trainerBtn.onclick = () => {
+    trainerForm.classList.remove("hidden");
+    partyAuthForm.classList.add("hidden");
+    partyChallengeForm.classList.add("hidden");
+  };
+  partyBtn.onclick = () => {
+    trainerForm.classList.add("hidden");
+    partyAuthForm.classList.remove("hidden");
+    partyChallengeForm.classList.add("hidden");
+  };
 
   // ตรวจสอบเบอร์โทร → ดึง codename และรายชื่อ
   document.getElementById("verify-btn").addEventListener("click", async () => {
@@ -519,26 +548,109 @@
 
   // เปลี่ยนการแสดงรายชื่อเมื่อเลือกประเภทคำท้า
   document.getElementById("type").onchange = e => {
-    const showTarget = e.target.value === "direct";
+    const type = e.target.value;
+    const showTarget = type === "direct";
+    const showParty = type === "party";
     document.getElementById("target-select-container").classList.toggle("hidden", !showTarget);
+    document.getElementById("party-select-container").classList.toggle("hidden", !showParty);
+    if (showParty) loadPartyList();
   };
+
+  async function loadPartyList() {
+    try {
+      const res = await fetch(endpoint + "?func=getPartyList");
+      const parties = await res.json();
+      const partySelect = document.getElementById("party-target");
+      partySelect.innerHTML = parties.length > 0
+        ? parties.map(party => `<option value="${party.name}">${party.name} (${party.memberCount} คน)</option>`).join("")
+        : `<option disabled selected>ไม่พบปาร์ตี้อื่น</option>`;
+    } catch (err) {
+      console.error("❌ โหลดรายชื่อปาร์ตี้ล้มเหลว:", err);
+    }
+  }
 
   // ส่งฟอร์มสร้างคำท้า
   document.getElementById("challenge-form").onsubmit = async (e) => {
     e.preventDefault();
     let phone = document.getElementById("phone").value.trim();
     if (phone.length === 9 && !phone.startsWith("0")) phone = "0" + phone;
-
     const type = document.getElementById("type").value;
     const target = type === "direct" ? document.getElementById("target").value : "";
+    const partyTarget = type === "party" ? document.getElementById("party-target").value : "";
     const mode = document.getElementById("mode").value;
     const wager = document.getElementById("wager").value;
     const title = document.getElementById("title").value;
-
     try {
-      const res = await fetch(endpoint + "?func=submitChallengeRequest", {
+      let body;
+      let func;
+      if (type === "party") {
+        func = "submitPartyChallenge";
+        body = JSON.stringify({ phone, type, targetParty: partyTarget, mode, wager, title });
+      } else {
+        func = "submitChallengeRequest";
+        body = JSON.stringify({ phone, type, target, mode, wager, title });
+      }
+      const res = await fetch(endpoint + `?func=${func}` , {
         method: "POST",
-        body: JSON.stringify({ phone, type, target, mode, wager, title })
+        body
+      });
+      const text = await res.text();
+      alert(text);
+      e.target.reset();
+      location.reload();
+    } catch {
+      alert("❌ เกิดข้อผิดพลาด");
+    }
+  };
+
+  // ยืนยันหัวหน้าปาร์ตี้
+  const verifyBtn = document.getElementById("verify-party-leader-btn");
+  verifyBtn.onclick = async () => {
+    const phone = document.getElementById("party-leader-phone").value.trim();
+    const fullname = document.getElementById("party-leader-fullname").value.trim();
+    if (!phone || !fullname) return alert("กรุณากรอกข้อมูลให้ครบ");
+    const res = await fetch(endpoint + "?func=verifyPartyLeader", {
+      method: "POST",
+      body: JSON.stringify({ phone, fullname })
+    });
+    const result = await res.text();
+    if (result === "ok") {
+      partyAuthForm.classList.add("hidden");
+      partyChallengeForm.classList.remove("hidden");
+      loadPartyList();
+    } else {
+      alert("ข้อมูลไม่ถูกต้อง หรือคุณไม่ใช่หัวหน้าปาร์ตี้");
+    }
+  };
+
+  // โหลดรายชื่อปาร์ตี้เป้าหมาย
+  async function loadPartyList() {
+    try {
+      const res = await fetch(endpoint + "?func=getPartyList");
+      const parties = await res.json();
+      const partySelect = document.getElementById("party-target");
+      partySelect.innerHTML = parties.length > 0
+        ? parties.map(party => `<option value="${party.name}">${party.name} (${party.memberCount} คน)</option>`).join("")
+        : `<option disabled selected>ไม่พบปาร์ตี้อื่น</option>`;
+    } catch (err) {
+      console.error("❌ โหลดรายชื่อปาร์ตี้ล้มเหลว:", err);
+    }
+  }
+
+  // ส่งฟอร์ม Party vs Party
+  partyChallengeForm.onsubmit = async (e) => {
+    e.preventDefault();
+    const phone = document.getElementById("party-leader-phone").value.trim();
+    const size = document.getElementById("party-size").value;
+    const type = document.getElementById("party-type").value;
+    const mode = document.getElementById("party-mode").value;
+    const targetParty = document.getElementById("party-target").value;
+    const wager = document.getElementById("party-wager").value;
+    const title = document.getElementById("party-title").value;
+    try {
+      const res = await fetch(endpoint + "?func=submitPartyChallenge", {
+        method: "POST",
+        body: JSON.stringify({ phone, size, type, mode, targetParty, wager, title })
       });
       const text = await res.text();
       alert(text);
