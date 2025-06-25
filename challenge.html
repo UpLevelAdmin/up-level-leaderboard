@@ -693,9 +693,11 @@
     const wager = document.getElementById("party-wager").value;
     const title = document.getElementById("party-title").value;
     try {
+      // ใช้ URLSearchParams เพื่อหลีกเลี่ยง CORS
+      const formData = new URLSearchParams({ phone, size, type, mode, targetParty, wager, title });
       const res = await fetch(endpoint + "?func=submitPartyChallenge", {
         method: "POST",
-        body: JSON.stringify({ phone, size, type, mode, targetParty, wager, title })
+        body: formData
       });
       const text = await res.text();
       alert(text);
