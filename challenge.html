@@ -696,6 +696,7 @@
       const body = JSON.stringify({ phone, size, type, mode, targetParty, wager, title });
       const res = await fetch(endpoint + "?func=submitPartyChallenge", {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
         body
       });
       const text = await res.text();
