@@ -23,6 +23,7 @@ function onOpen() {
     .addItem("↩️ ย้อน EXP ล่าสุด (1 คน)", "undoLastExpSingle")
     .addItem("↩️ ย้อน EXP ล่าสุด (หลายคน)", "undoLastExpBulk")
     .addItem("✅ อนุมัติคำท้า", "approveChallenge")
+    .addItem("✅ อนุมัติ Party vs Party", "approvePartyChallenge") // <-- เพิ่มปุ่มนี้
     .addItem("📊 บันทึกผลการท้าแข่ง", "recordChallengeResult")
 
     .addSeparator()
