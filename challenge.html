@@ -767,7 +767,10 @@ async function loadPartyChallenges() {
   const partyDiv = document.getElementById("party-challenge-list");
   partyDiv.innerHTML = "🔄 กำลังโหลด...";
   try {
-    const res = await fetch(endpoint + "?func=getPartyChallengeList");
+    // ใช้ URLSearchParams เพื่อสร้าง query string
+    const params = new URLSearchParams({ func: "getPartyChallengeList" });
+    const url = endpoint + "?" + params.toString();
+    const res = await fetch(url, { method: "GET" });
     const all = await res.json();
     // นับ challenge ที่รออนุมัติ (pending)
     let pendingCount = 0;
