@@ -407,7 +407,7 @@
   <div id="accept-party-form" class="hidden">
     <form>
       <h3>✅ รับคำท้า Party vs Party</h3>
-      <label>�� เบอร์หัวหน้าปาร์ตี้:</label>
+      <label>📱 เบอร์หัวหน้าปาร์ตี้:</label>
       <input type="text" id="accept-party-phone" placeholder="กรอกเบอร์โทร 10 หลัก" />
       <label>👤 ชื่อ-นามสกุลหัวหน้าปาร์ตี้:</label>
       <input type="text" id="accept-party-fullname" placeholder="ต้องตรงกับที่ลงทะเบียน" />
@@ -769,8 +769,25 @@ async function loadPartyChallenges() {
   try {
     const res = await fetch(endpoint + "?func=getPartyChallengeList");
     const all = await res.json();
-    if (!all.length) {
+    // นับ challenge ที่รออนุมัติ (pending)
+    let pendingCount = 0;
+    if (Array.isArray(all)) {
+      pendingCount = all.filter(row => row["สถานะ"] === "รออนุมัติ").length;
+    }
+    if (!Array.isArray(all) || all.length === 0) {
       partyDiv.innerHTML = "<p>📭 ยังไม่มี Party vs Party Challenge ที่อนุมัติ</p>";
+      if (pendingCount > 0) {
+        partyDiv.innerHTML += `<p style='color:#ff9800'>⚠️ มีคำท้า Party vs Party ที่รออนุมัติอยู่ ${pendingCount} รายการ</p>`;
+      }
+      return;
+    }
+    // ถ้ามี challenge ที่รออนุมัติแต่ไม่มีที่อนุมัติ/พร้อมดวล
+    let hasApproved = all.some(row => row["สถานะ"] === "อนุมัติ" || row["สถานะ"] === "พร้อมดวล");
+    if (!hasApproved) {
+      partyDiv.innerHTML = "<p>📭 ยังไม่มี Party vs Party Challenge ที่อนุมัติ</p>";
+      if (pendingCount > 0) {
+        partyDiv.innerHTML += `<p style='color:#ff9800'>⚠️ มีคำท้า Party vs Party ที่รออนุมัติอยู่ ${pendingCount} รายการ</p>`;
+      }
       return;
     }
     partyDiv.innerHTML = "";
@@ -811,6 +828,9 @@ async function loadPartyChallenges() {
       }
       partyDiv.appendChild(card);
     });
+    if (pendingCount > 0) {
+      partyDiv.innerHTML += `<p style='color:#ff9800'>⚠️ มีคำท้า Party vs Party ที่รออนุมัติอยู่ ${pendingCount} รายการ</p>`;
+    }
   } catch (err) {
     partyDiv.innerHTML = "<p>❌ ไม่สามารถโหลด Party Challenge ได้</p>";
   }
