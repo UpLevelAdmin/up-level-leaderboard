@@ -1911,13 +1911,13 @@ function updateChallengeStatus(request) {
   }
 }
 
-// ฟังก์ชันช่วยเหลือ - หาชื่อเต็มจากเบอร์โทร
+// ฟังก์ชันช่วยเหลือ - หาชื่อเต็มจากเบอร์โทร (ค้นจาก Member Database)
 function getFullNameByPhone(phone) {
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Member Dashboard");
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Member Database");
   const data = sheet.getDataRange().getValues();
   for (let i = 1; i < data.length; i++) {
-    if (normalizePhone(data[i][1]) === normalizePhone(phone)) {
-      return data[i][0]; // ชื่อเล่น
+    if (normalizePhone(data[i][3]) === normalizePhone(phone)) {
+      return data[i][1]; // ชื่อ-นามสกุล
     }
   }
   return "";
