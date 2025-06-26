@@ -693,12 +693,17 @@
     const wager = document.getElementById("party-wager").value;
     const title = document.getElementById("party-title").value;
     try {
-      const body = JSON.stringify({ phone, size, type, mode, targetParty, wager, title });
-      const res = await fetch(endpoint + "?func=submitPartyChallenge", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body
+      const params = new URLSearchParams({
+        func: "submitPartyChallenge",
+        phone,
+        size,
+        type,
+        mode,
+        targetParty,
+        wager,
+        title
       });
+      const res = await fetch(endpoint + "?" + params.toString());
       const text = await res.text();
       alert(text);
       e.target.reset();
