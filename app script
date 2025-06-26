@@ -1284,6 +1284,7 @@ function doGet(e) {
   if (func === "submitPartyChallenge") return submitPartyChallenge(e);
   if (func === "verifyPartyLeader") return verifyPartyLeader(e);
   if (func === "partyChallengeListPublic") return partyChallengeListPublic();
+  if (func === "acceptPartyChallenge") return acceptPartyChallenge(e); // เพิ่มบรรทัดนี้
   return HtmlService.createHtmlOutput("<p>✅ Up Level Guild System Web App</p>");
 }
 
@@ -1295,7 +1296,6 @@ function doPost(e) {
   if (func === "updateChallengeStatus") return updateChallengeStatus(e);
   if (func === "submitPartyChallenge") return submitPartyChallenge(e);
   if (func === "verifyPartyLeader") return verifyPartyLeader(e);
-  if (func === "acceptPartyChallenge") return acceptPartyChallenge(e); // <-- เพิ่มบรรทัดนี้
   return ContentService.createTextOutput("❌ Invalid Request").setMimeType(ContentService.MimeType.TEXT);
 }
 
@@ -2585,23 +2585,38 @@ function submitPartyChallenge(e) {
 
 // ✅ ตรวจสอบหัวหน้าปาร์ตี้
 function verifyPartyLeader(e) {
-  let data = e;
-  if (typeof e.postData === 'object') data = JSON.parse(e.postData.contents);
-  const phone = normalizePhone(data.phone);
-  const fullname = (data.fullname || '').trim();
+  // เปลี่ยนเป็นรองรับ GET request แบบเดียวกับ Trainer Challenge
+  const phone = normalizePhone(e.parameter.phone);
+  const fullname = (e.parameter.fullname || '').trim();
+  
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const trackerSheet = ss.getSheetByName("Party Tracker");
   const dbSheet = ss.getSheetByName("Member Database");
-  if (!trackerSheet || !dbSheet) return ContentService.createTextOutput("error");
+  
+  if (!trackerSheet || !dbSheet) {
+    return ContentService.createTextOutput("error").setMimeType(ContentService.MimeType.TEXT);
+  }
+  
   const trackerData = trackerSheet.getDataRange().getValues();
   const dbData = dbSheet.getDataRange().getValues();
+  
   // หา row ที่เป็นหัวหน้าปาร์ตี้
   const leaderRow = trackerData.find(row => normalizePhone(row[2]) === phone && row[3] === "หัวหน้าปาร์ตี้");
-  if (!leaderRow) return ContentService.createTextOutput("not_leader");
+  if (!leaderRow) {
+    return ContentService.createTextOutput("not_leader").setMimeType(ContentService.MimeType.TEXT);
+  }
+  
   // เช็คชื่อ-สกุลจาก Member Database (คอลัมน์ 2)
   const dbRow = dbData.find(row => normalizePhone(row[3]) === phone);
-  if (!dbRow || (dbRow[1] || '').trim() !== fullname) return ContentService.createTextOutput("name_mismatch");
-  return ContentService.createTextOutput("ok");
+  if (!dbRow || (dbRow[1] || '').trim() !== fullname) {
+    return ContentService.createTextOutput("name_mismatch").setMimeType(ContentService.MimeType.TEXT);
+  }
+  
+  // คืนข้อมูลหัวหน้าปาร์ตี้และชื่อปาร์ตี้ (เหมือน Trainer Challenge)
+  const partyName = leaderRow[0];
+  const codename = leaderRow[1];
+  
+  return ContentService.createTextOutput(`${codename}|${partyName}`).setMimeType(ContentService.MimeType.TEXT);
 }
 
 // ✅ อนุมัติคำท้า Party vs Party (เมนูแอดมิน)
@@ -2664,12 +2679,10 @@ function partyChallengeListPublic() {
 }
 
 function acceptPartyChallenge(e) {
-  // รองรับเฉพาะ e.parameter (GET) แบบเดียวกับ submitPartyChallenge
-  let data = e && e.parameter ? e.parameter : {};
-
-  const phone = normalizePhone(data.phone);
-  const fullname = (data.fullname || '').trim();
-  const id = data.id; // id = ชื่อคำท้า (title)
+  // รองรับ GET request แบบเดียวกับ Trainer Challenge
+  const phone = normalizePhone(e.parameter.phone);
+  const fullname = (e.parameter.fullname || '').trim();
+  const id = e.parameter.id; // id = ชื่อคำท้า (title)
 
   if (!phone || !fullname || !id) {
     return ContentService.createTextOutput("❌ ข้อมูลไม่ครบถ้วน").setMimeType(ContentService.MimeType.TEXT);
@@ -2688,6 +2701,7 @@ function acceptPartyChallenge(e) {
   if (!leaderRow) {
     return ContentService.createTextOutput("❌ คุณไม่ใช่หัวหน้าปาร์ตี้เป้าหมาย").setMimeType(ContentService.MimeType.TEXT);
   }
+  
   // เช็คชื่อ-นามสกุลจาก Member Database (คอลัมน์ 2)
   const dbRow = dbSheet.getDataRange().getValues().find(row => normalizePhone(row[3]) === phone);
   if (!dbRow || (dbRow[1] || '').trim() !== fullname) {
@@ -2701,17 +2715,21 @@ function acceptPartyChallenge(e) {
   const statusCol = headers.indexOf("สถานะ");
   let foundRow = -1;
   let myParty = leaderRow[0];
+  
   for (let i = 1; i < dataRows.length; i++) {
     if (dataRows[i][titleCol] === id && dataRows[i][targetCol] === myParty) {
       foundRow = i + 1;
       break;
     }
   }
+  
   if (foundRow === -1) {
     return ContentService.createTextOutput("❌ ไม่พบคำท้าที่ระบุ").setMimeType(ContentService.MimeType.TEXT);
   }
+  
   // 3. อัปเดตผู้ตอบรับและสถานะ
   challengeSheet.getRange(foundRow, acceptCol + 1).setValue(leaderRow[1]); // codename
   challengeSheet.getRange(foundRow, statusCol + 1).setValue("พร้อมดวล");
+  
   return ContentService.createTextOutput("✅ รับคำท้า Party vs Party สำเร็จ พร้อมดวล !!").setMimeType(ContentService.MimeType.TEXT);
 }

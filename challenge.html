@@ -638,26 +638,39 @@
     console.log("[DEBUG] ปุ่มตรวจสอบหัวหน้าปาร์ตี้ถูกกด");
     const phone = document.getElementById("party-leader-phone").value.trim();
     const fullname = document.getElementById("party-leader-fullname").value.trim();
-    if (!phone || !fullname) { spinner.classList.add("hidden"); return alert("กรุณากรอกข้อมูลให้ครบ"); }
+    if (!phone || !fullname) { 
+      spinner.classList.add("hidden"); 
+      return alert("กรุณากรอกข้อมูลให้ครบ"); 
+    }
+    
     try {
-      const res = await fetch(endpoint + "?func=verifyPartyLeader", {
-        method: "POST",
-        body: JSON.stringify({ phone, fullname })
+      // เปลี่ยนเป็นใช้ GET แบบเดียวกับ Trainer Challenge
+      const params = new URLSearchParams({
+        func: "verifyPartyLeader",
+        phone,
+        fullname
       });
+      const res = await fetch(endpoint + "?" + params.toString());
       const result = await res.text();
       console.log("[DEBUG] ผลลัพธ์ verifyPartyLeader:", result);
-      if (result === "ok") {
-        // ดึง codename และชื่อปาร์ตี้ของหัวหน้าตี้
-        const profileRes = await fetch(endpoint + `?func=getMemberProfile&phone=${phone}`);
-        const profile = await profileRes.json();
-        myCodename = profile.codename;
-        myPartyName = profile.partyName;
-        document.getElementById("my-party-info").innerHTML = `👤 Codename: <b>${myCodename}</b> | 🛡️ ปาร์ตี้: <b>${myPartyName}</b>`;
+      
+      if (result.includes("|")) {
+        // แยกข้อมูล codename และชื่อปาร์ตี้
+        const [codename, partyName] = result.split("|");
+        myCodename = codename;
+        myPartyName = partyName;
+        
+        // แสดงข้อมูลเหมือน Trainer Challenge
+        document.getElementById("my-party-info").innerHTML = `🔎 Codename ของคุณคือ: <b>${myCodename}</b> | 🛡️ ปาร์ตี้: <b>${myPartyName}</b>`;
         partyAuthForm.classList.add("hidden");
         partyChallengeForm.classList.remove("hidden");
-        await loadPartyList(phone, profile.partyName, spinner);
+        await loadPartyList(phone, partyName, spinner);
+      } else if (result === "not_leader") {
+        alert("❌ คุณไม่ใช่หัวหน้าปาร์ตี้");
+      } else if (result === "name_mismatch") {
+        alert("❌ ชื่อ-นามสกุลไม่ตรงกับที่ลงทะเบียน");
       } else {
-        alert("ข้อมูลไม่ถูกต้อง หรือคุณไม่ใช่หัวหน้าปาร์ตี้");
+        alert("❌ ข้อมูลไม่ถูกต้อง หรือคุณไม่ใช่หัวหน้าปาร์ตี้");
       }
     } catch (err) {
       alert("เกิดข้อผิดพลาด: " + err);
@@ -850,8 +863,9 @@ async function submitAcceptParty() {
   const id = document.getElementById("accept-party-id").value;
   const spinner = document.getElementById("loading-spinner");
   spinner.classList.remove("hidden");
+  
   try {
-    // 1. ตรวจสอบหัวหน้าปาร์ตี้ก่อน
+    // 1. ตรวจสอบหัวหน้าปาร์ตี้ก่อน (ใช้ GET)
     const verifyParams = new URLSearchParams({
       func: "verifyPartyLeader",
       phone,
@@ -859,12 +873,20 @@ async function submitAcceptParty() {
     });
     const verifyRes = await fetch(endpoint + "?" + verifyParams.toString());
     const verifyText = await verifyRes.text();
-    if (verifyText !== "ok") {
+    
+    if (!verifyText.includes("|")) {
       spinner.classList.add("hidden");
-      alert("ข้อมูลหัวหน้าปาร์ตี้ไม่ถูกต้อง หรือคุณไม่ใช่หัวหน้าปาร์ตี้");
+      if (verifyText === "not_leader") {
+        alert("❌ คุณไม่ใช่หัวหน้าปาร์ตี้");
+      } else if (verifyText === "name_mismatch") {
+        alert("❌ ชื่อ-นามสกุลไม่ตรงกับที่ลงทะเบียน");
+      } else {
+        alert("❌ ข้อมูลหัวหน้าปาร์ตี้ไม่ถูกต้อง");
+      }
       return;
     }
-    // 2. ถ้าผ่าน ค่อยรับคำท้า
+    
+    // 2. ถ้าผ่าน ค่อยรับคำท้า (ใช้ GET)
     const acceptParams = new URLSearchParams({
       func: "acceptPartyChallenge",
       phone,
@@ -873,12 +895,13 @@ async function submitAcceptParty() {
     });
     const acceptRes = await fetch(endpoint + "?" + acceptParams.toString());
     const acceptText = await acceptRes.text();
+    
     spinner.classList.add("hidden");
     alert(acceptText.includes("สำเร็จ") ? "✅ รับคำท้า Party vs Party เรียบร้อย พร้อมดวล !!" : acceptText);
     location.reload();
-  } catch {
+  } catch (err) {
     spinner.classList.add("hidden");
-    alert("❌ เกิดข้อผิดพลาด");
+    alert("❌ เกิดข้อผิดพลาด: " + err);
   }
 }
 
