@@ -849,10 +849,15 @@ async function submitAcceptParty() {
   const fullname = document.getElementById("accept-party-fullname").value.trim();
   const id = document.getElementById("accept-party-id").value;
   try {
-    const res = await fetch(endpoint + "?func=acceptPartyChallenge", {
-      method: "POST",
-      body: JSON.stringify({ phone, fullname, id })
+    // ส่งแบบ GET (URLSearchParams) เหมือน submitPartyChallenge
+    const params = new URLSearchParams({
+      func: "acceptPartyChallenge",
+      phone,
+      fullname,
+      id
     });
+    const url = endpoint + "?" + params.toString();
+    const res = await fetch(url, { method: "GET" });
     const text = await res.text();
     alert(text.includes("สำเร็จ") ? "✅ รับคำท้า Party vs Party เรียบร้อย พร้อมดวล !!" : text);
     location.reload();
