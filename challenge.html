@@ -916,20 +916,14 @@ async function submitAcceptParty() {
   const id = document.getElementById("accept-party-id").value;
   const spinner = document.getElementById("loading-spinner");
   spinner.classList.remove("hidden");
-  
   try {
-    // รับคำท้า (ใช้ GET)
-    const acceptParams = new URLSearchParams({
-      func: "acceptPartyChallenge",
-      phone,
-      fullname,
-      id
+    const res = await fetch(endpoint + "?func=acceptPartyChallenge", {
+      method: "POST",
+      body: JSON.stringify({ phone, fullname, id })
     });
-    const acceptRes = await fetch(endpoint + "?" + acceptParams.toString());
-    const acceptText = await acceptRes.text();
-    
+    const text = await res.text();
     spinner.classList.add("hidden");
-    alert(acceptText.includes("สำเร็จ") ? "✅ รับคำท้า Party vs Party เรียบร้อย พร้อมดวล !!" : acceptText);
+    alert(text.includes("สำเร็จ") ? "✅ รับคำท้า Party vs Party เรียบร้อย พร้อมดวล !!" : text);
     location.reload();
   } catch (err) {
     spinner.classList.add("hidden");
