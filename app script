@@ -2681,26 +2681,28 @@ function partyChallengeListPublic() {
 
 function acceptPartyChallenge(e) {
   let phone, fullname, id;
+  Logger.log('acceptPartyChallenge: raw e = ' + JSON.stringify(e));
   if (e.postData && e.postData.contents) {
+    Logger.log('acceptPartyChallenge: found postData');
     const data = JSON.parse(e.postData.contents);
     phone = normalizePhone(data.phone);
     fullname = (data.fullname || '').trim();
     id = data.id;
+    Logger.log('acceptPartyChallenge: from postData', phone, fullname, id);
   } else if (e.parameter) {
+    Logger.log('acceptPartyChallenge: found parameter');
     phone = normalizePhone(e.parameter.phone);
     fullname = (e.parameter.fullname || '').trim();
     id = e.parameter.id;
+    Logger.log('acceptPartyChallenge: from parameter', phone, fullname, id);
   }
   if (!phone || !fullname || !id) {
+    Logger.log('acceptPartyChallenge: missing data', phone, fullname, id);
     return ContentService.createTextOutput("❌ ข้อมูลไม่ครบถ้วน").setMimeType(ContentService.MimeType.TEXT);
   }
 
   const codename = getCodenameByPhone(phone);
-  const realname = getFullNameByPhone(phone);
-
-  if (!codename || !realname || realname.trim() !== fullname.trim()) {
-    return ContentService.createTextOutput("❌ ไม่พบข้อมูลสมาชิก หรือชื่อไม่ตรงกับที่ลงทะเบียน");
-  }
+  Logger.log('acceptPartyChallenge: codename = ' + codename);
 
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const challengeSheet = ss.getSheetByName("Party Challenge");
@@ -2718,12 +2720,15 @@ function acceptPartyChallenge(e) {
       break;
     }
   }
+  Logger.log('acceptPartyChallenge: foundRow = ' + foundRow);
   if (foundRow === -1) {
+    Logger.log('acceptPartyChallenge: ไม่พบคำท้าที่ระบุ');
     return ContentService.createTextOutput("❌ ไม่พบคำท้าที่ระบุ").setMimeType(ContentService.MimeType.TEXT);
   }
 
   challengeSheet.getRange(foundRow, acceptCol + 1).setValue(codename);
   challengeSheet.getRange(foundRow, statusCol + 1).setValue("พร้อมดวล");
+  Logger.log('acceptPartyChallenge: updated row');
 
   return ContentService.createTextOutput("✅ รับคำท้า Party vs Party สำเร็จ พร้อมดวล !!").setMimeType(ContentService.MimeType.TEXT);
 }
