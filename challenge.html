@@ -833,17 +833,23 @@ async function loadPartyChallenges() {
         <div class="challenge-actions"></div>
       `;
       // ปุ่มรับคำท้า (ถ้ายังไม่มีผู้ตอบรับ)
-      if (!acceptor) {
+      const actionsDiv = card.querySelector(".challenge-actions");
+      if (status === "พร้อมดวล") {
+        const ready = document.createElement("p");
+        ready.className = "duel-ready party";
+        ready.textContent = "🔥 พร้อมดวล!!";
+        actionsDiv.appendChild(ready);
+      } else if (!acceptor) {
         const btn = document.createElement("button");
         btn.className = "button-accept";
         btn.textContent = "✅ รับคำท้า (หัวหน้าปาร์ตี้เป้าหมาย)";
         btn.onclick = () => showAcceptPartyForm(title);
-        card.querySelector(".challenge-actions").appendChild(btn);
+        actionsDiv.appendChild(btn);
       } else {
         const ready = document.createElement("p");
         ready.className = "duel-ready party";
         ready.textContent = "🔥 พร้อมดวล (Party)";
-        card.querySelector(".challenge-actions").appendChild(ready);
+        actionsDiv.appendChild(ready);
       }
       partyDiv.appendChild(card);
     });
