@@ -2106,6 +2106,9 @@ function clearDuplicateEntriesDebug() {
 }
 
 function getPartyByPhone(e) {
+  if (!e || !e.parameter || !e.parameter.phone) {
+    return ContentService.createTextOutput("❌ ไม่พบ phone ใน parameter: " + JSON.stringify(e && e.parameter)).setMimeType(ContentService.MimeType.TEXT);
+  }
   const phone = normalizePhone(e.parameter.phone);
   const partyName = getPartyNameByPhone(phone); // Assuming you rename the original for clarity
   return ContentService.createTextOutput(partyName).setMimeType(ContentService.MimeType.TEXT);
@@ -2513,11 +2516,39 @@ function getPartyList() {
 
 // ✅ ส่งคำท้า Party vs Party
 function submitPartyChallenge(e) {
-  let data = e;
-  if (typeof e.postData === 'object') data = JSON.parse(e.postData.contents);
+  let data = {};
+  if (e && e.postData && e.postData.contents) {
+    const contentType = e.postData.type || "";
+    if (contentType.indexOf("application/json") !== -1) {
+      try {
+        data = JSON.parse(e.postData.contents);
+      } catch (err) {
+        return ContentService.createTextOutput("❌ JSON parse error: " + err.message).setMimeType(ContentService.MimeType.TEXT);
+      }
+    } else {
+      data = e.parameter || {};
+    }
+  } else if (e && e.parameter) {
+    data = e.parameter;
+  } else {
+    return ContentService.createTextOutput("❌ ไม่พบข้อมูลที่ส่งมา").setMimeType(ContentService.MimeType.TEXT);
+  }
+
+  // ต้องเช็กก่อนใช้ normalizePhone
+  if (!data.phone) {
+    return ContentService.createTextOutput("❌ ไม่พบ phone ในข้อมูล: " + JSON.stringify(data)).setMimeType(ContentService.MimeType.TEXT);
+  }
+
+  // ปลอดภัยแน่นอน
   const phone = normalizePhone(data.phone);
   const codename = getCodenameFromPhone(phone);
-  const { size, type, mode, targetParty, wager, title } = data;
+  const size = data.size;
+  const type = data.type;
+  const mode = data.mode;
+  const targetParty = data.targetParty;
+  const wager = data.wager;
+  const title = data.title;
+
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const partySheet = ss.getSheetByName("Party");
   const partyData = partySheet.getDataRange().getValues();

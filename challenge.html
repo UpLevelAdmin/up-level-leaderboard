@@ -693,13 +693,10 @@
     const wager = document.getElementById("party-wager").value;
     const title = document.getElementById("party-title").value;
     try {
-      // ใช้ CORS Proxy
-      const corsProxy = "https://corsproxy.io/?";
-      const url = endpoint + "?func=submitPartyChallenge";
-      const params = new URLSearchParams({ phone, size, type, mode, targetParty, wager, title });
-      const res = await fetch(corsProxy + url, {
+      const body = JSON.stringify({ phone, size, type, mode, targetParty, wager, title });
+      const res = await fetch(endpoint + "?func=submitPartyChallenge", {
         method: "POST",
-        body: params
+        body
       });
       const text = await res.text();
       alert(text);
