@@ -768,7 +768,7 @@ async function loadPartyChallenges() {
   partyDiv.innerHTML = "🔄 กำลังโหลด...";
   try {
     // ใช้ URLSearchParams เพื่อสร้าง query string
-    const params = new URLSearchParams({ func: "getPartyChallengeList" });
+    const params = new URLSearchParams({ func: "partyChallengeListPublic" });
     const url = endpoint + "?" + params.toString();
     const res = await fetch(url, { method: "GET" });
     const all = await res.json();
