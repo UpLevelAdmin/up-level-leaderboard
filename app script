@@ -1282,6 +1282,7 @@ function doGet(e) {
   if (func === "getPartyList") return getPartyList();
   if (func === "submitPartyChallenge") return submitPartyChallenge(e);
   if (func === "verifyPartyLeader") return verifyPartyLeader(e);
+  if (func === "partyChallengeListPublic") return partyChallengeListPublic();
   return HtmlService.createHtmlOutput("<p>✅ Up Level Guild System Web App</p>");
 }
 
@@ -2561,7 +2562,7 @@ function submitPartyChallenge(e) {
   const now = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "dd/MM/yyyy HH:mm:ss");
   const values = [
     now, // วันที่-เวลา
-    getPartyByPhone(phone), // ปาร์ตี้ผู้ท้า
+    getPartyNameByPhone(phone), // ปาร์ตี้ผู้ท้า (return string)
     targetParty, // ปาร์ตี้เป้าหมาย
     `Party vs Party (${size})`, // ประเภท
     `${type} ${mode}`, // รูปแบบ
@@ -2570,7 +2571,7 @@ function submitPartyChallenge(e) {
     "รออนุมัติ", // สถานะ
     "", // ผู้ชนะ
     "", // คะแนนที่ได้
-    codename // ผู้บันทึก
+    "Web" // ผู้บันทึก
   ];
   try {
     challengeSheet.appendRow(values);
@@ -2599,4 +2600,63 @@ function verifyPartyLeader(e) {
   const dbRow = dbData.find(row => normalizePhone(row[3]) === phone);
   if (!dbRow || (dbRow[1] || '').trim() !== fullname) return ContentService.createTextOutput("name_mismatch");
   return ContentService.createTextOutput("ok");
+}
+
+// ✅ อนุมัติคำท้า Party vs Party (เมนูแอดมิน)
+function approvePartyChallenge() {
+  const ui = SpreadsheetApp.getUi();
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Party Challenge");
+  const data = sheet.getDataRange().getValues();
+
+  const adminPrompt = ui.prompt("ชื่อแอดมิน", "กรุณากรอกชื่อแอดมิน (สำหรับบันทึก log)", ui.ButtonSet.OK_CANCEL);
+  if (adminPrompt.getSelectedButton() !== ui.Button.OK || !adminPrompt.getResponseText().trim()) return;
+  const admin = adminPrompt.getResponseText().trim();
+
+  // หารายการที่รออนุมัติ (คอลัมน์ H = สถานะ)
+  const pending = [];
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][7] === "รออนุมัติ") {
+      pending.push({ index: i + 1, title: data[i][6], party: data[i][1], target: data[i][2] });
+    }
+  }
+
+  if (pending.length === 0) {
+    ui.alert("ไม่มีคำท้า Party vs Party ที่รออนุมัติ");
+    return;
+  }
+
+  const list = pending.map((p, i) => `${i + 1}. ${p.party} vs ${p.target} - ${p.title}`).join("\n");
+  const prompt = ui.prompt("อนุมัติคำท้า Party vs Party", `เลือกคำท้าโดยพิมพ์หมายเลข:\n\n${list}`, ui.ButtonSet.OK_CANCEL);
+  if (prompt.getSelectedButton() !== ui.Button.OK) return;
+  const choice = Number(prompt.getResponseText().trim()) - 1;
+  if (isNaN(choice) || choice < 0 || choice >= pending.length) {
+    ui.alert("❌ เลือกไม่ถูกต้อง");
+    return;
+  }
+
+  const row = pending[choice].index;
+  const challengeTitle = pending[choice].title;
+  const party = pending[choice].party;
+  const target = pending[choice].target;
+  sheet.getRange(row, 8).setValue("อนุมัติ"); // คอลัมน์ H = สถานะ
+
+  logAdminAction("อนุมัติ Party Challenge", `อนุมัติคำท้า ${party} vs ${target}: '${challengeTitle}'`, admin);
+  ui.alert(`✅ อนุมัติคำท้า Party vs Party ของ ${party} vs ${target} เรียบร้อยแล้ว`);
+}
+
+// ✅ สำหรับหน้าเว็บ: ดึงรายการ Party Challenge ที่สถานะ 'อนุมัติ' หรือ 'พร้อมดวล' (public test)
+function partyChallengeListPublic() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Party Challenge");
+  const data = sheet.getDataRange().getValues();
+  const headers = data[0];
+  const results = [];
+  for (let i = 1; i < data.length; i++) {
+    const row = data[i];
+    if (row[headers.indexOf("สถานะ")] === "อนุมัติ" || row[headers.indexOf("สถานะ")] === "พร้อมดวล") {
+      const item = {};
+      headers.forEach((key, idx) => item[key] = row[idx]);
+      results.push(item);
+    }
+  }
+  return ContentService.createTextOutput(JSON.stringify(results)).setMimeType(ContentService.MimeType.JSON);
 }
