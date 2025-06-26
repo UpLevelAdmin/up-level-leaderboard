@@ -411,8 +411,12 @@
       <input type="text" id="accept-party-phone" placeholder="กรอกเบอร์โทร 10 หลัก" />
       <label>👤 ชื่อ-นามสกุลหัวหน้าปาร์ตี้:</label>
       <input type="text" id="accept-party-fullname" placeholder="ต้องตรงกับที่ลงทะเบียน" />
+      <button type="button" id="verify-party-accept-btn" class="button-verify">🔍 ตรวจสอบ</button>
+      
+      <div id="party-accept-info" class="hidden" style="margin:10px 0;padding:10px;background:#e8f5e8;border-radius:5px;"></div>
+      
       <input type="hidden" id="accept-party-id" />
-      <button type="button" onclick="submitAcceptParty()" class="button-accept">ยืนยันการรับคำท้า</button>
+      <button type="button" id="confirm-accept-party-btn" class="button-accept hidden">ยืนยันการรับคำท้า</button>
     </form>
   </div>
 
@@ -854,8 +858,57 @@ async function loadPartyChallenges() {
 function showAcceptPartyForm(id) {
   document.getElementById("accept-party-id").value = id;
   document.getElementById("accept-party-form").classList.remove("hidden");
+  // ซ่อนข้อมูลและปุ่มยืนยันเมื่อเปิดฟอร์มใหม่
+  document.getElementById("party-accept-info").classList.add("hidden");
+  document.getElementById("confirm-accept-party-btn").classList.add("hidden");
   window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
 }
+
+// เพิ่ม event listener สำหรับปุ่มตรวจสอบ
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById("verify-party-accept-btn").addEventListener("click", async () => {
+    const spinner = document.getElementById("loading-spinner");
+    spinner.classList.remove("hidden");
+    
+    const phone = document.getElementById("accept-party-phone").value.trim();
+    const fullname = document.getElementById("accept-party-fullname").value.trim();
+    
+    if (!phone || !fullname) {
+      spinner.classList.add("hidden");
+      return alert("กรุณากรอกข้อมูลให้ครบ");
+    }
+    
+    try {
+      const verifyParams = new URLSearchParams({
+        func: "verifyPartyLeader",
+        phone,
+        fullname
+      });
+      const verifyRes = await fetch(endpoint + "?" + verifyParams.toString());
+      const verifyText = await verifyRes.text();
+      
+      if (verifyText.includes("|")) {
+        const [codename, partyName] = verifyText.split("|");
+        document.getElementById("party-accept-info").innerHTML = `🔎 Codename ของคุณคือ: <b>${codename}</b> | 🛡️ ปาร์ตี้: <b>${partyName}</b>`;
+        document.getElementById("party-accept-info").classList.remove("hidden");
+        document.getElementById("confirm-accept-party-btn").classList.remove("hidden");
+      } else if (verifyText === "not_leader") {
+        alert("❌ คุณไม่ใช่หัวหน้าปาร์ตี้");
+      } else if (verifyText === "name_mismatch") {
+        alert("❌ ชื่อ-นามสกุลไม่ตรงกับที่ลงทะเบียน");
+      } else {
+        alert("❌ ข้อมูลหัวหน้าปาร์ตี้ไม่ถูกต้อง");
+      }
+    } catch (err) {
+      alert("❌ เกิดข้อผิดพลาด: " + err);
+    }
+    
+    spinner.classList.add("hidden");
+  });
+  
+  // เพิ่ม event listener สำหรับปุ่มยืนยันการรับคำท้า
+  document.getElementById("confirm-accept-party-btn").addEventListener("click", submitAcceptParty);
+});
 
 async function submitAcceptParty() {
   const phone = document.getElementById("accept-party-phone").value.trim();
@@ -865,28 +918,7 @@ async function submitAcceptParty() {
   spinner.classList.remove("hidden");
   
   try {
-    // 1. ตรวจสอบหัวหน้าปาร์ตี้ก่อน (ใช้ GET)
-    const verifyParams = new URLSearchParams({
-      func: "verifyPartyLeader",
-      phone,
-      fullname
-    });
-    const verifyRes = await fetch(endpoint + "?" + verifyParams.toString());
-    const verifyText = await verifyRes.text();
-    
-    if (!verifyText.includes("|")) {
-      spinner.classList.add("hidden");
-      if (verifyText === "not_leader") {
-        alert("❌ คุณไม่ใช่หัวหน้าปาร์ตี้");
-      } else if (verifyText === "name_mismatch") {
-        alert("❌ ชื่อ-นามสกุลไม่ตรงกับที่ลงทะเบียน");
-      } else {
-        alert("❌ ข้อมูลหัวหน้าปาร์ตี้ไม่ถูกต้อง");
-      }
-      return;
-    }
-    
-    // 2. ถ้าผ่าน ค่อยรับคำท้า (ใช้ GET)
+    // รับคำท้า (ใช้ GET)
     const acceptParams = new URLSearchParams({
       func: "acceptPartyChallenge",
       phone,
