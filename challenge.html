@@ -449,8 +449,7 @@
   ];
 
   async function loadChallenges() {
-    listDiv.innerHTML = "🔄 กำลังโหลดคำท้า...";
-
+    listDiv.innerHTML = `<span style="display:inline-block;animation:spin 1s linear infinite;font-size:1.2em;">🔄</span> กำลังโหลดคำท้า...`;
     try {
       const res = await fetch(endpoint + "?func=getChallengeList");
       const all = await res.json();
@@ -765,7 +764,7 @@
 // โหลด Party vs Party Challenge
 async function loadPartyChallenges() {
   const partyDiv = document.getElementById("party-challenge-list");
-  partyDiv.innerHTML = "🔄 กำลังโหลด...";
+  partyDiv.innerHTML = `<span style=\"display:inline-block;animation:spin 1s linear infinite;font-size:1.2em;\">🔄</span> กำลังโหลด...`;
   try {
     // ใช้ URLSearchParams เพื่อสร้าง query string
     const params = new URLSearchParams({ func: "partyChallengeListPublic" });
@@ -867,6 +866,13 @@ window.addEventListener("DOMContentLoaded", () => {
   loadChallenges();
   loadPartyChallenges();
 });
+</script>
+
+<script>
+// เพิ่ม CSS animation (spin) ถ้ายังไม่มี
+const style = document.createElement('style');
+style.innerHTML = `@keyframes spin { 0% { transform: rotate(0deg);} 100% { transform: rotate(360deg);} }`;
+document.head.appendChild(style);
 </script>
 </body>
 </html>
