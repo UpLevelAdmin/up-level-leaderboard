@@ -848,20 +848,36 @@ async function submitAcceptParty() {
   const phone = document.getElementById("accept-party-phone").value.trim();
   const fullname = document.getElementById("accept-party-fullname").value.trim();
   const id = document.getElementById("accept-party-id").value;
+  const spinner = document.getElementById("loading-spinner");
+  spinner.classList.remove("hidden");
   try {
-    // ส่งแบบ GET (URLSearchParams) เหมือน submitPartyChallenge
-    const params = new URLSearchParams({
+    // 1. ตรวจสอบหัวหน้าปาร์ตี้ก่อน
+    const verifyParams = new URLSearchParams({
+      func: "verifyPartyLeader",
+      phone,
+      fullname
+    });
+    const verifyRes = await fetch(endpoint + "?" + verifyParams.toString());
+    const verifyText = await verifyRes.text();
+    if (verifyText !== "ok") {
+      spinner.classList.add("hidden");
+      alert("ข้อมูลหัวหน้าปาร์ตี้ไม่ถูกต้อง หรือคุณไม่ใช่หัวหน้าปาร์ตี้");
+      return;
+    }
+    // 2. ถ้าผ่าน ค่อยรับคำท้า
+    const acceptParams = new URLSearchParams({
       func: "acceptPartyChallenge",
       phone,
       fullname,
       id
     });
-    const url = endpoint + "?" + params.toString();
-    const res = await fetch(url, { method: "GET" });
-    const text = await res.text();
-    alert(text.includes("สำเร็จ") ? "✅ รับคำท้า Party vs Party เรียบร้อย พร้อมดวล !!" : text);
+    const acceptRes = await fetch(endpoint + "?" + acceptParams.toString());
+    const acceptText = await acceptRes.text();
+    spinner.classList.add("hidden");
+    alert(acceptText.includes("สำเร็จ") ? "✅ รับคำท้า Party vs Party เรียบร้อย พร้อมดวล !!" : acceptText);
     location.reload();
   } catch {
+    spinner.classList.add("hidden");
     alert("❌ เกิดข้อผิดพลาด");
   }
 }
