@@ -295,7 +295,6 @@
 
   <!-- ปุ่มแยก -->
   <button id="show-trainer-form-btn" class="button-create trainer">+ สร้างคำท้าระหว่างเทรนเนอร์</button>
-  <button id="show-party-auth-btn" class="button-create party">+ สร้างคำท้าระหว่างปาร์ตี้</button>
 
   <!-- ฟอร์มสร้างคำท้าระหว่างเทรนเนอร์ (trainer challenge) -->
   <form id="challenge-form" class="hidden">
@@ -402,6 +401,9 @@
   <!-- รายการ Party vs Party Challenge -->
   <h2>⚔️ Party vs Party Challenge</h2>
   <div id="party-challenge-list">กำลังโหลด...</div>
+
+  <!-- ปุ่มสร้างคำท้าทายปาร์ตี้ (ย้ายมาด้านล่างสุด) -->
+  <button id="show-party-auth-btn" class="button-create party">+ สร้างคำท้าระหว่างปาร์ตี้</button>
 
   <!-- ฟอร์มรับคำท้า Party vs Party -->
   <div id="accept-party-form" class="hidden">
@@ -588,7 +590,6 @@
 
   // เปิด/ปิดฟอร์มสร้างคำท้า
   const trainerBtn = document.getElementById("show-trainer-form-btn");
-  const partyBtn = document.getElementById("show-party-auth-btn");
   const trainerForm = document.getElementById("challenge-form");
   const partyAuthForm = document.getElementById("party-auth-form");
   const partyChallengeForm = document.getElementById("party-challenge-form");
@@ -596,11 +597,6 @@
   trainerBtn.onclick = () => {
     trainerForm.classList.remove("hidden");
     partyAuthForm.classList.add("hidden");
-    partyChallengeForm.classList.add("hidden");
-  };
-  partyBtn.onclick = () => {
-    trainerForm.classList.add("hidden");
-    partyAuthForm.classList.remove("hidden");
     partyChallengeForm.classList.add("hidden");
   };
 
