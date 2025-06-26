@@ -2664,18 +2664,8 @@ function partyChallengeListPublic() {
 }
 
 function acceptPartyChallenge(e) {
-  let data = {};
-  if (e && e.postData && e.postData.contents) {
-    try {
-      data = JSON.parse(e.postData.contents);
-    } catch (err) {
-      return ContentService.createTextOutput("❌ JSON parse error: " + err.message).setMimeType(ContentService.MimeType.TEXT);
-    }
-  } else if (e && e.parameter) {
-    data = e.parameter;
-  } else {
-    return ContentService.createTextOutput("❌ ไม่พบข้อมูลที่ส่งมา").setMimeType(ContentService.MimeType.TEXT);
-  }
+  // รองรับเฉพาะ e.parameter (GET) แบบเดียวกับ submitPartyChallenge
+  let data = e && e.parameter ? e.parameter : {};
 
   const phone = normalizePhone(data.phone);
   const fullname = (data.fullname || '').trim();
@@ -2694,7 +2684,6 @@ function acceptPartyChallenge(e) {
   const headers = dataRows[0];
 
   // 1. ตรวจสอบว่าเป็นหัวหน้าปาร์ตี้เป้าหมายจริง
-  // หาแถวที่เป็นหัวหน้าปาร์ตี้ใน Party Tracker
   const leaderRow = trackerSheet.getDataRange().getValues().find(row => normalizePhone(row[2]) === phone && row[3] === "หัวหน้าปาร์ตี้");
   if (!leaderRow) {
     return ContentService.createTextOutput("❌ คุณไม่ใช่หัวหน้าปาร์ตี้เป้าหมาย").setMimeType(ContentService.MimeType.TEXT);
