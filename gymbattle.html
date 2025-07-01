@@ -122,6 +122,8 @@
       fetch(apiUrl).then(res => res.json()),
       fetch(leaderboardApi).then(res => res.json())
     ]).then(([data, leaderboard]) => {
+      console.log('DEBUG: gymbattle data', data);
+      console.log('DEBUG: leaderboard', leaderboard);
       if (data.error) {
         document.getElementById('gymbattle-list').innerText = data.error;
         return;
@@ -129,8 +131,6 @@
       // สร้าง map เบอร์โทร -> { codename, rank }
       const phoneMap = {};
       leaderboard.forEach(row => {
-        // row: [ชื่อเล่น, Codename, Rank, EXP, Party, Phone]
-        // หรือถ้าเป็น object: row.Phone, row.Codename, row.Rank
         const phone = row.Phone || row[5];
         if (phone) {
           phoneMap[String(phone).replace(/[^\d]/g, "")] = {
@@ -139,6 +139,7 @@
           };
         }
       });
+      console.log('DEBUG: phoneMap', phoneMap);
       let html = '';
       data.dates.forEach((date, idx) => {
         const players = data.groupedData[date] || [];
@@ -151,6 +152,7 @@
           players.forEach((player, idx2) => {
             let displayName = player.nickname;
             let phone = String(player.phone || '').replace(/[^\d]/g, "");
+            console.log('DEBUG: player', player, 'phone', phone, 'profile', phoneMap[phone]);
             const profile = phoneMap[phone];
             if (profile && profile.codename && profile.rank) {
               displayName += ` [${profile.codename}] ${rankEmojis[profile.rank] || ''}`;

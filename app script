@@ -25,6 +25,7 @@ function onOpen() {
     .addItem("✅ อนุมัติคำท้า", "approveChallenge")
     .addItem("✅ อนุมัติ Party vs Party", "approvePartyChallenge") // <-- เพิ่มปุ่มนี้
     .addItem("📊 บันทึกผลการท้าแข่ง", "recordChallengeResult")
+    .addItem("🏆 บันทึกผล Party vs Party", "recordPartyChallengeResult") // 🆕 เพิ่มเมนูใหม่
 
     .addSeparator()
 
@@ -302,12 +303,13 @@ function updateLeaderboard() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const dash = ss.getSheetByName("Member Dashboard");
   const lb = ss.getSheetByName("Leaderboard");
+  // เพิ่มเบอร์โทร (Phone) เป็นคอลัมน์ที่ 2
   const data = dash.getRange(2, 1, dash.getLastRow() - 1, 6).getValues();
-  const result = [["ชื่อเล่น", "Codename", "Rank", "EXP", "Party"]];
+  const result = [["ชื่อเล่น", "Phone", "Codename", "Rank", "EXP", "Party"]];
   for (let i = 0; i < data.length; i++) {
-    result.push([data[i][0], data[i][2], data[i][3], data[i][4], data[i][5] || ""]);
+    result.push([data[i][0], data[i][1], data[i][2], data[i][3], data[i][4], data[i][5] || ""]);
   }
-  result.sort((a, b) => b[3] - a[3]);
+  result.sort((a, b) => b[4] - a[4]); // sort by EXP (now index 4)
   lb.clearContents();
   lb.getRange(1, 1, result.length, result[0].length).setValues(result);
 }
@@ -1289,6 +1291,7 @@ function doGet(e) {
 }
 
 function doPost(e) {
+  logToDebugSheet('doPost: raw e', e);
   const func = e?.parameter?.func;
   if (func === "submitQuest") return submitQuest(e);
   if (func === "submitChallengeRequest") return submitChallengeRequest(e);
@@ -1712,6 +1715,7 @@ function acceptChallenge(e) {
 function recordChallengeResult() {
   const ui = SpreadsheetApp.getUi();
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Challenge");
+  const partySheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Party");
   const data = sheet.getDataRange().getValues();
   const headers = data[0];
 
@@ -1730,9 +1734,7 @@ function recordChallengeResult() {
   const approvedRows = data.slice(1).filter(r => r[statusIndex] === "อนุมัติ");
   if (approvedRows.length === 0) return ui.alert("❌ ไม่มีคำท้าที่อนุมัติ");
 
-  const challengeOptions = approvedRows.map(r =>
-    `${r[idIndex]} | ${r[codenameIndex]} vs ${r[acceptIndex]}`
-  );
+  const challengeOptions = approvedRows.map(r => `${r[idIndex]} | ${r[codenameIndex]} vs ${r[acceptIndex]}`);
   const choicePrompt = ui.prompt(
     "📌 เลือกคำท้าที่ต้องการบันทึกผล",
     challengeOptions.join("\n") + "\n\nกรอก ID ที่ต้องการ (ตัวเลข):",
@@ -1775,6 +1777,14 @@ function recordChallengeResult() {
   const expText = wagerPrompt.getResponseText().trim();
   const expAmount = expText ? parseInt(expText) : 0;
 
+  // 🆕 กรอก Party Point ที่เดิมพัน (optional)
+  const partyWagerPrompt = ui.prompt(
+    "🎁 Party Point ที่เดิมพัน (ถ้ามี)",
+    "เช่น 5 (ถ้าไม่ใส่จะไม่มีผลเดิมพัน)", ui.ButtonSet.OK_CANCEL
+  );
+  if (partyWagerPrompt.getSelectedButton() !== ui.Button.OK) return;
+  const partyWager = partyWagerPrompt.getResponseText().trim() ? Number(partyWagerPrompt.getResponseText().trim()) : 0;
+
   // 🛠 อัปเดตสถานะ
   sheet.getRange(rowIndex + 1, statusIndex + 1).setValue("บันทึกผลแล้ว");
 
@@ -1788,9 +1798,26 @@ function recordChallengeResult() {
     giveExp(loserPhone, `แพ้เดิมพัน EXP`, -expAmount);
   }
 
+  // 🆕 ➕➖ Party Point เดิมพัน (ห้ามติดลบ)
+  if (partyWager && partyWager > 0) {
+    const partyData = partySheet.getDataRange().getValues();
+    const winnerParty = getPartyByPhone(winnerPhone);
+    const loserParty = getPartyByPhone(loserPhone);
+    const winnerIdx = partyData.findIndex(r => r[0] === winnerParty);
+    const loserIdx = partyData.findIndex(r => r[0] === loserParty);
+    let loserCurrent = loserIdx !== -1 ? Number(partyData[loserIdx][2]) : 0;
+    let winnerCurrent = winnerIdx !== -1 ? Number(partyData[winnerIdx][2]) : 0;
+    const canLose = Math.max(0, loserCurrent - partyWager);
+    const actualLost = loserCurrent - canLose;
+    // ลบฝั่งแพ้
+    if (loserIdx !== -1) partySheet.getRange(loserIdx + 1, 3).setValue(canLose);
+    // บวกฝั่งชนะ
+    if (winnerIdx !== -1) partySheet.getRange(winnerIdx + 1, 3).setValue(winnerCurrent + actualLost);
+  }
+
   const logMessage = `ผล: ${winnerCodename} ชนะ ${acceptorCodename}. EXP เดิมพัน: ${expAmount || 0}`;
   logAdminAction("บันทึกผลการท้าแข่ง", logMessage, admin);
-  ui.alert(`✅ บันทึกผลสำเร็จ: ${winnerCodename} ชนะ\n+1 EXP/Party ทั้งคู่${expAmount ? `\nเดิมพัน EXP: ${expAmount}` : ""}`);
+  ui.alert(`✅ บันทึกผลสำเร็จ: ${winnerCodename} ชนะ\n+1 EXP/Party ทั้งคู่${expAmount ? `\nเดิมพัน EXP: ${expAmount}` : ""}${partyWager ? `\nเดิมพัน Party Point: ${partyWager}` : ""}`);
 }
 
 function normalizePhone(phone) {
@@ -2679,39 +2706,50 @@ function partyChallengeListPublic() {
   return ContentService.createTextOutput(JSON.stringify(results)).setMimeType(ContentService.MimeType.JSON);
 }
 
+function logToDebugSheet(...args) {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = ss.getSheetByName("Debug Log");
+    if (!sheet) return;
+    const now = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss");
+    sheet.appendRow([now, ...args.map(x => typeof x === 'object' ? JSON.stringify(x) : x)]);
+  } catch (err) {}
+}
+
 function acceptPartyChallenge(e) {
   let phone, fullname, id;
-  Logger.log('acceptPartyChallenge: raw e = ' + JSON.stringify(e));
+  logToDebugSheet('acceptPartyChallenge: raw e', e);
   if (e.postData && e.postData.contents) {
-    Logger.log('acceptPartyChallenge: found postData');
+    logToDebugSheet('acceptPartyChallenge: found postData');
     const data = JSON.parse(e.postData.contents);
     phone = normalizePhone(data.phone);
     fullname = (data.fullname || '').trim();
     id = data.id;
-    Logger.log('acceptPartyChallenge: from postData', phone, fullname, id);
+    logToDebugSheet('acceptPartyChallenge: from postData', phone, fullname, id);
   } else if (e.parameter) {
-    Logger.log('acceptPartyChallenge: found parameter');
+    logToDebugSheet('acceptPartyChallenge: found parameter');
     phone = normalizePhone(e.parameter.phone);
     fullname = (e.parameter.fullname || '').trim();
     id = e.parameter.id;
-    Logger.log('acceptPartyChallenge: from parameter', phone, fullname, id);
+    logToDebugSheet('acceptPartyChallenge: from parameter', phone, fullname, id);
   }
   if (!phone || !fullname || !id) {
-    Logger.log('acceptPartyChallenge: missing data', phone, fullname, id);
+    logToDebugSheet('acceptPartyChallenge: missing data', phone, fullname, id);
     return ContentService.createTextOutput("❌ ข้อมูลไม่ครบถ้วน").setMimeType(ContentService.MimeType.TEXT);
   }
 
   const codename = getCodenameByPhone(phone);
-  Logger.log('acceptPartyChallenge: codename = ' + codename);
+  logToDebugSheet('acceptPartyChallenge: codename', codename);
 
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const challengeSheet = ss.getSheetByName("Party Challenge");
   const data = challengeSheet.getDataRange().getValues();
   const headers = data[0];
+  logToDebugSheet('acceptPartyChallenge: headers', headers);
 
   const titleCol = headers.indexOf("ชื่อคำท้า");
-  const acceptCol = headers.indexOf("ผู้ตอบรับ");
   const statusCol = headers.indexOf("สถานะ");
+  logToDebugSheet('acceptPartyChallenge: titleCol', titleCol, 'statusCol', statusCol);
 
   let foundRow = -1;
   for (let i = 1; i < data.length; i++) {
@@ -2720,15 +2758,109 @@ function acceptPartyChallenge(e) {
       break;
     }
   }
-  Logger.log('acceptPartyChallenge: foundRow = ' + foundRow);
+  logToDebugSheet('acceptPartyChallenge: foundRow', foundRow);
   if (foundRow === -1) {
-    Logger.log('acceptPartyChallenge: ไม่พบคำท้าที่ระบุ');
+    logToDebugSheet('acceptPartyChallenge: ไม่พบคำท้าที่ระบุ');
     return ContentService.createTextOutput("❌ ไม่พบคำท้าที่ระบุ").setMimeType(ContentService.MimeType.TEXT);
   }
 
-  challengeSheet.getRange(foundRow, acceptCol + 1).setValue(codename);
-  challengeSheet.getRange(foundRow, statusCol + 1).setValue("พร้อมดวล");
-  Logger.log('acceptPartyChallenge: updated row');
+  try {
+    challengeSheet.getRange(foundRow, statusCol + 1).setValue("พร้อมดวล");
+    logToDebugSheet('acceptPartyChallenge: updated status to พร้อมดวล');
+  } catch (err) {
+    logToDebugSheet('acceptPartyChallenge: setValue error', err && err.message ? err.message : err);
+    return ContentService.createTextOutput("❌ เกิดข้อผิดพลาดขณะอัปเดตชีท: " + (err && err.message ? err.message : err)).setMimeType(ContentService.MimeType.TEXT);
+  }
 
   return ContentService.createTextOutput("✅ รับคำท้า Party vs Party สำเร็จ พร้อมดวล !!").setMimeType(ContentService.MimeType.TEXT);
+}
+
+// 🆕 ฟังก์ชันบันทึกผล Party vs Party
+function recordPartyChallengeResult() {
+  const ui = SpreadsheetApp.getUi();
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName("Party Challenge");
+  const partySheet = ss.getSheetByName("Party");
+  const logSheet = ss.getSheetByName("Party Log");
+  const data = sheet.getDataRange().getValues();
+  const headers = data[0];
+
+  const adminPrompt = ui.prompt("ชื่อแอดมิน", "กรุณากรอกชื่อแอดมิน (สำหรับบันทึก log)", ui.ButtonSet.OK_CANCEL);
+  if (adminPrompt.getSelectedButton() !== ui.Button.OK || !adminPrompt.getResponseText().trim()) return;
+  const admin = adminPrompt.getResponseText().trim();
+
+  // เลือก challenge ที่พร้อมดวล
+  const statusCol = headers.indexOf("สถานะ");
+  const partyCol = headers.indexOf("ปาร์ตี้ผู้ท้า");
+  const targetCol = headers.indexOf("ปาร์ตี้เป้าหมาย");
+  const typeCol = headers.indexOf("ประเภท");
+  const titleCol = headers.indexOf("ชื่อคำท้า");
+  const wagerCol = headers.indexOf("เดิมพัน");
+
+  const readyRows = data.slice(1).filter(r => r[statusCol] === "พร้อมดวล");
+  if (readyRows.length === 0) return ui.alert("❌ ไม่มี Party Challenge ที่พร้อมดวล");
+
+  const challengeOptions = readyRows.map((r, i) => `${i + 1}. ${r[partyCol]} vs ${r[targetCol]} | ${r[titleCol]}`);
+  const pickPrompt = ui.prompt("เลือก Party Challenge", challengeOptions.join("\n") + "\n\nพิมพ์เลขที่ต้องการ:", ui.ButtonSet.OK_CANCEL);
+  if (pickPrompt.getSelectedButton() !== ui.Button.OK) return;
+  const idx = Number(pickPrompt.getResponseText().trim()) - 1;
+  if (isNaN(idx) || idx < 0 || idx >= readyRows.length) return ui.alert("❌ เลือกไม่ถูกต้อง");
+
+  // ดึงข้อมูล challenge
+  const row = readyRows[idx];
+  const rowIndex = data.findIndex(r => r[titleCol] === row[titleCol]);
+  const partyA = row[partyCol];
+  const partyB = row[targetCol];
+  const type = row[typeCol];
+  const wager = row[wagerCol];
+  const sizeMatch = String(type).match(/(\d+)v\d+/);
+  const partyPointPerTeam = sizeMatch ? Number(sizeMatch[1]) : 1;
+
+  // เลือกผู้ชนะ
+  const winnerPrompt = ui.prompt("🏆 ใครคือผู้ชนะ", `1. ${partyA}\n2. ${partyB}\n\nพิมพ์ชื่อปาร์ตี้ที่ชนะ:`, ui.ButtonSet.OK_CANCEL);
+  if (winnerPrompt.getSelectedButton() !== ui.Button.OK) return;
+  const winner = winnerPrompt.getResponseText().trim();
+  if (![partyA, partyB].includes(winner)) return ui.alert("❌ ต้องเลือกชื่อปาร์ตี้ที่ถูกต้อง");
+  const loser = winner === partyA ? partyB : partyA;
+
+  // กรอก Party Point เดิมพัน (optional)
+  const wagerPrompt = ui.prompt("🎁 Party Point ที่เดิมพัน (ถ้ามี)", "เช่น 5 (ถ้าไม่ใส่จะไม่มีผลเดิมพัน)", ui.ButtonSet.OK_CANCEL);
+  if (wagerPrompt.getSelectedButton() !== ui.Button.OK) return;
+  const wagerPoint = wagerPrompt.getResponseText().trim() ? Number(wagerPrompt.getResponseText().trim()) : 0;
+
+  // อัปเดตสถานะ
+  sheet.getRange(rowIndex + 1, statusCol + 1).setValue("บันทึกผลแล้ว");
+  sheet.getRange(rowIndex + 1, headers.indexOf("ผู้ชนะ") + 1).setValue(winner);
+
+  // ให้ Party Point ทั้งสองทีมตามขนาด
+  function addPartyPoint(partyName, amount, note) {
+    const partyData = partySheet.getDataRange().getValues();
+    const idx = partyData.findIndex(r => r[0] === partyName);
+    if (idx === -1) return;
+    const current = Number(partyData[idx][2]) || 0;
+    partySheet.getRange(idx + 1, 3).setValue(current + amount);
+    logSheet.appendRow([new Date(), partyName, winner, note, amount, `บันทึกผล Party Challenge (${admin})`]);
+  }
+  addPartyPoint(partyA, partyPointPerTeam, `เข้าร่วม Party Challenge`);
+  addPartyPoint(partyB, partyPointPerTeam, `เข้าร่วม Party Challenge`);
+
+  // เดิมพัน Party Point (ฝั่งแพ้ลบ, ฝั่งชนะบวก, ห้ามติดลบ)
+  if (wagerPoint && wagerPoint > 0) {
+    const partyData = partySheet.getDataRange().getValues();
+    const loserIdx = partyData.findIndex(r => r[0] === loser);
+    const winnerIdx = partyData.findIndex(r => r[0] === winner);
+    let loserCurrent = loserIdx !== -1 ? Number(partyData[loserIdx][2]) : 0;
+    let winnerCurrent = winnerIdx !== -1 ? Number(partyData[winnerIdx][2]) : 0;
+    const canLose = Math.max(0, loserCurrent - wagerPoint);
+    const actualLost = loserCurrent - canLose; // แต้มที่ลบได้จริง
+    // ลบฝั่งแพ้
+    partySheet.getRange(loserIdx + 1, 3).setValue(canLose);
+    logSheet.appendRow([new Date(), loser, winner, `เสีย Party Point เดิมพัน`, -actualLost, `บันทึกผล Party Challenge (${admin})`]);
+    // บวกฝั่งชนะ
+    partySheet.getRange(winnerIdx + 1, 3).setValue(winnerCurrent + actualLost);
+    logSheet.appendRow([new Date(), winner, winner, `ได้ Party Point เดิมพัน`, actualLost, `บันทึกผล Party Challenge (${admin})`]);
+  }
+
+  logAdminAction("บันทึกผล Party Challenge", `ผล: ${winner} ชนะ ${loser} | Party Point: +${partyPointPerTeam} | เดิมพัน: ${wagerPoint || 0}` , admin);
+  ui.alert(`✅ บันทึกผลสำเร็จ: ${winner} ชนะ\n+${partyPointPerTeam} Party Point ทั้งสองทีม${wagerPoint ? `\nเดิมพัน Party Point: ${wagerPoint}` : ""}`);
 }
