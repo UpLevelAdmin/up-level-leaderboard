@@ -73,12 +73,14 @@
     <div class="logo">
       <img src="https://i.postimg.cc/wjzpnxjB/Up-Level-01-1.png" alt="Up Level Logo">
     </div>
-    <h2>รายชื่อผู้สมัคร Gym Battle เดือนกรกฎาคม 2568</h2>
-    <a class="register-btn" href="https://forms.gle/FuePJZCaxZ9fhKhr9" target="_blank">สมัครสมาชิก</a>
-    <div id="gymbattle-list">กำลังโหลด...</div>
+    <h2 style="text-align:center; margin-bottom: 24px;">รายชื่อผู้สมัคร Gym Battle เดือนกรกฎาคม 2568</h2>
+    <div style="display: flex; justify-content: center; margin-bottom: 24px;">
+      <a class="register-btn" href="https://forms.gle/FuePJZCaxZ9fhKhr9" target="_blank" style="max-width: 350px; width: 100%; text-align: center;">สมัครแข่งขัน Gym Battle</a>
+    </div>
+    <div id="gymbattle-list" style="text-align:center;">กำลังโหลด...</div>
   </div>
   <script>
-    const apiUrl = "https://script.google.com/macros/s/AKfycbx-zALa3bIbMJ-t_bwTkyhtVdUw9f52VbVTGJuTkDVxgSVfQE-e91XP6uX7veF2OeqU/exec";
+    const apiUrl = "https://script.google.com/macros/s/AKfycbx-zALa3bIbMJ-t_bwTkyhtVdUw9f52VbVTGJuTkDVxgSVfQE-e91XP6uX7veF2OeqU/exec?type=json";
 
     fetch(apiUrl)
       .then(res => res.json())
