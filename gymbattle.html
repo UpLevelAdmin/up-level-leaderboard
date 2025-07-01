@@ -8,7 +8,7 @@
     .gymbattle-container {
       max-width: 900px;
       margin: 32px auto;
-      padding: 0 8px;
+      padding: 0 8px 32px 8px;
       background: #fff;
       border-radius: 16px;
       box-shadow: 0 4px 10px rgba(0,0,0,0.08);
@@ -16,10 +16,14 @@
     .logo {
       display: flex;
       justify-content: center;
+      align-items: center;
       margin-bottom: 16px;
+      width: 100%;
     }
     .logo img {
       max-width: 120px;
+      display: block;
+      margin: 0 auto;
     }
     h2 {
       color: #388e3c;
@@ -27,24 +31,32 @@
     }
     .date-header {
       padding: 10px;
-      margin-top: 25px;
+      margin-top: 32px;
       font-size: 1.1em;
       font-weight: bold;
-      border-radius: 6px 6px 0 0;
-      background: #E3F2FD;
+      border-radius: 8px 8px 0 0;
       border-left: 6px solid #42A5F5;
+      text-align: left;
     }
     table {
       width: 100%;
       border-collapse: collapse;
       margin-top: 0;
+      margin-bottom: 16px;
+      background: #fff;
+      border-radius: 0 0 12px 12px;
+      overflow: hidden;
     }
     th, td {
-      padding: 8px;
+      padding: 10px 8px;
       text-align: center;
       border-bottom: 1px solid #ddd;
     }
-    tr:hover {
+    th {
+      font-weight: bold;
+      font-size: 1.05em;
+    }
+    tr:hover td {
       background: #f1f1f1;
     }
     .register-btn {
@@ -62,6 +74,7 @@
       text-decoration: none;
       text-align: center;
       transition: background 0.2s;
+      max-width: 350px;
     }
     .register-btn:hover {
       background: #1565c0;
@@ -75,12 +88,22 @@
     </div>
     <h2 style="text-align:center; margin-bottom: 24px;">รายชื่อผู้สมัคร Gym Battle เดือนกรกฎาคม 2568</h2>
     <div style="display: flex; justify-content: center; margin-bottom: 24px;">
-      <a class="register-btn" href="https://forms.gle/FuePJZCaxZ9fhKhr9" target="_blank" style="max-width: 350px; width: 100%; text-align: center;">สมัครแข่งขัน Gym Battle</a>
+      <a class="register-btn" href="https://forms.gle/FuePJZCaxZ9fhKhr9" target="_blank" style="text-align: center;">สมัครแข่งขัน Gym Battle</a>
     </div>
     <div id="gymbattle-list" style="text-align:center;">กำลังโหลด...</div>
   </div>
   <script>
     const apiUrl = "https://script.google.com/macros/s/AKfycbx-zALa3bIbMJ-t_bwTkyhtVdUw9f52VbVTGJuTkDVxgSVfQE-e91XP6uX7veF2OeqU/exec?type=json";
+    // พาสเทล 7 สี
+    const pastelColors = [
+      { bg: "#E3F2FD", border: "#42A5F5", th: "#42A5F5" },
+      { bg: "#FFFDE7", border: "#FDD835", th: "#FDD835" },
+      { bg: "#F1F8E9", border: "#7CB342", th: "#7CB342" },
+      { bg: "#FCE4EC", border: "#EC407A", th: "#EC407A" },
+      { bg: "#E8EAF6", border: "#5C6BC0", th: "#5C6BC0" },
+      { bg: "#FFF3E0", border: "#FFB74D", th: "#FFB74D" },
+      { bg: "#E0F2F1", border: "#26A69A", th: "#26A69A" }
+    ];
 
     fetch(apiUrl)
       .then(res => res.json())
@@ -90,18 +113,12 @@
           return;
         }
         let html = '';
-        data.dates.forEach(date => {
+        data.dates.forEach((date, idx) => {
           const players = data.groupedData[date] || [];
-          html += `<div class="date-header">วันที่: ${date} (จำนวน ${players.length} คน)</div>`;
-          html += `<table>
-            <thead>
-              <tr style="background-color: #42A5F5; color: white;">
-                <th>ลำดับ</th>
-                <th>ชื่อเล่น</th>
-                <th>ระดับการเล่น</th>
-              </tr>
-            </thead>
-            <tbody>`;
+          const color = pastelColors[idx % pastelColors.length];
+          html += `<div class="date-header" style="background:${color.bg};border-left:6px solid ${color.border};">วันที่: ${date} (จำนวน ${players.length} คน)</div>`;
+          html += `<table><thead><tr style="background:${color.th};color:#fff;">
+            <th>ลำดับ</th><th>ชื่อเล่น</th><th>ระดับการเล่น</th></tr></thead><tbody>`;
           if (players.length === 0) {
             html += `<tr><td colspan="3">ยังไม่มีผู้สมัคร</td></tr>`;
           } else {
