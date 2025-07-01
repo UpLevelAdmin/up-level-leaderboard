@@ -132,11 +132,13 @@
       // สร้าง map เบอร์โทร -> { codename, rank }
       const phoneMap = {};
       leaderboard.forEach(row => {
-        const phone = row.Phone || row[5];
+        // รองรับทั้ง object และ array
+        let phone = row.Phone;
+        if (!phone && Array.isArray(row)) phone = row[1];
         if (phone) {
           phoneMap[String(phone).replace(/[^\d]/g, "")] = {
-            codename: row.Codename || row[1],
-            rank: row.Rank || row[2]
+            codename: row.Codename || (Array.isArray(row) ? row[2] : undefined),
+            rank: row.Rank || (Array.isArray(row) ? row[3] : undefined)
           };
         }
       });
