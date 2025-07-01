@@ -117,7 +117,7 @@
           const players = data.groupedData[date] || [];
           const color = pastelColors[idx % pastelColors.length];
           html += `<div class=\"date-header\" style=\"background:${color.bg};border-left:6px solid ${color.border};\">วันที่: ${date} (จำนวน ${players.length} คน)</div>`;
-          html += `<table><thead><tr style=\"background:${color.border};color:#fff;\">\n            <th>ลำดับ</th><th>ชื่อเล่น</th><th>ระดับการเล่น</th></tr></thead><tbody>`;
+          html += `<table><thead><tr>\n            <th style=\"background:${color.border};color:#fff;\">ลำดับ</th><th style=\"background:${color.border};color:#fff;\">ชื่อเล่น</th><th style=\"background:${color.border};color:#fff;\">ระดับการเล่น</th></tr></thead><tbody>`;
           if (players.length === 0) {
             html += `<tr><td colspan=\"3\">ยังไม่มีผู้สมัคร</td></tr>`;
           } else {
