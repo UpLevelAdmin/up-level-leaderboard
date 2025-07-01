@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>รายชื่อผู้สมัคร Gym Battle</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .gymbattle-container {
+      max-width: 900px;
+      margin: 32px auto;
+      padding: 0 8px;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    }
+    .logo {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+    .logo img {
+      max-width: 120px;
+    }
+    h2 {
+      color: #388e3c;
+      text-align: center;
+    }
+    .date-header {
+      padding: 10px;
+      margin-top: 25px;
+      font-size: 1.1em;
+      font-weight: bold;
+      border-radius: 6px 6px 0 0;
+      background: #E3F2FD;
+      border-left: 6px solid #42A5F5;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 0;
+    }
+    th, td {
+      padding: 8px;
+      text-align: center;
+      border-bottom: 1px solid #ddd;
+    }
+    tr:hover {
+      background: #f1f1f1;
+    }
+    .register-btn {
+      display: block;
+      width: 100%;
+      margin: 24px auto 0 auto;
+      padding: 12px 0;
+      background: #1976d2;
+      color: #fff;
+      font-size: 1.1em;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      text-decoration: none;
+      text-align: center;
+      transition: background 0.2s;
+    }
+    .register-btn:hover {
+      background: #1565c0;
+    }
+  </style>
+</head>
+<body>
+  <div class="gymbattle-container">
+    <div class="logo">
+      <img src="https://i.postimg.cc/wjzpnxjB/Up-Level-01-1.png" alt="Up Level Logo">
+    </div>
+    <h2>รายชื่อผู้สมัคร Gym Battle เดือนกรกฎาคม 2568</h2>
+    <a class="register-btn" href="https://forms.gle/FuePJZCaxZ9fhKhr9" target="_blank">สมัครสมาชิก</a>
+    <div id="gymbattle-list">กำลังโหลด...</div>
+  </div>
+  <script>
+    const apiUrl = "https://script.google.com/macros/s/AKfycbx-zALa3bIbMJ-t_bwTkyhtVdUw9f52VbVTGJuTkDVxgSVfQE-e91XP6uX7veF2OeqU/exec";
+
+    fetch(apiUrl)
+      .then(res => res.json())
+      .then(data => {
+        if (data.error) {
+          document.getElementById('gymbattle-list').innerText = data.error;
+          return;
+        }
+        let html = '';
+        data.dates.forEach(date => {
+          const players = data.groupedData[date] || [];
+          html += `<div class="date-header">วันที่: ${date} (จำนวน ${players.length} คน)</div>`;
+          html += `<table>
+            <thead>
+              <tr style="background-color: #42A5F5; color: white;">
+                <th>ลำดับ</th>
+                <th>ชื่อเล่น</th>
+                <th>ระดับการเล่น</th>
+              </tr>
+            </thead>
+            <tbody>`;
+          if (players.length === 0) {
+            html += `<tr><td colspan="3">ยังไม่มีผู้สมัคร</td></tr>`;
+          } else {
+            players.forEach((player, idx) => {
+              html += `<tr><td>${idx + 1}</td><td>${player.nickname}</td><td>${player.level}</td></tr>`;
+            });
+          }
+          html += `</tbody></table>`;
+        });
+        document.getElementById('gymbattle-list').innerHTML = html;
+      })
+      .catch(err => {
+        document.getElementById('gymbattle-list').innerText = "เกิดข้อผิดพลาดในการโหลดข้อมูล";
+      });
+  </script>
+</body>
+</html> 
