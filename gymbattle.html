@@ -105,33 +105,65 @@
       { bg: "#E0F2F1", border: "#26A69A", th: "#26A69A" }
     ];
 
-    fetch(apiUrl)
-      .then(res => res.json())
-      .then(data => {
-        if (data.error) {
-          document.getElementById('gymbattle-list').innerText = data.error;
-          return;
+    // ดึง leaderboard ทั้งหมดมาก่อน แล้ว map เบอร์โทร -> codename/rank
+    const leaderboardApi = "https://script.google.com/macros/s/AKfycbxtjsDwHI6nJU4OIHExUxMaZwUn3qwakvdkzwbQO7C8Trzz5Gh84SX6F1gqb4BOFQcn/exec?func=getLeaderboard";
+    const rankEmojis = {
+      "Rookie": "🐣",
+      "Bronze": "🛡️",
+      "Silver": "⚔️",
+      "Gold": "🥇",
+      "Platinum": "✨",
+      "Diamond": "💎",
+      "Grandmaster": "👑",
+      "Legend": "🐉"
+    };
+
+    Promise.all([
+      fetch(apiUrl).then(res => res.json()),
+      fetch(leaderboardApi).then(res => res.json())
+    ]).then(([data, leaderboard]) => {
+      if (data.error) {
+        document.getElementById('gymbattle-list').innerText = data.error;
+        return;
+      }
+      // สร้าง map เบอร์โทร -> { codename, rank }
+      const phoneMap = {};
+      leaderboard.forEach(row => {
+        // row: [ชื่อเล่น, Codename, Rank, EXP, Party, Phone]
+        // หรือถ้าเป็น object: row.Phone, row.Codename, row.Rank
+        const phone = row.Phone || row[5];
+        if (phone) {
+          phoneMap[String(phone).replace(/[^\d]/g, "")] = {
+            codename: row.Codename || row[1],
+            rank: row.Rank || row[2]
+          };
         }
-        let html = '';
-        data.dates.forEach((date, idx) => {
-          const players = data.groupedData[date] || [];
-          const color = pastelColors[idx % pastelColors.length];
-          html += `<div class=\"date-header\" style=\"background:${color.bg};border-left:6px solid ${color.border};\">วันที่: ${date} (จำนวน ${players.length} คน)</div>`;
-          html += `<table><thead><tr>\n            <th style=\"background:${color.border};color:#fff;\">ลำดับ</th><th style=\"background:${color.border};color:#fff;\">ชื่อเล่น</th><th style=\"background:${color.border};color:#fff;\">ระดับการเล่น</th></tr></thead><tbody>`;
-          if (players.length === 0) {
-            html += `<tr><td colspan=\"3\">ยังไม่มีผู้สมัคร</td></tr>`;
-          } else {
-            players.forEach((player, idx) => {
-              html += `<tr><td>${idx + 1}</td><td>${player.nickname}</td><td>${player.level}</td></tr>`;
-            });
-          }
-          html += `</tbody></table>`;
-        });
-        document.getElementById('gymbattle-list').innerHTML = html;
-      })
-      .catch(err => {
-        document.getElementById('gymbattle-list').innerText = "เกิดข้อผิดพลาดในการโหลดข้อมูล";
       });
+      let html = '';
+      data.dates.forEach((date, idx) => {
+        const players = data.groupedData[date] || [];
+        const color = pastelColors[idx % pastelColors.length];
+        html += `<div class=\"date-header\" style=\"background:${color.bg};border-left:6px solid ${color.border};\">วันที่: ${date} (จำนวน ${players.length} คน)</div>`;
+        html += `<table><thead><tr>\n            <th style=\"background:${color.border};color:#fff;\">ลำดับ</th><th style=\"background:${color.border};color:#fff;\">ชื่อเล่น</th><th style=\"background:${color.border};color:#fff;\">ระดับการเล่น</th></tr></thead><tbody>`;
+        if (players.length === 0) {
+          html += `<tr><td colspan=\"3\">ยังไม่มีผู้สมัคร</td></tr>`;
+        } else {
+          players.forEach((player, idx2) => {
+            let displayName = player.nickname;
+            let phone = String(player.phone || '').replace(/[^\d]/g, "");
+            const profile = phoneMap[phone];
+            if (profile && profile.codename && profile.rank) {
+              displayName += ` [${profile.codename}] ${rankEmojis[profile.rank] || ''}`;
+            }
+            html += `<tr><td>${idx2 + 1}</td><td>${displayName}</td><td>${player.level}</td></tr>`;
+          });
+        }
+        html += `</tbody></table>`;
+      });
+      document.getElementById('gymbattle-list').innerHTML = html;
+    }).catch(err => {
+      document.getElementById('gymbattle-list').innerText = "เกิดข้อผิดพลาดในการโหลดข้อมูล";
+    });
   </script>
 </body>
 </html> 
