@@ -176,6 +176,74 @@
       display: inline-block;
       animation: rainbow 2s linear infinite, spin 1.5s linear infinite;
     }
+    /* Neon Glow (Gold) */
+    .codename.neon {
+      font-size: 1.18em;
+      color: #fff;
+      text-shadow: 0 0 5px #ffd700, 0 0 10px #ffd700, 0 0 20px #ffd700, 0 0 40px #ffd700, 0 0 80px #ffd700;
+      animation: glow 1.5s infinite alternate;
+    }
+    @keyframes glow {
+      0% {
+        text-shadow: 0 0 5px #ffd700, 0 0 10px #ffd700, 0 0 20px #ffd700, 0 0 40px #ffd700, 0 0 80px #ffd700;
+      }
+      100% {
+        text-shadow: 0 0 10px #00d4ff, 0 0 20px #00d4ff, 0 0 40px #00d4ff, 0 0 80px #00d4ff, 0 0 160px #00d4ff;
+      }
+    }
+    /* Typewriter (Platinum) */
+    .codename.typewriter {
+      font-family: 'Fira Mono', monospace;
+      overflow: hidden;
+      border-right: .15em solid #00bcd4;
+      white-space: nowrap;
+      animation: typing 2.5s steps(12, end) infinite, blink-caret .75s step-end infinite;
+      font-size: 1.22em;
+    }
+    @keyframes typing {
+      0% { width: 0 }
+      50% { width: 100% }
+      100% { width: 0 }
+    }
+    @keyframes blink-caret {
+      from, to { border-color: transparent }
+      50% { border-color: #00bcd4; }
+    }
+    /* Glitch (Diamond) */
+    .codename.glitch {
+      position: relative;
+      color: #fff;
+      font-size: 1.28em;
+      font-weight: bold;
+      animation: glitch 2s infinite;
+    }
+    .codename.glitch::before,
+    .codename.glitch::after {
+      content: attr(data-text);
+      position: absolute;
+      left: 0; top: 0;
+      width: 100%; height: 100%;
+      opacity: 0.7;
+    }
+    .codename.glitch::before {
+      color: #ff005e;
+      z-index: 1;
+      clip-path: polygon(0 0, 100% 0, 100% 30%, 0 30%);
+      animation: glitch 2s infinite;
+    }
+    .codename.glitch::after {
+      color: #00d4ff;
+      z-index: 2;
+      clip-path: polygon(0 70%, 100% 70%, 100% 100%, 0 100%);
+      animation: glitch 2s infinite;
+    }
+    @keyframes glitch {
+      0%, 100% { transform: translate(0);}
+      20% { transform: translate(-2px, 2px);}
+      40% { transform: translate(2px, -2px);}
+      60% { transform: translate(-1px, 1px);}
+      80% { transform: translate(1px, -1px);}
+    }
   </style>
 </head>
 <body>
@@ -263,19 +331,19 @@
 
     function renderCodenameEffect(codename, rank) {
       if (rank === 'Gold') {
-        // wave
-        return `<span class=\"codename wave\">${codename.split('').map((ch,i)=>`<span>${ch}</span>`).join('')}</span>`;
+        // Neon glow
+        return `<span class=\"codename neon\">${codename}</span>`;
       } else if (rank === 'Platinum') {
-        // bounce
-        return `<span class=\"codename bounce\">${codename}</span>`;
+        // Typewriter
+        return `<span class=\"codename typewriter\">${codename}</span>`;
       } else if (rank === 'Diamond') {
-        // pulse
-        return `<span class=\"codename pulse\">${codename}</span>`;
+        // Glitch
+        return `<span class=\"codename glitch\" data-text=\"${codename}\">${codename}</span>`;
       } else if (rank === 'Grandmaster') {
-        // shake
-        return `<span class=\"codename shake\">${codename}</span>`;
+        // Pulse (ใช้ของเดิม)
+        return `<span class=\"codename pulse\">${codename}</span>`;
       } else if (rank === 'Legend') {
-        // rainbow spin
+        // Rainbow spin (ใช้ของเดิม)
         return `<span class=\"codename rainbow-spin\">${codename}</span>`;
       } else {
         return `<span class=\"codename\">${codename}</span>`;
