@@ -79,6 +79,40 @@
     .register-btn:hover {
       background: #1565c0;
     }
+    /* Spinner */
+    .spinner {
+      margin: 24px auto 8px auto;
+      border: 6px solid #e0e0e0;
+      border-top: 6px solid #42A5F5;
+      border-radius: 50%;
+      width: 48px;
+      height: 48px;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg);}
+      100% { transform: rotate(360deg);}
+    }
+    /* Codename สี/ขนาด/กระพริบตาม rank */
+    .codename-rank[data-rank="Rookie"]      .codename { color: #888888; font-size: 1.05em; }
+    .codename-rank[data-rank="Bronze"]      .codename { color: #b87333; font-size: 1.08em; }
+    .codename-rank[data-rank="Silver"]      .codename { color: #9e9e9e; font-size: 1.12em; }
+    .codename-rank[data-rank="Gold"]        .codename { color: #ffd700; font-size: 1.18em; font-weight: bold; }
+    .codename-rank[data-rank="Platinum"]    .codename { color: #00bcd4; font-size: 1.22em; font-weight: bold; }
+    .codename-rank[data-rank="Diamond"]     .codename { color: #00bfff; font-size: 1.28em; font-weight: bold; }
+    .codename-rank[data-rank="Grandmaster"] .codename { color: #8e24aa; font-size: 1.35em; font-weight: bold; }
+    .codename-rank[data-rank="Legend"]      .codename { color: #e53935; font-size: 1.45em; font-weight: bold; }
+    .codename-rank[data-rank="Gold"]        .codename,
+    .codename-rank[data-rank="Platinum"]    .codename,
+    .codename-rank[data-rank="Diamond"]     .codename,
+    .codename-rank[data-rank="Grandmaster"] .codename,
+    .codename-rank[data-rank="Legend"]      .codename {
+      animation: blink 1s step-end infinite alternate;
+    }
+    @keyframes blink {
+      0%   { opacity: 1;   text-shadow: 0 0 8px #fff, 0 0 16px currentColor; }
+      100% { opacity: 0.6; text-shadow: 0 0 2px #fff, 0 0 4px currentColor; }
+    }
   </style>
 </head>
 <body>
@@ -90,7 +124,10 @@
     <div style="display: flex; justify-content: center; margin-bottom: 24px;">
       <a class="register-btn" href="https://forms.gle/FuePJZCaxZ9fhKhr9" target="_blank" style="text-align: center;">สมัครแข่งขัน Gym Battle</a>
     </div>
-    <div id="gymbattle-list" style="text-align:center;">กำลังโหลด...</div>
+    <div id="gymbattle-list" style="text-align:center;">
+      <div class="spinner"></div>
+      <div>กำลังโหลด...</div>
+    </div>
   </div>
   <script>
     console.log('DEBUG: version 2');
@@ -147,7 +184,8 @@
             let phone = String(player.phone || '').replace(/[^\d]/g, "");
             const profile = phoneMap[phone];
             if (profile && profile.codename && profile.rank) {
-              displayName += ` [${profile.codename}] ${rankEmojis[profile.rank] || ''}`;
+              const emoji = rankEmojis[profile.rank] || '';
+              displayName += `<br><span class=\"codename-rank\" data-rank=\"${profile.rank}\"><span>${emoji}</span> <span class=\"codename\">${profile.codename}</span> <span>${emoji}</span></span>`;
             }
             html += `<tr><td>${idx2 + 1}</td><td>${displayName}</td><td>${player.level}</td></tr>`;
           });
