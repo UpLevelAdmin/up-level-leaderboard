@@ -106,8 +106,8 @@
       { bg: "#E0F2F1", border: "#26A69A", th: "#26A69A" }
     ];
 
-    // ดึง leaderboard ทั้งหมดมาก่อน แล้ว map เบอร์โทร -> codename/rank
-    const leaderboardApi = "https://script.google.com/macros/s/AKfycbxtjsDwHI6nJU4OIHExUxMaZwUn3qwakvdkzwbQO7C8Trzz5Gh84SX6F1gqb4BOFQcn/exec?func=getLeaderboard";
+    // ดึงข้อมูลสมาชิกจาก Member Dashboard (API ใหม่)
+    const memberDashboardApi = "https://script.google.com/macros/s/AKfycbxtjsDwHI6nJU4OIHExUxMaZwUn3qwakvdkzwbQO7C8Trzz5Gh84SX6F1gqb4BOFQcn/exec?func=getMemberDashboardData";
     const rankEmojis = {
       "Rookie": "🐣",
       "Bronze": "🛡️",
@@ -120,29 +120,19 @@
     };
 
     Promise.all([
-      fetch(apiUrl).then(res => res.json()),
-      fetch(leaderboardApi).then(res => res.json())
-    ]).then(([data, leaderboard]) => {
-      console.log('DEBUG: gymbattle data', data);
-      console.log('DEBUG: leaderboard', leaderboard);
+      fetch(apiUrl).then(res => res.json()), // ข้อมูลผู้สมัคร gym battle
+      fetch(memberDashboardApi).then(res => res.json()) // สมาชิกทั้งหมด
+    ]).then(([data, members]) => {
       if (data.error) {
         document.getElementById('gymbattle-list').innerText = data.error;
         return;
       }
       // สร้าง map เบอร์โทร -> { codename, rank }
       const phoneMap = {};
-      leaderboard.forEach(row => {
-        // รองรับทั้ง object และ array
-        let phone = row.Phone;
-        if (!phone && Array.isArray(row)) phone = row[1];
-        if (phone) {
-          phoneMap[String(phone).replace(/[^\d]/g, "")] = {
-            codename: row.Codename || (Array.isArray(row) ? row[2] : undefined),
-            rank: row.Rank || (Array.isArray(row) ? row[3] : undefined)
-          };
-        }
+      members.forEach(m => {
+        const phone = String(m.phone).replace(/[^\d]/g, "");
+        phoneMap[phone] = { codename: m.codename, rank: m.rank };
       });
-      console.log('DEBUG: phoneMap', phoneMap);
       let html = '';
       data.dates.forEach((date, idx) => {
         const players = data.groupedData[date] || [];
@@ -155,7 +145,6 @@
           players.forEach((player, idx2) => {
             let displayName = player.nickname;
             let phone = String(player.phone || '').replace(/[^\d]/g, "");
-            console.log('DEBUG: player', player, 'phone', phone, 'profile', phoneMap[phone]);
             const profile = phoneMap[phone];
             if (profile && profile.codename && profile.rank) {
               displayName += ` [${profile.codename}] ${rankEmojis[profile.rank] || ''}`;

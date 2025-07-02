@@ -303,13 +303,16 @@ function updateLeaderboard() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const dash = ss.getSheetByName("Member Dashboard");
   const lb = ss.getSheetByName("Leaderboard");
-  // เพิ่มเบอร์โทร (Phone) เป็นคอลัมน์ที่ 2
   const data = dash.getRange(2, 1, dash.getLastRow() - 1, 6).getValues();
   const result = [["ชื่อเล่น", "Phone", "Codename", "Rank", "EXP", "Party"]];
   for (let i = 0; i < data.length; i++) {
-    result.push([data[i][0], data[i][1], data[i][2], data[i][3], data[i][4], data[i][5] || ""]);
+    // --- Normalize เบอร์โทรให้เป็น string 10 หลัก ---
+    let phone = String(data[i][1]).trim();
+    if (phone.length === 9 && phone[0] !== "0") phone = "0" + phone;
+    if (phone.length !== 10) phone = ""; // กันเบอร์ผิด
+    result.push([data[i][0], phone, data[i][2], data[i][3], data[i][4], data[i][5] || ""]);
   }
-  result.sort((a, b) => b[4] - a[4]); // sort by EXP (now index 4)
+  result.sort((a, b) => b[4] - a[4]);
   lb.clearContents();
   lb.getRange(1, 1, result.length, result[0].length).setValues(result);
 }
@@ -1287,6 +1290,7 @@ function doGet(e) {
   if (func === "verifyPartyLeader") return verifyPartyLeader(e);
   if (func === "partyChallengeListPublic") return partyChallengeListPublic();
   if (func === "acceptPartyChallenge") return acceptPartyChallenge(e); // เพิ่มบรรทัดนี้
+  if (func === "getMemberDashboardData") return getMemberDashboardData();
   return HtmlService.createHtmlOutput("<p>✅ Up Level Guild System Web App</p>");
 }
 
@@ -2863,4 +2867,28 @@ function recordPartyChallengeResult() {
 
   logAdminAction("บันทึกผล Party Challenge", `ผล: ${winner} ชนะ ${loser} | Party Point: +${partyPointPerTeam} | เดิมพัน: ${wagerPoint || 0}` , admin);
   ui.alert(`✅ บันทึกผลสำเร็จ: ${winner} ชนะ\n+${partyPointPerTeam} Party Point ทั้งสองทีม${wagerPoint ? `\nเดิมพัน Party Point: ${wagerPoint}` : ""}`);
+}
+
+function getMemberDashboardData() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Member Dashboard");
+  if (!sheet) {
+    return ContentService.createTextOutput(JSON.stringify({ error: "ไม่พบชีท Member Dashboard" }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+  const data = sheet.getDataRange().getValues();
+  const headers = data[0];
+  const result = data.slice(1).map(row => {
+    const obj = {};
+    headers.forEach((h, i) => obj[h] = row[i]);
+    return {
+      nickname: obj["ชื่อเล่น"] || row[0],
+      phone: obj["Phone"] || row[1],
+      codename: obj["Codename"] || row[2],
+      rank: obj["Rank"] || row[3],
+      exp: obj["EXP"] || row[4],
+      party: obj["Party"] || row[5]
+    };
+  });
+  return ContentService.createTextOutput(JSON.stringify(result))
+    .setMimeType(ContentService.MimeType.JSON);
 }
