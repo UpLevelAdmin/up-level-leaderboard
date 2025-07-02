@@ -115,13 +115,21 @@
     }
     /* Wave (Gold) */
     @keyframes wave {
-      0%, 100% { transform: translateY(0); }
-      50%      { transform: translateY(-14px); }
+      0%, 100% { transform: translateY(0);}
+      20%      { transform: translateY(-5px);}
+      40%      { transform: translateY(-10px);}
+      60%      { transform: translateY(-5px);}
+      80%      { transform: translateY(0);}
     }
     .codename.wave span {
       display: inline-block;
-      animation: wave 1.2s ease-in-out infinite;
+      animation: wave 1.2s cubic-bezier(0.4,0,0.2,1) infinite;
     }
+    .codename.wave.gold span { animation-duration: 1.2s; }
+    .codename.wave.platinum span { animation-duration: 1s; }
+    .codename.wave.diamond span { animation-duration: 0.85s; }
+    .codename.wave.grandmaster span { animation-duration: 0.7s; }
+    .codename.wave.legend span { animation-duration: 0.6s; }
     .codename.wave span:nth-child(1) { animation-delay: 0s; }
     .codename.wave span:nth-child(2) { animation-delay: 0.08s; }
     .codename.wave span:nth-child(3) { animation-delay: 0.16s; }
@@ -330,21 +338,10 @@
     });
 
     function renderCodenameEffect(codename, rank) {
-      if (rank === 'Gold') {
-        // Neon glow
-        return `<span class=\"codename neon\">${codename}</span>`;
-      } else if (rank === 'Platinum') {
-        // Typewriter
-        return `<span class=\"codename typewriter\">${codename}</span>`;
-      } else if (rank === 'Diamond') {
-        // Glitch
-        return `<span class=\"codename glitch\" data-text=\"${codename}\">${codename}</span>`;
-      } else if (rank === 'Grandmaster') {
-        // Pulse (ใช้ของเดิม)
-        return `<span class=\"codename pulse\">${codename}</span>`;
-      } else if (rank === 'Legend') {
-        // Rainbow spin (ใช้ของเดิม)
-        return `<span class=\"codename rainbow-spin\">${codename}</span>`;
+      const waveRanks = ['Gold', 'Platinum', 'Diamond', 'Grandmaster', 'Legend'];
+      if (waveRanks.includes(rank)) {
+        // wave + class ตาม rank
+        return `<span class=\"codename wave ${rank.toLowerCase()}\">${codename.split('').map((ch,i)=>`<span>${ch}</span>`).join('')}</span>`;
       } else {
         return `<span class=\"codename\">${codename}</span>`;
       }
