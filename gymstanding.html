@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>Gym Standing</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .container { max-width: 1000px; margin: 32px auto; background: #fff; border-radius: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); padding: 24px; }
+    h2 { color: #388e3c; text-align: center; }
+    select, input[type="search"] { padding: 6px 12px; margin: 0 8px 16px 0; border-radius: 6px; border: 1px solid #ccc; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 32px; }
+    th, td { padding: 8px 6px; text-align: center; border-bottom: 1px solid #eee; }
+    th { background: #e3f2fd; }
+    tr:hover td { background: #f1f8f8; }
+    .leaderboard-title { margin-top: 32px; color: #1976d2; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>ผลการแข่งขัน Gym Standing</h2>
+    <div>
+      <label for="event-select">เลือก Event:</label>
+      <select id="event-select"></select>
+      <input type="search" id="player-search" placeholder="ค้นหาผู้เล่น...">
+    </div>
+    <table id="event-standings">
+      <thead>
+        <tr>
+          <th>Rank</th>
+          <th>Player Name</th>
+          <th>Codename</th>
+          <th>Points</th>
+          <th>Played</th>
+          <th>Won</th>
+          <th>Lost</th>
+          <th>Winrate (%)</th>
+          <th>OW%</th>
+          <th>Note</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- JS เติมข้อมูลตรงนี้ -->
+      </tbody>
+    </table>
+    <h3 class="leaderboard-title">Leaderboard รวมทุก Event</h3>
+    <table id="leaderboard">
+      <thead>
+        <tr>
+          <th>Player Name</th>
+          <th>Codename</th>
+          <th>Events</th>
+          <th>1st</th>
+          <th>2nd</th>
+          <th>3rd</th>
+          <th>Total Points</th>
+          <th>Avg Winrate (%)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- JS เติมข้อมูลตรงนี้ -->
+      </tbody>
+    </table>
+  </div>
+  <script>
+    // URL ของ Apps Script Web App (เปลี่ยนเป็นของจริงหลัง deploy)
+    const API_URL = "https://script.google.com/macros/s/AKfycbxtjsDwHI6nJU4OIHExUxMaZwUn3qwakvdkzwbQO7C8Trzz5Gh84SX6F1gqb4BOFQcn/exec?func=getGymStandingData";
+
+    let data = [];
+
+    async function fetchGymStandingData() {
+      try {
+        const res = await fetch(API_URL);
+        return await res.json();
+      } catch (e) {
+        return [];
+      }
+    }
+
+    // สร้าง dropdown event
+    function renderEventDropdown() {
+      const select = document.getElementById('event-select');
+      const events = [...new Set(data.map(row => row["Event Name"] + " (" + row["Event date"] + ")"))];
+      select.innerHTML = events.map(ev => `<option value="${ev}">${ev}</option>`).join('');
+    }
+
+    // แสดง standings ของ event ที่เลือก
+    function renderEventStandings() {
+      const select = document.getElementById('event-select');
+      const search = document.getElementById('player-search').value.trim().toLowerCase();
+      const eventName = select.value.split(' (')[0];
+      const eventDate = select.value.match(/\(([^)]+)\)/)[1];
+      const tbody = document.querySelector('#event-standings tbody');
+      let rows = data.filter(row => row["Event Name"] === eventName && row["Event date"] === eventDate);
+      if (search) {
+        rows = rows.filter(row => row["Player Name"].toLowerCase().includes(search) || (row["Codename"]||'').toLowerCase().includes(search));
+      }
+      tbody.innerHTML = rows.map(row => `
+        <tr>
+          <td>${row["Rank"]}</td>
+          <td>${row["Player Name"]}</td>
+          <td>${row["Codename"]||""}</td>
+          <td>${row["Points"]}</td>
+          <td>${row["matches_played"]}</td>
+          <td>${row["matches_won"]}</td>
+          <td>${row["matches_lost"]}</td>
+          <td>${row["winrate (%)"]}</td>
+          <td>${row["opp_winrate (%)"]}</td>
+          <td>${row["note"]||""}</td>
+        </tr>
+      `).join('');
+    }
+
+    // Leaderboard รวมทุก event
+    function renderLeaderboard() {
+      const stats = {};
+      data.forEach(row => {
+        const key = row["Player Name"];
+        if (!stats[key]) stats[key] = { name: row["Player Name"], codename: row["Codename"]||"", events: 0, first: 0, second: 0, third: 0, points: 0, winrateSum: 0 };
+        stats[key].events += 1;
+        if (row["Rank"] == 1) stats[key].first += 1;
+        if (row["Rank"] == 2) stats[key].second += 1;
+        if (row["Rank"] == 3) stats[key].third += 1;
+        stats[key].points += Number(row["Points"]||0);
+        stats[key].winrateSum += Number(row["winrate (%)"]||0);
+      });
+      const arr = Object.values(stats).map(s => ({
+        ...s,
+        avgWinrate: (s.winrateSum / s.events).toFixed(1)
+      }));
+      arr.sort((a, b) => b.points - a.points);
+      const tbody = document.querySelector('#leaderboard tbody');
+      tbody.innerHTML = arr.map(row => `
+        <tr>
+          <td>${row.name}</td>
+          <td>${row.codename}</td>
+          <td>${row.events}</td>
+          <td>${row.first}</td>
+          <td>${row.second}</td>
+          <td>${row.third}</td>
+          <td>${row.points}</td>
+          <td>${row.avgWinrate}</td>
+        </tr>
+      `).join('');
+    }
+
+    // Event listeners
+    document.addEventListener('DOMContentLoaded', async () => {
+      data = await fetchGymStandingData();
+      renderEventDropdown();
+      renderEventStandings();
+      renderLeaderboard();
+      document.getElementById('event-select').addEventListener('change', renderEventStandings);
+      document.getElementById('player-search').addEventListener('input', renderEventStandings);
+    });
+  </script>
+</body>
+</html>
