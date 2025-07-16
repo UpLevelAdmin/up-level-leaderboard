@@ -298,6 +298,20 @@
       "Legend": "🐉"
     };
 
+    function parseThaiDate(str) {
+      // ตัวอย่าง: "วันอังคารที่ 16 กรกฎาคม 2568"
+      const months = [
+        "", "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
+        "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"
+      ];
+      const m = str.match(/(\d{1,2}) (\S+) (\d{4})/);
+      if (!m) return null;
+      const day = parseInt(m[1], 10);
+      const month = months.indexOf(m[2]);
+      const year = parseInt(m[3], 10) - 543; // พ.ศ. → ค.ศ.
+      return new Date(year, month - 1, day);
+    }
+
     Promise.all([
       fetch(apiUrl).then(res => res.json()), // ข้อมูลผู้สมัคร gym battle
       fetch(memberDashboardApi).then(res => res.json()) // สมาชิกทั้งหมด
@@ -313,13 +327,30 @@
         phoneMap[phone] = { codename: m.codename, rank: m.rank };
       });
       let html = '';
+      // วันที่ปัจจุบัน (ไทย)
+      const today = new Date();
+      today.setHours(0,0,0,0);
       data.dates.forEach((date, idx) => {
         const players = data.groupedData[date] || [];
         const color = pastelColors[idx % pastelColors.length];
-        html += `<div class=\"date-header\" style=\"background:${color.bg};border-left:6px solid ${color.border};\">วันที่: ${date} (จำนวน ${players.length} คน)</div>`;
-        html += `<table><thead><tr>\n            <th style=\"background:${color.border};color:#fff;\">ลำดับ</th><th style=\"background:${color.border};color:#fff;\">ชื่อเล่น</th><th style=\"background:${color.border};color:#fff;\">ระดับการเล่น</th></tr></thead><tbody>`;
+        const dateObj = parseThaiDate(date);
+        let isPast = false, isToday = false, isFuture = false;
+        if (dateObj) {
+          if (dateObj < today) isPast = true;
+          else if (dateObj.getTime() === today.getTime()) isToday = true;
+          else isFuture = true;
+        }
+        // id เฉพาะกลุ่มวัน
+        const groupId = `group-${idx}`;
+        // ปุ่ม toggle
+        const toggleBtn = `<button class="toggle-btn" data-group="${groupId}">${isPast ? "แสดง" : "ซ่อน"}</button>`;
+        // ซ่อน table ถ้าเป็นอดีต
+        const tableStyle = isPast ? 'style="display:none;"' : '';
+        html += `<div class="date-header" style="background:${color.bg};border-left:6px solid ${color.border};display:flex;justify-content:space-between;align-items:center;">` +
+          `<span>วันที่: ${date} (จำนวน ${players.length} คน)</span> ${toggleBtn}</div>`;
+        html += `<table id="${groupId}" ${tableStyle}><thead><tr>\n            <th style="background:${color.border};color:#fff;">ลำดับ</th><th style="background:${color.border};color:#fff;">ชื่อเล่น</th><th style="background:${color.border};color:#fff;">ระดับการเล่น</th></tr></thead><tbody>`;
         if (players.length === 0) {
-          html += `<tr><td colspan=\"3\">ยังไม่มีผู้สมัคร</td></tr>`;
+          html += `<tr><td colspan="3">ยังไม่มีผู้สมัคร</td></tr>`;
         } else {
           players.forEach((player, idx2) => {
             let displayName = player.nickname;
@@ -328,7 +359,7 @@
             if (profile && profile.codename && profile.rank) {
               const emoji = rankEmojis[profile.rank] || '';
               const codenameHtml = renderCodenameEffect(profile.codename, profile.rank);
-              displayName += `<br><span class=\"codename-rank\" data-rank=\"${profile.rank}\"><span>${emoji}</span> ${codenameHtml} <span>${emoji}</span></span>`;
+              displayName += `<br><span class="codename-rank" data-rank="${profile.rank}"><span>${emoji}</span> ${codenameHtml} <span>${emoji}</span></span>`;
             }
             html += `<tr><td>${idx2 + 1}</td><td>${displayName}</td><td>${player.level}</td></tr>`;
           });
@@ -336,6 +367,20 @@
         html += `</tbody></table>`;
       });
       document.getElementById('gymbattle-list').innerHTML = html;
+      // เพิ่ม event listener ให้ปุ่ม toggle
+      document.querySelectorAll('.toggle-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const groupId = this.getAttribute('data-group');
+          const table = document.getElementById(groupId);
+          if (table.style.display === "none") {
+            table.style.display = "";
+            this.textContent = "ซ่อน";
+          } else {
+            table.style.display = "none";
+            this.textContent = "แสดง";
+          }
+        });
+      });
     }).catch(err => {
       document.getElementById('gymbattle-list').innerText = "เกิดข้อผิดพลาดในการโหลดข้อมูล";
     });
@@ -345,10 +390,10 @@
       const waveRanks = ['Gold', 'Platinum', 'Diamond', 'Grandmaster', 'Legend'];
       if (waveRanks.includes(rank)) {
         // wave + class ตาม rank, ใส่วงเล็บเหลี่ยมขยับด้วย
-        return `<span class=\"codename wave ${rank.toLowerCase()}\">${chars.map((ch,i)=>`<span>${ch}</span>`).join('')}</span>`;
+        return `<span class="codename wave ${rank.toLowerCase()}">${chars.map((ch,i)=>`<span>${ch}</span>`).join('')}</span>`;
       } else {
         // ใส่วงเล็บเหลี่ยมธรรมดา
-        return `<span class=\"codename\">[${codename}]</span>`;
+        return `<span class="codename">[${codename}]</span>`;
       }
     }
   </script>
