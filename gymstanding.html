@@ -55,25 +55,27 @@
     .leaderboard-title { margin-top: 32px; color: #1976d2; font-weight: 700; }
     #toggle-event-standings {
       display: block;
-      margin: 0 auto 16px auto;
-      max-width: 350px;
-      padding: 12px 0;
-      background: #b2dfdb;
+      margin: 0 auto 24px auto;
+      width: 100%;
+      max-width: 480px;
+      padding: 18px 0;
+      background: linear-gradient(90deg, #b2dfdb 60%, #fce4ec 100%);
       color: #00695c;
-      font-size: 1.1em;
+      font-size: 1.18em;
       font-weight: bold;
       border: none;
-      border-radius: 8px;
+      border-radius: 16px;
       cursor: pointer;
       text-align: center;
       transition: background 0.2s, transform 0.18s, box-shadow 0.18s;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+      letter-spacing: 0.5px;
     }
     #toggle-event-standings:hover {
-      background: #80cbc4;
+      background: linear-gradient(90deg, #80cbc4 60%, #f8bbd0 100%);
       color: #004d40;
-      transform: scale(1.04);
-      box-shadow: 0 0 16px #b2dfdb, 0 0 32px #b2dfdb;
+      transform: scale(1.03);
+      box-shadow: 0 0 24px #b2dfdb, 0 0 32px #fce4ec;
     }
     #event-standings-wrap {
       background: #fce4ec;
@@ -277,12 +279,11 @@
       <thead>
         <tr>
           <th>Codename</th>
-          <th>Rank</th>
-          <th>Events</th>
           <th>1st</th>
           <th>2nd</th>
           <th>3rd</th>
-          <th>Total Points</th>
+          <th>Total Match</th>
+          <th>Total Win</th>
           <th>Avg Winrate (%)</th>
         </tr>
       </thead>
@@ -348,7 +349,13 @@
     // สร้าง dropdown event
     function renderEventDropdown() {
       const select = document.getElementById('event-select');
-      const events = [...new Set(data.map(row => row["Event Name"] + " (" + row["Event date"] + ")"))];
+      // แสดงเฉพาะวันที่ (ตัดเวลาออก)
+      const events = [...new Set(data.map(row => {
+        // ถ้า event_date มีเวลา เช่น 2024-12-23T17:00:00.000Z ให้ตัดเอาแค่ yyyy-mm-dd
+        let date = row["Event date"];
+        if (date && date.includes('T')) date = date.split('T')[0];
+        return `${row["Event Name"]} (${date})`;
+      }))];
       select.innerHTML = events.map(ev => `<option value="${ev}">${ev}</option>`).join('');
     }
 
@@ -436,29 +443,29 @@
           codename = phoneMap[phone].codename || codename;
           rank = phoneMap[phone].rank || rank;
         }
-        if (!stats[codename]) stats[codename] = { codename, rank, events: 0, first: 0, second: 0, third: 0, points: 0, winrateSum: 0 };
+        if (!stats[codename]) stats[codename] = { codename, rank, events: 0, first: 0, second: 0, third: 0, matches: 0, wins: 0, winrateSum: 0 };
         stats[codename].events += 1;
         if (row["Rank"] == 1) stats[codename].first += 1;
         if (row["Rank"] == 2) stats[codename].second += 1;
         if (row["Rank"] == 3) stats[codename].third += 1;
-        stats[codename].points += Number(row["Points"]||0);
+        stats[codename].matches += Number(row["matches_played"] || 0);
+        stats[codename].wins += Number(row["matches_won"] || 0);
         stats[codename].winrateSum += Number(row["winrate (%)"]||0);
       });
       const arr = Object.values(stats).map(s => ({
         ...s,
-        avgWinrate: (s.winrateSum / s.events).toFixed(1)
+        avgWinrate: (s.matches > 0 ? (s.wins / s.matches) * 100 : 0).toFixed(1)
       }));
-      arr.sort((a, b) => b.points - a.points);
+      arr.sort((a, b) => b.wins - a.wins || b.matches - a.matches);
       const tbody = document.querySelector('#leaderboard tbody');
       tbody.innerHTML = arr.map(row => `
         <tr>
           <td><span class="codename-rank" data-rank="${row.rank}"><span>${rankEmojis[row.rank]||''}</span> ${renderCodenameEffect(row.codename, row.rank)} <span>${rankEmojis[row.rank]||''}</span></span></td>
-          <td>${row.rank}</td>
-          <td>${row.events}</td>
           <td>${row.first}</td>
           <td>${row.second}</td>
           <td>${row.third}</td>
-          <td>${row.points}</td>
+          <td>${row.matches}</td>
+          <td>${row.wins}</td>
           <td>${row.avgWinrate}</td>
         </tr>
       `).join('');
