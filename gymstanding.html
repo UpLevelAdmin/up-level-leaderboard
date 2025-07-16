@@ -203,6 +203,7 @@
       <select id="event-select"></select>
       <input type="search" id="player-search" placeholder="ค้นหาผู้เล่น...">
     </div>
+    <button id="toggle-event-standings" style="display:block;margin:0 auto 16px auto;max-width:350px;padding:10px 0;background:#1976d2;color:#fff;font-size:1.1em;font-weight:bold;border:none;border-radius:8px;cursor:pointer;">แสดงตารางการแข่งขัน</button>
     <div id="event-standings-wrap" style="display:none;">
       <table id="event-standings">
         <thead>
@@ -231,6 +232,7 @@
     const API_URL = "https://script.google.com/macros/s/AKfycbxtjsDwHI6nJU4OIHExUxMaZwUn3qwakvdkzwbQO7C8Trzz5Gh84SX6F1gqb4BOFQcn/exec?func=getGymStandingData";
 
     let data = [];
+    let phoneMap = {};
 
     async function fetchGymStandingData() {
       try {
@@ -239,6 +241,16 @@
       } catch (e) {
         return [];
       }
+    }
+
+    function buildPhoneMap(members) {
+      // สร้าง map เบอร์โทร -> { codename, rank }
+      const map = {};
+      members.forEach(m => {
+        const phone = String(m.phone || m["Player Phone"] || m["Phone"]).replace(/[^\d]/g, "");
+        if (phone) map[phone] = { codename: m.codename || m["Codename"], rank: m.rank || m["Rank"] };
+      });
+      return map;
     }
 
     // สร้าง dropdown event
@@ -298,8 +310,13 @@
       // แสดงตารางเมื่อเลือก event แล้วเท่านั้น
       document.getElementById('event-standings-wrap').style.display = rows.length > 0 ? '' : 'none';
       tbody.innerHTML = rows.map(row => {
-        const codename = row["Codename"] && String(row["Codename"]).trim() ? row["Codename"] : "Guest";
-        const rank = row["Rank"] || "Rookie";
+        const phone = String(row["Player Phone"] || row["Phone"] || '').replace(/[^\d]/g, "");
+        let codename = row["Codename"] && String(row["Codename"]).trim() ? row["Codename"] : "Guest";
+        let rank = row["Rank"] || "Rookie";
+        if (phoneMap[phone]) {
+          codename = phoneMap[phone].codename || codename;
+          rank = phoneMap[phone].rank || rank;
+        }
         return `<tr>
           <td>${row["Rank"]}</td>
           <td>${row["Player Name"]}</td>
@@ -320,8 +337,13 @@
     function renderLeaderboard() {
       const stats = {};
       data.forEach(row => {
-        const codename = row["Codename"] && String(row["Codename"]).trim() ? row["Codename"] : "Guest";
-        const rank = row["Rank"] || "Rookie";
+        const phone = String(row["Player Phone"] || row["Phone"] || '').replace(/[^\d]/g, "");
+        let codename = row["Codename"] && String(row["Codename"]).trim() ? row["Codename"] : "Guest";
+        let rank = row["Rank"] || "Rookie";
+        if (phoneMap[phone]) {
+          codename = phoneMap[phone].codename || codename;
+          rank = phoneMap[phone].rank || rank;
+        }
         if (!stats[codename]) stats[codename] = { codename, rank, events: 0, first: 0, second: 0, third: 0, points: 0, winrateSum: 0 };
         stats[codename].events += 1;
         if (row["Rank"] == 1) stats[codename].first += 1;
@@ -353,10 +375,26 @@
     // Event listeners
     document.addEventListener('DOMContentLoaded', async () => {
       data = await fetchGymStandingData();
+      // ดึงข้อมูลสมาชิกเพื่อ map เบอร์โทร -> codename, rank (เหมือน gymbattle)
+      let members = [];
+      try {
+        const res = await fetch("https://script.google.com/macros/s/AKfycbxtjsDwHI6nJU4OIHExUxMaZwUn3qwakvdkzwbQO7C8Trzz5Gh84SX6F1gqb4BOFQcn/exec?func=getMemberDashboardData");
+        members = await res.json();
+      } catch(e) {}
+      phoneMap = buildPhoneMap(members);
       renderEventDropdown();
       renderLeaderboard(); // Render leaderboard first
-      // ซ่อน standings จนกว่าจะเลือก event
-      document.getElementById('event-standings-wrap').style.display = 'none';
+      // ซ่อน standings และปุ่ม toggle
+      const standingsWrap = document.getElementById('event-standings-wrap');
+      const toggleBtn = document.getElementById('toggle-event-standings');
+      standingsWrap.style.display = 'none';
+      let standingsVisible = false;
+      toggleBtn.textContent = 'แสดงตารางการแข่งขัน';
+      toggleBtn.onclick = function() {
+        standingsVisible = !standingsVisible;
+        standingsWrap.style.display = standingsVisible ? '' : 'none';
+        toggleBtn.textContent = standingsVisible ? 'ซ่อนตารางการแข่งขัน' : 'แสดงตารางการแข่งขัน';
+      };
       renderEventStandings();
       document.getElementById('event-select').addEventListener('change', renderEventStandings);
       document.getElementById('player-search').addEventListener('input', renderEventStandings);
