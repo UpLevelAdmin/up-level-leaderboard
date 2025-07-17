@@ -371,20 +371,17 @@
     };
     function renderCodenameEffect(codename, rank) {
       if (!codename) return '';
-      const chars = ['[', ...codename.split(''), ']'];
-      // เอฟเฟกต์ตาม rank
+      // Show codename only once, with effect by rank
       if (rank === 'Gold') {
-        return `<span class="codename wave gold">${chars.map((ch,i)=>`<span>${ch}</span>`).join('')}</span>`;
+        return `<span class="codename wave gold">[${codename}]</span>`;
       } else if (rank === 'Platinum') {
-        return `<span class="codename wave platinum">${chars.map((ch,i)=>`<span>${ch}</span>`).join('')}</span> <span class="codename bounce">${codename}</span> <span class="codename typewriter">${codename}</span>`;
+        return `<span class="codename wave platinum">[${codename}]</span>`;
       } else if (rank === 'Diamond') {
-        return `<span class="codename wave diamond">${chars.map((ch,i)=>`<span>${ch}</span>`).join('')}</span> <span class="codename pulse">${codename}</span> <span class="codename glitch" data-text="${codename}">${codename}</span>`;
+        return `<span class="codename wave diamond">[${codename}]</span>`;
       } else if (rank === 'Grandmaster') {
-        return `<span class="codename wave grandmaster">${chars.map((ch,i)=>`<span>${ch}</span>`).join('')}</span> <span class="codename shake">${codename}</span>`;
+        return `<span class="codename wave grandmaster">[${codename}]</span>`;
       } else if (rank === 'Legend') {
-        return `<span class="codename wave legend">${chars.map((ch,i)=>`<span>${ch}</span>`).join('')}</span> <span class="codename rainbow-spin">${codename}</span>`;
-      } else if (rank === 'Gold') {
-        return `<span class="codename neon">${codename}</span>`;
+        return `<span class="codename wave legend">[${codename}]</span>`;
       } else {
         return `<span class="codename">[${codename}]</span>`;
       }
@@ -395,48 +392,12 @@
       return found && found["Rank"] ? found["Rank"] : "Rookie";
     }
 
-    // แสดง standings ของ event ที่เลือก
-    function renderEventStandings() {
-      const select = document.getElementById('event-select');
-      const search = document.getElementById('player-search').value.trim().toLowerCase();
-      const eventName = select.value.split(' (')[0];
-      const eventDate = select.value.match(/\(([^)]+)\)/)[1];
-      const tbody = document.querySelector('#event-standings tbody');
-      let rows = data.filter(row => row["Event Name"] === eventName && row["Event date"] === eventDate);
-      if (search) {
-        rows = rows.filter(row => row["Player Name"].toLowerCase().includes(search) || (row["Codename"]||'').toLowerCase().includes(search));
-      }
-      // แสดงตารางเมื่อเลือก event แล้วเท่านั้น
-      document.getElementById('event-standings-wrap').style.display = rows.length > 0 ? '' : 'none';
-      tbody.innerHTML = rows.map(row => {
-        const phone = String(row["Player Phone"] || row["Phone"] || '').replace(/[^\d]/g, "");
-        let codename = row["Codename"] && String(row["Codename"]).trim() ? row["Codename"] : (phone ? `Guest-xxxx${phone.slice(-4)}` : "Guest");
-        let rank = row["Rank"] || "Rookie";
-        if (phoneMap[phone]) {
-          codename = phoneMap[phone].codename || codename;
-          rank = phoneMap[phone].rank || rank;
-        }
-        return `<tr>
-          <td>${row["Rank"]}</td>
-          <td>${row["Player Name"]}</td>
-          <td><span class="codename-rank" data-rank="${rank}"><span>${rankEmojis[rank]||''}</span> ${renderCodenameEffect(codename, rank)} <span>${rankEmojis[rank]||''}</span></span></td>
-          <td>${rank}</td>
-          <td>${row["Points"]}</td>
-          <td>${row["matches_played"]}</td>
-          <td>${row["matches_won"]}</td>
-          <td>${row["matches_lost"]}</td>
-          <td>${row["winrate (%)"]}</td>
-          <td>${row["opp_winrate (%)"]}</td>
-          <td>${row["note"]||""}</td>
-        </tr>`;
-      }).join('');
-    }
-
     // Leaderboard รวมทุก event
     function renderLeaderboard() {
       const stats = {};
       data.forEach(row => {
         const phone = String(row["Player Phone"] || row["Phone"] || '').replace(/[^\d]/g, "");
+        if (!phone) return; // filter out players without phone number
         let codename = row["Codename"] && String(row["Codename"]).trim() ? row["Codename"] : (phone ? `Guest-xxxx${phone.slice(-4)}` : "Guest");
         let rank = row["Rank"] || "Rookie";
         if (phoneMap[phone]) {
@@ -469,6 +430,46 @@
           <td>${row.avgWinrate}</td>
         </tr>
       `).join('');
+    }
+
+    // แสดง standings ของ event ที่เลือก
+    function renderEventStandings() {
+      const select = document.getElementById('event-select');
+      const search = document.getElementById('player-search').value.trim().toLowerCase();
+      const eventName = select.value.split(' (')[0];
+      const eventDate = select.value.match(/\(([^)]+)\)/)[1];
+      const tbody = document.querySelector('#event-standings tbody');
+      let rows = data.filter(row => row["Event Name"] === eventName && row["Event date"] === eventDate);
+      rows = rows.filter(row => {
+        const phone = String(row["Player Phone"] || row["Phone"] || '').replace(/[^\d]/g, "");
+        return !!phone; // filter out players without phone number
+      });
+      if (search) {
+        rows = rows.filter(row => row["Player Name"].toLowerCase().includes(search) || (row["Codename"]||'').toLowerCase().includes(search));
+      }
+      document.getElementById('event-standings-wrap').style.display = rows.length > 0 ? '' : 'none';
+      tbody.innerHTML = rows.map(row => {
+        const phone = String(row["Player Phone"] || row["Phone"] || '').replace(/[^\d]/g, "");
+        let codename = row["Codename"] && String(row["Codename"]).trim() ? row["Codename"] : (phone ? `Guest-xxxx${phone.slice(-4)}` : "Guest");
+        let rank = row["Rank"] || "Rookie";
+        if (phoneMap[phone]) {
+          codename = phoneMap[phone].codename || codename;
+          rank = phoneMap[phone].rank || rank;
+        }
+        return `<tr>
+          <td>${row["Rank"]}</td>
+          <td>${row["Player Name"]}</td>
+          <td><span class="codename-rank" data-rank="${rank}"><span>${rankEmojis[rank]||''}</span> ${renderCodenameEffect(codename, rank)} <span>${rankEmojis[rank]||''}</span></span></td>
+          <td>${rank}</td>
+          <td>${row["Points"]}</td>
+          <td>${row["matches_played"]}</td>
+          <td>${row["matches_won"]}</td>
+          <td>${row["matches_lost"]}</td>
+          <td>${row["winrate (%)"]}</td>
+          <td>${row["opp_winrate (%)"]}</td>
+          <td>${row["note"]||""}</td>
+        </tr>`;
+      }).join('');
     }
 
     // Event listeners
