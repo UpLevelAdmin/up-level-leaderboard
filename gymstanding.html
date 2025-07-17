@@ -439,15 +439,38 @@
       const eventName = select.value.split(' (')[0];
       const eventDate = select.value.match(/\(([^)]+)\)/)[1];
       const tbody = document.querySelector('#event-standings tbody');
-      let rows = data.filter(row => row["Event Name"] === eventName && row["Event date"] === eventDate);
-      rows = rows.filter(row => {
-        const phone = String(row["Player Phone"] || row["Phone"] || '').replace(/[^\d]/g, "");
-        return !!phone; // filter out players without phone number
+      
+      // Debug: log the filter criteria
+      console.log('Filtering for:', { eventName, eventDate });
+      console.log('Available data:', data.map(row => ({ name: row["Event Name"], date: row["Event date"] })));
+      
+      let rows = data.filter(row => {
+        // Normalize date format for comparison
+        let rowDate = row["Event date"];
+        if (rowDate && rowDate.includes('T')) {
+          rowDate = rowDate.split('T')[0];
+        }
+        return row["Event Name"] === eventName && rowDate === eventDate;
       });
+      
+      console.log('Filtered rows before phone filter:', rows.length);
+      
+      // Only filter by phone if we have data
+      if (rows.length > 0) {
+        rows = rows.filter(row => {
+          const phone = String(row["Player Phone"] || row["Phone"] || '').replace(/[^\d]/g, "");
+          return !!phone; // filter out players without phone number
+        });
+      }
+      
+      console.log('Filtered rows after phone filter:', rows.length);
+      
       if (search) {
         rows = rows.filter(row => row["Player Name"].toLowerCase().includes(search) || (row["Codename"]||'').toLowerCase().includes(search));
       }
-      document.getElementById('event-standings-wrap').style.display = rows.length > 0 ? '' : 'none';
+      
+      // Always show the table if we have data, even if empty
+      document.getElementById('event-standings-wrap').style.display = 'block';
       tbody.innerHTML = rows.map(row => {
         const phone = String(row["Player Phone"] || row["Phone"] || '').replace(/[^\d]/g, "");
         let codename = row["Codename"] && String(row["Codename"]).trim() ? row["Codename"] : (phone ? `Guest-xxxx${phone.slice(-4)}` : "Guest");
@@ -470,6 +493,11 @@
           <td>${row["note"]||""}</td>
         </tr>`;
       }).join('');
+      
+      // Show message if no data
+      if (rows.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="11" style="text-align:center;padding:20px;color:#666;">ไม่พบข้อมูลสำหรับ Event นี้</td></tr>`;
+      }
     }
 
     // Event listeners
