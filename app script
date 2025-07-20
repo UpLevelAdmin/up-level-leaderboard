@@ -1291,6 +1291,7 @@ function doGet(e) {
   if (func === "partyChallengeListPublic") return partyChallengeListPublic();
   if (func === "acceptPartyChallenge") return acceptPartyChallenge(e); // เพิ่มบรรทัดนี้
   if (func === "getMemberDashboardData") return getMemberDashboardData();
+  if (func === "getGymStandingData") return getGymStandingData();
   return HtmlService.createHtmlOutput("<p>✅ Up Level Guild System Web App</p>");
 }
 
@@ -2888,6 +2889,23 @@ function getMemberDashboardData() {
       exp: obj["EXP"] || row[4],
       party: obj["Party"] || row[5]
     };
+  });
+  return ContentService.createTextOutput(JSON.stringify(result))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function getGymStandingData() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Gym Standing");
+  if (!sheet) {
+    return ContentService.createTextOutput(JSON.stringify({ error: "ไม่พบชีท Gym Standing" }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+  const data = sheet.getDataRange().getValues();
+  const headers = data[0];
+  const result = data.slice(1).map(row => {
+    const obj = {};
+    headers.forEach((h, i) => obj[h] = row[i]);
+    return obj;
   });
   return ContentService.createTextOutput(JSON.stringify(result))
     .setMimeType(ContentService.MimeType.JSON);
