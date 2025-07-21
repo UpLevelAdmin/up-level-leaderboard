@@ -59,7 +59,6 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background: #f8fafc;
       border-radius: 14px;
       box-shadow: 0 2px 8px rgba(100,100,200,0.07);
       padding: 1.1rem 0.7rem;
@@ -67,6 +66,8 @@
       gap: 0.7rem;
       flex-wrap: wrap;
       position: relative;
+      background: var(--pairing-bg, #f8fafc);
+      transition: background 0.2s;
     }
     .pairing-table-no {
       background: #667eea;
@@ -79,29 +80,34 @@
       min-width: 48px;
       text-align: center;
     }
-    .player-name {
-      font-weight: 700;
-      color: #333;
-      font-size: 1.1em;
-      min-width: 90px;
-      text-align: right;
-      transition: color 0.2s;
-    }
-    .player-codename {
-      color: #2563eb;
+    .player-name, .player-codename {
       font-weight: 700;
       font-size: 1.1em;
       min-width: 90px;
       text-align: right;
       transition: color 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      padding: 0.2em 0.7em;
+      margin: 0 0.2em;
+      background: none;
     }
-    .player-win {
-      color: #2563eb !important;
-      text-shadow: 0 2px 8px #dbeafe;
+    .player-bg-win {
+      background: #e0f2fe !important;
+      box-shadow: 0 2px 8px #bae6fd;
+      position: relative;
     }
-    .player-loss {
-      color: #e11d48 !important;
-      text-shadow: 0 2px 8px #fee2e2;
+    .player-bg-loss {
+      background: #fee2e2 !important;
+      box-shadow: 0 2px 8px #fecaca;
+      position: relative;
+    }
+    .player-emoji {
+      font-size: 1.1em;
+      margin-right: 0.3em;
+      margin-left: -0.2em;
     }
     .vs {
       font-size: 1.1em;
@@ -157,7 +163,7 @@
       const map = {};
       members.forEach(m => {
         const phone = String(m.phone || m["Player Phone"] || m["Phone"]).replace(/\D/g, "");
-        if (phone) map[phone] = m.codename || m["Codename"];
+        if (phone) map[phone] = { codename: m.codename || m["Codename"], rank: m.rank || m["Rank"] };
       });
       return map;
     }
@@ -169,6 +175,24 @@
         }
       }
       return null;
+    }
+
+    // เอฟเฟกต์ codename ตามแรงค์ (แบบ gymstanding)
+    function renderCodenameEffect(codename, rank) {
+      if (!codename) return '';
+      if (rank === 'Gold') {
+        return `<span class="codename wave gold">${codename}</span>`;
+      } else if (rank === 'Platinum') {
+        return `<span class="codename wave platinum">${codename}</span>`;
+      } else if (rank === 'Diamond') {
+        return `<span class="codename wave diamond">${codename}</span>`;
+      } else if (rank === 'Grandmaster') {
+        return `<span class="codename wave grandmaster">${codename}</span>`;
+      } else if (rank === 'Legend') {
+        return `<span class="codename wave legend">${codename}</span>`;
+      } else {
+        return `<span class="codename">${codename}</span>`;
+      }
     }
 
     async function renderPairing(pairing, players, phoneMap) {
@@ -183,6 +207,8 @@
       }
       // Sort round keys
       const roundKeys = Object.keys(rounds).sort((a,b)=>a-b);
+      // พาสเทลสีสลับ
+      const pastelColors = ["#f0f9ff", "#f3e8ff", "#fef9c3", "#ffe4e6", "#f1f5f9", "#fce7f3"];
       // Accordion
       let html = '';
       for (let r of roundKeys) {
@@ -190,42 +216,55 @@
           <button class="accordion-header collapsed" onclick="toggleAccordion(this)">รอบที่ ${r} (${rounds[r].length} คู่) <span style='font-size:1.2em;'>&#x25BC;</span></button>
           <div class="accordion-content">
             <div class="pairing-list">`;
-        for (let row of rounds[r]) {
+        rounds[r].forEach((row, idx) => {
           // [ROUND, TABLE, P1_ID, PLAYER 1, WIN_P1, DRAW, WIN_P2, P2_ID, PLAYER 2, RESULT, STATUS, Drop]
           const tableNo = row[1];
           const p1Tel = getTelById(players, row[2]);
           const p2Tel = getTelById(players, row[7]);
-          let p1Name = phoneMap[p1Tel?.replace(/\D/g,"")] || row[3];
-          let p2Name = phoneMap[p2Tel?.replace(/\D/g,"")] || row[8];
+          const p1Phone = p1Tel?.replace(/\D/g,"");
+          const p2Phone = p2Tel?.replace(/\D/g,"");
+          const p1Codename = phoneMap[p1Phone]?.codename;
+          const p2Codename = phoneMap[p2Phone]?.codename;
+          const p1Rank = phoneMap[p1Phone]?.rank;
+          const p2Rank = phoneMap[p2Phone]?.rank;
+          let p1Name = p1Codename ? renderCodenameEffect(p1Codename, p1Rank) : row[3];
+          let p2Name = p2Codename ? renderCodenameEffect(p2Codename, p2Rank) : row[8];
           let p1Class = 'player-name';
           let p2Class = 'player-name';
+          let p1Emoji = '';
+          let p2Emoji = '';
           let result = row[9];
           let resultDisplay = '';
           if (result === '1:0') {
-            p1Class = 'player-codename player-win';
-            p2Class = 'player-codename player-loss';
+            p1Class += ' player-bg-win';
+            p2Class += ' player-bg-loss';
+            p1Emoji = '<span class="player-emoji">🏆</span>';
+            p2Emoji = '<span class="player-emoji">😢</span>';
             resultDisplay = '<span class="pairing-result">1 : 0</span>';
           } else if (result === '0:1') {
-            p1Class = 'player-codename player-loss';
-            p2Class = 'player-codename player-win';
+            p1Class += ' player-bg-loss';
+            p2Class += ' player-bg-win';
+            p1Emoji = '<span class="player-emoji">😢</span>';
+            p2Emoji = '<span class="player-emoji">🏆</span>';
             resultDisplay = '<span class="pairing-result">0 : 1</span>';
           } else if (result === '1:1') {
-            p1Class = 'player-codename';
-            p2Class = 'player-codename';
+            p1Class += ' player-bg-win';
+            p2Class += ' player-bg-win';
+            p1Emoji = '<span class="player-emoji">🤝</span>';
+            p2Emoji = '<span class="player-emoji">🤝</span>';
             resultDisplay = '<span class="pairing-result" style="color:#f59e42;">1 : 1</span>';
           } else {
             resultDisplay = '<span class="pairing-wait">รอผล</span>';
-            if (phoneMap[p1Tel?.replace(/\D/g,"")]) p1Class = 'player-codename';
-            if (phoneMap[p2Tel?.replace(/\D/g,"")]) p2Class = 'player-codename';
           }
-          html += `<div class="pairing-card">
+          const pastel = pastelColors[idx % pastelColors.length];
+          html += `<div class="pairing-card" style="--pairing-bg: ${pastel}">
             <span class="pairing-table-no">โต๊ะ ${tableNo}</span>
-            <span class="${p1Class}">${p1Name}</span>
+            <span class="${p1Class}">${p1Emoji}${p1Name}</span>
             <span class="vs">vs</span>
-            <span class="${p2Class}">${p2Name}</span>
+            <span class="${p2Class}">${p2Name}${p2Emoji}</span>
             ${resultDisplay}
           </div>`;
-        }
+        });
         html += '</div></div></div>';
       }
       document.getElementById('pairing-accordion').innerHTML = html;
