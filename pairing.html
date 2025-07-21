@@ -49,44 +49,91 @@
       display: block;
     }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    .pairing-table {
-      width: 100%;
-      border-collapse: collapse;
+    .pairing-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1.1rem;
       margin-top: 1.2rem;
-      background: #fff;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
     }
-    .pairing-table th, .pairing-table td {
-      padding: 0.7rem 0.5rem;
-      text-align: center;
-      border-bottom: 1px solid #e0e7ff;
-      font-size: 1.05rem;
+    .pairing-card {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f8fafc;
+      border-radius: 14px;
+      box-shadow: 0 2px 8px rgba(100,100,200,0.07);
+      padding: 1.1rem 0.7rem;
+      font-size: 1.13rem;
+      gap: 0.7rem;
+      flex-wrap: wrap;
+      position: relative;
     }
-    .pairing-table th {
+    .pairing-table-no {
       background: #667eea;
       color: #fff;
       font-weight: 700;
-      font-size: 1.08rem;
+      border-radius: 8px;
+      padding: 0.4em 1em;
+      margin-right: 1.1em;
+      font-size: 1.1em;
+      min-width: 48px;
+      text-align: center;
     }
-    .pairing-table tr:last-child td {
-      border-bottom: none;
-    }
-    .codename {
+    .player-name {
       font-weight: 700;
-      color: #2563eb;
-      letter-spacing: 0.5px;
+      color: #333;
+      font-size: 1.1em;
+      min-width: 90px;
+      text-align: right;
+      transition: color 0.2s;
     }
-    .status-ok { color: #22c55e; font-weight: 600; }
-    .status-drop { color: #e11d48; font-weight: 600; }
-    .result-win { color: #2563eb; font-weight: 700; }
-    .result-loss { color: #e11d48; font-weight: 700; }
-    .result-draw { color: #f59e42; font-weight: 700; }
+    .player-codename {
+      color: #2563eb;
+      font-weight: 700;
+      font-size: 1.1em;
+      min-width: 90px;
+      text-align: right;
+      transition: color 0.2s;
+    }
+    .player-win {
+      color: #2563eb !important;
+      text-shadow: 0 2px 8px #dbeafe;
+    }
+    .player-loss {
+      color: #e11d48 !important;
+      text-shadow: 0 2px 8px #fee2e2;
+    }
+    .vs {
+      font-size: 1.1em;
+      color: #888;
+      margin: 0 0.7em;
+      font-weight: 600;
+    }
+    .pairing-result {
+      font-size: 1.35em;
+      font-weight: 700;
+      color: #4f46e5;
+      background: #e0e7ff;
+      border-radius: 8px;
+      padding: 0.2em 1.1em;
+      margin: 0 1em;
+      min-width: 60px;
+      text-align: center;
+      box-shadow: 0 2px 8px #e0e7ff;
+    }
+    .pairing-wait {
+      color: #aaa;
+      font-size: 1.1em;
+      font-weight: 500;
+      margin: 0 1em;
+    }
     @media (max-width: 768px) {
       .pairing-container { padding: 0.5rem; }
       .accordion-header { font-size: 1rem; padding: 0.7rem 0.7rem; }
-      .pairing-table th, .pairing-table td { padding: 0.5rem 0.2rem; font-size: 0.95rem; }
+      .pairing-card { font-size: 0.98rem; padding: 0.7rem 0.2rem; }
+      .pairing-table-no { font-size: 0.98em; min-width: 36px; }
+      .player-name, .player-codename { font-size: 1em; min-width: 60px; }
+      .pairing-result { font-size: 1.1em; min-width: 40px; }
     }
   </style>
 </head>
@@ -104,24 +151,27 @@
   </div>
   <script>
     const API_URL = 'https://script.google.com/macros/s/AKfycbwVoGEvUEmeIkC-e2aPSrF7T82HqOpMwByW-SSbv7EohQ_zG2EbA2uv5TyPnqhuy5rmrg/exec';
-    const CODENAME_COLOR = '#2563eb';
-    function getCodenameByTel(players, tel) {
-      for (let i = 1; i < players.length; i++) {
-        if (players[i][2] && players[i][2].replace(/\D/g, '') === String(tel).replace(/\D/g, '')) {
-          return players[i][1];
-        }
-      }
-      return null;
+    const MEMBER_API = "https://script.google.com/macros/s/AKfycbxtjsDwHI6nJU4OIHExUxMaZwUn3qwakvdkzwbQO7C8Trzz5Gh84SX6F1gqb4BOFQcn/exec?func=getMemberDashboardData";
+
+    function buildPhoneMap(members) {
+      const map = {};
+      members.forEach(m => {
+        const phone = String(m.phone || m["Player Phone"] || m["Phone"]).replace(/\D/g, "");
+        if (phone) map[phone] = m.codename || m["Codename"];
+      });
+      return map;
     }
-    function getCodenameById(players, id) {
+
+    function getTelById(players, id) {
       for (let i = 1; i < players.length; i++) {
         if (String(players[i][0]) === String(id)) {
-          return players[i][1];
+          return players[i][2];
         }
       }
       return null;
     }
-    function renderPairing(pairing, players) {
+
+    async function renderPairing(pairing, players, phoneMap) {
       // Group by round
       const header = pairing[0];
       const rounds = {};
@@ -139,43 +189,44 @@
         html += `<div class="accordion">
           <button class="accordion-header collapsed" onclick="toggleAccordion(this)">รอบที่ ${r} (${rounds[r].length} คู่) <span style='font-size:1.2em;'>&#x25BC;</span></button>
           <div class="accordion-content">
-            <table class="pairing-table">
-              <thead><tr>`;
-        for (let j = 1; j < header.length-1; j++) {
-          if(header[j]==='Drop') continue;
-          html += `<th>${header[j]}</th>`;
-        }
-        html += `</tr></thead><tbody>`;
+            <div class="pairing-list">`;
         for (let row of rounds[r]) {
-          html += '<tr>';
-          // TABLE, P1_ID, PLAYER 1, WIN_P1, DRAW, WIN_P2, P2_ID, PLAYER 2, RESULT, STATUS
-          for (let j = 1; j < row.length-1; j++) {
-            if(header[j]==='Drop') continue;
-            let val = row[j];
-            // PLAYER 1, PLAYER 2: show codename if found
-            if(header[j]==='PLAYER 1') {
-              const code = getCodenameById(players, row[2]);
-              if(code) val = `<span class='codename'>${code}</span>`;
-            }
-            if(header[j]==='PLAYER 2') {
-              const code = getCodenameById(players, row[7]);
-              if(code) val = `<span class='codename'>${code}</span>`;
-            }
-            // STATUS
-            if(header[j]==='STATUS') {
-              val = val==='OK' ? `<span class='status-ok'>${val}</span>` : `<span class='status-drop'>${val}</span>`;
-            }
-            // RESULT
-            if(header[j]==='RESULT') {
-              if(val==='1:0') val = `<span class='result-win'>1 : 0</span>`;
-              else if(val==='0:1') val = `<span class='result-loss'>0 : 1</span>`;
-              else if(val==='1:1') val = `<span class='result-draw'>1 : 1</span>`;
-            }
-            html += `<td>${val===undefined?'':val}</td>`;
+          // [ROUND, TABLE, P1_ID, PLAYER 1, WIN_P1, DRAW, WIN_P2, P2_ID, PLAYER 2, RESULT, STATUS, Drop]
+          const tableNo = row[1];
+          const p1Tel = getTelById(players, row[2]);
+          const p2Tel = getTelById(players, row[7]);
+          let p1Name = phoneMap[p1Tel?.replace(/\D/g,"")] || row[3];
+          let p2Name = phoneMap[p2Tel?.replace(/\D/g,"")] || row[8];
+          let p1Class = 'player-name';
+          let p2Class = 'player-name';
+          let result = row[9];
+          let resultDisplay = '';
+          if (result === '1:0') {
+            p1Class = 'player-codename player-win';
+            p2Class = 'player-codename player-loss';
+            resultDisplay = '<span class="pairing-result">1 : 0</span>';
+          } else if (result === '0:1') {
+            p1Class = 'player-codename player-loss';
+            p2Class = 'player-codename player-win';
+            resultDisplay = '<span class="pairing-result">0 : 1</span>';
+          } else if (result === '1:1') {
+            p1Class = 'player-codename';
+            p2Class = 'player-codename';
+            resultDisplay = '<span class="pairing-result" style="color:#f59e42;">1 : 1</span>';
+          } else {
+            resultDisplay = '<span class="pairing-wait">รอผล</span>';
+            if (phoneMap[p1Tel?.replace(/\D/g,"")]) p1Class = 'player-codename';
+            if (phoneMap[p2Tel?.replace(/\D/g,"")]) p2Class = 'player-codename';
           }
-          html += '</tr>';
+          html += `<div class="pairing-card">
+            <span class="pairing-table-no">โต๊ะ ${tableNo}</span>
+            <span class="${p1Class}">${p1Name}</span>
+            <span class="vs">vs</span>
+            <span class="${p2Class}">${p2Name}</span>
+            ${resultDisplay}
+          </div>`;
         }
-        html += '</tbody></table></div></div>';
+        html += '</div></div></div>';
       }
       document.getElementById('pairing-accordion').innerHTML = html;
       // Hide all but last round
@@ -192,6 +243,7 @@
         }
       });
     }
+
     function toggleAccordion(btn) {
       const content = btn.nextElementSibling;
       const isOpen = content.style.display==='block';
@@ -202,14 +254,25 @@
         btn.classList.remove('collapsed');
       }
     }
-    fetch(API_URL)
-      .then(res=>res.json())
-      .then(data=>{
-        renderPairing(data.pairing, data.players);
-      })
-      .catch(()=>{
+
+    async function loadData() {
+      document.getElementById('loading').style.display = 'block';
+      try {
+        const [pairingRes, memberRes] = await Promise.all([
+          fetch(API_URL),
+          fetch(MEMBER_API)
+        ]);
+        const pairingData = await pairingRes.json();
+        const members = await memberRes.json();
+        const phoneMap = buildPhoneMap(members);
+        renderPairing(pairingData.pairing, pairingData.players, phoneMap);
+      } catch (e) {
         document.getElementById('pairing-accordion').innerHTML = '<div style="color:#e11d48;text-align:center;padding:2rem;">ไม่สามารถโหลดข้อมูลได้</div>';
-      });
+      }
+      document.getElementById('loading').style.display = 'none';
+    }
+
+    loadData();
   </script>
 </body>
 </html> 
