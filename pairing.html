@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pairing | Up Level Guild</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .pairing-container {
+      max-width: 900px;
+      margin: 32px auto;
+      background: rgba(255,255,255,0.97);
+      border-radius: 20px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.10);
+      padding: 2rem 1rem 2.5rem 1rem;
+    }
+    .accordion {
+      border-radius: 12px;
+      margin-bottom: 1.2rem;
+      box-shadow: 0 4px 16px rgba(100,100,200,0.07);
+      background: #f7f8fa;
+      overflow: hidden;
+    }
+    .accordion-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(90deg, #667eea 60%, #f7fafc 100%);
+      color: #fff;
+      font-weight: 700;
+      font-size: 1.15rem;
+      padding: 1rem 1.2rem;
+      cursor: pointer;
+      border: none;
+      outline: none;
+      transition: background 0.2s;
+    }
+    .accordion-header.collapsed {
+      background: #e0e7ff;
+      color: #333;
+    }
+    .accordion-content {
+      display: none;
+      background: #fff;
+      padding: 0 1.2rem 1.2rem 1.2rem;
+      animation: fadeIn 0.3s;
+    }
+    .accordion-content.active {
+      display: block;
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .pairing-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1.2rem;
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .pairing-table th, .pairing-table td {
+      padding: 0.7rem 0.5rem;
+      text-align: center;
+      border-bottom: 1px solid #e0e7ff;
+      font-size: 1.05rem;
+    }
+    .pairing-table th {
+      background: #667eea;
+      color: #fff;
+      font-weight: 700;
+      font-size: 1.08rem;
+    }
+    .pairing-table tr:last-child td {
+      border-bottom: none;
+    }
+    .codename {
+      font-weight: 700;
+      color: #2563eb;
+      letter-spacing: 0.5px;
+    }
+    .status-ok { color: #22c55e; font-weight: 600; }
+    .status-drop { color: #e11d48; font-weight: 600; }
+    .result-win { color: #2563eb; font-weight: 700; }
+    .result-loss { color: #e11d48; font-weight: 700; }
+    .result-draw { color: #f59e42; font-weight: 700; }
+    @media (max-width: 768px) {
+      .pairing-container { padding: 0.5rem; }
+      .accordion-header { font-size: 1rem; padding: 0.7rem 0.7rem; }
+      .pairing-table th, .pairing-table td { padding: 0.5rem 0.2rem; font-size: 0.95rem; }
+    }
+  </style>
+</head>
+<body>
+  <a href="index.html" class="home-button" title="กลับหน้าหลัก"></a>
+  <div class="pairing-container">
+    <div style="text-align:center; margin-bottom: 1.5rem;">
+      <img src="https://i.postimg.cc/wjzpnxjB/Up-Level-01-1.png" alt="Up Level Guild Logo" style="width:110px; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.18)); margin-bottom: 0.5rem;">
+      <h1 style="font-size:2.1rem; font-weight:700; margin:0; color:#4f46e5;">Pairing - Up Level Guild</h1>
+      <div style="color:#666; font-size:1.05rem; margin-top:0.3rem;">ตารางจับคู่การแข่งขัน Pokemon TCG</div>
+    </div>
+    <div id="pairing-accordion">
+      <div style="text-align:center; color:#888; padding:2rem;" id="loading">กำลังโหลดข้อมูล...</div>
+    </div>
+  </div>
+  <script>
+    const API_URL = 'https://script.google.com/macros/s/AKfycbwVoGEvUEmeIkC-e2aPSrF7T82HqOpMwByW-SSbv7EohQ_zG2EbA2uv5TyPnqhuy5rmrg/exec';
+    const CODENAME_COLOR = '#2563eb';
+    function getCodenameByTel(players, tel) {
+      for (let i = 1; i < players.length; i++) {
+        if (players[i][2] && players[i][2].replace(/\D/g, '') === String(tel).replace(/\D/g, '')) {
+          return players[i][1];
+        }
+      }
+      return null;
+    }
+    function getCodenameById(players, id) {
+      for (let i = 1; i < players.length; i++) {
+        if (String(players[i][0]) === String(id)) {
+          return players[i][1];
+        }
+      }
+      return null;
+    }
+    function renderPairing(pairing, players) {
+      // Group by round
+      const header = pairing[0];
+      const rounds = {};
+      for (let i = 1; i < pairing.length; i++) {
+        const row = pairing[i];
+        const round = row[0];
+        if (!rounds[round]) rounds[round] = [];
+        rounds[round].push(row);
+      }
+      // Sort round keys
+      const roundKeys = Object.keys(rounds).sort((a,b)=>a-b);
+      // Accordion
+      let html = '';
+      for (let r of roundKeys) {
+        html += `<div class="accordion">
+          <button class="accordion-header collapsed" onclick="toggleAccordion(this)">รอบที่ ${r} (${rounds[r].length} คู่) <span style='font-size:1.2em;'>&#x25BC;</span></button>
+          <div class="accordion-content">
+            <table class="pairing-table">
+              <thead><tr>`;
+        for (let j = 1; j < header.length-1; j++) {
+          if(header[j]==='Drop') continue;
+          html += `<th>${header[j]}</th>`;
+        }
+        html += `</tr></thead><tbody>`;
+        for (let row of rounds[r]) {
+          html += '<tr>';
+          // TABLE, P1_ID, PLAYER 1, WIN_P1, DRAW, WIN_P2, P2_ID, PLAYER 2, RESULT, STATUS
+          for (let j = 1; j < row.length-1; j++) {
+            if(header[j]==='Drop') continue;
+            let val = row[j];
+            // PLAYER 1, PLAYER 2: show codename if found
+            if(header[j]==='PLAYER 1') {
+              const code = getCodenameById(players, row[2]);
+              if(code) val = `<span class='codename'>${code}</span>`;
+            }
+            if(header[j]==='PLAYER 2') {
+              const code = getCodenameById(players, row[7]);
+              if(code) val = `<span class='codename'>${code}</span>`;
+            }
+            // STATUS
+            if(header[j]==='STATUS') {
+              val = val==='OK' ? `<span class='status-ok'>${val}</span>` : `<span class='status-drop'>${val}</span>`;
+            }
+            // RESULT
+            if(header[j]==='RESULT') {
+              if(val==='1:0') val = `<span class='result-win'>1 : 0</span>`;
+              else if(val==='0:1') val = `<span class='result-loss'>0 : 1</span>`;
+              else if(val==='1:1') val = `<span class='result-draw'>1 : 1</span>`;
+            }
+            html += `<td>${val===undefined?'':val}</td>`;
+          }
+          html += '</tr>';
+        }
+        html += '</tbody></table></div></div>';
+      }
+      document.getElementById('pairing-accordion').innerHTML = html;
+      // Hide all but last round
+      const acc = document.querySelectorAll('.accordion');
+      acc.forEach((a,i)=>{
+        const content = a.querySelector('.accordion-content');
+        const header = a.querySelector('.accordion-header');
+        if(i!==acc.length-1) {
+          content.style.display = 'none';
+          header.classList.add('collapsed');
+        } else {
+          content.style.display = 'block';
+          header.classList.remove('collapsed');
+        }
+      });
+    }
+    function toggleAccordion(btn) {
+      const content = btn.nextElementSibling;
+      const isOpen = content.style.display==='block';
+      document.querySelectorAll('.accordion-content').forEach(c=>c.style.display='none');
+      document.querySelectorAll('.accordion-header').forEach(h=>h.classList.add('collapsed'));
+      if(!isOpen) {
+        content.style.display = 'block';
+        btn.classList.remove('collapsed');
+      }
+    }
+    fetch(API_URL)
+      .then(res=>res.json())
+      .then(data=>{
+        renderPairing(data.pairing, data.players);
+      })
+      .catch(()=>{
+        document.getElementById('pairing-accordion').innerHTML = '<div style="color:#e11d48;text-align:center;padding:2rem;">ไม่สามารถโหลดข้อมูลได้</div>';
+      });
+  </script>
+</body>
+</html> 
