@@ -75,45 +75,60 @@
       font-weight: 700;
       border-radius: 8px;
       padding: 0.4em 1em;
-      margin-right: 1.1em;
-      font-size: 1.1em;
-      min-width: 48px;
+      min-width: 70px;
+      max-width: 70px;
       text-align: center;
-    }
-    .player-name, .player-codename {
-      font-weight: 700;
       font-size: 1.1em;
-      min-width: 90px;
-      text-align: right;
-      transition: color 0.2s;
+      margin-right: 1.1em;
+      flex-shrink: 0;
+    }
+    .player-block {
       display: flex;
       align-items: center;
       justify-content: center;
       border-radius: 8px;
       padding: 0.2em 0.7em;
       margin: 0 0.2em;
-      background: none;
+      min-width: 120px;
+      max-width: 180px;
+      box-sizing: border-box;
+      font-weight: 700;
+      font-size: 1.1em;
+      transition: background 0.2s;
+      text-align: center;
+      flex-shrink: 1;
+      flex-grow: 1;
     }
     .player-bg-win {
       background: #e0f2fe !important;
       box-shadow: 0 2px 8px #bae6fd;
-      position: relative;
     }
     .player-bg-loss {
       background: #fee2e2 !important;
       box-shadow: 0 2px 8px #fecaca;
-      position: relative;
+    }
+    .player-bg-draw {
+      background: #fef9c3 !important;
+      box-shadow: 0 2px 8px #fde68a;
     }
     .player-emoji {
       font-size: 1.1em;
       margin-right: 0.3em;
       margin-left: -0.2em;
     }
+    .codename-rank {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.18em;
+      font-size: 1em;
+    }
     .vs {
       font-size: 1.1em;
       color: #888;
       margin: 0 0.7em;
       font-weight: 600;
+      min-width: 32px;
+      text-align: center;
     }
     .pairing-result {
       font-size: 1.35em;
@@ -122,24 +137,32 @@
       background: #e0e7ff;
       border-radius: 8px;
       padding: 0.2em 1.1em;
-      margin: 0 1em;
-      min-width: 60px;
+      min-width: 70px;
       text-align: center;
       box-shadow: 0 2px 8px #e0e7ff;
+      margin: 0 1.1em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     .pairing-wait {
       color: #aaa;
       font-size: 1.1em;
       font-weight: 500;
       margin: 0 1em;
+      min-width: 70px;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     @media (max-width: 768px) {
       .pairing-container { padding: 0.5rem; }
       .accordion-header { font-size: 1rem; padding: 0.7rem 0.7rem; }
       .pairing-card { font-size: 0.98rem; padding: 0.7rem 0.2rem; }
-      .pairing-table-no { font-size: 0.98em; min-width: 36px; }
-      .player-name, .player-codename { font-size: 1em; min-width: 60px; }
-      .pairing-result { font-size: 1.1em; min-width: 40px; }
+      .pairing-table-no { font-size: 0.98em; min-width: 50px; max-width: 50px; }
+      .player-block { font-size: 1em; min-width: 70px; max-width: 120px; }
+      .pairing-result, .pairing-wait { font-size: 1.1em; min-width: 50px; }
     }
   </style>
 </head>
@@ -158,6 +181,17 @@
   <script>
     const API_URL = 'https://script.google.com/macros/s/AKfycbwVoGEvUEmeIkC-e2aPSrF7T82HqOpMwByW-SSbv7EohQ_zG2EbA2uv5TyPnqhuy5rmrg/exec';
     const MEMBER_API = "https://script.google.com/macros/s/AKfycbxtjsDwHI6nJU4OIHExUxMaZwUn3qwakvdkzwbQO7C8Trzz5Gh84SX6F1gqb4BOFQcn/exec?func=getMemberDashboardData";
+
+    const rankEmojis = {
+      "Rookie": "🐣",
+      "Bronze": "🛡️",
+      "Silver": "⚔️",
+      "Gold": "🥇",
+      "Platinum": "✨",
+      "Diamond": "💎",
+      "Grandmaster": "👑",
+      "Legend": "🐉"
+    };
 
     function buildPhoneMap(members) {
       const map = {};
@@ -227,10 +261,10 @@
           const p2Codename = phoneMap[p2Phone]?.codename;
           const p1Rank = phoneMap[p1Phone]?.rank;
           const p2Rank = phoneMap[p2Phone]?.rank;
-          let p1Name = p1Codename ? renderCodenameEffect(p1Codename, p1Rank) : row[3];
-          let p2Name = p2Codename ? renderCodenameEffect(p2Codename, p2Rank) : row[8];
-          let p1Class = 'player-name';
-          let p2Class = 'player-name';
+          let p1Block = '';
+          let p2Block = '';
+          let p1Class = 'player-block';
+          let p2Class = 'player-block';
           let p1Emoji = '';
           let p2Emoji = '';
           let result = row[9];
@@ -248,21 +282,22 @@
             p2Emoji = '<span class="player-emoji">🏆</span>';
             resultDisplay = '<span class="pairing-result">0 : 1</span>';
           } else if (result === '1:1') {
-            p1Class += ' player-bg-win';
-            p2Class += ' player-bg-win';
+            p1Class += ' player-bg-draw';
+            p2Class += ' player-bg-draw';
             p1Emoji = '<span class="player-emoji">🤝</span>';
             p2Emoji = '<span class="player-emoji">🤝</span>';
             resultDisplay = '<span class="pairing-result" style="color:#f59e42;">1 : 1</span>';
           } else {
             resultDisplay = '<span class="pairing-wait">รอผล</span>';
           }
+          p1Block = `<span class="codename-rank" data-rank="${p1Rank||''}">${rankEmojis[p1Rank]||''} ${p1Emoji}${p1Codename ? renderCodenameEffect(p1Codename, p1Rank) : row[3]} ${rankEmojis[p1Rank]||''}</span>`;
+          p2Block = `<span class="codename-rank" data-rank="${p2Rank||''}">${rankEmojis[p2Rank]||''} ${p2Codename ? renderCodenameEffect(p2Codename, p2Rank) : row[8]} ${p2Emoji}${rankEmojis[p2Rank]||''}</span>`;
           const pastel = pastelColors[idx % pastelColors.length];
           html += `<div class="pairing-card" style="--pairing-bg: ${pastel}">
             <span class="pairing-table-no">โต๊ะ ${tableNo}</span>
-            <span class="${p1Class}">${p1Emoji}${p1Name}</span>
-            <span class="vs">vs</span>
-            <span class="${p2Class}">${p2Name}${p2Emoji}</span>
-            ${resultDisplay}
+            <span class="${p1Class}">${p1Block}</span>
+            <span class="pairing-result">${resultDisplay}</span>
+            <span class="${p2Class}">${p2Block}</span>
           </div>`;
         });
         html += '</div></div></div>';
