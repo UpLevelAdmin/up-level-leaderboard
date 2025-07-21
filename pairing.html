@@ -70,7 +70,7 @@
       transition: background 0.2s;
     }
     .pairing-table-no {
-      background: #667eea;
+      background: var(--table-bg, #a5b4fc);
       color: #fff;
       font-weight: 700;
       border-radius: 8px;
@@ -81,6 +81,7 @@
       font-size: 1.1em;
       margin-right: 1.1em;
       flex-shrink: 0;
+      box-shadow: 0 2px 8px #c7d2fe;
     }
     .player-block {
       display: flex;
@@ -98,23 +99,23 @@
       text-align: center;
       flex-shrink: 1;
       flex-grow: 1;
+      overflow-x: auto;
+      white-space: nowrap;
     }
     .player-bg-win {
-      background: #e0f2fe !important;
-      box-shadow: 0 2px 8px #bae6fd;
+      background: #38bdf8 !important;
+      color: #fff !important;
+      box-shadow: 0 2px 8px #0ea5e9;
     }
     .player-bg-loss {
-      background: #fee2e2 !important;
-      box-shadow: 0 2px 8px #fecaca;
+      background: #f87171 !important;
+      color: #fff !important;
+      box-shadow: 0 2px 8px #ef4444;
     }
     .player-bg-draw {
-      background: #fef9c3 !important;
-      box-shadow: 0 2px 8px #fde68a;
-    }
-    .player-emoji {
-      font-size: 1.1em;
-      margin-right: 0.3em;
-      margin-left: -0.2em;
+      background: #fde047 !important;
+      color: #92400e !important;
+      box-shadow: 0 2px 8px #facc15;
     }
     .codename-rank {
       display: inline-flex;
@@ -243,6 +244,7 @@
       const roundKeys = Object.keys(rounds).sort((a,b)=>a-b);
       // พาสเทลสีสลับ
       const pastelColors = ["#f0f9ff", "#f3e8ff", "#fef9c3", "#ffe4e6", "#f1f5f9", "#fce7f3"];
+      const tableColors = ["#818cf8", "#a78bfa", "#facc15", "#fb7185", "#38bdf8", "#f472b6"];
       // Accordion
       let html = '';
       for (let r of roundKeys) {
@@ -265,36 +267,29 @@
           let p2Block = '';
           let p1Class = 'player-block';
           let p2Class = 'player-block';
-          let p1Emoji = '';
-          let p2Emoji = '';
           let result = row[9];
           let resultDisplay = '';
           if (result === '1:0') {
             p1Class += ' player-bg-win';
             p2Class += ' player-bg-loss';
-            p1Emoji = '<span class="player-emoji">🏆</span>';
-            p2Emoji = '<span class="player-emoji">😢</span>';
-            resultDisplay = '<span class="pairing-result">1 : 0</span>';
+            resultDisplay = '1 : 0';
           } else if (result === '0:1') {
             p1Class += ' player-bg-loss';
             p2Class += ' player-bg-win';
-            p1Emoji = '<span class="player-emoji">😢</span>';
-            p2Emoji = '<span class="player-emoji">🏆</span>';
-            resultDisplay = '<span class="pairing-result">0 : 1</span>';
+            resultDisplay = '0 : 1';
           } else if (result === '1:1') {
             p1Class += ' player-bg-draw';
             p2Class += ' player-bg-draw';
-            p1Emoji = '<span class="player-emoji">🤝</span>';
-            p2Emoji = '<span class="player-emoji">🤝</span>';
-            resultDisplay = '<span class="pairing-result" style="color:#f59e42;">1 : 1</span>';
+            resultDisplay = '<span style="color:#92400e;">1 : 1</span>';
           } else {
             resultDisplay = '<span class="pairing-wait">รอผล</span>';
           }
-          p1Block = `<span class="codename-rank" data-rank="${p1Rank||''}">${rankEmojis[p1Rank]||''} ${p1Emoji}${p1Codename ? renderCodenameEffect(p1Codename, p1Rank) : row[3]} ${rankEmojis[p1Rank]||''}</span>`;
-          p2Block = `<span class="codename-rank" data-rank="${p2Rank||''}">${rankEmojis[p2Rank]||''} ${p2Codename ? renderCodenameEffect(p2Codename, p2Rank) : row[8]} ${p2Emoji}${rankEmojis[p2Rank]||''}</span>`;
+          p1Block = `<span class="codename-rank" data-rank="${p1Rank||''}">${rankEmojis[p1Rank]||''} ${p1Codename ? renderCodenameEffect(p1Codename, p1Rank) : row[3]} ${rankEmojis[p1Rank]||''}</span>`;
+          p2Block = `<span class="codename-rank" data-rank="${p2Rank||''}">${rankEmojis[p2Rank]||''} ${p2Codename ? renderCodenameEffect(p2Codename, p2Rank) : row[8]} ${rankEmojis[p2Rank]||''}</span>`;
           const pastel = pastelColors[idx % pastelColors.length];
+          const tableBg = tableColors[idx % tableColors.length];
           html += `<div class="pairing-card" style="--pairing-bg: ${pastel}">
-            <span class="pairing-table-no">โต๊ะ ${tableNo}</span>
+            <span class="pairing-table-no" style="--table-bg: ${tableBg}">โต๊ะ ${tableNo}</span>
             <span class="${p1Class}">${p1Block}</span>
             <span class="pairing-result">${resultDisplay}</span>
             <span class="${p2Class}">${p2Block}</span>
