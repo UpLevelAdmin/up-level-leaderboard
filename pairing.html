@@ -351,6 +351,7 @@
     function calculateStandings(pairing, players, phoneMap) {
       // [ROUND, TABLE, P1_ID, PLAYER 1, WIN_P1, DRAW, WIN_P2, P2_ID, PLAYER 2, RESULT, STATUS, Drop]
       const stats = {};
+      const opponents = {};
       for (let i = 1; i < pairing.length; i++) {
         const row = pairing[i];
         const p1Id = row[2], p2Id = row[7];
@@ -360,9 +361,13 @@
         const p2Phone = p2Tel?.replace(/\D/g,"");
         const p1Name = phoneMap[p1Phone]?.codename || row[3];
         const p2Name = phoneMap[p2Phone]?.codename || row[8];
+        const p1Rank = phoneMap[p1Phone]?.rank || '';
+        const p2Rank = phoneMap[p2Phone]?.rank || '';
         if (!p1Name || !p2Name) continue;
-        if (!stats[p1Name]) stats[p1Name] = {played:0,win:0,draw:0,loss:0,points:0};
-        if (!stats[p2Name]) stats[p2Name] = {played:0,win:0,draw:0,loss:0,points:0};
+        if (!stats[p1Name]) stats[p1Name] = {played:0,win:0,draw:0,loss:0,points:0,rank:p1Rank,phone:p1Phone};
+        if (!stats[p2Name]) stats[p2Name] = {played:0,win:0,draw:0,loss:0,points:0,rank:p2Rank,phone:p2Phone};
+        if (!opponents[p1Name]) opponents[p1Name] = [];
+        if (!opponents[p2Name]) opponents[p2Name] = [];
         const result = row[9];
         if (result === '1:0') {
           stats[p1Name].win++; stats[p2Name].loss++;
@@ -378,33 +383,50 @@
         }
         stats[p1Name].played++;
         stats[p2Name].played++;
+        opponents[p1Name].push(p2Name);
+        opponents[p2Name].push(p1Name);
       }
-      // Convert to array and sort
+      // Calculate winrate and %OW
       const arr = Object.entries(stats).map(([name, s])=>{
         const winRate = s.played>0 ? Math.round((s.win/s.played)*100) : 0;
-        return {name, ...s, winRate};
+        // %OW: average winrate of all opponents (min 33.33)
+        let owSum = 0, owCount = 0;
+        (opponents[name]||[]).forEach(oppName=>{
+          const opp = stats[oppName];
+          if (!opp || opp.played === 0) return;
+          let oppWP = (opp.win/opp.played)*100;
+          if (oppWP < 33.33) oppWP = 33.33;
+          owSum += oppWP;
+          owCount++;
+        });
+        const ow = owCount>0 ? (owSum/owCount) : 0;
+        return {name, ...s, winRate, ow:ow.toFixed(1)};
       });
-      arr.sort((a,b)=>b.points-a.points || b.winRate-a.winRate);
+      arr.sort((a,b)=>b.points-a.points || b.winRate-a.winRate || b.ow-b.ow);
       return arr;
     }
     function renderStandingsTable(standings) {
       if (!standings.length) return '<div style="color:#888;">ยังไม่มีข้อมูลคะแนน</div>';
-      let html = `<div style="overflow-x:auto;"><table style="margin:auto;border-collapse:separate;border-spacing:0 8px;width:100%;max-width:700px;">
+      let html = `<div style="overflow-x:auto;"><table style="margin:auto;border-collapse:separate;border-spacing:0 8px;width:100%;max-width:800px;">
         <thead><tr style="background:#6366f1;color:#fff;font-weight:700;font-size:1.08em;">
           <th style="border-radius:8px 0 0 8px;padding:0.6em 0.7em;">อันดับ</th>
           <th style="text-align:left;padding:0.6em 0.7em;">ชื่อ</th>
-          <th>แข่ง</th><th>ชนะ</th><th>เสมอ</th><th>แพ้</th><th>คะแนน</th><th style="border-radius:0 8px 8px 0;">Win Rate</th>
+          <th>แข่ง</th><th>ชนะ</th><th>เสมอ</th><th>แพ้</th><th>คะแนน</th><th>Win Rate</th><th>%OW</th>
         </tr></thead><tbody>`;
       standings.forEach((s,i)=>{
+        const emoji = rankEmojis[s.rank]||'';
         html += `<tr style="background:${i%2===0?'#f0f9ff':'#f3e8ff'};font-weight:600;">
           <td style="border-radius:8px 0 0 8px;text-align:center;">${i+1}</td>
-          <td style="text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px;">${s.name}</td>
+          <td style="text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px;">
+            <span class="codename-rank" data-rank="${s.rank||''}"><span>${emoji}</span> ${renderCodenameEffect(s.name, s.rank)} <span>${emoji}</span></span>
+          </td>
           <td style="text-align:center;">${s.played}</td>
           <td style="text-align:center;">${s.win}</td>
           <td style="text-align:center;">${s.draw}</td>
           <td style="text-align:center;">${s.loss}</td>
           <td style="text-align:center;">${s.points}</td>
-          <td style="text-align:center;border-radius:0 8px 8px 0;">${s.winRate}%</td>
+          <td style="text-align:center;">${s.winRate}%</td>
+          <td style="text-align:center;border-radius:0 8px 8px 0;">${s.ow}%</td>
         </tr>`;
       });
       html += '</tbody></table></div>';
