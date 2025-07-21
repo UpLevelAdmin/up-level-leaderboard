@@ -198,6 +198,11 @@
       <div style="text-align:center; color:#888; padding:2rem;" id="loading"><span class="spinner"></span></div>
     </div>
   </div>
+  <!-- standings toggle and table -->
+  <div style="max-width:900px;margin:32px auto 0 auto;text-align:center;">
+    <button id="toggle-standings" style="background:linear-gradient(90deg,#6366f1,#38bdf8);color:#fff;font-weight:700;border:none;border-radius:24px;padding:0.7em 2.2em;font-size:1.1em;box-shadow:0 2px 8px #c7d2fe;cursor:pointer;transition:background 0.2s;">แสดงตารางคะแนน</button>
+    <div id="standings-section" style="display:none;margin-top:1.5rem;"></div>
+  </div>
   <script>
     const API_URL = 'https://script.google.com/macros/s/AKfycbwVoGEvUEmeIkC-e2aPSrF7T82HqOpMwByW-SSbv7EohQ_zG2EbA2uv5TyPnqhuy5rmrg/exec';
     const MEMBER_API = "https://script.google.com/macros/s/AKfycbxtjsDwHI6nJU4OIHExUxMaZwUn3qwakvdkzwbQO7C8Trzz5Gh84SX6F1gqb4BOFQcn/exec?func=getMemberDashboardData";
@@ -343,6 +348,69 @@
       }
     }
 
+    function calculateStandings(pairing, players, phoneMap) {
+      // [ROUND, TABLE, P1_ID, PLAYER 1, WIN_P1, DRAW, WIN_P2, P2_ID, PLAYER 2, RESULT, STATUS, Drop]
+      const stats = {};
+      for (let i = 1; i < pairing.length; i++) {
+        const row = pairing[i];
+        const p1Id = row[2], p2Id = row[7];
+        const p1Tel = getTelById(players, p1Id);
+        const p2Tel = getTelById(players, p2Id);
+        const p1Phone = p1Tel?.replace(/\D/g,"");
+        const p2Phone = p2Tel?.replace(/\D/g,"");
+        const p1Name = phoneMap[p1Phone]?.codename || row[3];
+        const p2Name = phoneMap[p2Phone]?.codename || row[8];
+        if (!p1Name || !p2Name) continue;
+        if (!stats[p1Name]) stats[p1Name] = {played:0,win:0,draw:0,loss:0,points:0};
+        if (!stats[p2Name]) stats[p2Name] = {played:0,win:0,draw:0,loss:0,points:0};
+        const result = row[9];
+        if (result === '1:0') {
+          stats[p1Name].win++; stats[p2Name].loss++;
+          stats[p1Name].points+=3;
+        } else if (result === '0:1') {
+          stats[p2Name].win++; stats[p1Name].loss++;
+          stats[p2Name].points+=3;
+        } else if (result === '1:1') {
+          stats[p1Name].draw++; stats[p2Name].draw++;
+          stats[p1Name].points+=1; stats[p2Name].points+=1;
+        } else {
+          continue;
+        }
+        stats[p1Name].played++;
+        stats[p2Name].played++;
+      }
+      // Convert to array and sort
+      const arr = Object.entries(stats).map(([name, s])=>{
+        const winRate = s.played>0 ? Math.round((s.win/s.played)*100) : 0;
+        return {name, ...s, winRate};
+      });
+      arr.sort((a,b)=>b.points-a.points || b.winRate-a.winRate);
+      return arr;
+    }
+    function renderStandingsTable(standings) {
+      if (!standings.length) return '<div style="color:#888;">ยังไม่มีข้อมูลคะแนน</div>';
+      let html = `<div style="overflow-x:auto;"><table style="margin:auto;border-collapse:separate;border-spacing:0 8px;width:100%;max-width:700px;">
+        <thead><tr style="background:#6366f1;color:#fff;font-weight:700;font-size:1.08em;">
+          <th style="border-radius:8px 0 0 8px;padding:0.6em 0.7em;">อันดับ</th>
+          <th style="text-align:left;padding:0.6em 0.7em;">ชื่อ</th>
+          <th>แข่ง</th><th>ชนะ</th><th>เสมอ</th><th>แพ้</th><th>คะแนน</th><th style="border-radius:0 8px 8px 0;">Win Rate</th>
+        </tr></thead><tbody>`;
+      standings.forEach((s,i)=>{
+        html += `<tr style="background:${i%2===0?'#f0f9ff':'#f3e8ff'};font-weight:600;">
+          <td style="border-radius:8px 0 0 8px;text-align:center;">${i+1}</td>
+          <td style="text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px;">${s.name}</td>
+          <td style="text-align:center;">${s.played}</td>
+          <td style="text-align:center;">${s.win}</td>
+          <td style="text-align:center;">${s.draw}</td>
+          <td style="text-align:center;">${s.loss}</td>
+          <td style="text-align:center;">${s.points}</td>
+          <td style="text-align:center;border-radius:0 8px 8px 0;">${s.winRate}%</td>
+        </tr>`;
+      });
+      html += '</tbody></table></div>';
+      return html;
+    }
+
     async function loadData() {
       document.getElementById('loading').style.display = 'block';
       try {
@@ -354,6 +422,9 @@
         const members = await memberRes.json();
         const phoneMap = buildPhoneMap(members);
         renderPairing(pairingData.pairing, pairingData.players, phoneMap);
+        // standings
+        const standings = calculateStandings(pairingData.pairing, pairingData.players, phoneMap);
+        document.getElementById('standings-section').innerHTML = renderStandingsTable(standings);
       } catch (e) {
         document.getElementById('pairing-accordion').innerHTML = '<div style="color:#e11d48;text-align:center;padding:2rem;">ไม่สามารถโหลดข้อมูลได้</div>';
       }
@@ -361,6 +432,17 @@
     }
 
     loadData();
+    // toggle button
+    document.addEventListener('DOMContentLoaded',()=>{
+      const btn = document.getElementById('toggle-standings');
+      const sec = document.getElementById('standings-section');
+      let shown = false;
+      btn.onclick = ()=>{
+        shown = !shown;
+        sec.style.display = shown ? 'block' : 'none';
+        btn.textContent = shown ? 'ซ่อนตารางคะแนน' : 'แสดงตารางคะแนน';
+      };
+    });
   </script>
 </body>
 </html> 
