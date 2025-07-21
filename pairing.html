@@ -99,8 +99,10 @@
       text-align: center;
       flex-shrink: 1;
       flex-grow: 1;
-      overflow-x: auto;
+      overflow: hidden;
       white-space: nowrap;
+      text-overflow: ellipsis;
+      cursor: pointer;
     }
     .player-bg-win {
       background: #38bdf8 !important;
@@ -122,6 +124,9 @@
       align-items: center;
       gap: 0.18em;
       font-size: 1em;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
     .vs {
       font-size: 1.1em;
@@ -157,6 +162,20 @@
       align-items: center;
       justify-content: center;
     }
+    .spinner {
+      display: inline-block;
+      width: 40px;
+      height: 40px;
+      border: 4px solid #e0e7ef;
+      border-top: 4px solid #38bdf8;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
     @media (max-width: 768px) {
       .pairing-container { padding: 0.5rem; }
       .accordion-header { font-size: 1rem; padding: 0.7rem 0.7rem; }
@@ -176,7 +195,7 @@
       <div style="color:#666; font-size:1.05rem; margin-top:0.3rem;">ตารางจับคู่การแข่งขัน Pokemon TCG</div>
     </div>
     <div id="pairing-accordion">
-      <div style="text-align:center; color:#888; padding:2rem;" id="loading">กำลังโหลดข้อมูล...</div>
+      <div style="text-align:center; color:#888; padding:2rem;" id="loading"><span class="spinner"></span></div>
     </div>
   </div>
   <script>
@@ -290,9 +309,9 @@
           const tableBg = tableColors[idx % tableColors.length];
           html += `<div class="pairing-card" style="--pairing-bg: ${pastel}">
             <span class="pairing-table-no" style="--table-bg: ${tableBg}">โต๊ะ ${tableNo}</span>
-            <span class="${p1Class}">${p1Block}</span>
+            <span class="${p1Class}" title="${p1Codename ? p1Codename : row[3]}">${p1Block}</span>
             <span class="pairing-result">${resultDisplay}</span>
-            <span class="${p2Class}">${p2Block}</span>
+            <span class="${p2Class}" title="${p2Codename ? p2Codename : row[8]}">${p2Block}</span>
           </div>`;
         });
         html += '</div></div></div>';
