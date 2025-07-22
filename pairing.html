@@ -70,18 +70,22 @@
       transition: background 0.2s;
     }
     .pairing-table-no {
-      background: var(--table-bg, #a5b4fc);
+      background: rgba(255, 255, 255, 0.25);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
       color: #fff;
       font-weight: 700;
-      border-radius: 8px;
-      padding: 0.4em 1em;
-      min-width: 70px;
-      max-width: 70px;
+      border-radius: 12px;
+      padding: 0.5em 1.2em;
+      min-width: 80px;
+      max-width: 80px;
       text-align: center;
       font-size: 1.1em;
       margin-right: 1.1em;
       flex-shrink: 0;
-      box-shadow: 0 2px 8px #c7d2fe;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
     }
     .player-block {
       display: flex;
@@ -266,9 +270,9 @@
       }
       // Sort round keys
       const roundKeys = Object.keys(rounds).sort((a,b)=>a-b);
-      // พาสเทลสีสลับ
-      const pastelColors = ["#f0f9ff", "#f3e8ff", "#fef9c3", "#ffe4e6", "#f1f5f9", "#fce7f3"];
-      const tableColors = ["#818cf8", "#a78bfa", "#facc15", "#fb7185", "#38bdf8", "#f472b6"];
+      // พาสเทลสีสลับ (ม่วง/เขียว)
+      const pastelColors = ["#f3e8ff", "#f0fdf4"];
+      const tableColors = ["#8b5cf6", "#10b981"];
       // Accordion
       let html = '';
       for (let r of roundKeys) {
