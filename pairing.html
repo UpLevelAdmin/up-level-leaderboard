@@ -492,26 +492,26 @@
     }
     function renderStandingsTable(standings) {
       if (!standings.length) return '<div style="color:#888;">ยังไม่มีข้อมูลคะแนน</div>';
-      let html = `<div style="overflow-x:auto;"><table style="margin:auto;border-collapse:separate;border-spacing:0 8px;width:100%;max-width:800px;">
-        <thead><tr style="background:#6366f1;color:#fff;font-weight:700;font-size:1rem;">
-          <th style="border-radius:8px 0 0 8px;padding:0.6em 0.7em;font-size:1rem;">อันดับ</th>
-          <th style="text-align:left;padding:0.6em 0.7em;font-size:1rem;">ชื่อ</th>
-          <th style="font-size:1rem;">แข่ง</th><th style="font-size:1rem;">ชนะ</th><th style="font-size:1rem;">เสมอ</th><th style="font-size:1rem;">แพ้</th><th style="font-size:1rem;">คะแนน</th><th style="font-size:1rem;">Win Rate</th><th style="font-size:1rem;border-radius:0 8px 8px 0;">%OW</th>
+      let html = `<div style="overflow-x:auto;"><table style="margin:auto;border-collapse:separate;border-spacing:0 6px;width:100%;max-width:100%;table-layout:fixed;">
+        <thead><tr style="background:#6366f1;color:#fff;font-weight:700;font-size:0.9rem;">
+          <th style="border-radius:6px 0 0 6px;padding:0.4em 0.3em;font-size:0.9rem;width:8%;">อันดับ</th>
+          <th style="text-align:left;padding:0.4em 0.3em;font-size:0.9rem;width:25%;">ชื่อ</th>
+          <th style="font-size:0.9rem;width:8%;">แข่ง</th><th style="font-size:0.9rem;width:8%;">ชนะ</th><th style="font-size:0.9rem;width:8%;">เสมอ</th><th style="font-size:0.9rem;width:8%;">แพ้</th><th style="font-size:0.9rem;width:10%;">คะแนน</th><th style="font-size:0.9rem;width:12%;">Win Rate</th><th style="font-size:0.9rem;border-radius:0 6px 6px 0;width:13%;">%OW</th>
         </tr></thead><tbody>`;
       standings.forEach((s,i)=>{
         const emoji = rankEmojis[s.rank]||'';
         html += `<tr style="background:${i%2===0?'#f0f9ff':'#f3e8ff'};font-weight:600;">
-          <td style="border-radius:8px 0 0 8px;text-align:center;font-size:1rem;">${i+1}</td>
-          <td style="text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px;font-size:1rem;">
-            <span class="codename-rank" data-rank="${s.rank||''}" style="font-size:1rem;"><span style="font-size:1rem;">${emoji}</span> ${renderCodenameEffect(s.name, s.rank)} <span style="font-size:1rem;">${emoji}</span></span>
+          <td style="border-radius:6px 0 0 6px;text-align:center;font-size:0.9rem;">${i+1}</td>
+          <td style="text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:0.9rem;">
+            <span class="codename-rank" data-rank="${s.rank||''}" style="font-size:0.9rem;"><span style="font-size:0.8rem;">${emoji}</span> ${renderCodenameEffect(s.name, s.rank)} <span style="font-size:0.8rem;">${emoji}</span></span>
           </td>
-          <td style="text-align:center;font-size:1rem;">${s.played}</td>
-          <td style="text-align:center;font-size:1rem;">${s.win}</td>
-          <td style="text-align:center;font-size:1rem;">${s.draw}</td>
-          <td style="text-align:center;font-size:1rem;">${s.loss}</td>
-          <td style="text-align:center;font-size:1rem;">${s.points}</td>
-          <td style="text-align:center;font-size:1rem;">${s.winRate}%</td>
-          <td style="text-align:center;border-radius:0 8px 8px 0;font-size:1rem;">${s.ow}%</td>
+          <td style="text-align:center;font-size:0.9rem;">${s.played}</td>
+          <td style="text-align:center;font-size:0.9rem;">${s.win}</td>
+          <td style="text-align:center;font-size:0.9rem;">${s.draw}</td>
+          <td style="text-align:center;font-size:0.9rem;">${s.loss}</td>
+          <td style="text-align:center;font-size:0.9rem;">${s.points}</td>
+          <td style="text-align:center;font-size:0.9rem;">${s.winRate}%</td>
+          <td style="text-align:center;border-radius:0 6px 6px 0;font-size:0.9rem;">${s.ow}%</td>
         </tr>`;
       });
       html += '</tbody></table></div>';
