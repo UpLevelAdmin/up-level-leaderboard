@@ -181,12 +181,93 @@
       100% { transform: rotate(360deg); }
     }
     @media (max-width: 768px) {
-      .pairing-container { padding: 0.5rem; }
-      .accordion-header { font-size: 1rem; padding: 0.7rem 0.7rem; }
-      .pairing-card { font-size: 0.98rem; padding: 0.7rem 0.2rem; }
-      .pairing-table-no { font-size: 0.98em; min-width: 50px; max-width: 50px; }
-      .player-block { font-size: 1em; min-width: 70px; max-width: 120px; }
-      .pairing-result, .pairing-wait { font-size: 1.1em; min-width: 50px; }
+      .pairing-container { 
+        padding: 1rem 0.5rem; 
+        margin: 16px auto;
+      }
+      .accordion-header { 
+        font-size: 1rem; 
+        padding: 0.8rem 1rem; 
+      }
+      .pairing-card { 
+        font-size: 0.9rem; 
+        padding: 0.8rem 0.3rem; 
+        gap: 0.4rem;
+        flex-wrap: nowrap;
+      }
+      .pairing-table-no { 
+        font-size: 0.9em; 
+        min-width: 60px; 
+        max-width: 60px;
+        padding: 0.4em 0.8em;
+        margin-right: 0.6em;
+      }
+      .player-block { 
+        font-size: 0.9em; 
+        min-width: 80px; 
+        max-width: 120px;
+        padding: 0.3em 0.5em;
+        margin: 0 0.1em;
+      }
+      .pairing-result, .pairing-wait { 
+        font-size: 1em; 
+        min-width: 50px;
+        margin: 0 0.5em;
+        padding: 0.2em 0.6em;
+      }
+      .codename-rank {
+        font-size: 0.9em;
+        gap: 0.1em;
+      }
+      .codename-rank span {
+        font-size: 0.8em;
+      }
+      /* ปรับขนาดอีโมจิในมือถือ */
+      .codename-rank[data-rank="Rookie"] .codename { font-size: 0.95em; }
+      .codename-rank[data-rank="Bronze"] .codename { font-size: 0.98em; }
+      .codename-rank[data-rank="Silver"] .codename { font-size: 1.02em; }
+      .codename-rank[data-rank="Gold"] .codename { font-size: 1.08em; }
+      .codename-rank[data-rank="Platinum"] .codename { font-size: 1.12em; }
+      .codename-rank[data-rank="Diamond"] .codename { font-size: 1.18em; }
+      .codename-rank[data-rank="Grandmaster"] .codename { font-size: 1.25em; }
+      .codename-rank[data-rank="Legend"] .codename { font-size: 1.35em; }
+    }
+    
+    @media (max-width: 480px) {
+      .pairing-container { 
+        padding: 0.5rem 0.3rem; 
+        margin: 8px auto;
+      }
+      .pairing-card { 
+        font-size: 0.85rem; 
+        padding: 0.6rem 0.2rem; 
+        gap: 0.3rem;
+      }
+      .pairing-table-no { 
+        font-size: 0.85em; 
+        min-width: 50px; 
+        max-width: 50px;
+        padding: 0.3em 0.6em;
+        margin-right: 0.4em;
+      }
+      .player-block { 
+        font-size: 0.85em; 
+        min-width: 70px; 
+        max-width: 100px;
+        padding: 0.25em 0.4em;
+      }
+      .pairing-result, .pairing-wait { 
+        font-size: 0.9em; 
+        min-width: 45px;
+        margin: 0 0.3em;
+        padding: 0.15em 0.5em;
+      }
+      .codename-rank {
+        font-size: 0.85em;
+      }
+      .codename-rank span {
+        font-size: 0.75em;
+      }
     }
   </style>
 </head>
