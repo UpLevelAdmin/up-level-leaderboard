@@ -1205,14 +1205,22 @@ function doGet(e) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const pairingSheet = ss.getSheetByName('Pairing');
   const playersSheet = ss.getSheetByName('Players');
+  const standingSheet = ss.getSheetByName('Standing');
   
   const pairingData = pairingSheet.getDataRange().getValues();
   const playersData = playersSheet.getDataRange().getValues();
+  
+  // ดึงข้อมูล standings ที่มี %OW
+  let standingsData = [];
+  if (standingSheet.getLastRow() > 1) {
+    standingsData = standingSheet.getDataRange().getValues();
+  }
 
   return ContentService.createTextOutput(
     JSON.stringify({
       pairing: pairingData,
-      players: playersData
+      players: playersData,
+      standings: standingsData
     })
   ).setMimeType(ContentService.MimeType.JSON);
 }
