@@ -490,10 +490,10 @@
           <div class="accordion-content">
             <div class="pairing-list">`;
         rounds[r].forEach((row, idx) => {
-          // [ROUND, TABLE, P1_ID, PLAYER 1, WIN_P1, DRAW, WIN_P2, P2_ID, PLAYER 2, RESULT, STATUS, Drop]
+          // [ROUND, TABLE, P1_ID, PLAYER 1, WIN_P1, DRAW, WIN_P2, Double Loss, P2_ID, PLAYER 2, RESULT, STATUS, Drop]
           const tableNo = row[1];
           const p1Tel = getTelById(players, row[2]);
-          const p2Tel = getTelById(players, row[7]);
+          const p2Tel = getTelById(players, row[8]); // P2_ID อยู่ที่ index 8
           const p1Phone = p1Tel?.replace(/\D/g,"");
           const p2Phone = p2Tel?.replace(/\D/g,"");
           const p1Codename = phoneMap[p1Phone]?.codename;
@@ -504,7 +504,7 @@
           let p2Block = '';
           let p1Class = 'player-block';
           let p2Class = 'player-block';
-          let result = row[9];
+          let result = row[10]; // RESULT อยู่ที่ index 10
           let resultDisplay = '';
           
           // จัดการ BYE
@@ -534,7 +534,7 @@
               resultDisplay = '<span class="pairing-wait">รอผล</span>';
             }
             // ใช้ชื่อผู้เล่นจาก Google Sheet ถ้าไม่มี codename
-            const p2DisplayName = p2Codename || row[8] || `Player ${row[7]}`;
+            const p2DisplayName = p2Codename || row[9] || `Player ${row[8]}`; // PLAYER 2 อยู่ที่ index 9
             p2Block = `<span class="codename-rank" data-rank="${p2Rank||''}">${rankEmojis[p2Rank]||''} ${renderCodenameEffect(p2DisplayName, p2Rank)} ${rankEmojis[p2Rank]||''}</span>`;
           }
           
@@ -580,19 +580,19 @@
     }
 
     function calculateStandings(pairing, players, phoneMap) {
-      // [ROUND, TABLE, P1_ID, PLAYER 1, WIN_P1, DRAW, WIN_P2, P2_ID, PLAYER 2, RESULT, STATUS, Drop]
+      // [ROUND, TABLE, P1_ID, PLAYER 1, WIN_P1, DRAW, WIN_P2, Double Loss, P2_ID, PLAYER 2, RESULT, STATUS, Drop]
       const stats = {};
       const opponents = {};
       
       for (let i = 1; i < pairing.length; i++) {
         const row = pairing[i];
-        const p1Id = row[2], p2Id = row[7];
+        const p1Id = row[2], p2Id = row[8]; // P2_ID อยู่ที่ index 8
         const p1Tel = getTelById(players, p1Id);
         const p2Tel = getTelById(players, p2Id);
         const p1Phone = p1Tel?.replace(/\D/g,"");
         const p2Phone = p2Tel?.replace(/\D/g,"");
         const p1Name = phoneMap[p1Phone]?.codename || row[3];
-        const p2Name = phoneMap[p2Phone]?.codename || row[8];
+        const p2Name = phoneMap[p2Phone]?.codename || row[9]; // PLAYER 2 อยู่ที่ index 9
         const p1Rank = phoneMap[p1Phone]?.rank || '';
         const p2Rank = phoneMap[p2Phone]?.rank || '';
         
@@ -614,7 +614,7 @@
         if (!stats[p2Name]) stats[p2Name] = {played:0,win:0,draw:0,loss:0,points:0,rank:p2Rank,phone:p2Phone};
         if (!opponents[p2Name]) opponents[p2Name] = [];
         
-        const result = row[9];
+        const result = row[10]; // RESULT อยู่ที่ index 10
         if (result === '1:0') {
           stats[p1Name].win++; stats[p2Name].loss++;
           stats[p1Name].points += 3;
@@ -728,16 +728,22 @@
         console.log('OW Value:', pairingData.standings?.[1]?.[9]);
         console.log('==================');
         // ตรวจสอบว่าข้อมูล pairing มีข้อมูลหรือไม่
+        console.log('Pairing data length:', pairingData.pairing?.length);
+        console.log('Pairing headers:', pairingData.pairing?.[0]);
+        console.log('First pairing row:', pairingData.pairing?.[1]);
+        
         if (pairingData.pairing && pairingData.pairing.length > 1) {
+          console.log('Rendering pairing table...');
           renderPairing(pairingData.pairing, pairingData.players, phoneMap);
         } else {
+          console.log('No pairing data available');
           document.getElementById('pairing-accordion').innerHTML = '<div style="color:#888;text-align:center;padding:2rem;">ยังไม่มีข้อมูลการจับคู่</div>';
         }
         
         // ใช้ข้อมูล standings จาก Google Sheet
         let standings = [];
         if (pairingData.standings && pairingData.standings.length > 1) {
-          console.log('Processing standings data...');
+          console.log('Processing standings data from Google Sheet...');
           // แปลงข้อมูลจาก Google Sheet เป็นรูปแบบที่ต้องการ
           standings = pairingData.standings.slice(1).map((row, index) => {
             console.log(`Processing Standings Row ${index + 1}:`, row);
@@ -751,16 +757,26 @@
             const draw = parseInt(row[5]) || 0; // F: Draw
             const loss = parseInt(row[6]) || 0; // G: Loss
             const points = parseFloat(row[7]) || 0; // H: Points
-            // ข้อมูล Win Rate และ OW% จาก Google Sheet
-            let winRate = row[8] || '0%';
-            let ow = row[9] || '0%';
             
-            // ถ้าเป็นตัวเลข ให้แปลงเป็นเปอร์เซ็นต์
+            // ข้อมูล Win Rate และ OW% จาก Google Sheet
+            let winRate = row[8];
+            let ow = row[9];
+            
+            // แปลงเป็นเปอร์เซ็นต์ถ้าเป็นตัวเลข
             if (typeof winRate === 'number') {
-              winRate = winRate + '%';
+              winRate = Math.round(winRate * 100) + '%';
+            } else if (typeof winRate === 'string' && !winRate.includes('%')) {
+              winRate = parseFloat(winRate) + '%';
+            } else if (!winRate) {
+              winRate = '0%';
             }
+            
             if (typeof ow === 'number') {
-              ow = ow + '%';
+              ow = Math.round(ow * 100) + '%';
+            } else if (typeof ow === 'string' && !ow.includes('%')) {
+              ow = parseFloat(ow) + '%';
+            } else if (!ow) {
+              ow = '0%';
             }
             
             // หา codename และ rank จาก phoneMap
@@ -783,6 +799,7 @@
           });
         } else {
           // ถ้าไม่มีข้อมูล standings จาก Google Sheet ให้คำนวณเอง
+          console.log('No standings data from Google Sheet, calculating locally...');
           standings = calculateStandings(pairingData.pairing, pairingData.players, phoneMap);
         }
         
