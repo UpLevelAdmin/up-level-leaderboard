@@ -681,9 +681,9 @@
         </tr></thead><tbody>`;
       standings.forEach((s,i)=>{
         const emoji = rankEmojis[s.rank]||'';
-        // ข้อมูลจาก Google Sheet มี % อยู่แล้ว ไม่ต้องเพิ่ม %
-        const winRateDisplay = s.winRate;
-        const owDisplay = s.ow;
+        // ข้อมูลจาก Google Sheet มี % อยู่แล้ว
+        const winRateDisplay = s.winRate || '0%';
+        const owDisplay = s.ow || '0%';
         html += `<tr>
           <td>${i+1}</td>
           <td>
@@ -715,10 +715,17 @@
         
         // Debug: ตรวจสอบข้อมูลที่ได้รับ
         console.log('Pairing Data:', pairingData);
+        console.log('Pairing Headers:', pairingData.pairing?.[0]);
+        console.log('First Pairing Row:', pairingData.pairing?.[1]);
         console.log('Standings Data:', pairingData.standings);
         console.log('Standings Headers:', pairingData.standings?.[0]);
         console.log('First Standings Row:', pairingData.standings?.[1]);
-        renderPairing(pairingData.pairing, pairingData.players, phoneMap);
+        // ตรวจสอบว่าข้อมูล pairing มีข้อมูลหรือไม่
+        if (pairingData.pairing && pairingData.pairing.length > 1) {
+          renderPairing(pairingData.pairing, pairingData.players, phoneMap);
+        } else {
+          document.getElementById('pairing-accordion').innerHTML = '<div style="color:#888;text-align:center;padding:2rem;">ยังไม่มีข้อมูลการจับคู่</div>';
+        }
         
         // ใช้ข้อมูล standings จาก Google Sheet
         let standings = [];
@@ -735,8 +742,9 @@
             const draw = parseInt(row[5]) || 0; // F: Draw
             const loss = parseInt(row[6]) || 0; // G: Loss
             const points = parseFloat(row[7]) || 0; // H: Points
-            const winRate = parseInt(row[8]) || 0; // I: Win Rate
-            const ow = parseFloat(row[9]) || 0; // J: OW%
+            // ข้อมูล Win Rate และ OW% จาก Google Sheet มี % อยู่แล้ว
+            const winRate = row[8] || '0%'; // I: Win Rate (มี % อยู่แล้ว)
+            const ow = row[9] || '0%'; // J: OW% (มี % อยู่แล้ว)
             
             // หา codename และ rank จาก phoneMap
             const p1Tel = getTelById(pairingData.players, playerId);
