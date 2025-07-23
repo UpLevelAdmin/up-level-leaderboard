@@ -396,18 +396,18 @@ function pairNextRound() {
   }
 
   // เตรียมรายการผู้เล่นที่ยัง active
-  const activePlayers = standings
+  const currentActivePlayers = standings
     .filter(r => r[1] && r[1] !== '' && !dropList.includes(r[1]))
     .map(r => r[1]); // เฉพาะ Player ID
 
   // ตรวจสอบว่ามีผู้เล่นเพียงพอหรือไม่
-  if (activePlayers.length < 2) {
+  if (currentActivePlayers.length < 2) {
     SpreadsheetApp.getUi().alert('ไม่สามารถจับคู่ได้ – ผู้เล่นน้อยเกินไป (น้อยกว่า 2 คน)');
     return;
   }
 
   // จับคู่แบบ backtracking
-  const successfulPairings = generatePairings(activePlayers, matchHistory);
+  const successfulPairings = generatePairings(currentActivePlayers, matchHistory);
   
   if (successfulPairings) {
     // จับคู่สำเร็จโดยไม่ซ้ำ
@@ -443,10 +443,10 @@ function pairNextRound() {
       const forcedRematches = [];
       
       // จับคู่แบบง่าย (จับคู่ซ้ำได้)
-      for (let i = 0; i < activePlayers.length; i += 2) {
-        if (i + 1 < activePlayers.length) {
-          const p1 = activePlayers[i];
-          const p2 = activePlayers[i + 1];
+      for (let i = 0; i < currentActivePlayers.length; i += 2) {
+        if (i + 1 < currentActivePlayers.length) {
+          const p1 = currentActivePlayers[i];
+          const p2 = currentActivePlayers[i + 1];
           paired.push([p1, p2]);
           
           // ตรวจสอบว่าเป็นการจับคู่ซ้ำหรือไม่
@@ -465,8 +465,8 @@ function pairNextRound() {
   }
 
   // ถ้าเหลือคนเดียว
-  if (activePlayers.length % 2 === 1) {
-    const lastPlayer = activePlayers[activePlayers.length - 1];
+  if (currentActivePlayers.length % 2 === 1) {
+    const lastPlayer = currentActivePlayers[currentActivePlayers.length - 1];
     warnings.push(getName(lastPlayer) + ' (เหลือคนเดียว)');
   }
 
