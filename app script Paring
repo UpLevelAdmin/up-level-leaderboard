@@ -486,7 +486,7 @@ function pairNextRound() {
       pair[1],            // I: P2_ID (ต้องไม่ว่าง)
       getName(pair[1]),   // J: PLAYER 2
       '',                 // K: RESULT
-      'OK',               // L: STATUS
+      '',                 // L: STATUS (ว่างจนกว่าจะใส่ผลการแข่งขัน)
       ''                  // M: Drop
     ]);
   });
@@ -504,7 +504,7 @@ function pairNextRound() {
       'BYE',               // I: P2_ID
       'BYE',               // J: PLAYER 2
       '1:0',               // K: RESULT
-      'OK',                // L: STATUS
+      'OK',                // L: STATUS (BYE ต้องเป็น OK)
       ''                   // M: Drop
     ]);
   }
@@ -630,18 +630,23 @@ function onEdit(e) {
     if (p2_name === 'BYE') return;
 
   let result = '';
-    let status = 'OK';
+    let status = '';
 
     if (winP1) {
     result = '1:0';
+    status = 'OK';
     } else if (winP2) {
     result = '0:1';
+    status = 'OK';
     } else if (draw) {
       result = '1:1';
+      status = 'OK';
     } else if (doubleLoss) {
     result = '0:0';
+    status = 'OK';
     } else {
       result = ''; // Clear result if all are unchecked
+      status = ''; // Clear status if no result
     }
 
     // อัปเดตผลลัพธ์และจัดรูปแบบ
