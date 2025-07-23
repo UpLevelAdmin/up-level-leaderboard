@@ -323,6 +323,7 @@ function pairNextRound() {
   // 3. สร้าง pairing แบบ backtracking - ป้องกันการซ้ำ 100%
   const paired = [];
   const warnings = [];
+  const forcedRematches = [];
   const usedPlayers = new Set();
 
   // ฟังก์ชันหาคู่ที่ยังไม่เคยเจอกัน
@@ -440,7 +441,6 @@ function pairNextRound() {
     
     if (response === SpreadsheetApp.getUi().Button.YES) {
       // ยอมจับคู่ซ้ำ
-      const forcedRematches = [];
       
       // จับคู่แบบง่าย (จับคู่ซ้ำได้)
       for (let i = 0; i < currentActivePlayers.length; i += 2) {
