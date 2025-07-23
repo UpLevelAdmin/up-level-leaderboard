@@ -1639,10 +1639,10 @@ function clearAllData() {
 
 function generatePlayerIDs() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const pairingSheet = ss.getSheetByName('Pairing');
+  const playersSheet = ss.getSheetByName('Players');
   
   // หาแถวที่มีข้อมูลชื่อและเบอร์โทร
-  const data = pairingSheet.getDataRange().getValues();
+  const data = playersSheet.getDataRange().getValues();
   let playerCount = 0;
   
   // ตรวจสอบว่ามีข้อมูลในคอลัมน์ Name และ Tel หรือไม่
@@ -1685,13 +1685,13 @@ function generatePlayerIDs() {
       
       if (name && name.toString().trim() !== '' && tel && tel.toString().trim() !== '') {
         const playerID = playerCount < 10 ? 'P00' + idCounter : 'P0' + idCounter;
-        pairingSheet.getRange(i + 1, 1).setValue(playerID); // Column A (Player_id)
+        playersSheet.getRange(i + 1, 1).setValue(playerID); // Column A (Player_id)
         idCounter++;
       }
     }
     
     // จัดรูปแบบคอลัมน์ Player_id
-    const idRange = pairingSheet.getRange(2, 1, playerCount, 1);
+    const idRange = playersSheet.getRange(2, 1, playerCount, 1);
     idRange.setBackground('#e0f2fe');
     idRange.setFontWeight('bold');
     idRange.setHorizontalAlignment('center');
