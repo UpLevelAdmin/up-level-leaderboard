@@ -1616,7 +1616,7 @@ function clearAllData() {
     
     // ลบข้อมูลและเคลียร์ฟอร์แมทในชีท Standing
     standingSheet.clearContents();
-    standingSheet.clearFormat(); // เคลียร์ฟอร์แมทสี
+    standingSheet.clearFormats(); // เคลียร์ฟอร์แมทสี (ใช้ clearFormats ไม่ใช่ clearFormat)
     
     // สร้าง header ใหม่สำหรับชีท Pairing
     const headers = ['ROUND', 'TABLE', 'P1_ID', 'PLAYER 1', 'WIN_P1', 'DRAW', 'WIN_P2', 'Double Loss', 'P2_ID', 'PLAYER 2', 'RESULT', 'STATUS', 'Drop'];
