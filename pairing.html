@@ -504,6 +504,10 @@
             p1Class += ' player-bg-draw';
             p2Class += ' player-bg-draw';
             resultDisplay = '<span style="color:#92400e;">1 : 1</span>';
+          } else if (result === '0:0') {
+            p1Class += ' player-bg-loss';
+            p2Class += ' player-bg-loss';
+            resultDisplay = '<span style="color:#dc2626;font-weight:600;">0 : 0</span>';
           } else {
             resultDisplay = '<span class="pairing-wait">รอผล</span>';
           }
@@ -577,6 +581,9 @@
         } else if (result === '1:1') {
           stats[p1Name].draw++; stats[p2Name].draw++;
           stats[p1Name].points+=1; stats[p2Name].points+=1;
+        } else if (result === '0:0') {
+          stats[p1Name].loss++; stats[p2Name].loss++;
+          // ไม่ได้คะแนนสำหรับการแพ้คู่
         } else {
           continue;
         }
@@ -598,10 +605,10 @@
           owSum += oppWP;
           owCount++;
         });
-        const ow = owCount>0 ? (owSum/owCount) : 0;
-        return {name, ...s, winRate, ow:ow.toFixed(1)};
+        const ow = owCount>0 ? Math.round((owSum/owCount) * 100) / 100 : 0;
+        return {name, ...s, winRate, ow:ow.toFixed(2)};
       });
-      arr.sort((a,b)=>b.points-a.points || b.winRate-a.winRate || b.ow-b.ow);
+      arr.sort((a,b)=>b.points-a.points || b.winRate-a.winRate || parseFloat(b.ow)-parseFloat(a.ow));
       return arr;
     }
     
@@ -616,8 +623,8 @@
           <th>เสมอ</th>
           <th>แพ้</th>
           <th>คะแนน</th>
-          <th>Win Rate</th>
-          <th>%OW</th>
+          <th>W%</th>
+          <th>OW%</th>
         </tr></thead><tbody>`;
       standings.forEach((s,i)=>{
         const emoji = rankEmojis[s.rank]||'';
@@ -631,8 +638,8 @@
           <td>${s.draw}</td>
           <td>${s.loss}</td>
           <td>${s.points}</td>
-          <td>${s.winRate}%</td>
-          <td>${s.ow}%</td>
+          <td>${s.winRate}</td>
+          <td>${s.ow}</td>
         </tr>`;
       });
       html += '</tbody></table></div>';
