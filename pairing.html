@@ -533,17 +533,21 @@
             } else {
               resultDisplay = '<span class="pairing-wait">รอผล</span>';
             }
-            p2Block = `<span class="codename-rank" data-rank="${p2Rank||''}">${rankEmojis[p2Rank]||''} ${p2Codename ? renderCodenameEffect(p2Codename, p2Rank) : row[8]} ${rankEmojis[p2Rank]||''}</span>`;
+            // ใช้ชื่อผู้เล่นจาก Google Sheet ถ้าไม่มี codename
+            const p2DisplayName = p2Codename || row[8] || `Player ${row[7]}`;
+            p2Block = `<span class="codename-rank" data-rank="${p2Rank||''}">${rankEmojis[p2Rank]||''} ${renderCodenameEffect(p2DisplayName, p2Rank)} ${rankEmojis[p2Rank]||''}</span>`;
           }
           
-          p1Block = `<span class="codename-rank" data-rank="${p1Rank||''}">${rankEmojis[p1Rank]||''} ${p1Codename ? renderCodenameEffect(p1Codename, p1Rank) : row[3]} ${rankEmojis[p1Rank]||''}</span>`;
+          // ใช้ชื่อผู้เล่นจาก Google Sheet ถ้าไม่มี codename
+          const p1DisplayName = p1Codename || row[3] || `Player ${row[2]}`;
+          p1Block = `<span class="codename-rank" data-rank="${p1Rank||''}">${rankEmojis[p1Rank]||''} ${renderCodenameEffect(p1DisplayName, p1Rank)} ${rankEmojis[p1Rank]||''}</span>`;
           const pastel = pastelColors[idx % pastelColors.length];
           const tableBg = tableColors[idx % tableColors.length];
           html += `<div class="pairing-card" style="--pairing-bg: ${pastel}">
             <span class="pairing-table-no" style="--table-bg: ${tableBg}">โต๊ะ ${tableNo}</span>
-            <span class="${p1Class}" title="${p1Codename ? p1Codename : row[3]}">${p1Block}</span>
+            <span class="${p1Class}" title="${p1DisplayName}">${p1Block}</span>
             <span class="pairing-result">${resultDisplay}</span>
-            <span class="${p2Class}" title="${p2Codename ? p2Codename : row[8]}">${p2Block}</span>
+            <span class="${p2Class}" title="${p2DisplayName}">${p2Block}</span>
           </div>`;
         });
         html += '</div></div></div>';
@@ -677,8 +681,9 @@
         </tr></thead><tbody>`;
       standings.forEach((s,i)=>{
         const emoji = rankEmojis[s.rank]||'';
-        const winRateDisplay = s.played > 0 ? s.winRate + '%' : '0%';
-        const owDisplay = s.ow + '%';
+        // ข้อมูลจาก Google Sheet มี % อยู่แล้ว ไม่ต้องเพิ่ม %
+        const winRateDisplay = s.winRate;
+        const owDisplay = s.ow;
         html += `<tr>
           <td>${i+1}</td>
           <td>
