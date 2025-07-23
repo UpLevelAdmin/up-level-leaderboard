@@ -506,12 +506,14 @@
           let p2Class = 'player-block';
           let result = row[10]; // RESULT อยู่ที่ index 10
           let resultDisplay = '';
+          let p2DisplayName = ''; // <-- fix: always define p2DisplayName
           
           // จัดการ BYE
           if (row[7] === 'BYE') {
             p1Class += ' player-bg-win';
             p2Class += ' player-bg-win';
             resultDisplay = '<span style="color:#059669;font-weight:600;">BYE</span>';
+            p2DisplayName = 'BYE'; // <-- fix: always define p2DisplayName
             p2Block = `<span class="codename-rank" style="color:#059669;font-weight:600;">🎯 BYE</span>`;
           } else {
             if (result === '1:0') {

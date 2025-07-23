@@ -1241,7 +1241,7 @@ function validatePairing() {
   
   // ตรวจสอบการจับคู่ซ้ำ
   pairingData.slice(1).forEach((row, index) => {
-    const p1 = row[2], p2 = row[9]; // P1_ID, P2_ID
+    const p1 = row[2], p2 = row[8]; // P1_ID, P2_ID (index 8)
     const round = row[0];
     
     if (!p1 || !p2 || p2 === 'BYE') return;
@@ -1261,7 +1261,7 @@ function validatePairing() {
   const byeCount = {};
   pairingData.slice(1).forEach(row => {
     const p1 = row[2];
-    const p2 = row[9];
+    const p2 = row[8]; // P2_ID อยู่ที่ index 8
     
     if (p2 === 'BYE' && p1) {
       byeCount[p1] = (byeCount[p1] || 0) + 1;
@@ -1278,10 +1278,10 @@ function validatePairing() {
   const incompleteMatches = [];
   pairingData.slice(1).forEach((row, index) => {
     const result = row[10]; // Result column
-    const p2 = row[9];
+    const p2 = row[8]; // P2_ID อยู่ที่ index 8
     
     if (p2 !== 'BYE' && (!result || result === '')) {
-      incompleteMatches.push('แถว ' + (index + 2) + ': ' + row[3] + ' vs ' + row[8] + ' (ยังไม่มีผล)');
+      incompleteMatches.push('แถว ' + (index + 2) + ': ' + row[3] + ' vs ' + row[9] + ' (ยังไม่มีผล)'); // PLAYER 2 อยู่ที่ index 9
     }
   });
   
