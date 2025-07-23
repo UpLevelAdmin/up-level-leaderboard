@@ -711,27 +711,43 @@
         // Debug: ตรวจสอบข้อมูลที่ได้รับ
         console.log('Pairing Data:', pairingData);
         console.log('Standings Data:', pairingData.standings);
+        console.log('Standings Headers:', pairingData.standings?.[0]);
+        console.log('First Standings Row:', pairingData.standings?.[1]);
         renderPairing(pairingData.pairing, pairingData.players, phoneMap);
         
         // ใช้ข้อมูล standings จาก Google Sheet
         let standings = [];
         if (pairingData.standings && pairingData.standings.length > 1) {
+          console.log('Processing standings data...');
           // แปลงข้อมูลจาก Google Sheet เป็นรูปแบบที่ต้องการ
-          standings = pairingData.standings.slice(1).map(row => {
-            const p1Tel = getTelById(pairingData.players, row[1]); // Player ID
+          standings = pairingData.standings.slice(1).map((row, index) => {
+            console.log(`Row ${index + 1}:`, row);
+            // ตามโครงสร้าง Google Sheet: A=Rank, B=PlayerID, C=PlayerName, D=Played, E=Win, F=Draw, G=Loss, H=Points, I=WinRate, J=OW%
+            const playerId = row[1]; // B: Player ID
+            const playerName = row[2]; // C: Player Name
+            const played = parseInt(row[3]) || 0; // D: Played
+            const win = parseInt(row[4]) || 0; // E: Win
+            const draw = parseInt(row[5]) || 0; // F: Draw
+            const loss = parseInt(row[6]) || 0; // G: Loss
+            const points = parseFloat(row[7]) || 0; // H: Points
+            const winRate = parseInt(row[8]) || 0; // I: Win Rate
+            const ow = parseFloat(row[9]) || 0; // J: OW%
+            
+            // หา codename และ rank จาก phoneMap
+            const p1Tel = getTelById(pairingData.players, playerId);
             const p1Phone = p1Tel?.replace(/\D/g,"");
             const p1Codename = phoneMap[p1Phone]?.codename;
             const p1Rank = phoneMap[p1Phone]?.rank;
             
             return {
-              name: p1Codename || row[2], // Player Name
-              played: parseInt(row[3]) || 0,
-              win: parseInt(row[4]) || 0,
-              draw: parseInt(row[5]) || 0,
-              loss: parseInt(row[6]) || 0,
-              points: parseInt(row[7]) || 0,
-              winRate: parseInt(row[8]) || 0,
-              ow: parseFloat(row[9]) || 0,
+              name: p1Codename || playerName,
+              played: played,
+              win: win,
+              draw: draw,
+              loss: loss,
+              points: points,
+              winRate: winRate,
+              ow: ow,
               rank: p1Rank || ''
             };
           });
