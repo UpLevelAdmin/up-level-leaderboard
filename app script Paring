@@ -320,163 +320,154 @@ function pairNextRound() {
     }
   }
 
-  // 3. สร้าง pairing ตามหลัก Swiss System - ป้องกันการซ้ำและจัดการ pair down
+  // 3. สร้าง pairing แบบ backtracking - ป้องกันการซ้ำ 100%
   const paired = [];
   const warnings = [];
-  const forcedRematches = [];
-  const usedPlayers = new Set(); // เก็บผู้เล่นที่ถูกจับคู่แล้ว
+  const usedPlayers = new Set();
 
-  // ฟังก์ชันหาคู่ที่ดีที่สุดที่ไม่เคยเจอกัน
-  function findBestMatch(player, availablePlayers, currentPoints) {
-    const playerStanding = standings.find(s => s[1] === player);
-    const playerPoints = playerStanding ? playerStanding[2] : 0;
-    
-    // ลองหาคู่ใน bracket เดียวกันก่อน
+  // ฟังก์ชันหาคู่ที่ยังไม่เคยเจอกัน
+  function getEligibleOpponents(p1, availablePlayers, matchHistory) {
+    const eligible = [];
     for (let p2 of availablePlayers) {
-      const alreadyPlayed = (matchHistory[player] || []).includes(p2);
-      if (!alreadyPlayed && !usedPlayers.has(p2)) {
-        return { player: p2, index: availablePlayers.indexOf(p2), pointsDiff: 0 };
+      if (!usedPlayers.has(p2) && !(matchHistory[p1] || []).includes(p2)) {
+        eligible.push(p2);
       }
     }
-    
-    // ถ้าไม่เจอใน bracket เดียวกัน ให้ pair down (จับคู่กับคนคะแนนน้อยกว่า)
-    const sortedBrackets = Object.keys(playerBrackets).map(Number).sort((a, b) => a - b); // เรียงจากน้อยไปมาก
-    
-    for (let points of sortedBrackets) {
-      // ข้าม bracket เดียวกัน
-      if (points === currentPoints) continue;
-      
-      // จำกัดการ pair down ไม่เกิน 3 คะแนน
-      if (points < playerPoints - 3) continue;
-      
-      const playersInBracket = playerBrackets[points] || [];
-      for (let p2 of playersInBracket) {
-        if (usedPlayers.has(p2)) continue;
-        
-        const alreadyPlayed = (matchHistory[player] || []).includes(p2);
-        if (!alreadyPlayed) {
-          return { 
-            player: p2, 
-            index: -1, // ไม่ใช่ใน availablePlayers เดิม
-            pointsDiff: playerPoints - points,
-            bracket: points
-          };
-        }
-      }
-    }
-    
-    return null;
+    return eligible;
   }
 
-  // จับคู่ตาม bracket จากมากไปน้อย
-  const sortedBrackets = Object.keys(playerBrackets).map(Number).sort((a, b) => b - a);
-  
-  for (let i = 0; i < sortedBrackets.length; i++) {
-    const currentPoints = sortedBrackets[i];
+  // ฟังก์ชันคำนวณความแตกต่างของคะแนน
+  function getPointsDifference(p1, p2) {
+    const p1Standing = standings.find(s => s[1] === p1);
+    const p2Standing = standings.find(s => s[1] === p2);
+    const p1Points = p1Standing ? p1Standing[2] : 0;
+    const p2Points = p2Standing ? p2Standing[2] : 0;
+    return Math.abs(p1Points - p2Points);
+  }
+
+  // ฟังก์ชัน recursive pairing แบบ backtracking
+  function generatePairings(players, matchHistory, maxAttempts = 1000) {
+    let attempts = 0;
     
-    if (!playerBrackets[currentPoints] || !Array.isArray(playerBrackets[currentPoints])) {
-      continue;
-    }
-    
-    const playersInBracket = [...playerBrackets[currentPoints]];
-    
-    // จับคู่ผู้เล่นใน bracket นี้
-    while (playersInBracket.length > 0) {
-      const p1 = playersInBracket[0];
-      
-      if (usedPlayers.has(p1)) {
-        playersInBracket.splice(0, 1);
-        continue;
+    function backtrack(currentPlayers, currentPairings) {
+      attempts++;
+      if (attempts > maxAttempts) {
+        return null; // ป้องกัน infinite loop
       }
       
-      // หาคู่ที่ดีที่สุด
-      const bestMatch = findBestMatch(p1, playersInBracket.slice(1), currentPoints);
+      // ถ้าไม่มีผู้เล่นเหลือแล้ว = สำเร็จ
+      if (currentPlayers.length === 0) {
+        return currentPairings;
+      }
       
-      if (bestMatch) {
-        // จับคู่สำเร็จ
-        paired.push([p1, bestMatch.player]);
-        usedPlayers.add(p1);
-        usedPlayers.add(bestMatch.player);
+      // ถ้าเหลือคนเดียว = ไม่สำเร็จ
+      if (currentPlayers.length === 1) {
+        return null;
+      }
+      
+      const p1 = currentPlayers[0];
+      const remainingPlayers = currentPlayers.slice(1);
+      
+      // หาคู่ที่ยังไม่เคยเจอกัน
+      const eligibleOpponents = getEligibleOpponents(p1, remainingPlayers, matchHistory);
+      
+      // เรียงตามความใกล้เคียงของคะแนน (Swiss System)
+      eligibleOpponents.sort((a, b) => {
+        const diffA = getPointsDifference(p1, a);
+        const diffB = getPointsDifference(p1, b);
+        return diffA - diffB;
+      });
+      
+      // ลองจับคู่กับแต่ละคู่
+      for (let p2 of eligibleOpponents) {
+        const newPairings = [...currentPairings, [p1, p2]];
+        const newPlayers = remainingPlayers.filter(p => p !== p2);
         
-        // ลบออกจาก playersInBracket
-        playersInBracket.splice(0, 1);
-        if (bestMatch.index >= 0) {
-          playersInBracket.splice(bestMatch.index, 1);
-        } else {
-          // ลบออกจาก bracket อื่น
-          const otherBracket = playerBrackets[bestMatch.bracket];
-          const index = otherBracket.indexOf(bestMatch.player);
-          if (index > -1) {
-            otherBracket.splice(index, 1);
+        const result = backtrack(newPlayers, newPairings);
+        if (result) {
+          return result;
+        }
+      }
+      
+      return null; // ไม่มีทางเลือกที่สำเร็จ
+    }
+    
+    return backtrack(players, []);
+  }
+
+  // เตรียมรายการผู้เล่นที่ยัง active
+  const activePlayers = standings
+    .filter(r => r[1] && r[1] !== '' && !dropList.includes(r[1]))
+    .map(r => r[1]); // เฉพาะ Player ID
+
+  // ตรวจสอบว่ามีผู้เล่นเพียงพอหรือไม่
+  if (activePlayers.length < 2) {
+    SpreadsheetApp.getUi().alert('ไม่สามารถจับคู่ได้ – ผู้เล่นน้อยเกินไป (น้อยกว่า 2 คน)');
+    return;
+  }
+
+  // จับคู่แบบ backtracking
+  const successfulPairings = generatePairings(activePlayers, matchHistory);
+  
+  if (successfulPairings) {
+    // จับคู่สำเร็จโดยไม่ซ้ำ
+    paired.push(...successfulPairings);
+    
+    // บันทึก pair down (ถ้ามี)
+    successfulPairings.forEach(pair => {
+      const [p1, p2] = pair;
+      const p1Standing = standings.find(s => s[1] === p1);
+      const p2Standing = standings.find(s => s[1] === p2);
+      const p1Points = p1Standing ? p1Standing[2] : 0;
+      const p2Points = p2Standing ? p2Standing[2] : 0;
+      const pointsDiff = Math.abs(p1Points - p2Points);
+      
+      if (pointsDiff > 0) {
+        warnings.push(`${getName(p1)} (${p1Points} คะแนน) vs ${getName(p2)} (${p2Points} คะแนน) - ต่างกัน ${pointsDiff} คะแนน`);
+      }
+    });
+  } else {
+    // ไม่สามารถจับคู่ได้โดยไม่ซ้ำ
+    const response = SpreadsheetApp.getUi().alert(
+      '❌ ไม่สามารถจับคู่ได้โดยไม่ซ้ำ',
+      'ไม่สามารถจับคู่รอบที่ ' + nextRound + ' ได้โดยไม่มีการจับคู่ซ้ำ\n\n' +
+      'ตัวเลือก:\n' +
+      '• ใช่ = ยอมจับคู่ซ้ำ\n' +
+      '• ไม่ = ยกเลิกการจับคู่\n\n' +
+      'ต้องการดำเนินการต่อหรือไม่?',
+      SpreadsheetApp.getUi().ButtonSet.YES_NO
+    );
+    
+    if (response === SpreadsheetApp.getUi().Button.YES) {
+      // ยอมจับคู่ซ้ำ
+      const forcedRematches = [];
+      
+      // จับคู่แบบง่าย (จับคู่ซ้ำได้)
+      for (let i = 0; i < activePlayers.length; i += 2) {
+        if (i + 1 < activePlayers.length) {
+          const p1 = activePlayers[i];
+          const p2 = activePlayers[i + 1];
+          paired.push([p1, p2]);
+          
+          // ตรวจสอบว่าเป็นการจับคู่ซ้ำหรือไม่
+          if ((matchHistory[p1] || []).includes(p2)) {
+            forcedRematches.push(getName(p1) + ' vs ' + getName(p2));
           }
         }
-        
-        // บันทึก pair down
-        if (bestMatch.pointsDiff > 0) {
-          warnings.push(`${getName(p1)} (${currentPoints} คะแนน) pair down กับ ${getName(bestMatch.player)} (${currentPoints - bestMatch.pointsDiff} คะแนน)`);
-        }
-      } else {
-        // ไม่เจอคู่ที่ไม่เคยเจอกัน ให้จับคู่ซ้ำ
-        if (playersInBracket.length >= 2) {
-          const p2 = playersInBracket[1];
-          forcedRematches.push(getName(p1) + ' vs ' + getName(p2));
-          paired.push([p1, p2]);
-          usedPlayers.add(p1);
-          usedPlayers.add(p2);
-          playersInBracket.splice(0, 2);
-        } else {
-          // เหลือคนเดียวใน bracket
-          break;
-        }
       }
-    }
-    
-    // อัปเดต playerBrackets
-    playerBrackets[currentPoints] = playersInBracket.filter(p => !usedPlayers.has(p));
-    if (playerBrackets[currentPoints].length === 0) {
-      delete playerBrackets[currentPoints];
+      
+      if (forcedRematches.length > 0) {
+        warnings.push('⚠️ การจับคู่ซ้ำ (' + forcedRematches.length + ' คู่):\n' + forcedRematches.join('\n'));
+      }
+    } else {
+      return; // ยกเลิกการจับคู่
     }
   }
 
-  // 4. จัดการผู้เล่นที่เหลือ
-  const remainingPlayers = [];
-  Object.values(playerBrackets).forEach(bracket => {
-    if (Array.isArray(bracket)) {
-      remainingPlayers.push(...bracket.filter(p => !usedPlayers.has(p)));
-    }
-  });
-  
-  // จับคู่ผู้เล่นที่เหลือ
-  while (remainingPlayers.length >= 2) {
-    const p1 = remainingPlayers[0];
-    let found = false;
-    
-    for (let i = 1; i < remainingPlayers.length; i++) {
-      const p2 = remainingPlayers[i];
-      const alreadyPlayed = (matchHistory[p1] || []).includes(p2);
-      
-      if (!alreadyPlayed) {
-        paired.push([p1, p2]);
-        remainingPlayers.splice(i, 1);
-        remainingPlayers.splice(0, 1);
-        found = true;
-        break;
-      }
-    }
-    
-    if (!found) {
-      // จับคู่ซ้ำ
-      const p2 = remainingPlayers[1];
-      forcedRematches.push(getName(p1) + ' vs ' + getName(p2));
-      paired.push([p1, p2]);
-      remainingPlayers.splice(1, 1);
-      remainingPlayers.splice(0, 1);
-    }
-  }
-  
   // ถ้าเหลือคนเดียว
-  if (remainingPlayers.length === 1) {
-    warnings.push(getName(remainingPlayers[0]) + ' (เหลือคนเดียว)');
+  if (activePlayers.length % 2 === 1) {
+    const lastPlayer = activePlayers[activePlayers.length - 1];
+    warnings.push(getName(lastPlayer) + ' (เหลือคนเดียว)');
   }
 
   const output = [];
