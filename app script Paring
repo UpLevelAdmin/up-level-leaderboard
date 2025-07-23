@@ -1077,20 +1077,9 @@ function undoLastPairing() {
       // ถ้าลบไม่ได้ (ไม่มี checkbox) ก็ข้ามไป
     }
     
-    // เคลียร์ฟอร์แมท (สีพื้นหลัง, สีตัวอักษร, ขอบ)
+    // เคลียร์ฟอร์แมททั้งหมด
     const rowRange = pairingSheet.getRange(rowNum, 1, 1, 13);
-    rowRange.setBackground(null);
-    rowRange.setFontColor(null);
-    rowRange.setFontWeight('normal');
-    rowRange.setBorder(false, false, false, false, false, false);
-    
-    // เคลียร์ฟอร์แมทเฉพาะคอลัมน์ผลลัพธ์ (K, L)
-    const resultRange = pairingSheet.getRange(rowNum, 11, 1, 2);
-    resultRange.setBackground(null);
-    resultRange.setFontColor(null);
-    resultRange.setFontWeight('normal');
-    resultRange.setFontSize(10);
-    resultRange.setHorizontalAlignment('left');
+    rowRange.clearFormat(); // เคลียร์ฟอร์แมททั้งหมด (สี, ขอบ, ฟอนต์)
   });
 
   SpreadsheetApp.getUi().alert('เคลียร์ข้อมูลรอบที่ ' + lastRound + ' เรียบร้อยแล้ว');
@@ -1617,14 +1606,17 @@ function clearAllData() {
   );
   
   if (response === SpreadsheetApp.getUi().Button.YES) {
-    // ลบข้อมูลในชีท Pairing (ยกเว้น header)
+    // ลบข้อมูลและเคลียร์ฟอร์แมทในชีท Pairing (ยกเว้น header)
     const lastRow = pairingSheet.getLastRow();
     if (lastRow > 1) {
-      pairingSheet.getRange(2, 1, lastRow - 1, pairingSheet.getLastColumn()).clearContent();
+      const dataRange = pairingSheet.getRange(2, 1, lastRow - 1, pairingSheet.getLastColumn());
+      dataRange.clearContent();
+      dataRange.clearFormat(); // เคลียร์ฟอร์แมทสี
     }
     
-    // ลบข้อมูลในชีท Standing
+    // ลบข้อมูลและเคลียร์ฟอร์แมทในชีท Standing
     standingSheet.clearContents();
+    standingSheet.clearFormat(); // เคลียร์ฟอร์แมทสี
     
     // สร้าง header ใหม่สำหรับชีท Pairing
     const headers = ['ROUND', 'TABLE', 'P1_ID', 'PLAYER 1', 'WIN_P1', 'DRAW', 'WIN_P2', 'Double Loss', 'P2_ID', 'PLAYER 2', 'RESULT', 'STATUS', 'Drop'];
