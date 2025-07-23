@@ -473,7 +473,7 @@ function pairNextRound() {
       pair[1],            // I: P2_ID (ต้องไม่ว่าง)
       getName(pair[1]),   // J: PLAYER 2
       '',                 // K: RESULT
-      '',                 // L: STATUS
+      'OK',               // L: STATUS
       ''                  // M: Drop
     ]);
   });
@@ -491,13 +491,16 @@ function pairNextRound() {
       'BYE',               // I: P2_ID
       'BYE',               // J: PLAYER 2
       '1:0',               // K: RESULT
-      'BYE',               // L: STATUS
+      'OK',                // L: STATUS
       ''                   // M: Drop
     ]);
   }
 
   const startRow = pairingSheet.getLastRow() + 1;
   if (output.length > 0) {
+    // Debug: แสดงข้อมูลที่สร้างขึ้น
+    console.log('Output data:', output);
+    
     // ตรวจสอบข้อมูลก่อนบันทึก
     const validOutput = output.filter(row => {
       return row && Array.isArray(row) && row.length >= 13 && 
