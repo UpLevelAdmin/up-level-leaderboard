@@ -681,9 +681,10 @@
         </tr></thead><tbody>`;
       standings.forEach((s,i)=>{
         const emoji = rankEmojis[s.rank]||'';
-        // ข้อมูลจาก Google Sheet มี % อยู่แล้ว
+        // แสดงข้อมูล Win Rate และ OW%
         const winRateDisplay = s.winRate || '0%';
         const owDisplay = s.ow || '0%';
+        console.log(`Displaying for ${s.name}: Win Rate = "${winRateDisplay}", OW = "${owDisplay}"`);
         html += `<tr>
           <td>${i+1}</td>
           <td>
@@ -714,12 +715,18 @@
         const phoneMap = buildPhoneMap(members);
         
         // Debug: ตรวจสอบข้อมูลที่ได้รับ
-        console.log('Pairing Data:', pairingData);
+        console.log('=== DEBUG INFO ===');
+        console.log('Pairing Data Length:', pairingData.pairing?.length);
         console.log('Pairing Headers:', pairingData.pairing?.[0]);
         console.log('First Pairing Row:', pairingData.pairing?.[1]);
-        console.log('Standings Data:', pairingData.standings);
+        console.log('Standings Data Length:', pairingData.standings?.length);
         console.log('Standings Headers:', pairingData.standings?.[0]);
         console.log('First Standings Row:', pairingData.standings?.[1]);
+        console.log('Win Rate Type:', typeof pairingData.standings?.[1]?.[8]);
+        console.log('OW Type:', typeof pairingData.standings?.[1]?.[9]);
+        console.log('Win Rate Value:', pairingData.standings?.[1]?.[8]);
+        console.log('OW Value:', pairingData.standings?.[1]?.[9]);
+        console.log('==================');
         // ตรวจสอบว่าข้อมูล pairing มีข้อมูลหรือไม่
         if (pairingData.pairing && pairingData.pairing.length > 1) {
           renderPairing(pairingData.pairing, pairingData.players, phoneMap);
@@ -733,7 +740,9 @@
           console.log('Processing standings data...');
           // แปลงข้อมูลจาก Google Sheet เป็นรูปแบบที่ต้องการ
           standings = pairingData.standings.slice(1).map((row, index) => {
-            console.log(`Row ${index + 1}:`, row);
+            console.log(`Processing Standings Row ${index + 1}:`, row);
+            console.log(`  Win Rate (row[8]): ${row[8]} (type: ${typeof row[8]})`);
+            console.log(`  OW% (row[9]): ${row[9]} (type: ${typeof row[9]})`);
             // ตามโครงสร้าง Google Sheet: A=Rank, B=PlayerID, C=PlayerName, D=Played, E=Win, F=Draw, G=Loss, H=Points, I=WinRate, J=OW%
             const playerId = row[1]; // B: Player ID
             const playerName = row[2]; // C: Player Name
@@ -742,9 +751,17 @@
             const draw = parseInt(row[5]) || 0; // F: Draw
             const loss = parseInt(row[6]) || 0; // G: Loss
             const points = parseFloat(row[7]) || 0; // H: Points
-            // ข้อมูล Win Rate และ OW% จาก Google Sheet มี % อยู่แล้ว
-            const winRate = row[8] || '0%'; // I: Win Rate (มี % อยู่แล้ว)
-            const ow = row[9] || '0%'; // J: OW% (มี % อยู่แล้ว)
+            // ข้อมูล Win Rate และ OW% จาก Google Sheet
+            let winRate = row[8] || '0%';
+            let ow = row[9] || '0%';
+            
+            // ถ้าเป็นตัวเลข ให้แปลงเป็นเปอร์เซ็นต์
+            if (typeof winRate === 'number') {
+              winRate = winRate + '%';
+            }
+            if (typeof ow === 'number') {
+              ow = ow + '%';
+            }
             
             // หา codename และ rank จาก phoneMap
             const p1Tel = getTelById(pairingData.players, playerId);
