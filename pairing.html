@@ -509,7 +509,7 @@
           let p2DisplayName = ''; // <-- fix: always define p2DisplayName
           
           // จัดการ BYE
-          if (row[7] === 'BYE') {
+          if (row[8] === 'BYE') { // P2_ID อยู่ที่ index 8
             p1Class += ' player-bg-win';
             p2Class += ' player-bg-win';
             resultDisplay = '<span style="color:#059669;font-weight:600;">BYE</span>';

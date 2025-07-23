@@ -48,15 +48,28 @@ function pairFirstRound() {
     pairingSheet.getRange(2, 1, pairingSheet.getLastRow() - 1, pairingSheet.getLastColumn()).clearContent();
   }
 
-  // ดึงข้อมูลผู้เล่นจากชีท Pairing (คอลัมน์ A, B, C)
-  const playersData = pairingSheet.getRange(2, 1, pairingSheet.getLastRow() - 1, 3).getValues();
+  // ดึงข้อมูลผู้เล่นจากชีท Players
+  const playersSheet = ss.getSheetByName('Players');
+  
+  // ตรวจสอบว่าชีท Players มีข้อมูลหรือไม่
+  if (playersSheet.getLastRow() <= 1) {
+    SpreadsheetApp.getUi().alert('❌ ไม่พบข้อมูลผู้เล่น', 'กรุณาเพิ่มข้อมูลผู้เล่นในชีท Players ก่อน');
+    return;
+  }
+  
+  const playersData = playersSheet.getRange(2, 1, playersSheet.getLastRow() - 1, 3).getValues();
   const dropList = pairingSheet.getRange('M2:M').getValues().flat().filter(name => name);
 
   // กรองเฉพาะคนที่ไม่อยู่ใน Drop และตรวจสอบข้อมูล
   const activePlayers = playersData.filter(row => row[0] && row[1] && row[2] && !dropList.includes(row[1]));
 
+  // Debug: แสดงข้อมูลที่ดึงมา
+  console.log('Players Data:', playersData);
+  console.log('Active Players:', activePlayers);
+  console.log('Drop List:', dropList);
+
   if (activePlayers.length < 2) {
-    SpreadsheetApp.getUi().alert('ไม่สามารถจับคู่ได้ – ผู้เล่นน้อยเกินไป (ต้องมีอย่างน้อย 2 คน)');
+    SpreadsheetApp.getUi().alert('ไม่สามารถจับคู่ได้ – ผู้เล่นน้อยเกินไป (ต้องมีอย่างน้อย 2 คน)\n\nข้อมูลที่พบ: ' + playersData.length + ' คน\nผู้เล่นที่ใช้งานได้: ' + activePlayers.length + ' คน');
     return;
   }
 
@@ -170,7 +183,7 @@ function pairNextRound() {
   // คนที่เคยได้บาย
   const allPairingData = pairingSheet.getDataRange().getValues();
   const byeList = allPairingData
-    .filter(r => r[9] === 'BYE') // PLAYER 2 เป็น BYE (คอลัมน์ J)
+    .filter(r => r[8] === 'BYE') // P2_ID เป็น BYE (คอลัมน์ I)
     .map(r => r[2]); // P1_ID ที่ได้บาย
 
   // ดึง standings ที่ update ล่าสุด
