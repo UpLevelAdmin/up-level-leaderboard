@@ -2956,15 +2956,15 @@ function getGymStandingData() {
     .setMimeType(ContentService.MimeType.JSON);
 }
 
-// 🔍 ตรวจสอบสมาชิกที่ตกหล่น (Form Responses 1 → Member Dashboard)
+// 🔍 ตรวจสอบสมาชิกที่ตกหล่น (Member Database → Member Dashboard)
 function checkMissingMembers() {
   const ui = SpreadsheetApp.getUi();
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const formSheet = ss.getSheetByName("Form Responses 1");
+  const formSheet = ss.getSheetByName("Member Database");
   const dashSheet = ss.getSheetByName("Member Dashboard");
   
   if (!formSheet || !dashSheet) {
-    return ui.alert("❌ ไม่พบชีท Form Responses 1 หรือ Member Dashboard");
+    return ui.alert("❌ ไม่พบชีท Member Database หรือ Member Dashboard");
   }
   
   const formData = formSheet.getDataRange().getValues();
@@ -3107,11 +3107,11 @@ function addMissingMembers(missingMembers) {
 // 🔔 แจ้งเตือนสมาชิกที่ตกหล่นผ่านอีเมล
 function notifyMissingMembers() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const formSheet = ss.getSheetByName("Form Responses 1");
+  const formSheet = ss.getSheetByName("Member Database");
   const dashSheet = ss.getSheetByName("Member Dashboard");
   
   if (!formSheet || !dashSheet) {
-    Logger.log("ไม่พบชีท Form Responses 1 หรือ Member Dashboard");
+    Logger.log("ไม่พบชีท Member Database หรือ Member Dashboard");
     return;
   }
   
