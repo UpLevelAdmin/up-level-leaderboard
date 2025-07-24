@@ -910,9 +910,13 @@ function manualAddExp() {
   const ui = SpreadsheetApp.getUi();
   const dashSheet = ss.getSheetByName("Member Dashboard");
   const logSheet = ss.getSheetByName("EXP Log");
+  
+  // 1. กรอกชื่อแอดมิน
   const adminPrompt = ui.prompt("ชื่อแอดมิน", "กรุณากรอกชื่อแอดมิน (สำหรับบันทึก log)", ui.ButtonSet.OK_CANCEL);
   if (adminPrompt.getSelectedButton() !== ui.Button.OK) return;
   const admin = adminPrompt.getResponseText().trim();
+  
+  // 2. กรอกเบอร์โทร
   const phonePrompt = ui.prompt("เพิ่ม EXP", "กรอกเบอร์โทร", ui.ButtonSet.OK_CANCEL);
   if (phonePrompt.getSelectedButton() !== ui.Button.OK) return;
   const phone = normalizePhone(phonePrompt.getResponseText().trim());
@@ -923,28 +927,36 @@ function manualAddExp() {
 
   const codename = dashData[memberIndex][2];
 
+  // 3. กรอกจำนวน EXP
   const expPrompt = ui.prompt("เพิ่ม EXP", `กรอกจำนวน EXP สำหรับ ${codename}`, ui.ButtonSet.OK_CANCEL);
   if (expPrompt.getSelectedButton() !== ui.Button.OK) return;
   const exp = Number(expPrompt.getResponseText().trim());
   if (isNaN(exp)) return ui.alert("❌ กรอกจำนวน EXP ไม่ถูกต้อง");
 
+  // 4. กรอกชื่อกิจกรรม
+  const activityPrompt = ui.prompt("ชื่อกิจกรรม", `กรอกชื่อกิจกรรมหรือเหตุผลสำหรับ ${codename}`, ui.ButtonSet.OK_CANCEL);
+  if (activityPrompt.getSelectedButton() !== ui.Button.OK) return;
+  const activity = activityPrompt.getResponseText().trim();
+  if (!activity) return ui.alert("❌ กรุณากรอกชื่อกิจกรรม");
+
+  // --- ยืนยันก่อนดำเนินการ ---
+  let summary = `คุณกำลังจะเพิ่ม EXP แบบ manual ให้กับ:\n\n- ${codename} (${phone})\n- จำนวน EXP: ${exp}\n- กิจกรรม: ${activity}`;
+  const confirm = ui.alert("ยืนยันการเพิ่ม EXP (Manual)", summary + "\n\nต้องการดำเนินการต่อหรือไม่?", ui.ButtonSet.YES_NO);
+  if (confirm !== ui.Button.YES) return;
+
+  // 5. ดำเนินการเพิ่ม EXP
   const currentExp = Number(dashData[memberIndex][4]);
   dashSheet.getRange(memberIndex + 1, 5).setValue(currentExp + exp);
 
-  // ✅ log EXP ด้วย format เบอร์
+  // 6. บันทึก log
   const row = logSheet.getLastRow() + 1;
-  logSheet.getRange(row, 1, 1, 5).setValues([[phone, codename, new Date(), "เพิ่มด้วยตนเอง", exp]]);
+  logSheet.getRange(row, 1, 1, 5).setValues([[phone, codename, new Date(), activity, exp]]);
   logSheet.getRange(row, 1).setNumberFormat("@");
 
-  ui.alert(`✅ เพิ่ม ${exp} EXP ให้ ${codename} แล้ว`);
-  logAdminAction("เพิ่ม EXP (Manual)", `ให้ ${codename} (${phone}) +${exp}`, admin);
+  ui.alert(`✅ เพิ่ม ${exp} EXP ให้ ${codename} แล้ว\nกิจกรรม: ${activity}`);
+  logAdminAction("เพิ่ม EXP (Manual)", `ให้ ${codename} (${phone}) +${exp} | ${activity}`, admin);
   updateRanks();
   updateLeaderboard();
-
-  // --- ยืนยันก่อนดำเนินการ ---
-  let summary = `คุณกำลังจะเพิ่ม EXP แบบ manual ให้กับ:\n\n- ${codename} (${phone})\nEXP: ${exp}`;
-  const confirm = ui.alert("ยืนยันการเพิ่ม EXP (Manual)", summary + "\n\nต้องการดำเนินการต่อหรือไม่?", ui.ButtonSet.YES_NO);
-  if (confirm !== ui.Button.YES) return;
 }
 
 
@@ -955,11 +967,13 @@ function manualAddPartyPoint() {
   const dashSheet = ss.getSheetByName("Member Dashboard");
   const partySheet = ss.getSheetByName("Party");
   const partyLogSheet = ss.getSheetByName("Party Log");
+  
+  // 1. กรอกชื่อแอดมิน
   const adminPrompt = ui.prompt("ชื่อแอดมิน", "กรุณากรอกชื่อแอดมิน (สำหรับบันทึก log)", ui.ButtonSet.OK_CANCEL);
   if (adminPrompt.getSelectedButton() !== ui.Button.OK) return;
   const admin = adminPrompt.getResponseText().trim();
 
-
+  // 2. กรอกเบอร์สมาชิก
   const phonePrompt = ui.prompt("เพิ่ม Party Point", "กรอกเบอร์สมาชิก", ui.ButtonSet.OK_CANCEL);
   if (phonePrompt.getSelectedButton() !== ui.Button.OK) return;
   const phone = normalizePhone(phonePrompt.getResponseText().trim());
@@ -972,15 +986,24 @@ function manualAddPartyPoint() {
   const partyName = dashData[memberIndex][5];
   if (!partyName) return ui.alert("❌ สมาชิกนี้ไม่ได้อยู่ในปาร์ตี้");
 
+  // 3. กรอกจำนวน Party Point
   const pointPrompt = ui.prompt("จำนวน Party Point", `จะเพิ่มให้ปาร์ตี้ ${partyName} กี่แต้ม?`, ui.ButtonSet.OK_CANCEL);
   if (pointPrompt.getSelectedButton() !== ui.Button.OK) return;
   const point = Number(pointPrompt.getResponseText().trim());
   if (isNaN(point)) return ui.alert("❌ กรอกจำนวนแต้มไม่ถูกต้อง");
 
-  const reasonPrompt = ui.prompt("ระบุเหตุผล", "กรอกคำอธิบายหรือชื่อกิจกรรม", ui.ButtonSet.OK_CANCEL);
-  if (reasonPrompt.getSelectedButton() !== ui.Button.OK) return;
-  const reason = reasonPrompt.getResponseText().trim();
+  // 4. กรอกชื่อกิจกรรม
+  const activityPrompt = ui.prompt("ชื่อกิจกรรม", `กรอกชื่อกิจกรรมหรือเหตุผลสำหรับปาร์ตี้ ${partyName}`, ui.ButtonSet.OK_CANCEL);
+  if (activityPrompt.getSelectedButton() !== ui.Button.OK) return;
+  const activity = activityPrompt.getResponseText().trim();
+  if (!activity) return ui.alert("❌ กรุณากรอกชื่อกิจกรรม");
 
+  // --- ยืนยันก่อนดำเนินการ ---
+  let summary = `คุณกำลังจะเพิ่ม Party Point แบบ manual ให้กับ:\n\n- ปาร์ตี้: ${partyName}\n- สมาชิก: ${codename} (${phone})\n- จำนวน: ${point}\n- กิจกรรม: ${activity}`;
+  const confirm = ui.alert("ยืนยันการเพิ่ม Party Point (Manual)", summary + "\n\nต้องการดำเนินการต่อหรือไม่?", ui.ButtonSet.YES_NO);
+  if (confirm !== ui.Button.YES) return;
+
+  // 5. ดำเนินการเพิ่ม Party Point
   const partyData = partySheet.getDataRange().getValues();
   const partyIndex = partyData.findIndex(row => row[0] === partyName);
   if (partyIndex === -1) return ui.alert("❌ ไม่พบปาร์ตี้นี้ในระบบ");
@@ -988,20 +1011,15 @@ function manualAddPartyPoint() {
   const currentPoint = Number(partyData[partyIndex][2]);
   partySheet.getRange(partyIndex + 1, 3).setValue(currentPoint + point);
 
-  // ✅ log ลง Party Log ด้วย setValues + setNumberFormat
+  // 6. บันทึก log
   const row = partyLogSheet.getLastRow() + 1;
   partyLogSheet.getRange(row, 1, 1, 6).setValues([
-    [new Date(), partyName, codename, reason, point, "เพิ่มด้วยตนเอง"]
+    [new Date(), partyName, codename, activity, point, "เพิ่มด้วยตนเอง"]
   ]);
   partyLogSheet.getRange(row, 3).setNumberFormat("@");
 
-  logAdminAction("เพิ่ม Party Point", `ให้ปาร์ตี้ ${partyName} +${point} (${codename}) | ${reason}`, admin);
-  ui.alert(`✅ เพิ่ม Party Point สำเร็จให้ปาร์ตี้ ${partyName}`);
-
-  // --- ยืนยันก่อนดำเนินการ ---
-  let summary = `คุณกำลังจะเพิ่ม Party Point แบบ manual ให้กับ:\n\n- ปาร์ตี้: ${partyName}\n- สมาชิก: ${codename} (${phone})\n- จำนวน: ${point}\n- เหตุผล: ${reason}`;
-  const confirm = ui.alert("ยืนยันการเพิ่ม Party Point (Manual)", summary + "\n\nต้องการดำเนินการต่อหรือไม่?", ui.ButtonSet.YES_NO);
-  if (confirm !== ui.Button.YES) return;
+  logAdminAction("เพิ่ม Party Point", `ให้ปาร์ตี้ ${partyName} +${point} (${codename}) | ${activity}`, admin);
+  ui.alert(`✅ เพิ่ม Party Point สำเร็จให้ปาร์ตี้ ${partyName}\nกิจกรรม: ${activity}`);
 }
 
 
