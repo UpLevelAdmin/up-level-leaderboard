@@ -2867,6 +2867,33 @@ function recordPartyChallengeResult() {
   addPartyPoint(partyA, partyPointPerTeam, `เข้าร่วม Party Challenge`);
   addPartyPoint(partyB, partyPointPerTeam, `เข้าร่วม Party Challenge`);
 
+  // ✅ ให้ EXP สมาชิกทุกคนที่เข้าร่วม Party Challenge
+  function giveExpToPartyMembers(partyName, expAmount, note) {
+    const dashSheet = ss.getSheetByName("Member Dashboard");
+    const expLogSheet = ss.getSheetByName("EXP Log");
+    const dashData = dashSheet.getDataRange().getValues();
+    
+    // หาสมาชิกทั้งหมดในปาร์ตี้
+    const partyMembers = dashData.slice(1).filter(row => row[5] === partyName);
+    
+    partyMembers.forEach(member => {
+      const phone = normalizePhone(member[1]);
+      const codename = member[2];
+      
+      // บันทึก EXP Log
+      expLogSheet.appendRow([phone, codename, new Date(), note, expAmount]);
+      expLogSheet.getRange(expLogSheet.getLastRow(), 1).setNumberFormat("@");
+    });
+  }
+  
+  // ให้ EXP สมาชิกทั้งสองทีม
+  giveExpToPartyMembers(partyA, 1, `เข้าร่วม Party Challenge`);
+  giveExpToPartyMembers(partyB, 1, `เข้าร่วม Party Challenge`);
+  
+  // อัปเดต ranks และ leaderboard
+  updateRanks();
+  updateLeaderboard();
+
   // เดิมพัน Party Point (ฝั่งแพ้ลบ, ฝั่งชนะบวก, ห้ามติดลบ)
   if (wagerPoint && wagerPoint > 0) {
     const partyData = partySheet.getDataRange().getValues();
@@ -2884,8 +2911,8 @@ function recordPartyChallengeResult() {
     logSheet.appendRow([new Date(), winner, winner, `ได้ Party Point เดิมพัน`, actualLost, `บันทึกผล Party Challenge (${admin})`]);
   }
 
-  logAdminAction("บันทึกผล Party Challenge", `ผล: ${winner} ชนะ ${loser} | Party Point: +${partyPointPerTeam} | เดิมพัน: ${wagerPoint || 0}` , admin);
-  ui.alert(`✅ บันทึกผลสำเร็จ: ${winner} ชนะ\n+${partyPointPerTeam} Party Point ทั้งสองทีม${wagerPoint ? `\nเดิมพัน Party Point: ${wagerPoint}` : ""}`);
+  logAdminAction("บันทึกผล Party Challenge", `ผล: ${winner} ชนะ ${loser} | EXP: +1 ทั้งสองทีม | Party Point: +${partyPointPerTeam} | เดิมพัน: ${wagerPoint || 0}` , admin);
+  ui.alert(`✅ บันทึกผลสำเร็จ: ${winner} ชนะ\n+1 EXP สมาชิกทั้งสองทีม\n+${partyPointPerTeam} Party Point ทั้งสองทีม${wagerPoint ? `\nเดิมพัน Party Point: ${wagerPoint}` : ""}`);
 }
 
 function getMemberDashboardData() {
