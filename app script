@@ -2989,11 +2989,10 @@ function checkMissingMembers() {
     
     // ตรวจสอบว่าข้อมูลใดมีใน Member Dashboard หรือไม่
     const hasPhone = dashPhones.includes(formPhone);
-    const hasNickname = dashNicknames.includes(formNickname);
     const hasCodename = dashCodenames.includes(formCodename);
     
-    // ถ้าไม่มีทั้ง 3 อย่าง = ตกหล่น
-    if (!hasPhone && !hasNickname && !hasCodename) {
+    // ถ้าไม่มีเบอร์โทรและไม่มี Codename = ตกหล่น (ชื่อเล่นซ้ำได้)
+    if (!hasPhone && !hasCodename) {
       missingMembers.push({
         row: i + 1,
         fullName: formRow[1],
@@ -3005,7 +3004,6 @@ function checkMissingMembers() {
         timestamp: formRow[0],
         matchStatus: {
           phone: hasPhone,
-          nickname: hasNickname,
           codename: hasCodename
         }
       });
@@ -3023,7 +3021,7 @@ function checkMissingMembers() {
     message += `   เบอร์: ${member.phone}\n`;
     message += `   ประเภท: ${member.memberType}\n`;
     message += `   วันที่สมัคร: ${member.timestamp}\n`;
-    message += `   สถานะการจับคู่: เบอร์(${member.matchStatus.phone ? '✅' : '❌'}) ชื่อเล่น(${member.matchStatus.nickname ? '✅' : '❌'}) Codename(${member.matchStatus.codename ? '✅' : '❌'})\n\n`;
+    message += `   สถานะการจับคู่: เบอร์(${member.matchStatus.phone ? '✅' : '❌'}) Codename(${member.matchStatus.codename ? '✅' : '❌'})\n\n`;
   });
   
   message += "ต้องการเพิ่มสมาชิกเหล่านี้เข้า Member Dashboard หรือไม่?";
@@ -3135,7 +3133,6 @@ function notifyMissingMembers() {
   
   // ดึงข้อมูลจาก Member Dashboard
   const dashPhones = dashData.slice(1).map(row => normalizePhone(row[1]));
-  const dashNicknames = dashData.slice(1).map(row => String(row[0]).toLowerCase().trim());
   const dashCodenames = dashData.slice(1).map(row => String(row[2]).toLowerCase().trim());
   
   // ตรวจสอบสมาชิกที่ตกหล่น
@@ -3144,17 +3141,15 @@ function notifyMissingMembers() {
   for (let i = 1; i < formData.length; i++) {
     const formRow = formData[i];
     const formPhone = normalizePhone(formRow[3]);
-    const formNickname = String(formRow[2]).toLowerCase().trim();
     const formCodename = String(formRow[4]).toLowerCase().trim();
     
     if (formPhone && formPhone.length === 10) {
       // ตรวจสอบว่าข้อมูลใดมีใน Member Dashboard หรือไม่
       const hasPhone = dashPhones.includes(formPhone);
-      const hasNickname = dashNicknames.includes(formNickname);
       const hasCodename = dashCodenames.includes(formCodename);
       
-      // ถ้าไม่มีทั้ง 3 อย่าง = ตกหล่น
-      if (!hasPhone && !hasNickname && !hasCodename) {
+      // ถ้าไม่มีเบอร์โทรและไม่มี Codename = ตกหล่น (ชื่อเล่นซ้ำได้)
+      if (!hasPhone && !hasCodename) {
         missingMembers.push({
           fullName: formRow[1],
           nickname: formRow[2],
@@ -3164,7 +3159,6 @@ function notifyMissingMembers() {
           timestamp: formRow[0],
           matchStatus: {
             phone: hasPhone,
-            nickname: hasNickname,
             codename: hasCodename
           }
         });
