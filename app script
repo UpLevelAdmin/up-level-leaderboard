@@ -3258,3 +3258,420 @@ function setupMissingMembersTrigger() {
   
   Logger.log("ตั้งค่า Trigger สำหรับตรวจสอบสมาชิกที่ตกหล่นสำเร็จ (ทุกวันเวลา 9:00 น.)");
 }
+
+// 🏆 Round Robin Tournament Functions
+// สร้างการแข่งขันแบบพบกันหมด (ทุกคนเจอกันหมด)
+
+// 🔄 สร้าง Round Robin Tournament
+function createRoundRobinTournament() {
+  const ui = SpreadsheetApp.getUi();
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const playersSheet = ss.getSheetByName("Players");
+  const roundRobinSheet = ss.getSheetByName("Round Robin");
+  
+  if (!playersSheet || !roundRobinSheet) {
+    return ui.alert("❌ ไม่พบชีท Players หรือ Round Robin");
+  }
+  
+  // ดึงข้อมูลผู้เล่น
+  const playersData = playersSheet.getDataRange().getValues();
+  const headers = playersData[0];
+  
+  // หาคอลัมน์ที่ต้องการ
+  const idCol = headers.indexOf("Player ID");
+  const nameCol = headers.indexOf("Player Name");
+  const rankCol = headers.indexOf("Rank");
+  
+  if (idCol === -1 || nameCol === -1) {
+    return ui.alert("❌ ไม่พบคอลัมน์ Player ID หรือ Player Name ในชีท Players");
+  }
+  
+  // ดึงรายชื่อผู้เล่นที่ active
+  const activePlayers = playersData.slice(1).filter(row => {
+    const playerName = String(row[nameCol]).trim();
+    return playerName && playerName !== "" && playerName !== "BYE";
+  });
+  
+  if (activePlayers.length < 2) {
+    return ui.alert("❌ ต้องมีผู้เล่นอย่างน้อย 2 คน");
+  }
+  
+  // คำนวณจำนวนรอบ
+  const playerCount = activePlayers.length;
+  const totalRounds = playerCount - 1;
+  const matchesPerRound = Math.floor(playerCount / 2);
+  
+  // สร้าง Round Robin Schedule
+  const schedule = generateRoundRobinSchedule(activePlayers, idCol, nameCol);
+  
+  // ล้างข้อมูลเก่าในชีท Round Robin
+  roundRobinSheet.clearContents();
+  
+  // สร้าง Headers
+  const roundRobinHeaders = [
+    "ROUND", "MATCH", "P1_ID", "PLAYER 1", "P1_RANK", 
+    "WIN_P1", "DRAW", "WIN_P2", "Double Loss",
+    "P2_ID", "PLAYER 2", "P2_RANK", "RESULT", "STATUS"
+  ];
+  
+  roundRobinSheet.getRange(1, 1, 1, roundRobinHeaders.length).setValues([roundRobinHeaders]);
+  
+  // ตั้งค่าฟอร์แมท Headers
+  const headerRange = roundRobinSheet.getRange(1, 1, 1, roundRobinHeaders.length);
+  headerRange.setBackground("#4285f4");
+  headerRange.setFontColor("white");
+  headerRange.setFontWeight("bold");
+  headerRange.setHorizontalAlignment("center");
+  
+  // เขียนข้อมูลการแข่งขัน
+  let currentRow = 2;
+  
+  schedule.forEach((round, roundIndex) => {
+    round.forEach((match, matchIndex) => {
+      const rowData = [
+        roundIndex + 1, // ROUND
+        matchIndex + 1, // MATCH
+        match.player1.id, // P1_ID
+        match.player1.name, // PLAYER 1
+        match.player1.rank || "", // P1_RANK
+        false, // WIN_P1 (checkbox)
+        false, // DRAW (checkbox)
+        false, // WIN_P2 (checkbox)
+        false, // Double Loss (checkbox)
+        match.player2.id, // P2_ID
+        match.player2.name, // PLAYER 2
+        match.player2.rank || "", // P2_RANK
+        "", // RESULT
+        "" // STATUS
+      ];
+      
+      roundRobinSheet.getRange(currentRow, 1, 1, rowData.length).setValues([rowData]);
+      
+      // ตั้งค่า checkboxes
+      roundRobinSheet.getRange(currentRow, 6, 1, 4).insertCheckboxes();
+      
+      // ตั้งค่าฟอร์แมท
+      const rowRange = roundRobinSheet.getRange(currentRow, 1, 1, rowData.length);
+      rowRange.setBorder(true, true, true, true, true, true);
+      
+      // สีสลับแถว
+      if (roundIndex % 2 === 0) {
+        rowRange.setBackground("#f8f9fa");
+      }
+      
+      currentRow++;
+    });
+  });
+  
+  // ตั้งค่าความกว้างคอลัมน์
+  roundRobinSheet.setColumnWidth(1, 60); // ROUND
+  roundRobinSheet.setColumnWidth(2, 60); // MATCH
+  roundRobinSheet.setColumnWidth(3, 80); // P1_ID
+  roundRobinSheet.setColumnWidth(4, 120); // PLAYER 1
+  roundRobinSheet.setColumnWidth(5, 80); // P1_RANK
+  roundRobinSheet.setColumnWidth(6, 60); // WIN_P1
+  roundRobinSheet.setColumnWidth(7, 60); // DRAW
+  roundRobinSheet.setColumnWidth(8, 60); // WIN_P2
+  roundRobinSheet.setColumnWidth(9, 80); // Double Loss
+  roundRobinSheet.setColumnWidth(10, 80); // P2_ID
+  roundRobinSheet.setColumnWidth(11, 120); // PLAYER 2
+  roundRobinSheet.setColumnWidth(12, 80); // P2_RANK
+  roundRobinSheet.setColumnWidth(13, 80); // RESULT
+  roundRobinSheet.setColumnWidth(14, 80); // STATUS
+  
+  // สร้างสรุป
+  const summary = `
+🏆 Round Robin Tournament สร้างสำเร็จ!
+
+📊 สถิติ:
+• จำนวนผู้เล่น: ${playerCount} คน
+• จำนวนรอบ: ${totalRounds} รอบ
+• จำนวนแมตช์ต่อรอบ: ${matchesPerRound} แมตช์
+• จำนวนแมตช์ทั้งหมด: ${totalRounds * matchesPerRound} แมตช์
+
+📋 วิธีใช้งาน:
+1. ไปที่ชีท "Round Robin"
+2. กรอกผลการแข่งขันโดยใช้ checkboxes
+3. ระบบจะอัปเดตผลและสถานะอัตโนมัติ
+4. ดูผลรวมได้ที่ชีท "Round Robin Standing"
+
+🎯 หมายเหตุ: การแข่งขันแบบ Round Robin จะให้ผู้เล่นทุกคนเจอกันหมด
+  `;
+  
+  ui.alert("Round Robin Tournament", summary);
+}
+
+// 🔄 สร้างตารางการแข่งขัน Round Robin
+function generateRoundRobinSchedule(players, idCol, nameCol) {
+  const playerCount = players.length;
+  const schedule = [];
+  
+  // ถ้าจำนวนผู้เล่นเป็นคี่ ให้เพิ่ม BYE
+  let playerList = [...players];
+  if (playerCount % 2 === 1) {
+    playerList.push({
+      [idCol]: "BYE",
+      [nameCol]: "BYE",
+      rank: ""
+    });
+  }
+  
+  const n = playerList.length;
+  const rounds = n - 1;
+  const halfSize = n / 2;
+  
+  for (let round = 0; round < rounds; round++) {
+    const roundMatches = [];
+    
+    for (let i = 0; i < halfSize; i++) {
+      const player1Index = i;
+      const player2Index = n - 1 - i;
+      
+      // ข้ามถ้าเป็น BYE
+      if (playerList[player1Index][nameCol] === "BYE" || playerList[player2Index][nameCol] === "BYE") {
+        continue;
+      }
+      
+      roundMatches.push({
+        player1: {
+          id: playerList[player1Index][idCol],
+          name: playerList[player1Index][nameCol],
+          rank: playerList[player1Index].rank || ""
+        },
+        player2: {
+          id: playerList[player2Index][idCol],
+          name: playerList[player2Index][nameCol],
+          rank: playerList[player2Index].rank || ""
+        }
+      });
+    }
+    
+    schedule.push(roundMatches);
+    
+    // หมุนรายชื่อ (Berger Table)
+    const lastPlayer = playerList.pop();
+    playerList.splice(1, 0, lastPlayer);
+  }
+  
+  return schedule;
+}
+
+// 📊 อัปเดตผลการแข่งขัน Round Robin
+function updateRoundRobinResults() {
+  const ui = SpreadsheetApp.getUi();
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const roundRobinSheet = ss.getSheetByName("Round Robin");
+  
+  if (!roundRobinSheet) {
+    return ui.alert("❌ ไม่พบชีท Round Robin");
+  }
+  
+  const data = roundRobinSheet.getDataRange().getValues();
+  const headers = data[0];
+  
+  // หาคอลัมน์ที่ต้องการ
+  const winP1Col = headers.indexOf("WIN_P1");
+  const drawCol = headers.indexOf("DRAW");
+  const winP2Col = headers.indexOf("WIN_P2");
+  const doubleLossCol = headers.indexOf("Double Loss");
+  const resultCol = headers.indexOf("RESULT");
+  const statusCol = headers.indexOf("STATUS");
+  
+  let updatedCount = 0;
+  
+  // ตรวจสอบแต่ละแถว
+  for (let i = 1; i < data.length; i++) {
+    const row = data[i];
+    const winP1 = row[winP1Col];
+    const draw = row[drawCol];
+    const winP2 = row[winP2Col];
+    const doubleLoss = row[doubleLossCol];
+    
+    let result = "";
+    let status = "";
+    
+    // ตรวจสอบผลการแข่งขัน
+    if (winP1) {
+      result = "1:0";
+      status = "OK";
+    } else if (winP2) {
+      result = "0:1";
+      status = "OK";
+    } else if (draw) {
+      result = "1:1";
+      status = "OK";
+    } else if (doubleLoss) {
+      result = "0:0";
+      status = "OK";
+    } else {
+      result = "";
+      status = "";
+    }
+    
+    // อัปเดตผลและสถานะ
+    roundRobinSheet.getRange(i + 1, resultCol + 1).setValue(result);
+    roundRobinSheet.getRange(i + 1, statusCol + 1).setValue(status);
+    
+    if (result !== "") {
+      updatedCount++;
+    }
+  }
+  
+  ui.alert(`✅ อัปเดตผลการแข่งขันสำเร็จ\n\n📊 สถิติ:\n• แมตช์ที่มีผล: ${updatedCount} แมตช์\n• แมตช์ที่ยังไม่มีผล: ${data.length - 1 - updatedCount} แมตช์`);
+}
+
+// 🏆 สร้างสรุปผล Round Robin
+function createRoundRobinStanding() {
+  const ui = SpreadsheetApp.getUi();
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const roundRobinSheet = ss.getSheetByName("Round Robin");
+  const standingSheet = ss.getSheetByName("Round Robin Standing");
+  
+  if (!roundRobinSheet || !standingSheet) {
+    return ui.alert("❌ ไม่พบชีท Round Robin หรือ Round Robin Standing");
+  }
+  
+  const data = roundRobinSheet.getDataRange().getValues();
+  const headers = data[0];
+  
+  // หาคอลัมน์ที่ต้องการ
+  const p1IdCol = headers.indexOf("P1_ID");
+  const p1NameCol = headers.indexOf("PLAYER 1");
+  const p2IdCol = headers.indexOf("P2_ID");
+  const p2NameCol = headers.indexOf("PLAYER 2");
+  const resultCol = headers.indexOf("RESULT");
+  
+  // สร้าง object เก็บสถิติผู้เล่น
+  const playerStats = {};
+  
+  // วิเคราะห์ผลการแข่งขัน
+  for (let i = 1; i < data.length; i++) {
+    const row = data[i];
+    const p1Id = row[p1IdCol];
+    const p1Name = row[p1NameCol];
+    const p2Id = row[p2IdCol];
+    const p2Name = row[p2NameCol];
+    const result = row[resultCol];
+    
+    // ข้ามถ้าไม่มีผล
+    if (!result || result === "") continue;
+    
+    // สร้าง player stats ถ้ายังไม่มี
+    if (!playerStats[p1Id]) {
+      playerStats[p1Id] = {
+        id: p1Id,
+        name: p1Name,
+        wins: 0,
+        draws: 0,
+        losses: 0,
+        points: 0
+      };
+    }
+    
+    if (!playerStats[p2Id]) {
+      playerStats[p2Id] = {
+        id: p2Id,
+        name: p2Name,
+        wins: 0,
+        draws: 0,
+        losses: 0,
+        points: 0
+      };
+    }
+    
+    // คำนวณผลการแข่งขัน
+    if (result === "1:0") {
+      playerStats[p1Id].wins++;
+      playerStats[p1Id].points += 3;
+      playerStats[p2Id].losses++;
+    } else if (result === "0:1") {
+      playerStats[p2Id].wins++;
+      playerStats[p2Id].points += 3;
+      playerStats[p1Id].losses++;
+    } else if (result === "1:1") {
+      playerStats[p1Id].draws++;
+      playerStats[p1Id].points += 1;
+      playerStats[p2Id].draws++;
+      playerStats[p2Id].points += 1;
+    } else if (result === "0:0") {
+      // Double Loss - ไม่ได้คะแนน
+    }
+  }
+  
+  // แปลงเป็น array และเรียงลำดับ
+  const standings = Object.values(playerStats).sort((a, b) => {
+    // เรียงตามคะแนน (มากไปน้อย)
+    if (b.points !== a.points) return b.points - a.points;
+    // ถ้าคะแนนเท่ากัน เรียงตามชนะ (มากไปน้อย)
+    if (b.wins !== a.wins) return b.wins - a.wins;
+    // ถ้าชนะเท่ากัน เรียงตามชื่อ
+    return a.name.localeCompare(b.name);
+  });
+  
+  // ล้างข้อมูลเก่า
+  standingSheet.clearContents();
+  
+  // สร้าง Headers
+  const standingHeaders = [
+    "RANK", "PLAYER ID", "PLAYER NAME", "WINS", "DRAWS", "LOSSES", "POINTS", "WIN RATE"
+  ];
+  
+  standingSheet.getRange(1, 1, 1, standingHeaders.length).setValues([standingHeaders]);
+  
+  // ตั้งค่าฟอร์แมท Headers
+  const headerRange = standingSheet.getRange(1, 1, 1, standingHeaders.length);
+  headerRange.setBackground("#34a853");
+  headerRange.setFontColor("white");
+  headerRange.setFontWeight("bold");
+  headerRange.setHorizontalAlignment("center");
+  
+  // เขียนข้อมูล
+  standings.forEach((player, index) => {
+    const totalGames = player.wins + player.draws + player.losses;
+    const winRate = totalGames > 0 ? ((player.wins / totalGames) * 100).toFixed(1) + "%" : "0%";
+    
+    const rowData = [
+      index + 1, // RANK
+      player.id, // PLAYER ID
+      player.name, // PLAYER NAME
+      player.wins, // WINS
+      player.draws, // DRAWS
+      player.losses, // LOSSES
+      player.points, // POINTS
+      winRate // WIN RATE
+    ];
+    
+    const rowIndex = index + 2;
+    standingSheet.getRange(rowIndex, 1, 1, rowData.length).setValues([rowData]);
+    
+    // ตั้งค่าฟอร์แมท
+    const rowRange = standingSheet.getRange(rowIndex, 1, 1, rowData.length);
+    rowRange.setBorder(true, true, true, true, true, true);
+    
+    // สีสลับแถว
+    if (index % 2 === 0) {
+      rowRange.setBackground("#f8f9fa");
+    }
+    
+    // สีอันดับ 1-3
+    if (index === 0) {
+      rowRange.setBackground("#ffd700"); // ทอง
+    } else if (index === 1) {
+      rowRange.setBackground("#c0c0c0"); // เงิน
+    } else if (index === 2) {
+      rowRange.setBackground("#cd7f32"); // ทองแดง
+    }
+  });
+  
+  // ตั้งค่าความกว้างคอลัมน์
+  standingSheet.setColumnWidth(1, 60); // RANK
+  standingSheet.setColumnWidth(2, 100); // PLAYER ID
+  standingSheet.setColumnWidth(3, 150); // PLAYER NAME
+  standingSheet.setColumnWidth(4, 80); // WINS
+  standingSheet.setColumnWidth(5, 80); // DRAWS
+  standingSheet.setColumnWidth(6, 80); // LOSSES
+  standingSheet.setColumnWidth(7, 80); // POINTS
+  standingSheet.setColumnWidth(8, 100); // WIN RATE
+  
+  ui.alert(`🏆 สร้างสรุปผล Round Robin สำเร็จ!\n\n📊 สถิติ:\n• จำนวนผู้เล่น: ${standings.length} คน\n• ผู้เล่นที่มีผลการแข่งขัน: ${standings.filter(p => p.wins + p.draws + p.losses > 0).length} คน`);
+}

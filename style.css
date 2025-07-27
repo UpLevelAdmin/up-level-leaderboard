@@ -111,3 +111,65 @@ tr:nth-child(even) {
     font-size: 20px;
   }
 }
+
+/* Tournament Tools */
+.tournament-section {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 20px;
+    border-radius: 10px;
+    margin: 20px 0;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.tournament-section h3 {
+    color: white;
+    margin-bottom: 15px;
+    text-align: center;
+    font-size: 1.3em;
+}
+
+.tournament-btn {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.tournament-btn.primary {
+    background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+    color: white;
+}
+
+.tournament-btn.primary:hover {
+    background: linear-gradient(45deg, #ee5a24, #ff6b6b);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(238, 90, 36, 0.4);
+}
+
+.tournament-btn.secondary {
+    background: linear-gradient(45deg, #4834d4, #686de0);
+    color: white;
+}
+
+.tournament-btn.secondary:hover {
+    background: linear-gradient(45deg, #686de0, #4834d4);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(72, 52, 212, 0.4);
+}
+
+.tournament-btn.success {
+    background: linear-gradient(45deg, #00b894, #00cec9);
+    color: white;
+}
+
+.tournament-btn.success:hover {
+    background: linear-gradient(45deg, #00cec9, #00b894);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 184, 148, 0.4);
+}
