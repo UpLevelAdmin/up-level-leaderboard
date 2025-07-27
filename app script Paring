@@ -1,29 +1,48 @@
 function onOpen() {
   const ui = SpreadsheetApp.getUi();
-  ui.createMenu('⚙️ TCG TOOLS')
+  
+  // 🏆 Tournament Management
+  ui.createMenu('🏆 Tournament')
     .addItem('🎲 จับคู่รอบแรก', 'pairFirstRound')
     .addItem('➡️ จับคู่รอบถัดไป', 'pairNextRound')
     .addItem('🔁 อัปเดต Standings', 'updateStandings')
     .addItem('↩️ ย้อนจับคู่รอบล่าสุด', 'undoLastPairing')
     .addSeparator()
+    .addItem('🔄 สร้าง Round Robin', 'createRoundRobinTournament')
+    .addItem('📊 อัปเดตผล Round Robin', 'updateRoundRobinResults')
+    .addItem('🏆 สร้างสรุปผล Round Robin', 'createRoundRobinStanding')
+    .addToUi();
+  
+  // 📊 Analysis & Stats
+  ui.createMenu('📊 Analysis')
     .addItem('🔍 ตรวจสอบการจับคู่', 'showPairingValidation')
     .addItem('📊 สถิติการแข่งขัน', 'showPairingStats')
     .addItem('💡 คำแนะนำการจัดการ', 'showTournamentAdvice')
-    .addSeparator()
-    .addItem('🗑️ ลบตาราง Standings', 'removeStandingsTable')
-    .addItem('🔄 สร้างตาราง Standings ใหม่', 'recreateStandingsTable')
-    .addSeparator()
-    .addItem('🎨 จัดรูปแบบชีท', 'formatPairingSheet')
-    .addItem('✨ ปรับแต่งการแสดงผล', 'improveVisualFormatting')
-    .addItem('🔧 แก้ไขการทับชื่อ', 'fixTextOverlap')
-    .addSeparator()
+    .addItem('📊 แสดง Bracket Pairing', 'showBracketPairing')
+    .addToUi();
+  
+  // 🛠️ Data Management
+  ui.createMenu('🛠️ Data Management')
     .addItem('🧹 เคลียร์ทั้งหมด (เริ่มใหม่)', 'clearAllData')
     .addItem('🆔 สร้าง Player ID อัตโนมัติ', 'generatePlayerIDs')
     .addItem('🔧 แก้ไขการจับคู่ที่มีปัญหา', 'fixIncompletePairing')
     .addItem('🔧 แก้ไข P2_ID ที่ว่าง', 'fixMissingPlayerIDs')
     .addSeparator()
-    .addItem('📊 แสดง Bracket Pairing', 'showBracketPairing')
+    .addItem('🗑️ ลบตาราง Standings', 'removeStandingsTable')
+    .addItem('🔄 สร้างตาราง Standings ใหม่', 'recreateStandingsTable')
+    .addToUi();
+  
+  // 🎨 Formatting & Display
+  ui.createMenu('🎨 Formatting')
+    .addItem('🎨 จัดรูปแบบชีท', 'formatPairingSheet')
+    .addItem('✨ ปรับแต่งการแสดงผล', 'improveVisualFormatting')
+    .addItem('🔧 แก้ไขการทับชื่อ', 'fixTextOverlap')
+    .addToUi();
+  
+  // 🔧 Debug & Maintenance
+  ui.createMenu('🔧 Debug')
     .addItem('🐛 Debug Standings', 'debugStandingsUpdate')
+    .addItem('🔍 ตรวจสอบสมาชิกที่ตกหล่น', 'checkMissingMembers')
     .addToUi();
 }
 
@@ -298,9 +317,9 @@ function pairNextRound() {
           if (playerBrackets[points].length === 0) {
             delete playerBrackets[points];
           }
-          break;
-        }
+        break;
       }
+    }
       if (byePlayer) break;
     }
     
@@ -447,7 +466,7 @@ function pairNextRound() {
         if (i + 1 < currentActivePlayers.length) {
           const p1 = currentActivePlayers[i];
           const p2 = currentActivePlayers[i + 1];
-          paired.push([p1, p2]);
+        paired.push([p1, p2]);
           
           // ตรวจสอบว่าเป็นการจับคู่ซ้ำหรือไม่
           if ((matchHistory[p1] || []).includes(p2)) {
@@ -551,7 +570,7 @@ function pairNextRound() {
     }
     
     try {
-      pairingSheet.getRange(startRow, 1, output.length, output[0].length).setValues(output);
+    pairingSheet.getRange(startRow, 1, output.length, output[0].length).setValues(output);
       addCheckboxes(pairingSheet, output.length);
     } catch (error) {
       SpreadsheetApp.getUi().alert('❌ เกิดข้อผิดพลาดในการบันทึกข้อมูล: ' + error.toString());
@@ -655,7 +674,7 @@ function onEdit(e) {
     if (p2_name === 'BYE') return;
 
   let result = '';
-    let status = '';
+  let status = '';
 
     if (winP1) {
     result = '1:0';
@@ -704,7 +723,7 @@ function onEdit(e) {
     resultCell.setHorizontalAlignment('center');
     
     // อัปเดต standings
-    updateStandings();
+  updateStandings();
     
     // ตรวจสอบว่าการแข่งขันในรอบนี้เสร็จสิ้นหรือไม่ (ลดการแจ้งเตือน)
     const round = sheet.getRange(row, 1).getValue();
@@ -778,13 +797,13 @@ function updateStandings() {
         standings[p1_id].played++;
         standings[p2_id].played++;
 
-        if (result === '1:0') {
+    if (result === '1:0') {
           standings[p1_id].win++;
           standings[p2_id].loss++;
-        } else if (result === '0:1') {
+    } else if (result === '0:1') {
           standings[p1_id].loss++;
           standings[p2_id].win++;
-        } else if (result === '1:1') {
+    } else if (result === '1:1') {
           standings[p1_id].draw++;
           standings[p2_id].draw++;
         } else if (result === '0:0') {
@@ -803,7 +822,7 @@ function updateStandings() {
     
     let totalOpponentWins = 0;
     let totalOpponentGames = 0;
-    
+
     opponents.forEach(opponentId => {
       const opponentStats = standings[opponentId];
       if (opponentStats) {
@@ -1165,7 +1184,7 @@ function fixIncompletePairing() {
       return !problematicRounds.has(row[0]); // keep rows not in problematic rounds
     });
     
-    pairingSheet.clearContents();
+  pairingSheet.clearContents();
     pairingSheet.getRange(1, 1, rowsToKeep.length, data[0].length).setValues(rowsToKeep);
     
     // จับคู่รอบใหม่สำหรับแต่ละรอบที่มีปัญหา
@@ -1614,7 +1633,7 @@ function recreateStandingsTable() {
     standingSheet.clearContents();
     
     // อัปเดตข้อมูลใหม่
-    updateStandings();
+  updateStandings();
     
     SpreadsheetApp.getUi().alert('✅ สร้างตาราง Standings ใหม่เรียบร้อยแล้ว');
   }
