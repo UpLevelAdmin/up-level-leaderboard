@@ -1854,7 +1854,7 @@ function createRoundRobinTournament() {
   const roundRobinSheet = ss.getSheetByName("Round Robin");
   
   if (!playersSheet || !roundRobinSheet) {
-    return ui.alert("❌ ไม่พบชีท Players หรือ Round Robin");
+    return SpreadsheetApp.getUi().alert("❌ ไม่พบชีท Players หรือ Round Robin");
   }
   
   // ดึงข้อมูลผู้เล่น
@@ -1867,7 +1867,7 @@ function createRoundRobinTournament() {
   const rankCol = headers.indexOf("Rank");
   
   if (idCol === -1 || nameCol === -1) {
-    return ui.alert("❌ ไม่พบคอลัมน์ Player_id หรือ Name ในชีท Players");
+    return SpreadsheetApp.getUi().alert("❌ ไม่พบคอลัมน์ Player_id หรือ Name ในชีท Players");
   }
   
   // ดึงรายชื่อผู้เล่นที่ active
@@ -1877,7 +1877,7 @@ function createRoundRobinTournament() {
   });
   
   if (activePlayers.length < 2) {
-    return ui.alert("❌ ต้องมีผู้เล่นอย่างน้อย 2 คน");
+    return SpreadsheetApp.getUi().alert("❌ ต้องมีผู้เล่นอย่างน้อย 2 คน");
   }
   
   // คำนวณจำนวนรอบ
@@ -2047,7 +2047,7 @@ function updateRoundRobinResults() {
   const roundRobinSheet = ss.getSheetByName("Round Robin");
   
   if (!roundRobinSheet) {
-    return ui.alert("❌ ไม่พบชีท Round Robin");
+    return SpreadsheetApp.getUi().alert("❌ ไม่พบชีท Round Robin");
   }
   
   const data = roundRobinSheet.getDataRange().getValues();
@@ -2112,7 +2112,7 @@ function createRoundRobinStanding() {
   const standingSheet = ss.getSheetByName("Round Robin Standing");
   
   if (!roundRobinSheet || !standingSheet) {
-    return ui.alert("❌ ไม่พบชีท Round Robin หรือ Round Robin Standing");
+    return SpreadsheetApp.getUi().alert("❌ ไม่พบชีท Round Robin หรือ Round Robin Standing");
   }
   
   const data = roundRobinSheet.getDataRange().getValues();
