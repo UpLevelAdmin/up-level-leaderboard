@@ -1862,12 +1862,12 @@ function createRoundRobinTournament() {
   const headers = playersData[0];
   
   // หาคอลัมน์ที่ต้องการ
-  const idCol = headers.indexOf("Player ID");
-  const nameCol = headers.indexOf("Player Name");
+  const idCol = headers.indexOf("Player_id");
+  const nameCol = headers.indexOf("Name");
   const rankCol = headers.indexOf("Rank");
   
   if (idCol === -1 || nameCol === -1) {
-    return ui.alert("❌ ไม่พบคอลัมน์ Player ID หรือ Player Name ในชีท Players");
+    return ui.alert("❌ ไม่พบคอลัมน์ Player_id หรือ Name ในชีท Players");
   }
   
   // ดึงรายชื่อผู้เล่นที่ active
