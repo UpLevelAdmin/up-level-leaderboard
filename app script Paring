@@ -641,36 +641,62 @@ function addCheckboxes(sheet, rowCount) {
 
 function onEdit(e) {
   const sheet = e.range.getSheet();
-  if (sheet.getName() !== 'Pairing' || e.range.getRow() < 2) return;
+  const sheetName = sheet.getName();
+  
+  // ตรวจสอบว่าเป็นชีทที่ต้องการหรือไม่
+  if ((sheetName !== 'Pairing' && sheetName !== 'Round Robin') || e.range.getRow() < 2) return;
 
   const row = e.range.getRow();
   const col = e.range.getColumn();
 
-  // Only trigger for the result checkboxes in columns E, F, G, H
-  if (col >= 5 && col <= 8) {
+  // กำหนดคอลัมน์ตามชีท
+  let winP1Col, drawCol, winP2Col, doubleLossCol, p2NameCol, resultCol, statusCol;
+  
+  if (sheetName === 'Pairing') {
+    // Pairing sheet: columns E, F, G, H (5, 6, 7, 8)
+    winP1Col = 5;
+    drawCol = 6;
+    winP2Col = 7;
+    doubleLossCol = 8;
+    p2NameCol = 9;
+    resultCol = 11;
+    statusCol = 12;
+  } else if (sheetName === 'Round Robin') {
+    // Round Robin sheet: columns F, G, H, I (6, 7, 8, 9)
+    winP1Col = 6;
+    drawCol = 7;
+    winP2Col = 8;
+    doubleLossCol = 9;
+    p2NameCol = 11; // PLAYER 2
+    resultCol = 13; // RESULT
+    statusCol = 14; // STATUS
+  }
+  
+  // Only trigger for the result checkboxes
+  if (col >= winP1Col && col <= doubleLossCol) {
     // If a box was checked, uncheck the others in the same row
     if (e.range.getValue() === true) {
-      if (col === 5) { // Win P1
-        sheet.getRange(row, 6, 1, 3).uncheck(); // uncheck F, G, H
-      } else if (col === 6) { // Draw
-        sheet.getRange(row, 5).uncheck(); // uncheck E
-        sheet.getRange(row, 7, 1, 2).uncheck(); // uncheck G, H
-      } else if (col === 7) { // Win P2
-        sheet.getRange(row, 5, 1, 2).uncheck(); // uncheck E, F
-        sheet.getRange(row, 8).uncheck(); // uncheck H
-      } else if (col === 8) { // Double Loss (0:0)
-        sheet.getRange(row, 5, 1, 3).uncheck(); // uncheck E, F, G
+      if (col === winP1Col) { // Win P1
+        sheet.getRange(row, drawCol, 1, 3).uncheck(); // uncheck DRAW, WIN_P2, Double Loss
+      } else if (col === drawCol) { // Draw
+        sheet.getRange(row, winP1Col).uncheck(); // uncheck WIN_P1
+        sheet.getRange(row, winP2Col, 1, 2).uncheck(); // uncheck WIN_P2, Double Loss
+      } else if (col === winP2Col) { // Win P2
+        sheet.getRange(row, winP1Col, 1, 2).uncheck(); // uncheck WIN_P1, DRAW
+        sheet.getRange(row, doubleLossCol).uncheck(); // uncheck Double Loss
+      } else if (col === doubleLossCol) { // Double Loss (0:0)
+        sheet.getRange(row, winP1Col, 1, 3).uncheck(); // uncheck WIN_P1, DRAW, WIN_P2
       }
     }
     
     SpreadsheetApp.flush(); // Ensure sheet updates before reading values
 
-  const winP1 = sheet.getRange(row, 5).getValue();
-  const draw = sheet.getRange(row, 6).getValue();
-  const winP2 = sheet.getRange(row, 7).getValue();
-    const doubleLoss = sheet.getRange(row, 8).getValue();
+    const winP1 = sheet.getRange(row, winP1Col).getValue();
+    const draw = sheet.getRange(row, drawCol).getValue();
+    const winP2 = sheet.getRange(row, winP2Col).getValue();
+    const doubleLoss = sheet.getRange(row, doubleLossCol).getValue();
     
-    const p2_name = sheet.getRange(row, 9).getValue();
+    const p2_name = sheet.getRange(row, p2NameCol).getValue();
     if (p2_name === 'BYE') return;
 
   let result = '';
@@ -694,8 +720,8 @@ function onEdit(e) {
     }
 
     // อัปเดตผลลัพธ์และจัดรูปแบบ
-    const resultCell = sheet.getRange(row, 11);
-    const statusCell = sheet.getRange(row, 12);
+    const resultCell = sheet.getRange(row, resultCol);
+    const statusCell = sheet.getRange(row, statusCol);
     
     resultCell.setValue(result);
     statusCell.setValue(status);
@@ -722,8 +748,10 @@ function onEdit(e) {
     resultCell.setFontSize(12);
     resultCell.setHorizontalAlignment('center');
     
-    // อัปเดต standings
-  updateStandings();
+    // อัปเดต standings (เฉพาะชีท Pairing)
+    if (sheetName === 'Pairing') {
+      updateStandings();
+    }
     
     // ตรวจสอบว่าการแข่งขันในรอบนี้เสร็จสิ้นหรือไม่ (ลดการแจ้งเตือน)
     const round = sheet.getRange(row, 1).getValue();
