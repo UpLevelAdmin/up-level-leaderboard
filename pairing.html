@@ -917,11 +917,15 @@
     }
     
     function getPlayerNameById(players, id) {
+      console.log('getPlayerNameById - Looking for ID:', id, 'in players:', players);
       for (let i = 1; i < players.length; i++) {
+        console.log('getPlayerNameById - Checking row', i, ':', players[i], 'against ID:', id);
         if (String(players[i][0]) === String(id)) {
+          console.log('getPlayerNameById - Found! Name:', players[i][1]);
           return players[i][1]; // Player name
         }
       }
+      console.log('getPlayerNameById - Not found for ID:', id);
       return null;
     }
 
@@ -1165,14 +1169,25 @@
 
       let html = '';
       roundRobin.slice(1).forEach((row, idx) => {
+        console.log('Round Robin Row', idx, ':', row);
         const round = row[0];
         const tableNo = row[1];
-        const p1Tel = getTelById(players, row[2]);
-        const p2Tel = getTelById(players, row[8]);
+        const p1Id = row[2];
+        const p2Id = row[8];
+        console.log('P1 ID:', p1Id, 'P2 ID:', p2Id);
+        
+        const p1Tel = getTelById(players, p1Id);
+        const p2Tel = getTelById(players, p2Id);
+        console.log('P1 Tel:', p1Tel, 'P2 Tel:', p2Tel);
+        
         const p1Phone = p1Tel?.replace(/\D/g,"");
         const p2Phone = p2Tel?.replace(/\D/g,"");
+        console.log('P1 Phone:', p1Phone, 'P2 Phone:', p2Phone);
+        
         const p1Codename = phoneMap[p1Phone]?.codename;
         const p2Codename = phoneMap[p2Phone]?.codename;
+        console.log('P1 Codename:', p1Codename, 'P2 Codename:', p2Codename);
+        
         const p1Rank = phoneMap[p1Phone]?.rank;
         const p2Rank = phoneMap[p2Phone]?.rank;
         
@@ -1211,8 +1226,14 @@
           resultDisplay = 'รอผล';
         }
         
-        const p1DisplayName = p1Codename || getPlayerNameById(players, row[2]) || row[3] || `Player ${row[2]}`;
-        const p2DisplayName = p2Codename || getPlayerNameById(players, row[8]) || row[9] || `Player ${row[8]}`;
+        const p1NameFromPlayers = getPlayerNameById(players, p1Id);
+        const p2NameFromPlayers = getPlayerNameById(players, p2Id);
+        console.log('P1 Name from Players:', p1NameFromPlayers, 'P2 Name from Players:', p2NameFromPlayers);
+        console.log('P1 Name from Row:', row[3], 'P2 Name from Row:', row[9]);
+        
+        const p1DisplayName = p1Codename || p1NameFromPlayers || row[3] || `Player ${p1Id}`;
+        const p2DisplayName = p2Codename || p2NameFromPlayers || row[9] || `Player ${p2Id}`;
+        console.log('Final P1 Display Name:', p1DisplayName, 'Final P2 Display Name:', p2DisplayName);
         
         html += `<div class="pairing-card ${statusClass}">
           <div class="table-no roundrobin-table">รอบ ${round}</div>
