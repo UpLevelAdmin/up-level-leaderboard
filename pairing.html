@@ -1003,6 +1003,7 @@
         let playerRank = '';
         
         console.log('Swiss - Looking for playerId:', playerId, 'in playersData:', window.playersData);
+        console.log('Swiss - phoneMap available:', !!window.phoneMap, 'phoneMap keys:', window.phoneMap ? Object.keys(window.phoneMap) : 'none');
         
         if (window.playersData && window.playersData.length > 1) {
           for (let j = 1; j < window.playersData.length; j++) {
@@ -1011,10 +1012,13 @@
             if (playerRow[1] === playerId) {
               const phone = playerRow[2]?.replace(/\D/g, "");
               console.log('Swiss - Found match! Phone:', phone, 'phoneMap:', window.phoneMap);
+              console.log('Swiss - phoneMap[phone]:', window.phoneMap ? window.phoneMap[phone] : 'phoneMap is null');
               if (window.phoneMap && window.phoneMap[phone]) {
                 displayName = window.phoneMap[phone].codename || playerName;
                 playerRank = window.phoneMap[phone].rank || '';
                 console.log('Swiss - Using codename:', displayName, 'rank:', playerRank);
+              } else {
+                console.log('Swiss - No codename found, using original name');
               }
               break;
             }
@@ -1198,6 +1202,7 @@
         let playerRank = '';
         
         console.log('RoundRobin - Looking for playerId:', playerId, 'in playersData:', window.playersData);
+        console.log('RoundRobin - phoneMap available:', !!window.phoneMap, 'phoneMap keys:', window.phoneMap ? Object.keys(window.phoneMap) : 'none');
         
         if (window.playersData && window.playersData.length > 1) {
           for (let j = 1; j < window.playersData.length; j++) {
@@ -1206,10 +1211,13 @@
             if (playerRow[1] === playerId) {
               const phone = playerRow[2]?.replace(/\D/g, "");
               console.log('RoundRobin - Found match! Phone:', phone, 'phoneMap:', window.phoneMap);
+              console.log('RoundRobin - phoneMap[phone]:', window.phoneMap ? window.phoneMap[phone] : 'phoneMap is null');
               if (window.phoneMap && window.phoneMap[phone]) {
                 displayName = window.phoneMap[phone].codename || playerName;
                 playerRank = window.phoneMap[phone].rank || '';
                 console.log('RoundRobin - Using codename:', displayName, 'rank:', playerRank);
+              } else {
+                console.log('RoundRobin - No codename found, using original name');
               }
               break;
             }
@@ -1286,6 +1294,8 @@
         window.phoneMap = phoneMap;
         
         console.log('Loaded data:', pairingData);
+        console.log('phoneMap:', phoneMap);
+        console.log('playersData:', pairingData.players);
         
         // Render Swiss Tournament
         document.getElementById('swiss-pairing').innerHTML = renderSwissPairing(pairingData.pairing, pairingData.players, phoneMap);
