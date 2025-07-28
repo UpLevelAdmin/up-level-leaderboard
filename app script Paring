@@ -862,6 +862,32 @@ function updateStandings() {
     return totalOpponentGames > 0 ? Math.round((totalOpponentWins / totalOpponentGames) * 100) : 0;
   };
   
+  // Calculate Head-to-Head (H2H) score
+  const calculateH2H = (playerId, opponentId) => {
+    let h2hScore = 0;
+    let row = 2;
+    
+    while (pairingSheet.getRange(row, 1).getValue() !== '') {
+      const p1_id = pairingSheet.getRange(row, 3).getValue();
+      const p2_id = pairingSheet.getRange(row, 9).getValue();
+      const result = pairingSheet.getRange(row, 11).getValue();
+      
+      if ((p1_id === playerId && p2_id === opponentId) || (p1_id === opponentId && p2_id === playerId)) {
+        if (result === '1:0') {
+          if (p1_id === playerId) h2hScore += 1;
+          else h2hScore -= 1;
+        } else if (result === '0:1') {
+          if (p1_id === playerId) h2hScore -= 1;
+          else h2hScore += 1;
+        }
+        break; // Found the match, no need to continue
+      }
+      row++;
+    }
+    
+    return h2hScore;
+  };
+  
   // Calculate points and sort standings
   const standingsArray = Object.entries(standings).map(([player_id, stats]) => {
     const points = stats.win * 3 + stats.draw;
@@ -878,7 +904,8 @@ function updateStandings() {
       stats.loss,
       points,
       winRate + '%',
-      owRate + '%'
+      owRate + '%',
+      '' // H2H (will be filled later)
     ];
   });
   
@@ -887,6 +914,41 @@ function updateStandings() {
     if (b[7] !== a[7]) return b[7] - a[7]; // Points
     if (parseInt(b[8]) !== parseInt(a[8])) return parseInt(b[8]) - parseInt(a[8]); // Win Rate
     return parseInt(b[9]) - parseInt(a[9]); // OW%
+  });
+  
+  // Add H2H scores for tied players
+  for (let i = 0; i < standingsArray.length; i++) {
+    const currentPlayer = standingsArray[i];
+    const currentPoints = currentPlayer[7];
+    const currentWinRate = parseInt(currentPlayer[8]);
+    const currentOW = parseInt(currentPlayer[9]);
+    
+    // Find players with same points, win rate, and OW%
+    const tiedPlayers = standingsArray.filter((player, index) => 
+      index !== i && 
+      player[7] === currentPoints && 
+      parseInt(player[8]) === currentWinRate && 
+      parseInt(player[9]) === currentOW
+    );
+    
+    if (tiedPlayers.length > 0) {
+      // Calculate H2H against tied players
+      let h2hScore = 0;
+      tiedPlayers.forEach(tiedPlayer => {
+        h2hScore += calculateH2H(currentPlayer[1], tiedPlayer[1]);
+      });
+      currentPlayer[10] = h2hScore;
+    } else {
+      currentPlayer[10] = 0;
+    }
+  }
+  
+  // Re-sort with H2H as tie-breaker
+  standingsArray.sort((a, b) => {
+    if (b[7] !== a[7]) return b[7] - a[7]; // Points
+    if (parseInt(b[8]) !== parseInt(a[8])) return parseInt(b[8]) - parseInt(a[8]); // Win Rate
+    if (parseInt(b[9]) !== parseInt(a[9])) return parseInt(b[9]) - parseInt(a[9]); // OW%
+    return (b[10] || 0) - (a[10] || 0); // H2H
   });
   
   // Add ranks
@@ -898,46 +960,68 @@ function updateStandings() {
   standingSheet.clearContents();
   
   // Add headers
-  const headers = ['Rank', 'Player ID', 'Player Name', 'Played', 'Win', 'Draw', 'Loss', 'Points', 'Win Rate', 'OW%'];
+  const headers = ['Rank', 'Player ID', 'Player Name', 'Played', 'Win', 'Draw', 'Loss', 'Points', 'Win Rate', 'OW%', 'H2H'];
   standingSheet.getRange(1, 1, 1, headers.length).setValues([headers]);
   
   // Add data
   if (standingsArray.length > 0) {
-    standingSheet.getRange(2, 1, standingsArray.length, 10).setValues(standingsArray);
+    standingSheet.getRange(2, 1, standingsArray.length, 11).setValues(standingsArray);
   }
   
-  // Style the table
-  const headerRange = standingSheet.getRange(1, 1, 1, 10);
-  headerRange.setBackground('#f3f4f6');
+  // Style the table with improved formatting
+  const headerRange = standingSheet.getRange(1, 1, 1, 11);
+  headerRange.setBackground('#6366f1'); // Indigo background
+  headerRange.setFontColor('#ffffff'); // White text
   headerRange.setFontWeight('bold');
+  headerRange.setFontSize(12);
   headerRange.setHorizontalAlignment('center');
-  headerRange.setBorder(true, true, true, true, true, true, '#d1d5db', SpreadsheetApp.BorderStyle.SOLID);
+  headerRange.setVerticalAlignment('middle');
+  headerRange.setBorder(true, true, true, true, true, true, '#4f46e5', SpreadsheetApp.BorderStyle.SOLID);
   
   if (standingsArray.length > 0) {
-    const dataRange = standingSheet.getRange(2, 1, standingsArray.length, 10);
+    const dataRange = standingSheet.getRange(2, 1, standingsArray.length, 11);
     dataRange.setHorizontalAlignment('center');
     dataRange.setVerticalAlignment('middle');
-    standingSheet.getRange(2, 3, standingsArray.length, 1).setHorizontalAlignment('left'); // Left align player names
+    dataRange.setFontSize(11);
     
-    // Add alternating row colors
+    // Left align player names
+    standingSheet.getRange(2, 3, standingsArray.length, 1).setHorizontalAlignment('left');
+    
+    // Add alternating row colors for better readability
     standingsArray.forEach((_, index) => {
-      const rowRange = standingSheet.getRange(2 + index, 1, 1, 10);
-      rowRange.setBackground(index % 2 === 0 ? '#f8fafc' : '#f1f5f9');
+      const rowRange = standingSheet.getRange(2 + index, 1, 1, 11);
+      rowRange.setBackground(index % 2 === 0 ? '#f3e8ff' : '#f0f9ff'); // Purple and blue alternating
     });
 
     // Add borders
     dataRange.setBorder(true, true, true, true, true, true, '#e2e8f0', SpreadsheetApp.BorderStyle.SOLID);
+    
+    // Highlight top 3 players
+    for (let i = 0; i < Math.min(3, standingsArray.length); i++) {
+      const rowRange = standingSheet.getRange(2 + i, 1, 1, 11);
+      if (i === 0) {
+        rowRange.setBackground('#fef3c7'); // Gold for 1st place
+        rowRange.setFontWeight('bold');
+      } else if (i === 1) {
+        rowRange.setBackground('#e5e7eb'); // Silver for 2nd place
+      } else if (i === 2) {
+        rowRange.setBackground('#fde68a'); // Bronze for 3rd place
+      }
+    }
   }
   
-  // Set column widths
-  standingSheet.setColumnWidth(1, 60);  // Rank
-  standingSheet.setColumnWidth(2, 100); // Player ID
-  standingSheet.setColumnWidth(3, 200); // Player Name
-  standingSheet.setColumnWidths(4, 7, 80); // Played, Win, Draw, Loss, Points, Win Rate
-  standingSheet.setColumnWidth(10, 100); // OW%
-  
-  // ไม่แสดงการแจ้งเตือน (ลดการรบกวน)
-  // SpreadsheetApp.getUi().alert('✅ อัปเดต Standings ในชีท Standing เรียบร้อยแล้ว');
+  // Set column widths for better readability
+  standingSheet.setColumnWidth(1, 60);   // Rank
+  standingSheet.setColumnWidth(2, 100);  // Player ID
+  standingSheet.setColumnWidth(3, 200);  // Player Name
+  standingSheet.setColumnWidth(4, 80);   // Played
+  standingSheet.setColumnWidth(5, 60);   // Win
+  standingSheet.setColumnWidth(6, 60);   // Draw
+  standingSheet.setColumnWidth(7, 60);   // Loss
+  standingSheet.setColumnWidth(8, 80);   // Points
+  standingSheet.setColumnWidth(9, 100);  // Win Rate
+  standingSheet.setColumnWidth(10, 80);  // OW%
+  standingSheet.setColumnWidth(11, 80);  // H2H
 }
 
 
