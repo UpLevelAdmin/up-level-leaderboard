@@ -6,10 +6,10 @@
   <title>Tournament Display | Up Level Gym</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Mitr:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
     * {
-      font-family: 'Inter', sans-serif;
+      font-family: 'Mitr', 'Inter', sans-serif;
       box-sizing: border-box;
     }
     
@@ -1009,7 +1009,7 @@
           for (let j = 1; j < window.playersData.length; j++) {
             const playerRow = window.playersData[j];
             console.log('Swiss - Checking playerRow:', playerRow, 'against playerId:', playerId);
-            if (playerRow[1] === playerId) {
+            if (playerRow[0] === playerId) {
               const phone = playerRow[2]?.replace(/\D/g, "");
               console.log('Swiss - Found match! Phone:', phone, 'phoneMap:', window.phoneMap);
               console.log('Swiss - phoneMap[phone]:', window.phoneMap ? window.phoneMap[phone] : 'phoneMap is null');
@@ -1208,7 +1208,7 @@
           for (let j = 1; j < window.playersData.length; j++) {
             const playerRow = window.playersData[j];
             console.log('RoundRobin - Checking playerRow:', playerRow, 'against playerId:', playerId);
-            if (playerRow[1] === playerId) {
+            if (playerRow[0] === playerId) {
               const phone = playerRow[2]?.replace(/\D/g, "");
               console.log('RoundRobin - Found match! Phone:', phone, 'phoneMap:', window.phoneMap);
               console.log('RoundRobin - phoneMap[phone]:', window.phoneMap ? window.phoneMap[phone] : 'phoneMap is null');
