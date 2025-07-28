@@ -962,10 +962,28 @@
           ow = parseFloat(ow) + '%';
         }
         
+        // หาโค้ดเนมจาก players data
+        let displayName = playerName;
+        let playerRank = '';
+        
+        if (window.playersData && window.playersData.length > 1) {
+          for (let j = 1; j < window.playersData.length; j++) {
+            const playerRow = window.playersData[j];
+            if (playerRow[1] === playerId) {
+              const phone = playerRow[2]?.replace(/\D/g, "");
+              if (window.phoneMap && window.phoneMap[phone]) {
+                displayName = window.phoneMap[phone].codename || playerName;
+                playerRank = window.phoneMap[phone].rank || '';
+              }
+              break;
+            }
+          }
+        }
+        
         html += `<tr>
           <td>${i+1}</td>
           <td>
-            <span class="codename-rank" data-rank="${row[10]||''}"><span style="font-size:0.8rem;">${rankEmojis[row[10]]||''}</span> ${renderCodenameEffect(playerName, row[10])} <span style="font-size:0.8rem;">${rankEmojis[row[10]]||''}</span></span>
+            <span class="codename-rank" data-rank="${playerRank}"><span style="font-size:0.8rem;">${rankEmojis[playerRank]||''}</span> ${renderCodenameEffect(displayName, playerRank)} <span style="font-size:0.8rem;">${rankEmojis[playerRank]||''}</span></span>
           </td>
           <td>${played}</td>
           <td>${win}</td>
@@ -1093,7 +1111,7 @@
         return '<div style="color:#888;">ยังไม่มีข้อมูลคะแนน Round Robin</div>';
       }
       
-      let html = `<div style="overflow-x:auto;"><table class="standings-table roundrobin-standings">
+      let html = `<div style="overflow-x:auto;"><table class="standings-table">
         <thead><tr>
           <th>อันดับ</th>
           <th>ชื่อ</th>
@@ -1132,9 +1150,29 @@
           ow = parseFloat(ow) + '%';
         }
         
+        // หาโค้ดเนมจาก players data
+        let displayName = playerName;
+        let playerRank = '';
+        
+        if (window.playersData && window.playersData.length > 1) {
+          for (let j = 1; j < window.playersData.length; j++) {
+            const playerRow = window.playersData[j];
+            if (playerRow[1] === playerId) {
+              const phone = playerRow[2]?.replace(/\D/g, "");
+              if (window.phoneMap && window.phoneMap[phone]) {
+                displayName = window.phoneMap[phone].codename || playerName;
+                playerRank = window.phoneMap[phone].rank || '';
+              }
+              break;
+            }
+          }
+        }
+        
         html += `<tr>
           <td>${i+1}</td>
-          <td>${playerName}</td>
+          <td>
+            <span class="codename-rank" data-rank="${playerRank}"><span style="font-size:0.8rem;">${rankEmojis[playerRank]||''}</span> ${renderCodenameEffect(displayName, playerRank)} <span style="font-size:0.8rem;">${rankEmojis[playerRank]||''}</span></span>
+          </td>
           <td>${played}</td>
           <td>${win}</td>
           <td>${draw}</td>
