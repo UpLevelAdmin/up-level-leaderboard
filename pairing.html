@@ -294,8 +294,9 @@
       display: block;
       background: #fff;
       padding: 24px;
-      max-height: 1000px;
-      transition: max-height 0.3s ease;
+      max-height: none;
+      transition: all 0.3s ease;
+      overflow: visible;
     }
     
     .accordion-content.collapsed {
@@ -309,6 +310,7 @@
       display: flex;
       flex-direction: column;
       gap: 16px;
+      width: 100%;
     }
     
     .pairing-card {
@@ -323,6 +325,8 @@
       border: 1px solid #E5E7EB;
       transition: all 0.2s ease;
       position: relative;
+      width: 100%;
+      box-sizing: border-box;
     }
     
     .pairing-card:hover {
@@ -629,11 +633,29 @@
         flex-direction: column;
         gap: 12px;
         text-align: center;
+        width: 100%;
+        box-sizing: border-box;
+      }
+      
+      .pairing-card > div {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
       }
       
       .player-vs {
         flex-direction: column;
         gap: 8px;
+      }
+      
+      /* Remove accordion container constraints on mobile */
+      .accordion {
+        overflow: visible;
+      }
+      
+      .accordion-content {
+        overflow: visible;
       }
       
       .summary-stats {
@@ -830,6 +852,45 @@
         content.classList.add('collapsed');
         button.querySelector('span').textContent = '▶';
       }
+    }
+    
+    // Auto-collapse previous rounds and expand current round
+    function autoManageAccordions() {
+      const accordions = document.querySelectorAll('.accordion');
+      let currentRound = null;
+      
+      // Find the current round (round with pending matches)
+      accordions.forEach(accordion => {
+        const button = accordion.querySelector('.accordion-header');
+        const content = accordion.querySelector('.accordion-content');
+        const pairingCards = content.querySelectorAll('.pairing-card');
+        
+        let hasPending = false;
+        pairingCards.forEach(card => {
+          const result = card.querySelector('.pairing-result, .pairing-wait');
+          if (result && result.textContent.trim() === '⏳') {
+            hasPending = true;
+          }
+        });
+        
+        if (hasPending) {
+          currentRound = accordion;
+        }
+      });
+      
+      // Collapse all rounds except current
+      accordions.forEach(accordion => {
+        const button = accordion.querySelector('.accordion-header');
+        const content = accordion.querySelector('.accordion-content');
+        
+        if (accordion === currentRound) {
+          content.classList.remove('collapsed');
+          button.querySelector('span').textContent = '▼';
+        } else {
+          content.classList.add('collapsed');
+          button.querySelector('span').textContent = '▶';
+        }
+      });
     }
 
     function buildPhoneMap(members) {
@@ -1306,6 +1367,9 @@
         document.getElementById('roundrobin-pairing').innerHTML = renderRoundRobinPairing(pairingData.roundRobin, pairingData.players, phoneMap);
         document.getElementById('roundrobin-standings').innerHTML = renderRoundRobinStandings(pairingData.roundRobinStandings);
         document.getElementById('roundrobin-summary').innerHTML = renderRoundRobinSummary(pairingData.roundRobin, pairingData.roundRobinStandings);
+        
+        // Auto-manage accordions after rendering
+        setTimeout(autoManageAccordions, 100);
         
       } catch (e) {
         console.error('Error loading data:', e);
