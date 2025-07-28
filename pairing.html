@@ -3,419 +3,674 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pairing | Up Level Gym</title>
-  <link rel="stylesheet" href="style.css">
+  <title>Tournament Display | Up Level Gym</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
     * {
-      font-family: 'Prompt', sans-serif;
+      font-family: 'Inter', sans-serif;
+      box-sizing: border-box;
     }
     
-    .pairing-container {
-      max-width: 900px;
-      margin: 32px auto;
-      background: rgba(255,255,255,0.97);
-      border-radius: 20px;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.10);
-      padding: 2rem 1rem 2.5rem 1rem;
+    body {
+      background: #F9FAFB;
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+      color: #374151;
     }
-    .accordion {
-      border-radius: 12px;
-      margin-bottom: 1.2rem;
-      box-shadow: 0 4px 16px rgba(100,100,200,0.07);
-      background: #f7f8fa;
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: #FFFFFF;
+      border-radius: 24px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
       overflow: hidden;
+      border: 1px solid #E5E7EB;
     }
-    .accordion-header {
+    
+    /* Loading Animation */
+    .loading-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #F9FAFB;
       display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: linear-gradient(90deg, #667eea 60%, #f7fafc 100%);
-      color: #fff;
-      font-weight: 600;
-      font-size: 1.15rem;
-      padding: 1rem 1.2rem;
-      cursor: pointer;
-      border: none;
-      outline: none;
-      transition: background 0.2s;
-    }
-    .accordion-header.collapsed {
-      background: #e0e7ff;
-      color: #333;
-    }
-    .accordion-content {
-      display: none;
-      background: #fff;
-      padding: 0 1.2rem 1.2rem 1.2rem;
-      animation: fadeIn 0.3s;
-    }
-    .accordion-content.active {
-      display: block;
-    }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    .pairing-list {
-      display: flex;
-      flex-direction: column;
-      gap: 1.1rem;
-      margin-top: 1.2rem;
-    }
-    .pairing-card {
-      display: flex;
-      align-items: center;
       justify-content: center;
-      border-radius: 14px;
-      box-shadow: 0 2px 8px rgba(100,100,200,0.07);
-      padding: 1.1rem 0.7rem;
-      font-size: 1.13rem;
-      gap: 0.7rem;
-      flex-wrap: wrap;
-      position: relative;
-      background: var(--pairing-bg, #f8fafc);
-      transition: background 0.2s;
-    }
-    .pairing-table-no {
-      background: rgba(255, 255, 255, 0.25);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      color: #000;
-      font-weight: 600;
-      border-radius: 12px;
-      padding: 0.5em 1.2em;
-      min-width: 80px;
-      max-width: 80px;
-      text-align: center;
-      font-size: 1.1em;
-      margin-right: 1.1em;
-      flex-shrink: 0;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-      text-shadow: 0 1px 3px rgba(255, 255, 255, 0.5);
-    }
-    .player-block {
-      display: flex;
       align-items: center;
-      justify-content: center;
-      border-radius: 8px;
-      padding: 0.2em 0.7em;
-      margin: 0 0.2em;
-      min-width: 120px;
-      max-width: 180px;
-      box-sizing: border-box;
-      font-weight: 600;
-      font-size: 1.1em;
-      transition: background 0.2s;
-      text-align: center;
-      flex-shrink: 1;
-      flex-grow: 1;
-      overflow: hidden;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-      cursor: pointer;
+      z-index: 9999;
+      transition: opacity 0.5s ease;
     }
-    .player-bg-win {
-      background: #38bdf8 !important;
-      color: #fff !important;
-      box-shadow: 0 2px 8px #0ea5e9;
-    }
-    .player-bg-loss {
-      background: #f87171 !important;
-      color: #fff !important;
-      box-shadow: 0 2px 8px #ef4444;
-    }
-    .player-bg-draw {
-      background: #fde047 !important;
-      color: #92400e !important;
-      box-shadow: 0 2px 8px #facc15;
-    }
-    .codename-rank {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.18em;
-      font-size: 1em;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-    .vs {
-      font-size: 1.1em;
-      color: #888;
-      margin: 0 0.7em;
-      font-weight: 500;
-      min-width: 32px;
-      text-align: center;
-    }
-    .pairing-result {
-      font-size: 1.35em;
-      font-weight: 600;
-      color: #4f46e5;
-      background: #e0e7ff;
-      border-radius: 8px;
-      padding: 0.2em 1.1em;
-      min-width: 70px;
-      text-align: center;
-      box-shadow: 0 2px 8px #e0e7ff;
-      margin: 0 1.1em;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .pairing-wait {
-      color: #aaa;
-      font-size: 1.1em;
-      font-weight: 500;
-      margin: 0 1em;
-      min-width: 70px;
-      text-align: center;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .spinner {
-      display: inline-block;
-      width: 40px;
-      height: 40px;
-      border: 4px solid #e0e7ef;
-      border-top: 4px solid #38bdf8;
+    
+    .loading-spinner {
+      width: 80px;
+      height: 80px;
+      border: 4px solid rgba(59, 130, 246, 0.2);
+      border-top: 4px solid #3B82F6;
       border-radius: 50%;
       animation: spin 1s linear infinite;
-      margin: 0 auto;
     }
+    
+    .loading-text {
+      color: #3B82F6;
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-top: 20px;
+      text-align: center;
+    }
+    
     @keyframes spin {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
     
-    /* Standings Table Styles */
-    .standings-table {
-      margin: auto;
-      border-collapse: separate;
-      border-spacing: 0 6px;
-      width: 100%;
-      max-width: 100%;
-      table-layout: fixed;
-      font-family: 'Prompt', sans-serif;
+    .loading-container.hidden {
+      opacity: 0;
+      pointer-events: none;
     }
     
-    .standings-table th {
-      background: #6366f1;
-      color: #fff;
+    /* Header */
+    .header {
+      text-align: center;
+      padding: 32px;
+      background: linear-gradient(135deg, #FEF3C7 0%, #DBEAFE 100%);
+      border-bottom: 1px solid #E5E7EB;
+    }
+    
+    .logo {
+      width: 110px;
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.18));
+      margin-bottom: 16px;
+    }
+    
+    .title {
+      font-size: 28px;
+      font-weight: 700;
+      margin: 0;
+      color: #1F2937;
+      letter-spacing: 0.025em;
+    }
+    
+    .subtitle {
+      color: #6B7280;
+      font-size: 16px;
+      margin-top: 8px;
+    }
+    
+    /* Tab Navigation */
+    .tab-navigation {
+      display: flex;
+      background: #FFFFFF;
+      border-bottom: 1px solid #E5E7EB;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+    
+    .tab-button {
+      flex: 1;
+      padding: 24px 32px;
+      border: none;
+      background: transparent;
+      font-size: 16px;
       font-weight: 600;
-      font-size: 0.85rem;
-      padding: 0.5em 0.3em;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      color: #6B7280;
+      letter-spacing: 0.025em;
+    }
+    
+    .tab-button:hover {
+      background: #F9FAFB;
+    }
+    
+    .tab-button.active {
+      color: #fff;
+    }
+    
+    .tab-button.active::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      right: 0;
+      height: 2px;
+    }
+    
+    /* Swiss Tab - สีฟ้า */
+    .swiss-tab {
+      background: linear-gradient(90deg, #3B82F6 0%, #2563EB 100%);
+    }
+    
+    .swiss-tab.active::after {
+      background: #3B82F6;
+    }
+    
+    /* Round Robin Tab - สีเหลือง */
+    .roundrobin-tab {
+      background: linear-gradient(90deg, #FBBF24 0%, #FCD34D 100%);
+    }
+    
+    .roundrobin-tab.active::after {
+      background: #FBBF24;
+    }
+    
+    /* Tab Content */
+    .tab-content {
+      display: none;
+      padding: 32px;
+      animation: fadeIn 0.3s ease;
+    }
+    
+    .tab-content.active {
+      display: block;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Tournament Header */
+    .tournament-header {
       text-align: center;
-      white-space: nowrap;
+      margin-bottom: 32px;
+      padding: 28px;
+      border-radius: 20px;
+      color: white;
+      font-weight: 700;
+      font-size: 28px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      letter-spacing: 0.025em;
     }
     
-    .standings-table th:first-child {
-      border-radius: 6px 0 0 6px;
-      width: 8%;
+    .swiss-header {
+      background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
     }
     
-    .standings-table th:nth-child(2) {
-      text-align: left;
-      width: 25%;
+    .roundrobin-header {
+      background: linear-gradient(135deg, #FBBF24 0%, #FCD34D 100%);
     }
     
-    .standings-table th:nth-child(3) { width: 8%; }
-    .standings-table th:nth-child(4) { width: 8%; }
-    .standings-table th:nth-child(5) { width: 8%; }
-    .standings-table th:nth-child(6) { width: 8%; }
-    .standings-table th:nth-child(7) { width: 10%; }
-    .standings-table th:nth-child(8) { width: 12%; }
-    .standings-table th:last-child {
-      border-radius: 0 6px 6px 0;
-      width: 13%;
+    /* Summary Stats */
+    .summary-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 20px;
+      margin: 24px 0;
     }
     
-    .standings-table td {
-      padding: 0.4em 0.3em;
+    .stat-card {
+      background: #fff;
+      padding: 24px;
+      border-radius: 20px;
       text-align: center;
-      font-size: 0.85rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+      border: 1px solid #E5E7EB;
+      transition: transform 0.2s ease;
+    }
+    
+    .stat-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    .swiss-stat {
+      border-left: 4px solid #3B82F6;
+      background: #FFFFFF;
+    }
+    
+    .roundrobin-stat {
+      border-left: 4px solid #F59E0B;
+      background: #FFFFFF;
+    }
+    
+    .stat-number {
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    
+    .swiss-stat .stat-number {
+      color: #3B82F6;
+    }
+    
+    .roundrobin-stat .stat-number {
+      color: #F59E0B;
+    }
+    
+    .stat-label {
+      font-size: 14px;
+      color: #6B7280;
       font-weight: 500;
     }
     
-    .standings-table td:first-child {
-      border-radius: 6px 0 0 6px;
-    }
-    
-    .standings-table td:nth-child(2) {
-      text-align: left;
-      white-space: nowrap;
+    /* Accordion Styles */
+    .accordion {
+      border-radius: 20px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+      background: #fff;
       overflow: hidden;
-      text-overflow: ellipsis;
+      border: 1px solid #E5E7EB;
     }
     
-    .standings-table td:last-child {
-      border-radius: 0 6px 6px 0;
+    .accordion-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: #fff;
+      font-weight: 600;
+      font-size: 18px;
+      padding: 20px 24px;
+      cursor: pointer;
+      border: none;
+      outline: none;
+      transition: background 0.2s;
+    }
+    
+    .swiss-accordion {
+      background: linear-gradient(90deg, #3B82F6 60%, #DBEAFE 100%);
+    }
+    
+    .roundrobin-accordion {
+      background: linear-gradient(90deg, #FBBF24 60%, #FEF9C3 100%);
+    }
+    
+    .accordion-content {
+      display: block;
+      background: #fff;
+      padding: 24px;
+      max-height: 1000px;
+      transition: max-height 0.3s ease;
+    }
+    
+    .accordion-content.collapsed {
+      max-height: 0;
+      padding: 0 24px;
+      overflow: hidden;
+    }
+    
+    /* Pairing Cards */
+    .pairing-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    
+    .pairing-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-radius: 20px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+      padding: 20px 24px;
+      font-size: 16px;
+      background: #fff;
+      border: 1px solid #E5E7EB;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+    
+    .pairing-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    .pairing-card.completed {
+      border-left: 4px solid #10B981;
+      background: linear-gradient(135deg, #ECFDF5 0%, #FFFFFF 100%);
+    }
+    
+    .pairing-card.bye {
+      border-left: 4px solid #6B7280;
+      background: linear-gradient(135deg, #F3F4F6 0%, #FFFFFF 100%);
+    }
+    
+    .pairing-card.pending {
+      border-left: 4px solid #D97706;
+      background: linear-gradient(135deg, #FEF9C3 0%, #FFFFFF 100%);
+    }
+    
+    .table-no {
+      background: #fff;
+      color: #374151;
+      font-weight: 700;
+      border-radius: 16px;
+      padding: 12px 16px;
+      min-width: 80px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      font-size: 14px;
+    }
+    
+    .swiss-table {
+      background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+      color: white;
+    }
+    
+    .roundrobin-table {
+      background: linear-gradient(135deg, #FBBF24 0%, #FCD34D 100%);
+      color: white;
+    }
+    
+    .player-vs {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-weight: 500;
+      flex: 1;
+      justify-content: center;
+    }
+    
+    .vs {
+      font-weight: 700;
+      color: #9CA3AF;
+      font-size: 18px;
+    }
+    
+    .player-name {
+      padding: 8px 12px;
+      border-radius: 12px;
+      transition: all 0.2s ease;
+    }
+    
+    .player-name:hover {
+      transform: scale(1.02);
+    }
+    
+    /* Player name colors for different sections */
+    .swiss-content .player-name {
+      background: #FEF9C3;
+      border: 1px solid #FCD34D;
+    }
+    
+    .swiss-content .player-name:hover {
+      background: #FDE68A;
+    }
+    
+    .roundrobin-content .player-name {
+      background: #DBEAFE;
+      border: 1px solid #3B82F6;
+    }
+    
+    .roundrobin-content .player-name:hover {
+      background: #BFDBFE;
+    }
+    
+    /* Win/Loss colors for player names */
+    .player-name.winner {
+      background: #D1FAE5;
+      border: 1px solid #10B981;
+      color: #065F46;
+    }
+    
+    .player-name.loser {
+      background: #FECACA;
+      border: 1px solid #EF4444;
+      color: #991B1B;
+    }
+    
+    .player-name.draw {
+      background: #FEF9C3;
+      border: 1px solid #FCD34D;
+      color: #92400E;
+    }
+    
+    /* Status Badge */
+    .status-badge {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      color: white;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    
+    .status-completed {
+      background: #10B981;
+      color: white;
+    }
+    
+    .status-bye {
+      background: #6B7280;
+      color: white;
+    }
+    
+    .status-pending {
+      background: #D97706;
+      color: white;
+    }
+    
+    /* Standings Table */
+    .standings-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+      background: #fff;
+    }
+    
+    .standings-table th {
+      padding: 16px 12px;
+      text-align: center;
+      font-weight: 700;
+      color: white;
+      font-size: 14px;
+    }
+    
+    .swiss-standings th {
+      background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+    }
+    
+    .roundrobin-standings th {
+      background: linear-gradient(135deg, #FBBF24 0%, #FCD34D 100%);
+    }
+    
+    .standings-table td {
+      padding: 16px 12px;
+      text-align: center;
+      border-bottom: 1px solid #E5E7EB;
+      font-size: 14px;
     }
     
     .standings-table tr:nth-child(even) {
-      background: #f3e8ff;
+      background: #F9FAFB;
     }
     
-    .standings-table tr:nth-child(odd) {
-      background: #f0f9ff;
+    .standings-table tr:hover {
+      background: #F3F4F6;
     }
     
-    /* Toggle Button */
-    .toggle-standings-btn {
-      background: linear-gradient(90deg, #6366f1, #38bdf8);
-      color: #fff;
-      font-weight: 600;
-      border: none;
-      border-radius: 24px;
-      padding: 0.7em 2.2em;
-      font-size: 1rem;
-      box-shadow: 0 2px 8px #c7d2fe;
-      cursor: pointer;
-      transition: all 0.2s;
-      font-family: 'Prompt', sans-serif;
+    .standings-table tr:first-child {
+      background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+      font-weight: 700;
     }
     
-    .toggle-standings-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px #c7d2fe;
-    }
-    
+    /* Responsive Design */
     @media (max-width: 768px) {
-      .pairing-container { 
-        padding: 1rem 0.5rem; 
-        margin: 16px auto;
+      body {
+        padding: 10px;
       }
-      .accordion-header { 
-        font-size: 1rem; 
-        padding: 0.8rem 1rem; 
-      }
-      .pairing-card { 
-        font-size: 0.9rem; 
-        padding: 0.8rem 0.3rem; 
-        gap: 0.4rem;
-        flex-wrap: nowrap;
-      }
-      .pairing-table-no { 
-        font-size: 0.9em; 
-        min-width: 60px; 
-        max-width: 60px;
-        padding: 0.4em 0.8em;
-        margin-right: 0.6em;
-      }
-      .player-block { 
-        font-size: 0.9em; 
-        min-width: 80px; 
-        max-width: 120px;
-        padding: 0.3em 0.5em;
-        margin: 0 0.1em;
-      }
-      .pairing-result, .pairing-wait { 
-        font-size: 1em; 
-        min-width: 50px;
-        margin: 0 0.5em;
-        padding: 0.2em 0.6em;
-      }
-      .codename-rank {
-        font-size: 0.9em;
-        gap: 0.1em;
-      }
-      .codename-rank span {
-        font-size: 0.8em;
-      }
-      /* ปรับขนาดอีโมจิในมือถือ */
-      .codename-rank[data-rank="Rookie"] .codename { font-size: 0.95em; }
-      .codename-rank[data-rank="Bronze"] .codename { font-size: 0.98em; }
-      .codename-rank[data-rank="Silver"] .codename { font-size: 1.02em; }
-      .codename-rank[data-rank="Gold"] .codename { font-size: 1.08em; }
-      .codename-rank[data-rank="Platinum"] .codename { font-size: 1.12em; }
-      .codename-rank[data-rank="Diamond"] .codename { font-size: 1.18em; }
-      .codename-rank[data-rank="Grandmaster"] .codename { font-size: 1.25em; }
-      .codename-rank[data-rank="Legend"] .codename { font-size: 1.35em; }
       
-      /* Mobile standings table */
+      .container {
+        border-radius: 16px;
+      }
+      
+      .tab-content {
+        padding: 20px;
+      }
+      
+      .tournament-header {
+        font-size: 24px;
+        padding: 20px;
+        margin-bottom: 24px;
+      }
+      
+      .accordion-content {
+        padding: 16px;
+      }
+      
+      .pairing-card {
+        flex-direction: column;
+        gap: 12px;
+        text-align: center;
+      }
+      
+      .player-vs {
+        flex-direction: column;
+        gap: 8px;
+      }
+      
+      .summary-stats {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+      }
+      
+      .stat-card {
+        padding: 16px;
+      }
+      
+      .stat-number {
+        font-size: 24px;
+      }
+      
+      .standings-table {
+        font-size: 12px;
+      }
+      
       .standings-table th,
       .standings-table td {
-        font-size: 0.8rem;
-        padding: 0.3em 0.2em;
-      }
-      
-      /* Mobile summary */
-      .summary-container {
-        padding: 0.8rem !important;
-      }
-      .summary-container > div {
-        gap: 0.5rem !important;
-      }
-      .summary-container > div > div {
-        font-size: 1.2rem !important;
-      }
-      .summary-container > div > div > div:last-child {
-        font-size: 0.8rem !important;
+        padding: 8px 6px;
       }
     }
     
     @media (max-width: 480px) {
-      .pairing-container { 
-        padding: 0.5rem 0.3rem; 
-        margin: 8px auto;
-      }
-      .pairing-card { 
-        font-size: 0.85rem; 
-        padding: 0.6rem 0.2rem; 
-        gap: 0.3rem;
-      }
-      .pairing-table-no { 
-        font-size: 0.85em; 
-        min-width: 50px; 
-        max-width: 50px;
-        padding: 0.3em 0.6em;
-        margin-right: 0.4em;
-      }
-      .player-block { 
-        font-size: 0.85em; 
-        min-width: 70px; 
-        max-width: 100px;
-        padding: 0.25em 0.4em;
-      }
-      .pairing-result, .pairing-wait { 
-        font-size: 0.9em; 
-        min-width: 45px;
-        margin: 0 0.3em;
-        padding: 0.15em 0.5em;
-      }
-      .codename-rank {
-        font-size: 0.85em;
-      }
-      .codename-rank span {
-        font-size: 0.75em;
+      .summary-stats {
+        grid-template-columns: 1fr;
       }
       
-      /* Small mobile standings table */
-      .standings-table th,
-      .standings-table td {
-        font-size: 0.75rem;
-        padding: 0.25em 0.15em;
+      .tab-button {
+        padding: 16px 12px;
+        font-size: 14px;
       }
     }
   </style>
 </head>
 <body>
-  <a href="index.html" class="home-button" title="กลับหน้าหลัก"></a>
-  <div class="pairing-container">
-    <div style="text-align:center; margin-bottom: 1.5rem;">
-      <img src="https://i.postimg.cc/wjzpnxjB/Up-Level-01-1.png" alt="Up Level Guild Logo" style="width:110px; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.18)); margin-bottom: 0.5rem;">
-      <h1 style="font-size:2.1rem; font-weight:700; margin:0; color:#4f46e5; white-space:nowrap; overflow:auto;">Pairing - Up Level Gym</h1>
-      <div style="color:#666; font-size:1.05rem; margin-top:0.3rem;">ตารางจับคู่การแข่งขัน Pokemon TCG</div>
-    </div>
-    <div id="pairing-accordion">
-      <div style="text-align:center; color:#888; padding:2rem;" id="loading"><span class="spinner"></span></div>
+  <!-- Loading Animation -->
+  <div id="loading" class="loading-container">
+    <div style="text-align: center;">
+      <div class="loading-spinner"></div>
+      <div class="loading-text">กำลังโหลดข้อมูลการแข่งขัน...</div>
     </div>
   </div>
-  <!-- standings toggle and table -->
-  <div style="max-width:900px;margin:32px auto 0 auto;text-align:center;">
-    <button id="toggle-standings" class="toggle-standings-btn">แสดงตารางคะแนน</button>
-    <div id="standings-section" style="display:none;margin-top:1.5rem;"></div>
+
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <img src="https://i.postimg.cc/wjzpnxjB/Up-Level-01-1.png" alt="Up Level Guild Logo" class="logo">
+      <h1 class="title">Tournament Display</h1>
+      <div class="subtitle">การแข่งขัน Pokemon TCG - Up Level Gym</div>
+    </div>
+    
+    <!-- Tab Navigation -->
+    <div class="tab-navigation">
+      <button class="tab-button swiss-tab active" onclick="switchTab('swiss')">
+        🏆 Swiss Tournament
+      </button>
+      <button class="tab-button roundrobin-tab" onclick="switchTab('roundrobin')">
+        🔄 Round Robin Tournament
+      </button>
+    </div>
+    
+    <!-- Swiss Tournament Tab -->
+    <div id="swiss-content" class="tab-content active">
+      <div class="tournament-header swiss-header">
+        🏆 Swiss Tournament - การแข่งขันแบบสวิส
+      </div>
+      
+      <!-- Summary Stats -->
+      <div id="swiss-summary" class="summary-stats">
+        <!-- จะถูกเติมด้วย JavaScript -->
+      </div>
+      
+      <!-- Pairing Section -->
+      <div class="accordion">
+        <button class="accordion-header swiss-accordion" onclick="toggleAccordion(this)">
+          📊 ตารางการจับคู่
+          <span>▼</span>
+        </button>
+        <div class="accordion-content">
+          <div id="swiss-pairing" class="pairing-list">
+            <!-- จะถูกเติมด้วย JavaScript -->
+          </div>
+        </div>
+      </div>
+      
+      <!-- Standings Section -->
+      <div class="accordion">
+        <button class="accordion-header swiss-accordion" onclick="toggleAccordion(this)">
+          📈 ตารางคะแนน
+          <span>▼</span>
+        </button>
+        <div class="accordion-content">
+          <div id="swiss-standings">
+            <!-- จะถูกเติมด้วย JavaScript -->
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Round Robin Tournament Tab -->
+    <div id="roundrobin-content" class="tab-content">
+      <div class="tournament-header roundrobin-header">
+        🔄 Round Robin Tournament - การแข่งขันพบกันหมด
+      </div>
+      
+      <!-- Summary Stats -->
+      <div id="roundrobin-summary" class="summary-stats">
+        <!-- จะถูกเติมด้วย JavaScript -->
+      </div>
+      
+      <!-- Round Robin Matches -->
+      <div class="accordion">
+        <button class="accordion-header roundrobin-accordion" onclick="toggleAccordion(this)">
+          📊 การแข่งขัน Round Robin
+          <span>▼</span>
+        </button>
+        <div class="accordion-content">
+          <div id="roundrobin-pairing" class="pairing-list">
+            <!-- จะถูกเติมด้วย JavaScript -->
+          </div>
+        </div>
+      </div>
+      
+      <!-- Round Robin Standings -->
+      <div class="accordion">
+        <button class="accordion-header roundrobin-accordion" onclick="toggleAccordion(this)">
+          📈 ตารางคะแนน Round Robin
+          <span>▼</span>
+        </button>
+        <div class="accordion-content">
+          <div id="roundrobin-standings">
+            <!-- จะถูกเติมด้วย JavaScript -->
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
+  
   <script>
     const API_URL = 'https://script.google.com/macros/s/AKfycbwVoGEvUEmeIkC-e2aPSrF7T82HqOpMwByW-SSbv7EohQ_zG2EbA2uv5TyPnqhuy5rmrg/exec';
     const MEMBER_API = "https://script.google.com/macros/s/AKfycbxtjsDwHI6nJU4OIHExUxMaZwUn3qwakvdkzwbQO7C8Trzz5Gh84SX6F1gqb4BOFQcn/exec?func=getMemberDashboardData";
@@ -430,6 +685,50 @@
       "Grandmaster": "👑",
       "Legend": "🐉"
     };
+
+    // Loading Animation
+    window.addEventListener('load', function() {
+      setTimeout(function() {
+        document.getElementById('loading').classList.add('hidden');
+      }, 2000);
+    });
+    
+    function switchTab(tabName) {
+      // Hide all tab contents
+      const tabContents = document.querySelectorAll('.tab-content');
+      tabContents.forEach(content => {
+        content.classList.remove('active');
+      });
+      
+      // Remove active class from all tab buttons
+      const tabButtons = document.querySelectorAll('.tab-button');
+      tabButtons.forEach(button => {
+        button.classList.remove('active');
+      });
+      
+      // Show selected tab content
+      document.getElementById(tabName + '-content').classList.add('active');
+      
+      // Add active class to selected tab button
+      if (tabName === 'swiss') {
+        document.querySelector('.swiss-tab').classList.add('active');
+      } else {
+        document.querySelector('.roundrobin-tab').classList.add('active');
+      }
+    }
+    
+    function toggleAccordion(button) {
+      const content = button.nextElementSibling;
+      const isCollapsed = content.classList.contains('collapsed');
+      
+      if (isCollapsed) {
+        content.classList.remove('collapsed');
+        button.querySelector('span').textContent = '▼';
+      } else {
+        content.classList.add('collapsed');
+        button.querySelector('span').textContent = '▶';
+      }
+    }
 
     function buildPhoneMap(members) {
       const map = {};
@@ -449,7 +748,6 @@
       return null;
     }
 
-    // เอฟเฟกต์ codename ตามแรงค์ (แบบ gymstanding)
     function renderCodenameEffect(codename, rank) {
       if (!codename) return '';
       if (rank === 'Gold') {
@@ -467,9 +765,12 @@
       }
     }
 
-    async function renderPairing(pairing, players, phoneMap) {
-      // Group by round
-      const header = pairing[0];
+    // Swiss Tournament Functions
+    function renderSwissPairing(pairing, players, phoneMap) {
+      if (!pairing || pairing.length <= 1) {
+        return '<div style="color:#888;text-align:center;padding:2rem;">ยังไม่มีข้อมูลการจับคู่ Swiss</div>';
+      }
+
       const rounds = {};
       for (let i = 1; i < pairing.length; i++) {
         const row = pairing[i];
@@ -477,199 +778,106 @@
         if (!rounds[round]) rounds[round] = [];
         rounds[round].push(row);
       }
-      // Sort round keys
+
       const roundKeys = Object.keys(rounds).sort((a,b)=>a-b);
-      // พาสเทลสีสลับ (ม่วง/เขียว)
-      const pastelColors = ["#f3e8ff", "#f0fdf4"];
-      const tableColors = ["#8b5cf6", "#10b981"];
-      // Accordion
       let html = '';
+      
       for (let r of roundKeys) {
         html += `<div class="accordion">
-          <button class="accordion-header collapsed" onclick="toggleAccordion(this)">รอบที่ ${r} (${rounds[r].length} คู่) <span style='font-size:1.2em;'>&#x25BC;</span></button>
+          <button class="accordion-header swiss-accordion" onclick="toggleAccordion(this)">รอบที่ ${r} (${rounds[r].length} คู่) <span>▼</span></button>
           <div class="accordion-content">
             <div class="pairing-list">`;
+        
         rounds[r].forEach((row, idx) => {
-          // [ROUND, TABLE, P1_ID, PLAYER 1, WIN_P1, DRAW, WIN_P2, Double Loss, P2_ID, PLAYER 2, RESULT, STATUS, Drop]
           const tableNo = row[1];
           const p1Tel = getTelById(players, row[2]);
-          const p2Tel = getTelById(players, row[8]); // P2_ID อยู่ที่ index 8
+          const p2Tel = getTelById(players, row[8]);
           const p1Phone = p1Tel?.replace(/\D/g,"");
           const p2Phone = p2Tel?.replace(/\D/g,"");
           const p1Codename = phoneMap[p1Phone]?.codename;
           const p2Codename = phoneMap[p2Phone]?.codename;
           const p1Rank = phoneMap[p1Phone]?.rank;
           const p2Rank = phoneMap[p2Phone]?.rank;
-          let p1Block = '';
-          let p2Block = '';
-          let p1Class = 'player-block';
-          let p2Class = 'player-block';
-          let result = row[10]; // RESULT อยู่ที่ index 10
+          
+          let p1Class = 'player-name';
+          let p2Class = 'player-name';
+          let result = row[10];
           let resultDisplay = '';
-          let p2DisplayName = ''; // <-- fix: always define p2DisplayName
+          let statusClass = 'pending';
+          let statusText = '⏳ รอผล';
           
           // จัดการ BYE
-          if (row[8] === 'BYE') { // P2_ID อยู่ที่ index 8
-            p1Class += ' player-bg-win';
-            p2Class += ' player-bg-win';
-            resultDisplay = '<span style="color:#059669;font-weight:600;">BYE</span>';
-            p2DisplayName = 'BYE'; // <-- fix: always define p2DisplayName
-            p2Block = `<span class="codename-rank" style="color:#059669;font-weight:600;">🎯 BYE</span>`;
+          if (row[8] === 'BYE') {
+            p1Class += ' winner';
+            resultDisplay = 'BYE';
+            statusClass = 'bye';
+            statusText = '🚫 BYE';
+            const p1DisplayName = p1Codename || row[3] || `Player ${row[2]}`;
+            html += `<div class="pairing-card bye">
+              <div class="table-no swiss-table">โต๊ะ ${tableNo}</div>
+              <div class="player-vs">
+                <span class="${p1Class}">${rankEmojis[p1Rank]||''} ${renderCodenameEffect(p1DisplayName, p1Rank)} ${rankEmojis[p1Rank]||''}</span>
+                <span class="vs">VS</span>
+                <span class="player-name">BYE</span>
+              </div>
+              <div class="status-badge status-${statusClass}">${statusText}</div>
+            </div>`;
           } else {
             if (result === '1:0') {
-              p1Class += ' player-bg-win';
-              p2Class += ' player-bg-loss';
+              p1Class += ' winner';
+              p2Class += ' loser';
               resultDisplay = '1 : 0';
+              statusClass = 'completed';
+              statusText = '✅ เสร็จสิ้น';
             } else if (result === '0:1') {
-              p1Class += ' player-bg-loss';
-              p2Class += ' player-bg-win';
+              p1Class += ' loser';
+              p2Class += ' winner';
               resultDisplay = '0 : 1';
+              statusClass = 'completed';
+              statusText = '✅ เสร็จสิ้น';
             } else if (result === '1:1') {
-              p1Class += ' player-bg-draw';
-              p2Class += ' player-bg-draw';
-              resultDisplay = '<span style="color:#92400e;">1 : 1</span>';
+              p1Class += ' draw';
+              p2Class += ' draw';
+              resultDisplay = '1 : 1';
+              statusClass = 'completed';
+              statusText = '✅ เสร็จสิ้น';
             } else if (result === '0:0') {
-              p1Class += ' player-bg-loss';
-              p2Class += ' player-bg-loss';
-              resultDisplay = '<span style="color:#dc2626;font-weight:600;">0 : 0</span>';
+              p1Class += ' loser';
+              p2Class += ' loser';
+              resultDisplay = '0 : 0';
+              statusClass = 'completed';
+              statusText = '✅ เสร็จสิ้น';
             } else {
-              resultDisplay = '<span class="pairing-wait">รอผล</span>';
+              resultDisplay = 'รอผล';
             }
-            // ใช้ชื่อผู้เล่นจาก Google Sheet ถ้าไม่มี codename
-            const p2DisplayName = p2Codename || row[9] || `Player ${row[8]}`; // PLAYER 2 อยู่ที่ index 9
-            p2Block = `<span class="codename-rank" data-rank="${p2Rank||''}">${rankEmojis[p2Rank]||''} ${renderCodenameEffect(p2DisplayName, p2Rank)} ${rankEmojis[p2Rank]||''}</span>`;
+            
+            const p1DisplayName = p1Codename || row[3] || `Player ${row[2]}`;
+            const p2DisplayName = p2Codename || row[9] || `Player ${row[8]}`;
+            
+            html += `<div class="pairing-card ${statusClass}">
+              <div class="table-no swiss-table">โต๊ะ ${tableNo}</div>
+              <div class="player-vs">
+                <span class="${p1Class}">${rankEmojis[p1Rank]||''} ${renderCodenameEffect(p1DisplayName, p1Rank)} ${rankEmojis[p1Rank]||''}</span>
+                <span class="vs">VS</span>
+                <span class="${p2Class}">${rankEmojis[p2Rank]||''} ${renderCodenameEffect(p2DisplayName, p2Rank)} ${rankEmojis[p2Rank]||''}</span>
+              </div>
+              <div class="status-badge status-${statusClass}">${statusText}</div>
+            </div>`;
           }
-          
-          // ใช้ชื่อผู้เล่นจาก Google Sheet ถ้าไม่มี codename
-          const p1DisplayName = p1Codename || row[3] || `Player ${row[2]}`;
-          p1Block = `<span class="codename-rank" data-rank="${p1Rank||''}">${rankEmojis[p1Rank]||''} ${renderCodenameEffect(p1DisplayName, p1Rank)} ${rankEmojis[p1Rank]||''}</span>`;
-          const pastel = pastelColors[idx % pastelColors.length];
-          const tableBg = tableColors[idx % tableColors.length];
-          html += `<div class="pairing-card" style="--pairing-bg: ${pastel}">
-            <span class="pairing-table-no" style="--table-bg: ${tableBg}">โต๊ะ ${tableNo}</span>
-            <span class="${p1Class}" title="${p1DisplayName}">${p1Block}</span>
-            <span class="pairing-result">${resultDisplay}</span>
-            <span class="${p2Class}" title="${p2DisplayName}">${p2Block}</span>
-          </div>`;
         });
+        
         html += '</div></div></div>';
       }
-      document.getElementById('pairing-accordion').innerHTML = html;
-      // Hide all but last round
-      const acc = document.querySelectorAll('.accordion');
-      acc.forEach((a,i)=>{
-        const content = a.querySelector('.accordion-content');
-        const header = a.querySelector('.accordion-header');
-        if(i!==acc.length-1) {
-          content.style.display = 'none';
-          header.classList.add('collapsed');
-        } else {
-          content.style.display = 'block';
-          header.classList.remove('collapsed');
-        }
-      });
+      
+      return html;
     }
 
-    function toggleAccordion(btn) {
-      const content = btn.nextElementSibling;
-      const isOpen = content.style.display==='block';
-      document.querySelectorAll('.accordion-content').forEach(c=>c.style.display='none');
-      document.querySelectorAll('.accordion-header').forEach(h=>h.classList.add('collapsed'));
-      if(!isOpen) {
-        content.style.display = 'block';
-        btn.classList.remove('collapsed');
-      }
-    }
-
-    function calculateStandings(pairing, players, phoneMap) {
-      // [ROUND, TABLE, P1_ID, PLAYER 1, WIN_P1, DRAW, WIN_P2, Double Loss, P2_ID, PLAYER 2, RESULT, STATUS, Drop]
-      const stats = {};
-      const opponents = {};
-      
-      for (let i = 1; i < pairing.length; i++) {
-        const row = pairing[i];
-        const p1Id = row[2], p2Id = row[8]; // P2_ID อยู่ที่ index 8
-        const p1Tel = getTelById(players, p1Id);
-        const p2Tel = getTelById(players, p2Id);
-        const p1Phone = p1Tel?.replace(/\D/g,"");
-        const p2Phone = p2Tel?.replace(/\D/g,"");
-        const p1Name = phoneMap[p1Phone]?.codename || row[3];
-        const p2Name = phoneMap[p2Phone]?.codename || row[9]; // PLAYER 2 อยู่ที่ index 9
-        const p1Rank = phoneMap[p1Phone]?.rank || '';
-        const p2Rank = phoneMap[p2Phone]?.rank || '';
-        
-        if (!p1Name) continue;
-        
-        if (!stats[p1Name]) stats[p1Name] = {played:0,win:0,draw:0,loss:0,points:0,rank:p1Rank,phone:p1Phone};
-        if (!opponents[p1Name]) opponents[p1Name] = [];
-        
-        // จัดการ BYE
-        if (p2Id === 'BYE') {
-          stats[p1Name].played++;
-          stats[p1Name].win++;
-          stats[p1Name].points += 3;
-          continue;
-        }
-        
-        if (!p2Name) continue;
-        
-        if (!stats[p2Name]) stats[p2Name] = {played:0,win:0,draw:0,loss:0,points:0,rank:p2Rank,phone:p2Phone};
-        if (!opponents[p2Name]) opponents[p2Name] = [];
-        
-        const result = row[10]; // RESULT อยู่ที่ index 10
-        if (result === '1:0') {
-          stats[p1Name].win++; stats[p2Name].loss++;
-          stats[p1Name].points += 3;
-        } else if (result === '0:1') {
-          stats[p2Name].win++; stats[p1Name].loss++;
-          stats[p2Name].points += 3;
-        } else if (result === '1:1') {
-          stats[p1Name].draw++; stats[p2Name].draw++;
-          stats[p1Name].points += 1; stats[p2Name].points += 1;
-        } else if (result === '0:0') {
-          stats[p1Name].loss++; stats[p2Name].loss++;
-          // ไม่ได้คะแนนสำหรับการแพ้คู่
-        } else {
-          continue;
-        }
-        
-        stats[p1Name].played++;
-        stats[p2Name].played++;
-        opponents[p1Name].push(p2Name);
-        opponents[p2Name].push(p1Name);
+    function renderSwissStandings(standings) {
+      if (!standings || standings.length <= 1) {
+        return '<div style="color:#888;">ยังไม่มีข้อมูลคะแนน Swiss</div>';
       }
       
-      // Calculate winrate and %OW
-      const arr = Object.entries(stats).map(([name, s])=>{
-        const winRate = s.played > 0 ? Math.round((s.win/s.played)*100) : 0;
-        
-        // %OW: average winrate of all opponents
-        let owSum = 0, owCount = 0;
-        (opponents[name]||[]).forEach(oppName=>{
-          const opp = stats[oppName];
-          if (!opp || opp.played === 0) return;
-          const oppWP = (opp.win/opp.played)*100;
-          owSum += oppWP;
-          owCount++;
-        });
-        const ow = owCount > 0 ? Math.round((owSum/owCount) * 100) / 100 : 0;
-        
-        return {name, ...s, winRate, ow: ow.toFixed(2)};
-      });
-      
-      // Sort by points (descending), win rate (descending), then OW% (descending)
-      arr.sort((a,b) => {
-        if (b.points !== a.points) return b.points - a.points;
-        if (b.winRate !== a.winRate) return b.winRate - a.winRate;
-        return parseFloat(b.ow) - parseFloat(a.ow);
-      });
-      
-      return arr;
-    }
-    
-    function renderStandingsTable(standings) {
-      if (!standings.length) return '<div style="color:#888;">ยังไม่มีข้อมูลคะแนน</div>';
-      let html = `<div style="overflow-x:auto;"><table class="standings-table">
+      let html = `<div style="overflow-x:auto;"><table class="standings-table swiss-standings">
         <thead><tr>
           <th>อันดับ</th>
           <th>ชื่อ</th>
@@ -681,199 +889,279 @@
           <th>W%</th>
           <th>OW%</th>
         </tr></thead><tbody>`;
-      standings.forEach((s,i)=>{
-        const emoji = rankEmojis[s.rank]||'';
-        // แสดงข้อมูล Win Rate และ OW%
-        const winRateDisplay = s.winRate || '0%';
-        const owDisplay = s.ow || '0%';
-        console.log(`Displaying for ${s.name}: Win Rate = "${winRateDisplay}", OW = "${owDisplay}"`);
+      
+      standings.slice(1).forEach((row, i) => {
+        const playerId = row[1];
+        const playerName = row[2];
+        const played = parseInt(row[3]) || 0;
+        const win = parseInt(row[4]) || 0;
+        const draw = parseInt(row[5]) || 0;
+        const loss = parseInt(row[6]) || 0;
+        const points = parseFloat(row[7]) || 0;
+        let winRate = row[8] || '0%';
+        let ow = row[9] || '0%';
+        
+        // แปลงเป็นเปอร์เซ็นต์
+        if (typeof winRate === 'number') {
+          winRate = Math.round(winRate * 100) + '%';
+        } else if (typeof winRate === 'string' && !winRate.includes('%')) {
+          winRate = parseFloat(winRate) + '%';
+        }
+        
+        if (typeof ow === 'number') {
+          ow = Math.round(ow * 100) + '%';
+        } else if (typeof ow === 'string' && !ow.includes('%')) {
+          ow = parseFloat(ow) + '%';
+        }
+        
         html += `<tr>
           <td>${i+1}</td>
-          <td>
-            <span class="codename-rank" data-rank="${s.rank||''}"><span style="font-size:0.8rem;">${emoji}</span> ${renderCodenameEffect(s.name, s.rank)} <span style="font-size:0.8rem;">${emoji}</span></span>
-          </td>
-          <td>${s.played}</td>
-          <td>${s.win}</td>
-          <td>${s.draw}</td>
-          <td>${s.loss}</td>
-          <td><strong>${s.points}</strong></td>
-          <td>${winRateDisplay}</td>
-          <td>${owDisplay}</td>
+          <td>${playerName}</td>
+          <td>${played}</td>
+          <td>${win}</td>
+          <td>${draw}</td>
+          <td>${loss}</td>
+          <td><strong>${points}</strong></td>
+          <td>${winRate}</td>
+          <td>${ow}</td>
         </tr>`;
       });
+      
       html += '</tbody></table></div>';
       return html;
     }
 
-    async function loadData() {
-      document.getElementById('loading').style.display = 'block';
-      try {
-        const [pairingRes, memberRes] = await Promise.all([
-          fetch(API_URL),
-          fetch(MEMBER_API)
-        ]);
-        const pairingData = await pairingRes.json();
-        const members = await memberRes.json();
-        const phoneMap = buildPhoneMap(members);
-        
-        // Debug: ตรวจสอบข้อมูลที่ได้รับ
-        console.log('=== DEBUG INFO ===');
-        console.log('Pairing Data Length:', pairingData.pairing?.length);
-        console.log('Pairing Headers:', pairingData.pairing?.[0]);
-        console.log('First Pairing Row:', pairingData.pairing?.[1]);
-        console.log('Standings Data Length:', pairingData.standings?.length);
-        console.log('Standings Headers:', pairingData.standings?.[0]);
-        console.log('First Standings Row:', pairingData.standings?.[1]);
-        console.log('Win Rate Type:', typeof pairingData.standings?.[1]?.[8]);
-        console.log('OW Type:', typeof pairingData.standings?.[1]?.[9]);
-        console.log('Win Rate Value:', pairingData.standings?.[1]?.[8]);
-        console.log('OW Value:', pairingData.standings?.[1]?.[9]);
-        console.log('==================');
-        // ตรวจสอบว่าข้อมูล pairing มีข้อมูลหรือไม่
-        console.log('Pairing data length:', pairingData.pairing?.length);
-        console.log('Pairing headers:', pairingData.pairing?.[0]);
-        console.log('First pairing row:', pairingData.pairing?.[1]);
-        
-        if (pairingData.pairing && pairingData.pairing.length > 1) {
-          console.log('Rendering pairing table...');
-          renderPairing(pairingData.pairing, pairingData.players, phoneMap);
-        } else {
-          console.log('No pairing data available');
-          document.getElementById('pairing-accordion').innerHTML = '<div style="color:#888;text-align:center;padding:2rem;">ยังไม่มีข้อมูลการจับคู่</div>';
-        }
-        
-        // ใช้ข้อมูล standings จาก Google Sheet
-        let standings = [];
-        if (pairingData.standings && pairingData.standings.length > 1) {
-          console.log('Processing standings data from Google Sheet...');
-          // แปลงข้อมูลจาก Google Sheet เป็นรูปแบบที่ต้องการ
-          standings = pairingData.standings.slice(1).map((row, index) => {
-            console.log(`Processing Standings Row ${index + 1}:`, row);
-            console.log(`  Win Rate (row[8]): ${row[8]} (type: ${typeof row[8]})`);
-            console.log(`  OW% (row[9]): ${row[9]} (type: ${typeof row[9]})`);
-            // ตามโครงสร้าง Google Sheet: A=Rank, B=PlayerID, C=PlayerName, D=Played, E=Win, F=Draw, G=Loss, H=Points, I=WinRate, J=OW%
-            const playerId = row[1]; // B: Player ID
-            const playerName = row[2]; // C: Player Name
-            const played = parseInt(row[3]) || 0; // D: Played
-            const win = parseInt(row[4]) || 0; // E: Win
-            const draw = parseInt(row[5]) || 0; // F: Draw
-            const loss = parseInt(row[6]) || 0; // G: Loss
-            const points = parseFloat(row[7]) || 0; // H: Points
-            
-            // ข้อมูล Win Rate และ OW% จาก Google Sheet
-            let winRate = row[8];
-            let ow = row[9];
-            
-            // แปลงเป็นเปอร์เซ็นต์ถ้าเป็นตัวเลข
-            if (typeof winRate === 'number') {
-              winRate = Math.round(winRate * 100) + '%';
-            } else if (typeof winRate === 'string' && !winRate.includes('%')) {
-              winRate = parseFloat(winRate) + '%';
-            } else if (!winRate) {
-              winRate = '0%';
-            }
-            
-            if (typeof ow === 'number') {
-              ow = Math.round(ow * 100) + '%';
-            } else if (typeof ow === 'string' && !ow.includes('%')) {
-              ow = parseFloat(ow) + '%';
-            } else if (!ow) {
-              ow = '0%';
-            }
-            
-            // หา codename และ rank จาก phoneMap
-            const p1Tel = getTelById(pairingData.players, playerId);
-            const p1Phone = p1Tel?.replace(/\D/g,"");
-            const p1Codename = phoneMap[p1Phone]?.codename;
-            const p1Rank = phoneMap[p1Phone]?.rank;
-            
-            return {
-              name: p1Codename || playerName,
-              played: played,
-              win: win,
-              draw: draw,
-              loss: loss,
-              points: points,
-              winRate: winRate,
-              ow: ow,
-              rank: p1Rank || ''
-            };
-          });
-        } else {
-          // ถ้าไม่มีข้อมูล standings จาก Google Sheet ให้คำนวณเอง
-          console.log('No standings data from Google Sheet, calculating locally...');
-          standings = calculateStandings(pairingData.pairing, pairingData.players, phoneMap);
-        }
-        
-        document.getElementById('standings-section').innerHTML = renderStandingsTable(standings);
-        
-        // แสดงข้อมูลสรุป
-        showTournamentSummary(pairingData.pairing, standings);
-      } catch (e) {
-        console.error('Error loading data:', e);
-        document.getElementById('pairing-accordion').innerHTML = '<div style="color:#e11d48;text-align:center;padding:2rem;">ไม่สามารถโหลดข้อมูลได้</div>';
-      }
-      document.getElementById('loading').style.display = 'none';
-    }
-    
-    function showTournamentSummary(pairing, standings) {
-      // นับจำนวนรอบ
+    function renderSwissSummary(pairing, standings) {
       const rounds = new Set();
       for (let i = 1; i < pairing.length; i++) {
         if (pairing[i][0]) rounds.add(pairing[i][0]);
       }
       
-      // นับจำนวน BYE
       let byeCount = 0;
       for (let i = 1; i < pairing.length; i++) {
-        if (pairing[i][7] === 'BYE') byeCount++;
+        if (pairing[i][8] === 'BYE') byeCount++;
       }
       
-      // นับจำนวนการแข่งขันที่เสร็จสิ้น
       let completedMatches = 0;
       for (let i = 1; i < pairing.length; i++) {
-        if (pairing[i][9] && pairing[i][9] !== '') completedMatches++;
+        if (pairing[i][10] && pairing[i][10] !== '') completedMatches++;
       }
       
-      const summaryHtml = `
-        <div class="summary-container" style="background:#f8fafc; border-radius:12px; padding:1rem; margin:1rem 0; text-align:center; border:1px solid #e2e8f0;">
-          <div style="display:flex; justify-content:space-around; flex-wrap:wrap; gap:1rem;">
-            <div>
-              <div style="font-size:1.5rem; font-weight:600; color:#4f46e5;">${rounds.size}</div>
-              <div style="font-size:0.9rem; color:#64748b;">จำนวนรอบ</div>
-            </div>
-            <div>
-              <div style="font-size:1.5rem; font-weight:600; color:#059669;">${standings.length}</div>
-              <div style="font-size:0.9rem; color:#64748b;">ผู้เล่น</div>
-            </div>
-            <div>
-              <div style="font-size:1.5rem; font-weight:600; color:#dc2626;">${byeCount}</div>
-              <div style="font-size:0.9rem; color:#64748b;">BYE</div>
-            </div>
-            <div>
-              <div style="font-size:1.5rem; font-weight:600; color:#7c3aed;">${completedMatches}</div>
-              <div style="font-size:0.9rem; color:#64748b;">เสร็จสิ้น</div>
-            </div>
-          </div>
+      return `
+        <div class="stat-card swiss-stat">
+          <div class="stat-number">${rounds.size}</div>
+          <div class="stat-label">จำนวนรอบ</div>
+        </div>
+        <div class="stat-card swiss-stat">
+          <div class="stat-number">${standings.length > 1 ? standings.length - 1 : 0}</div>
+          <div class="stat-label">ผู้เล่น</div>
+        </div>
+        <div class="stat-card swiss-stat">
+          <div class="stat-number">${byeCount}</div>
+          <div class="stat-label">BYE</div>
+        </div>
+        <div class="stat-card swiss-stat">
+          <div class="stat-number">${completedMatches}</div>
+          <div class="stat-label">เสร็จสิ้น</div>
         </div>
       `;
-      
-      // เพิ่มสรุปข้อมูลไว้ด้านบนของ standings
-      const standingsSection = document.getElementById('standings-section');
-      standingsSection.insertAdjacentHTML('afterbegin', summaryHtml);
     }
-    // toggle button
-    document.addEventListener('DOMContentLoaded',()=>{
-      const btn = document.getElementById('toggle-standings');
-      const sec = document.getElementById('standings-section');
-      let shown = false;
-      btn.onclick = ()=>{
-        shown = !shown;
-        sec.style.display = shown ? 'block' : 'none';
-        btn.textContent = shown ? 'ซ่อนตารางคะแนน' : 'แสดงตารางคะแนน';
-      };
-    });
 
+    // Round Robin Tournament Functions
+    function renderRoundRobinPairing(roundRobin, players, phoneMap) {
+      if (!roundRobin || roundRobin.length <= 1) {
+        return '<div style="color:#888;text-align:center;padding:2rem;">ยังไม่มีข้อมูลการแข่งขัน Round Robin</div>';
+      }
+
+      let html = '';
+      roundRobin.slice(1).forEach((row, idx) => {
+        const round = row[0];
+        const tableNo = row[1];
+        const p1Tel = getTelById(players, row[2]);
+        const p2Tel = getTelById(players, row[8]);
+        const p1Phone = p1Tel?.replace(/\D/g,"");
+        const p2Phone = p2Tel?.replace(/\D/g,"");
+        const p1Codename = phoneMap[p1Phone]?.codename;
+        const p2Codename = phoneMap[p2Phone]?.codename;
+        const p1Rank = phoneMap[p1Phone]?.rank;
+        const p2Rank = phoneMap[p2Phone]?.rank;
+        
+        let p1Class = 'player-name';
+        let p2Class = 'player-name';
+        let result = row[10];
+        let resultDisplay = '';
+        let statusClass = 'pending';
+        let statusText = '⏳ รอผล';
+        
+        if (result === '1:0') {
+          p1Class += ' winner';
+          p2Class += ' loser';
+          resultDisplay = '1 : 0';
+          statusClass = 'completed';
+          statusText = '✅ เสร็จสิ้น';
+        } else if (result === '0:1') {
+          p1Class += ' loser';
+          p2Class += ' winner';
+          resultDisplay = '0 : 1';
+          statusClass = 'completed';
+          statusText = '✅ เสร็จสิ้น';
+        } else if (result === '1:1') {
+          p1Class += ' draw';
+          p2Class += ' draw';
+          resultDisplay = '1 : 1';
+          statusClass = 'completed';
+          statusText = '✅ เสร็จสิ้น';
+        } else if (result === '0:0') {
+          p1Class += ' loser';
+          p2Class += ' loser';
+          resultDisplay = '0 : 0';
+          statusClass = 'completed';
+          statusText = '✅ เสร็จสิ้น';
+        } else {
+          resultDisplay = 'รอผล';
+        }
+        
+        const p1DisplayName = p1Codename || row[3] || `Player ${row[2]}`;
+        const p2DisplayName = p2Codename || row[9] || `Player ${row[8]}`;
+        
+        html += `<div class="pairing-card ${statusClass}">
+          <div class="table-no roundrobin-table">รอบ ${round}</div>
+          <div class="player-vs">
+            <span class="${p1Class}">${rankEmojis[p1Rank]||''} ${renderCodenameEffect(p1DisplayName, p1Rank)} ${rankEmojis[p1Rank]||''}</span>
+            <span class="vs">VS</span>
+            <span class="${p2Class}">${rankEmojis[p2Rank]||''} ${renderCodenameEffect(p2DisplayName, p2Rank)} ${rankEmojis[p2Rank]||''}</span>
+          </div>
+          <div class="status-badge status-${statusClass}">${statusText}</div>
+        </div>`;
+      });
+      
+      return html;
+    }
+
+    function renderRoundRobinStandings(standings) {
+      if (!standings || standings.length <= 1) {
+        return '<div style="color:#888;">ยังไม่มีข้อมูลคะแนน Round Robin</div>';
+      }
+      
+      let html = `<div style="overflow-x:auto;"><table class="standings-table roundrobin-standings">
+        <thead><tr>
+          <th>อันดับ</th>
+          <th>ชื่อ</th>
+          <th>แข่ง</th>
+          <th>ชนะ</th>
+          <th>เสมอ</th>
+          <th>แพ้</th>
+          <th>คะแนน</th>
+          <th>W%</th>
+          <th>OW%</th>
+          <th>H2H</th>
+        </tr></thead><tbody>`;
+      
+      standings.slice(1).forEach((row, i) => {
+        const playerId = row[1];
+        const playerName = row[2];
+        const played = parseInt(row[3]) || 0;
+        const win = parseInt(row[4]) || 0;
+        const draw = parseInt(row[5]) || 0;
+        const loss = parseInt(row[6]) || 0;
+        const points = parseFloat(row[7]) || 0;
+        let winRate = row[8] || '0%';
+        let ow = row[9] || '0%';
+        const h2h = row[10] || '-';
+        
+        // แปลงเป็นเปอร์เซ็นต์
+        if (typeof winRate === 'number') {
+          winRate = Math.round(winRate * 100) + '%';
+        } else if (typeof winRate === 'string' && !winRate.includes('%')) {
+          winRate = parseFloat(winRate) + '%';
+        }
+        
+        if (typeof ow === 'number') {
+          ow = Math.round(ow * 100) + '%';
+        } else if (typeof ow === 'string' && !ow.includes('%')) {
+          ow = parseFloat(ow) + '%';
+        }
+        
+        html += `<tr>
+          <td>${i+1}</td>
+          <td>${playerName}</td>
+          <td>${played}</td>
+          <td>${win}</td>
+          <td>${draw}</td>
+          <td>${loss}</td>
+          <td><strong>${points}</strong></td>
+          <td>${winRate}</td>
+          <td>${ow}</td>
+          <td>${h2h}</td>
+        </tr>`;
+      });
+      
+      html += '</tbody></table></div>';
+      return html;
+    }
+
+    function renderRoundRobinSummary(roundRobin, standings) {
+      const rounds = new Set();
+      for (let i = 1; i < roundRobin.length; i++) {
+        if (roundRobin[i][0]) rounds.add(roundRobin[i][0]);
+      }
+      
+      let completedMatches = 0;
+      for (let i = 1; i < roundRobin.length; i++) {
+        if (roundRobin[i][10] && roundRobin[i][10] !== '') completedMatches++;
+      }
+      
+      return `
+        <div class="stat-card roundrobin-stat">
+          <div class="stat-number">${rounds.size}</div>
+          <div class="stat-label">จำนวนรอบ</div>
+        </div>
+        <div class="stat-card roundrobin-stat">
+          <div class="stat-number">${standings.length > 1 ? standings.length - 1 : 0}</div>
+          <div class="stat-label">ผู้เล่น</div>
+        </div>
+        <div class="stat-card roundrobin-stat">
+          <div class="stat-number">${roundRobin.length > 1 ? roundRobin.length - 1 : 0}</div>
+          <div class="stat-label">การแข่งขัน</div>
+        </div>
+        <div class="stat-card roundrobin-stat">
+          <div class="stat-number">${completedMatches}</div>
+          <div class="stat-label">เสร็จสิ้น</div>
+        </div>
+      `;
+    }
+
+    async function loadData() {
+      try {
+        const [pairingRes, memberRes] = await Promise.all([
+          fetch(API_URL),
+          fetch(MEMBER_API)
+        ]);
+        
+        const pairingData = await pairingRes.json();
+        const members = await memberRes.json();
+        const phoneMap = buildPhoneMap(members);
+        
+        console.log('Loaded data:', pairingData);
+        
+        // Render Swiss Tournament
+        document.getElementById('swiss-pairing').innerHTML = renderSwissPairing(pairingData.pairing, pairingData.players, phoneMap);
+        document.getElementById('swiss-standings').innerHTML = renderSwissStandings(pairingData.standings);
+        document.getElementById('swiss-summary').innerHTML = renderSwissSummary(pairingData.pairing, pairingData.standings);
+        
+        // Render Round Robin Tournament
+        document.getElementById('roundrobin-pairing').innerHTML = renderRoundRobinPairing(pairingData.roundRobin, pairingData.players, phoneMap);
+        document.getElementById('roundrobin-standings').innerHTML = renderRoundRobinStandings(pairingData.roundRobinStandings);
+        document.getElementById('roundrobin-summary').innerHTML = renderRoundRobinSummary(pairingData.roundRobin, pairingData.roundRobinStandings);
+        
+      } catch (e) {
+        console.error('Error loading data:', e);
+        document.getElementById('swiss-pairing').innerHTML = '<div style="color:#e11d48;text-align:center;padding:2rem;">ไม่สามารถโหลดข้อมูลได้</div>';
+        document.getElementById('roundrobin-pairing').innerHTML = '<div style="color:#e11d48;text-align:center;padding:2rem;">ไม่สามารถโหลดข้อมูลได้</div>';
+      }
+    }
+
+    // Load data when page loads
     loadData();
   </script>
 </body>
