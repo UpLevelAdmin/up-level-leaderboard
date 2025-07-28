@@ -1170,6 +1170,7 @@
       let html = '';
       roundRobin.slice(1).forEach((row, idx) => {
         console.log('Round Robin Row', idx, ':', row);
+        console.log('Row indices - P1_ID:', row[2], 'P1_NAME:', row[3], 'P2_ID:', row[8], 'P2_NAME:', row[9], 'P2_NAME_ALT:', row[10], 'P2_NAME_ALT2:', row[11]);
         const round = row[0];
         const tableNo = row[1];
         const p1Id = row[2];
@@ -1231,8 +1232,12 @@
         console.log('P1 Name from Players:', p1NameFromPlayers, 'P2 Name from Players:', p2NameFromPlayers);
         console.log('P1 Name from Row:', row[3], 'P2 Name from Row:', row[9]);
         
+        // ใช้ชื่อจาก column PLAYER 2 เมื่อ P2 ID เป็น false
+        const p2NameFromColumn = row[9] || row[10] || row[11]; // ลองหลายช่อง
+        console.log('P2 Name from Column:', p2NameFromColumn);
+        
         const p1DisplayName = p1Codename || p1NameFromPlayers || row[3] || `Player ${p1Id}`;
-        const p2DisplayName = p2Codename || p2NameFromPlayers || row[9] || `Player ${p2Id}`;
+        const p2DisplayName = p2Codename || p2NameFromPlayers || p2NameFromColumn || `Player ${p2Id}`;
         console.log('Final P1 Display Name:', p1DisplayName, 'Final P2 Display Name:', p2DisplayName);
         
         html += `<div class="pairing-card ${statusClass}">
