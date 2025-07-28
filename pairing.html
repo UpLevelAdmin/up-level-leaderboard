@@ -630,23 +630,17 @@
       }
       
       .pairing-card {
-        flex-direction: column;
+        flex-direction: row;
         gap: 12px;
         text-align: center;
         width: 100%;
         box-sizing: border-box;
       }
       
-      .pairing-card > div {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        width: 100%;
-      }
-      
       .player-vs {
-        flex-direction: column;
+        flex-direction: row;
         gap: 8px;
+        align-items: center;
       }
       
       /* Remove accordion container constraints on mobile */
@@ -678,6 +672,19 @@
       .standings-table th,
       .standings-table td {
         padding: 8px 6px;
+      }
+      
+      .player-block {
+        min-width: 100px;
+        max-width: 140px;
+        font-size: 1em;
+        padding: 0.15em 0.5em;
+      }
+      
+      .pairing-result {
+        font-size: 1.2em;
+        padding: 0.15em 0.8em;
+        min-width: 60px;
       }
     }
     
