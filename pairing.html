@@ -1184,6 +1184,7 @@
         };
         const roundColor = roundColors[round] || '#ddd';
         const roundBgColor = roundColor + '15'; // สีพื้นหลังอ่อนกว่า
+        console.log('Round:', round, 'Color:', roundColor, 'BgColor:', roundBgColor);
         const p1Id = row[2];
         const p2Id = row[8];
         console.log('P1 ID:', p1Id, 'P2 ID:', p2Id);
@@ -1251,7 +1252,7 @@
         const p2DisplayName = p2Codename || p2NameFromPlayers || p2NameFromColumn || `Player ${p2Id}`;
         console.log('Final P1 Display Name:', p1DisplayName, 'Final P2 Display Name:', p2DisplayName);
         
-        html += `<div class="pairing-card ${statusClass}" style="border-left: 4px solid ${roundColor} !important; background-color: ${roundBgColor} !important;">
+        html += `<div class="pairing-card ${statusClass}" style="border-left: 4px solid ${roundColor} !important; background: ${roundBgColor} !important; background-color: ${roundBgColor} !important; background-image: none !important;">
           <div class="table-no roundrobin-table" style="background-color: ${roundColor}; color: white;">รอบ ${round}</div>
           <div class="player-vs">
             <span class="${p1Class}">${rankEmojis[p1Rank]||''} ${renderCodenameEffect(p1DisplayName, p1Rank)} ${rankEmojis[p1Rank]||''}</span>
