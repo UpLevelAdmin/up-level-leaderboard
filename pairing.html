@@ -311,6 +311,7 @@
       flex-direction: column;
       gap: 16px;
       width: 100%;
+      margin: 24px 0;
     }
     
     .pairing-card {
@@ -544,6 +545,11 @@
       font-family: 'Inter', sans-serif;
     }
     
+    #swiss-standings,
+    #roundrobin-standings {
+      margin: 24px 0;
+    }
+    
     .standings-table th {
       background: #6366f1;
       color: #fff;
@@ -737,29 +743,13 @@
       </div>
       
       <!-- Pairing Section -->
-      <div class="accordion">
-        <button class="accordion-header swiss-accordion" onclick="toggleAccordion(this)">
-          📊 ตารางการจับคู่
-          <span>▼</span>
-        </button>
-        <div class="accordion-content">
-          <div id="swiss-pairing" class="pairing-list">
-            <!-- จะถูกเติมด้วย JavaScript -->
-          </div>
-        </div>
+      <div id="swiss-pairing" class="pairing-list">
+        <!-- จะถูกเติมด้วย JavaScript -->
       </div>
       
       <!-- Standings Section -->
-      <div class="accordion">
-        <button class="accordion-header swiss-accordion" onclick="toggleAccordion(this)">
-          📈 ตารางคะแนน
-          <span>▼</span>
-        </button>
-        <div class="accordion-content">
-          <div id="swiss-standings">
-            <!-- จะถูกเติมด้วย JavaScript -->
-          </div>
-        </div>
+      <div id="swiss-standings">
+        <!-- จะถูกเติมด้วย JavaScript -->
       </div>
     </div>
     
@@ -775,29 +765,13 @@
       </div>
       
       <!-- Round Robin Matches -->
-      <div class="accordion">
-        <button class="accordion-header roundrobin-accordion" onclick="toggleAccordion(this)">
-          📊 การแข่งขัน Round Robin
-          <span>▼</span>
-        </button>
-        <div class="accordion-content">
-          <div id="roundrobin-pairing" class="pairing-list">
-            <!-- จะถูกเติมด้วย JavaScript -->
-          </div>
-        </div>
+      <div id="roundrobin-pairing" class="pairing-list">
+        <!-- จะถูกเติมด้วย JavaScript -->
       </div>
       
       <!-- Round Robin Standings -->
-      <div class="accordion">
-        <button class="accordion-header roundrobin-accordion" onclick="toggleAccordion(this)">
-          📈 ตารางคะแนน Round Robin
-          <span>▼</span>
-        </button>
-        <div class="accordion-content">
-          <div id="roundrobin-standings">
-            <!-- จะถูกเติมด้วย JavaScript -->
-          </div>
-        </div>
+      <div id="roundrobin-standings">
+        <!-- จะถูกเติมด้วย JavaScript -->
       </div>
     </div>
   </div>
@@ -865,12 +839,18 @@
     function autoManageAccordions() {
       const accordions = document.querySelectorAll('.accordion');
       let currentRound = null;
+      let latestRound = null;
       
-      // Find the current round (round with pending matches)
+      // Find the current round (round with pending matches) and latest round
       accordions.forEach(accordion => {
         const button = accordion.querySelector('.accordion-header');
         const content = accordion.querySelector('.accordion-content');
         const pairingCards = content.querySelectorAll('.pairing-card');
+        
+        // Track latest round
+        if (!latestRound) {
+          latestRound = accordion;
+        }
         
         let hasPending = false;
         pairingCards.forEach(card => {
@@ -885,12 +865,15 @@
         }
       });
       
-      // Collapse all rounds except current
+      // Expand current round if exists, otherwise expand latest round
+      const roundToExpand = currentRound || latestRound;
+      
+      // Collapse all rounds except the one to expand
       accordions.forEach(accordion => {
         const button = accordion.querySelector('.accordion-header');
         const content = accordion.querySelector('.accordion-content');
         
-        if (accordion === currentRound) {
+        if (accordion === roundToExpand) {
           content.classList.remove('collapsed');
           button.querySelector('span').textContent = '▼';
         } else {
