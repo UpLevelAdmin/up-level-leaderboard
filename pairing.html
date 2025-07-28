@@ -1366,9 +1366,19 @@
         if (roundRobin[i][0]) rounds.add(roundRobin[i][0]);
       }
       
+      // นับจำนวนผู้เล่นจาก players data
+      let playerCount = 0;
+      if (window.playersData && window.playersData.length > 1) {
+        playerCount = window.playersData.length - 1; // ลบ header row
+      }
+      
+      // นับการแข่งขันที่เสร็จสิ้นจาก RESULT column
       let completedMatches = 0;
       for (let i = 1; i < roundRobin.length; i++) {
-        if (roundRobin[i][10] && roundRobin[i][10] !== '') completedMatches++;
+        const result = roundRobin[i][12]; // RESULT column
+        if (result && result !== '' && (result === '1:0' || result === '0:1' || result === '1:1' || result === '0:0')) {
+          completedMatches++;
+        }
       }
       
       return `
@@ -1377,7 +1387,7 @@
           <div class="stat-label">จำนวนรอบ</div>
         </div>
         <div class="stat-card roundrobin-stat">
-          <div class="stat-number">${standings.length > 1 ? standings.length - 1 : 0}</div>
+          <div class="stat-number">${playerCount}</div>
           <div class="stat-label">ผู้เล่น</div>
         </div>
         <div class="stat-card roundrobin-stat">
