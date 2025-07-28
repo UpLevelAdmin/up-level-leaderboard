@@ -395,6 +395,75 @@
       color: #92400E;
     }
     
+    /* Original format player blocks */
+    .player-block {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      padding: 0.2em 0.7em;
+      margin: 0 0.2em;
+      min-width: 120px;
+      max-width: 180px;
+      box-sizing: border-box;
+      font-weight: 600;
+      font-size: 1.1em;
+      transition: background 0.2s;
+      text-align: center;
+      flex-shrink: 1;
+      flex-grow: 1;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      cursor: pointer;
+    }
+    
+    .player-bg-win {
+      background: #38bdf8 !important;
+      color: #fff !important;
+      box-shadow: 0 2px 8px #0ea5e9;
+    }
+    
+    .player-bg-loss {
+      background: #f87171 !important;
+      color: #fff !important;
+      box-shadow: 0 2px 8px #ef4444;
+    }
+    
+    .player-bg-draw {
+      background: #fde047 !important;
+      color: #92400e !important;
+      box-shadow: 0 2px 8px #facc15;
+    }
+    
+    .pairing-result {
+      font-size: 1.35em;
+      font-weight: 600;
+      color: #4f46e5;
+      background: #e0e7ff;
+      border-radius: 8px;
+      padding: 0.2em 1.1em;
+      min-width: 70px;
+      text-align: center;
+      box-shadow: 0 2px 8px #e0e7ff;
+      margin: 0 1.1em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .pairing-wait {
+      color: #aaa;
+      font-size: 1.1em;
+      font-weight: 500;
+      margin: 0 1em;
+      min-width: 70px;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
     /* Status Badge */
     .status-badge {
       position: absolute;
@@ -427,49 +496,74 @@
     
     /* Standings Table */
     .standings-table {
+      margin: auto;
+      border-collapse: separate;
+      border-spacing: 0 6px;
       width: 100%;
-      border-collapse: collapse;
-      margin-top: 16px;
-      border-radius: 16px;
-      overflow: hidden;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-      background: #fff;
+      max-width: 100%;
+      table-layout: fixed;
+      font-family: 'Inter', sans-serif;
     }
     
     .standings-table th {
-      padding: 16px 12px;
+      background: #6366f1;
+      color: #fff;
+      font-weight: 600;
+      font-size: 0.85rem;
+      padding: 0.5em 0.3em;
       text-align: center;
-      font-weight: 700;
-      color: white;
-      font-size: 14px;
+      white-space: nowrap;
     }
     
-    .swiss-standings th {
-      background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+    .standings-table th:first-child {
+      border-radius: 6px 0 0 6px;
+      width: 8%;
     }
     
-    .roundrobin-standings th {
-      background: linear-gradient(135deg, #FBBF24 0%, #FCD34D 100%);
+    .standings-table th:nth-child(2) {
+      text-align: left;
+      width: 25%;
+    }
+    
+    .standings-table th:nth-child(3) { width: 8%; }
+    .standings-table th:nth-child(4) { width: 8%; }
+    .standings-table th:nth-child(5) { width: 8%; }
+    .standings-table th:nth-child(6) { width: 8%; }
+    .standings-table th:nth-child(7) { width: 10%; }
+    .standings-table th:nth-child(8) { width: 12%; }
+    .standings-table th:last-child {
+      border-radius: 0 6px 6px 0;
+      width: 13%;
     }
     
     .standings-table td {
-      padding: 16px 12px;
+      padding: 0.4em 0.3em;
       text-align: center;
-      border-bottom: 1px solid #E5E7EB;
-      font-size: 14px;
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+    
+    .standings-table td:first-child {
+      border-radius: 6px 0 0 6px;
+    }
+    
+    .standings-table td:nth-child(2) {
+      text-align: left;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .standings-table td:last-child {
+      border-radius: 0 6px 6px 0;
     }
     
     .standings-table tr:nth-child(even) {
-      background: #F9FAFB;
+      background: #f3e8ff;
     }
     
-    .standings-table tr:hover {
-      background: #F3F4F6;
-    }
-    
-    .standings-table tr:first-child {
-      background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
-      font-weight: 700;
+    .standings-table tr:nth-child(odd) {
+      background: #f0f9ff;
     }
     
     /* Responsive Design */
@@ -771,69 +865,51 @@
           const p1Rank = phoneMap[p1Phone]?.rank;
           const p2Rank = phoneMap[p2Phone]?.rank;
           
-          let p1Class = 'player-name';
-          let p2Class = 'player-name';
+          let p1Class = 'player-block';
+          let p2Class = 'player-block';
           let result = row[10];
           let resultDisplay = '';
-          let statusClass = 'pending';
-          let statusText = '⏳ รอผล';
           
           // จัดการ BYE
           if (row[8] === 'BYE') {
-            p1Class += ' winner';
-            resultDisplay = 'BYE';
-            statusClass = 'bye';
-            statusText = '🚫 BYE';
+            p1Class += ' player-bg-win';
+            resultDisplay = '<span style="color:#059669;font-weight:600;">BYE</span>';
             const p1DisplayName = p1Codename || row[3] || `Player ${row[2]}`;
-            html += `<div class="pairing-card bye">
-              <div class="table-no swiss-table">โต๊ะ ${tableNo}</div>
-              <div class="player-vs">
-                <span class="${p1Class}">${rankEmojis[p1Rank]||''} ${renderCodenameEffect(p1DisplayName, p1Rank)} ${rankEmojis[p1Rank]||''}</span>
-                <span class="vs">VS</span>
-                <span class="player-name">BYE</span>
-              </div>
-              <div class="status-badge status-${statusClass}">${statusText}</div>
+            html += `<div class="pairing-card">
+              <span class="pairing-table-no">โต๊ะ ${tableNo}</span>
+              <span class="${p1Class}" title="${p1DisplayName}">${rankEmojis[p1Rank]||''} ${renderCodenameEffect(p1DisplayName, p1Rank)} ${rankEmojis[p1Rank]||''}</span>
+              <span class="pairing-result">${resultDisplay}</span>
+              <span class="player-block" title="BYE">🎯 BYE</span>
             </div>`;
           } else {
             if (result === '1:0') {
-              p1Class += ' winner';
-              p2Class += ' loser';
+              p1Class += ' player-bg-win';
+              p2Class += ' player-bg-loss';
               resultDisplay = '1 : 0';
-              statusClass = 'completed';
-              statusText = '✅ เสร็จสิ้น';
             } else if (result === '0:1') {
-              p1Class += ' loser';
-              p2Class += ' winner';
+              p1Class += ' player-bg-loss';
+              p2Class += ' player-bg-win';
               resultDisplay = '0 : 1';
-              statusClass = 'completed';
-              statusText = '✅ เสร็จสิ้น';
             } else if (result === '1:1') {
-              p1Class += ' draw';
-              p2Class += ' draw';
-              resultDisplay = '1 : 1';
-              statusClass = 'completed';
-              statusText = '✅ เสร็จสิ้น';
+              p1Class += ' player-bg-draw';
+              p2Class += ' player-bg-draw';
+              resultDisplay = '<span style="color:#92400e;">1 : 1</span>';
             } else if (result === '0:0') {
-              p1Class += ' loser';
-              p2Class += ' loser';
-              resultDisplay = '0 : 0';
-              statusClass = 'completed';
-              statusText = '✅ เสร็จสิ้น';
+              p1Class += ' player-bg-loss';
+              p2Class += ' player-bg-loss';
+              resultDisplay = '<span style="color:#dc2626;font-weight:600;">0 : 0</span>';
             } else {
-              resultDisplay = 'รอผล';
+              resultDisplay = '<span class="pairing-wait">รอผล</span>';
             }
             
             const p1DisplayName = p1Codename || row[3] || `Player ${row[2]}`;
             const p2DisplayName = p2Codename || row[9] || `Player ${row[8]}`;
             
-            html += `<div class="pairing-card ${statusClass}">
-              <div class="table-no swiss-table">โต๊ะ ${tableNo}</div>
-              <div class="player-vs">
-                <span class="${p1Class}">${rankEmojis[p1Rank]||''} ${renderCodenameEffect(p1DisplayName, p1Rank)} ${rankEmojis[p1Rank]||''}</span>
-                <span class="vs">VS</span>
-                <span class="${p2Class}">${rankEmojis[p2Rank]||''} ${renderCodenameEffect(p2DisplayName, p2Rank)} ${rankEmojis[p2Rank]||''}</span>
-              </div>
-              <div class="status-badge status-${statusClass}">${statusText}</div>
+            html += `<div class="pairing-card">
+              <span class="pairing-table-no">โต๊ะ ${tableNo}</span>
+              <span class="${p1Class}" title="${p1DisplayName}">${rankEmojis[p1Rank]||''} ${renderCodenameEffect(p1DisplayName, p1Rank)} ${rankEmojis[p1Rank]||''}</span>
+              <span class="pairing-result">${resultDisplay}</span>
+              <span class="${p2Class}" title="${p2DisplayName}">${rankEmojis[p2Rank]||''} ${renderCodenameEffect(p2DisplayName, p2Rank)} ${rankEmojis[p2Rank]||''}</span>
             </div>`;
           }
         });
@@ -849,7 +925,7 @@
         return '<div style="color:#888;">ยังไม่มีข้อมูลคะแนน Swiss</div>';
       }
       
-      let html = `<div style="overflow-x:auto;"><table class="standings-table swiss-standings">
+      let html = `<div style="overflow-x:auto;"><table class="standings-table">
         <thead><tr>
           <th>อันดับ</th>
           <th>ชื่อ</th>
@@ -888,7 +964,9 @@
         
         html += `<tr>
           <td>${i+1}</td>
-          <td>${playerName}</td>
+          <td>
+            <span class="codename-rank" data-rank="${row[10]||''}"><span style="font-size:0.8rem;">${rankEmojis[row[10]]||''}</span> ${renderCodenameEffect(playerName, row[10])} <span style="font-size:0.8rem;">${rankEmojis[row[10]]||''}</span></span>
+          </td>
           <td>${played}</td>
           <td>${win}</td>
           <td>${draw}</td>
@@ -921,19 +999,19 @@
       
       return `
         <div class="stat-card swiss-stat">
-          <div class="stat-number">${rounds.size}</div>
+          <div class="stat-number" style="color:#4f46e5;">${rounds.size}</div>
           <div class="stat-label">จำนวนรอบ</div>
         </div>
         <div class="stat-card swiss-stat">
-          <div class="stat-number">${standings.length > 1 ? standings.length - 1 : 0}</div>
+          <div class="stat-number" style="color:#059669;">${standings.length > 1 ? standings.length - 1 : 0}</div>
           <div class="stat-label">ผู้เล่น</div>
         </div>
         <div class="stat-card swiss-stat">
-          <div class="stat-number">${byeCount}</div>
+          <div class="stat-number" style="color:#dc2626;">${byeCount}</div>
           <div class="stat-label">BYE</div>
         </div>
         <div class="stat-card swiss-stat">
-          <div class="stat-number">${completedMatches}</div>
+          <div class="stat-number" style="color:#7c3aed;">${completedMatches}</div>
           <div class="stat-label">เสร็จสิ้น</div>
         </div>
       `;
