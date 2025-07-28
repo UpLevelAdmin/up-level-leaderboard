@@ -1205,7 +1205,7 @@
         
         let p1Class = 'player-name';
         let p2Class = 'player-name';
-        let result = row[10];
+        let result = row[12]; // RESULT column
         let resultDisplay = '';
         let statusClass = 'pending';
         let statusText = '⏳ รอผล';
@@ -1251,13 +1251,14 @@
         const p2DisplayName = p2Codename || p2NameFromPlayers || p2NameFromColumn || `Player ${p2Id}`;
         console.log('Final P1 Display Name:', p1DisplayName, 'Final P2 Display Name:', p2DisplayName);
         
-        html += `<div class="pairing-card ${statusClass}" style="border-left: 4px solid ${roundColor}; background-color: ${roundBgColor};">
+        html += `<div class="pairing-card ${statusClass}" style="border-left: 4px solid ${roundColor} !important; background-color: ${roundBgColor} !important;">
           <div class="table-no roundrobin-table" style="background-color: ${roundColor}; color: white;">รอบ ${round}</div>
           <div class="player-vs">
             <span class="${p1Class}">${rankEmojis[p1Rank]||''} ${renderCodenameEffect(p1DisplayName, p1Rank)} ${rankEmojis[p1Rank]||''}</span>
             <span class="vs">VS</span>
             <span class="${p2Class}">${rankEmojis[p2Rank]||''} ${renderCodenameEffect(p2DisplayName, p2Rank)} ${rankEmojis[p2Rank]||''}</span>
           </div>
+          <div class="result-display" style="font-weight: bold; color: #374151; margin: 0 8px;">${resultDisplay}</div>
           <div class="status-badge status-${statusClass}">${statusText}</div>
         </div>`;
       });
