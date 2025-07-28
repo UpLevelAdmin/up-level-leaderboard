@@ -54,6 +54,41 @@
       padding: 32px;
       background: linear-gradient(135deg, #FEF3C7 0%, #DBEAFE 100%);
       border-bottom: 1px solid #E5E7EB;
+      position: relative;
+    }
+    
+    /* Home Button */
+    .home-button {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      width: 50px;
+      height: 50px;
+      background: #3B82F6;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      color: white;
+      font-size: 24px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+    
+    .home-button:hover {
+      background: #2563EB;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+    }
+    
+    .home-button:active {
+      transform: translateY(0);
+    }
+    
+    .home-button::before {
+      content: "🏠";
+      font-size: 20px;
     }
     
     .logo {
@@ -648,6 +683,7 @@
       <img src="https://i.postimg.cc/wjzpnxjB/Up-Level-01-1.png" alt="Up Level Guild Logo" class="logo">
       <h1 class="title">Tournament Display</h1>
       <div class="subtitle">การแข่งขัน Pokemon TCG - Up Level Gym</div>
+      <a href="index.html" class="home-button" title="กลับหน้าหลัก"></a>
     </div>
     
     <!-- Tab Navigation -->
@@ -1230,6 +1266,10 @@
         const pairingData = await pairingRes.json();
         const members = await memberRes.json();
         const phoneMap = buildPhoneMap(members);
+        
+        // กำหนดค่า global variables
+        window.playersData = pairingData.players;
+        window.phoneMap = phoneMap;
         
         console.log('Loaded data:', pairingData);
         
