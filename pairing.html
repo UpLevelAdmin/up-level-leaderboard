@@ -722,8 +722,9 @@
 </head>
 <body>
   <!-- Loading Animation -->
-  <div id="loading" style="text-align:center; color:#888; padding:2rem;">
+  <div id="loading" style="text-align:center; color:#888; padding:2rem; background:rgba(255,255,255,0.9); position:fixed; top:0; left:0; right:0; bottom:0; z-index:9999; display:flex; align-items:center; justify-content:center; flex-direction:column;">
     <span class="spinner"></span>
+    <p style="margin-top:1rem; font-size:1.1em;">กำลังโหลดข้อมูล...</p>
   </div>
 
   <div class="container">
@@ -1345,10 +1346,27 @@
     async function loadData() {
       document.getElementById('loading').style.display = 'block';
       try {
+        console.log('Fetching data from:', API_URL);
+        console.log('Fetching member data from:', MEMBER_API);
+        
         const [pairingRes, memberRes] = await Promise.all([
-          fetch(API_URL),
-          fetch(MEMBER_API)
+          fetch(API_URL).catch(e => {
+            console.error('Error fetching pairing data:', e);
+            return { ok: false, status: 'Network Error' };
+          }),
+          fetch(MEMBER_API).catch(e => {
+            console.error('Error fetching member data:', e);
+            return { ok: false, status: 'Network Error' };
+          })
         ]);
+        
+        if (!pairingRes.ok) {
+          throw new Error(`Pairing API error: ${pairingRes.status}`);
+        }
+        
+        if (!memberRes.ok) {
+          throw new Error(`Member API error: ${memberRes.status}`);
+        }
         
         const pairingData = await pairingRes.json();
         const members = await memberRes.json();
@@ -1377,14 +1395,40 @@
         
       } catch (e) {
         console.error('Error loading data:', e);
-        document.getElementById('swiss-pairing').innerHTML = '<div style="color:#e11d48;text-align:center;padding:2rem;">ไม่สามารถโหลดข้อมูลได้</div>';
-        document.getElementById('roundrobin-pairing').innerHTML = '<div style="color:#e11d48;text-align:center;padding:2rem;">ไม่สามารถโหลดข้อมูลได้</div>';
+        const errorMessage = `
+          <div style="color:#e11d48;text-align:center;padding:2rem;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;margin:1rem;">
+            <h3>⚠️ ไม่สามารถโหลดข้อมูลได้</h3>
+            <p>กรุณาลองใหม่อีกครั้ง หรือติดต่อผู้ดูแลระบบ</p>
+            <p style="font-size:0.9em;color:#dc2626;">Error: ${e.message}</p>
+            <button onclick="loadData()" style="background:#dc2626;color:white;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;margin-top:8px;">
+              ลองใหม่
+            </button>
+          </div>
+        `;
+        document.getElementById('swiss-pairing').innerHTML = errorMessage;
+        document.getElementById('roundrobin-pairing').innerHTML = errorMessage;
+        document.getElementById('swiss-standings').innerHTML = errorMessage;
+        document.getElementById('roundrobin-standings').innerHTML = errorMessage;
+        document.getElementById('swiss-summary').innerHTML = '';
+        document.getElementById('roundrobin-summary').innerHTML = '';
       }
       document.getElementById('loading').style.display = 'none';
     }
 
     // Load data when page loads
     loadData();
+    
+    // Retry mechanism
+    window.addEventListener('online', function() {
+      console.log('Network is back online, retrying...');
+      loadData();
+    });
+    
+    // Add manual retry button
+    window.retryLoad = function() {
+      console.log('Manual retry triggered');
+      loadData();
+    };
   </script>
 </body>
 </html> 
