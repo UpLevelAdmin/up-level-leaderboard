@@ -910,7 +910,16 @@
     function getTelById(players, id) {
       for (let i = 1; i < players.length; i++) {
         if (String(players[i][0]) === String(id)) {
-          return players[i][2];
+          return players[i][2]; // Phone number
+        }
+      }
+      return null;
+    }
+    
+    function getPlayerNameById(players, id) {
+      for (let i = 1; i < players.length; i++) {
+        if (String(players[i][0]) === String(id)) {
+          return players[i][1]; // Player name
         }
       }
       return null;
@@ -976,7 +985,7 @@
           if (row[8] === 'BYE') {
             p1Class += ' player-bg-win';
             resultDisplay = '<span style="color:#059669;font-weight:600;">BYE</span>';
-            const p1DisplayName = p1Codename || row[3] || `Player ${row[2]}`;
+            const p1DisplayName = p1Codename || getPlayerNameById(players, row[2]) || row[3] || `Player ${row[2]}`;
             html += `<div class="pairing-card">
               <span class="pairing-table-no">โต๊ะ ${tableNo}</span>
               <span class="${p1Class}" title="${p1DisplayName}">${rankEmojis[p1Rank]||''} ${renderCodenameEffect(p1DisplayName, p1Rank)} ${rankEmojis[p1Rank]||''}</span>
@@ -1004,8 +1013,8 @@
               resultDisplay = '<span class="pairing-wait">รอผล</span>';
             }
             
-            const p1DisplayName = p1Codename || row[3] || `Player ${row[2]}`;
-            const p2DisplayName = p2Codename || row[9] || `Player ${row[8]}`;
+            const p1DisplayName = p1Codename || getPlayerNameById(players, row[2]) || row[3] || `Player ${row[2]}`;
+            const p2DisplayName = p2Codename || getPlayerNameById(players, row[8]) || row[9] || `Player ${row[8]}`;
             
             html += `<div class="pairing-card">
               <span class="pairing-table-no">โต๊ะ ${tableNo}</span>
@@ -1202,8 +1211,8 @@
           resultDisplay = 'รอผล';
         }
         
-        const p1DisplayName = p1Codename || row[3] || `Player ${row[2]}`;
-        const p2DisplayName = p2Codename || row[9] || `Player ${row[8]}`;
+        const p1DisplayName = p1Codename || getPlayerNameById(players, row[2]) || row[3] || `Player ${row[2]}`;
+        const p2DisplayName = p2Codename || getPlayerNameById(players, row[8]) || row[9] || `Player ${row[8]}`;
         
         html += `<div class="pairing-card ${statusClass}">
           <div class="table-no roundrobin-table">รอบ ${round}</div>
