@@ -319,7 +319,7 @@
       align-items: center;
       border-radius: 16px;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-      padding: 16px;
+      padding: 12px 16px;
       font-size: 15px;
       background: #fff;
       border: 1px solid #E5E7EB;
@@ -327,8 +327,9 @@
       position: relative;
       width: 100%;
       box-sizing: border-box;
-      gap: 8px;
+      gap: 12px;
       margin-bottom: 8px;
+      overflow: hidden;
     }
     
     .pairing-card:hover {
@@ -376,21 +377,23 @@
     .round-label {
       flex-shrink: 0;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      min-width: 60px;
+      min-width: 50px;
       text-align: center;
       border-radius: 8px;
-      padding: 6px 10px;
-      font-size: 0.9em;
+      padding: 6px 8px;
+      font-size: 0.8em;
       font-weight: 600;
+      white-space: nowrap;
     }
     
     .player-vs {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 12px;
       font-weight: 500;
       flex: 1;
       justify-content: space-between;
+      min-width: 0;
     }
     
     .vs {
@@ -411,13 +414,14 @@
     
     .status-badge {
       flex-shrink: 0;
-      padding: 4px 8px;
-      border-radius: 6px;
-      font-size: 0.8em;
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-size: 0.75em;
       font-weight: 600;
       text-align: center;
-      min-width: 70px;
+      min-width: 60px;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      white-space: nowrap;
     }
     
     .status-completed {
@@ -867,16 +871,25 @@
       }
       
       .round-label {
-        font-size: 0.8em !important;
-        padding: 4px 8px !important;
-        min-width: 50px !important;
-        margin-right: 8px !important;
+        font-size: 0.75em !important;
+        padding: 4px 6px !important;
+        min-width: 45px !important;
+        margin-right: 6px !important;
       }
       
       .status-badge {
-        font-size: 0.7em !important;
-        padding: 3px 6px !important;
-        min-width: 60px !important;
+        font-size: 0.65em !important;
+        padding: 4px 6px !important;
+        min-width: 50px !important;
+      }
+      
+      .pairing-card {
+        padding: 8px 12px !important;
+        gap: 8px !important;
+      }
+      
+      .player-vs {
+        gap: 8px !important;
       }
     }
   </style>
@@ -1240,7 +1253,7 @@
             const statusText = result ? '✅ เสร็จสิ้น' : '⏳ รอผล';
             
             html += `<div class="pairing-card ${statusClass}">
-              <div class="round-label" style="background-color: #3B82F6; color: white; font-weight: 600; border-radius: 6px; padding: 4px 8px; font-size: 0.9em; min-width: 50px; text-align: center; margin-right: 12px;">โต๊ะ ${tableNo}</div>
+              <div class="round-label" style="background-color: #3B82F6; color: white;">โต๊ะ ${tableNo}</div>
               <div class="player-vs">
                 <span class="${p1Class}" title="${p1DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p1DisplayName}')">${rankEmojis[p1Rank]||''} ${renderCodenameEffect(p1DisplayName, p1Rank)} ${rankEmojis[p1Rank]||''}</span>
                 <span class="vs" style="font-weight: bold; color: #374151; margin: 0 8px; font-size: 1.1em;">${resultDisplay}</span>
@@ -1481,7 +1494,7 @@
         console.log('Final P1 Display Name:', p1DisplayName, 'Final P2 Display Name:', p2DisplayName);
         
         html += `<div class="pairing-card ${statusClass}" style="border-left: 4px solid ${roundColor} !important; background: ${roundBgColor} !important; background-color: ${roundBgColor} !important; background-image: none !important;">
-          <div class="round-label" style="background-color: ${roundColor}; color: white; font-weight: 600; border-radius: 6px; padding: 4px 8px; font-size: 0.9em; min-width: 50px; text-align: center; margin-right: 12px;">รอบ ${round}</div>
+          <div class="round-label" style="background-color: ${roundColor}; color: white;">รอบ ${round}</div>
           <div class="player-vs">
             <span class="${p1Class}" title="${p1DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p1DisplayName}')">${rankEmojis[p1Rank]||''} ${renderCodenameEffect(p1DisplayName, p1Rank)} ${rankEmojis[p1Rank]||''}</span>
             <span class="vs" style="font-weight: bold; color: #374151; margin: 0 8px; font-size: 1.1em;">${resultDisplay}</span>
