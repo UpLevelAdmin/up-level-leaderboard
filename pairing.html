@@ -751,17 +751,37 @@
     /* Mobile optimization for player names */
     @media (max-width: 768px) {
       .player-name {
-        max-width: 80px !important;
-        min-width: 60px !important;
-        font-size: 0.85em !important;
-        padding: 4px 6px !important;
+        max-width: 70px !important;
+        min-width: 50px !important;
+        font-size: 0.8em !important;
+        padding: 3px 4px !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
       }
       
       .player-block {
-        max-width: 80px !important;
-        min-width: 60px !important;
-        font-size: 0.85em !important;
-        padding: 4px 6px !important;
+        max-width: 70px !important;
+        min-width: 50px !important;
+        font-size: 0.8em !important;
+        padding: 3px 4px !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+      }
+      
+      .pairing-card {
+        gap: 6px !important;
+        padding: 6px !important;
+      }
+      
+      .player-vs {
+        gap: 4px !important;
+      }
+      
+      .vs {
+        font-size: 0.9em !important;
+        margin: 0 4px !important;
       }
     }
   </style>
@@ -1087,7 +1107,7 @@
             const p1DisplayName = p1Codename || getPlayerNameById(players, row[2]) || row[3] || `Player ${row[2]}`;
             html += `<div class="pairing-card">
               <span class="pairing-table-no">โต๊ะ ${tableNo}</span>
-              <span class="${p1Class}" title="${p1DisplayName}">${rankEmojis[p1Rank]||''} ${renderCodenameEffect(p1DisplayName, p1Rank)} ${rankEmojis[p1Rank]||''}</span>
+              <span class="${p1Class}" title="${p1DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p1DisplayName}')">${rankEmojis[p1Rank]||''} ${renderCodenameEffect(p1DisplayName, p1Rank)} ${rankEmojis[p1Rank]||''}</span>
               <span class="pairing-result">${resultDisplay}</span>
               <span class="player-block" title="BYE">🎯 BYE</span>
             </div>`;
@@ -1117,9 +1137,9 @@
             
             html += `<div class="pairing-card">
               <span class="pairing-table-no">โต๊ะ ${tableNo}</span>
-              <span class="${p1Class}" title="${p1DisplayName}">${rankEmojis[p1Rank]||''} ${renderCodenameEffect(p1DisplayName, p1Rank)} ${rankEmojis[p1Rank]||''}</span>
+              <span class="${p1Class}" title="${p1DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p1DisplayName}')">${rankEmojis[p1Rank]||''} ${renderCodenameEffect(p1DisplayName, p1Rank)} ${rankEmojis[p1Rank]||''}</span>
               <span class="pairing-result">${resultDisplay}</span>
-              <span class="${p2Class}" title="${p2DisplayName}">${rankEmojis[p2Rank]||''} ${renderCodenameEffect(p2DisplayName, p2Rank)} ${rankEmojis[p2Rank]||''}</span>
+              <span class="${p2Class}" title="${p2DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p2DisplayName}')">${rankEmojis[p2Rank]||''} ${renderCodenameEffect(p2DisplayName, p2Rank)} ${rankEmojis[p2Rank]||''}</span>
             </div>`;
           }
         });
@@ -1269,13 +1289,13 @@
         const round = row[0];
         const tableNo = row[1];
         
-        // สีสำหรับแต่ละรอบ
+        // สีสำหรับแต่ละรอบ (หลีกเลี่ยงแดง/น้ำเงิน)
         const roundColors = {
-          1: '#ff6b6b', // แดง
-          2: '#4ecdc4', // ฟ้า
-          3: '#45b7d1', // น้ำเงิน
-          4: '#96ceb4', // เขียว
-          5: '#feca57'  // เหลือง
+          1: '#f59e0b', // ส้ม
+          2: '#10b981', // เขียว
+          3: '#8b5cf6', // ม่วง
+          4: '#f97316', // ส้มเข้ม
+          5: '#06b6d4'  // ฟ้าอ่อน
         };
         const roundColor = roundColors[round] || '#ddd';
         const roundBgColor = roundColor + '15'; // สีพื้นหลังอ่อนกว่า
@@ -1351,10 +1371,9 @@
           <div class="table-no roundrobin-table" style="background-color: ${roundBgColor}; color: #374151; font-weight: 600; border: 1px solid ${roundColor};">รอบ ${round}</div>
           <div class="player-vs">
             <span class="${p1Class}" title="${p1DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p1DisplayName}')">${rankEmojis[p1Rank]||''} ${renderCodenameEffect(p1DisplayName, p1Rank)} ${rankEmojis[p1Rank]||''}</span>
-            <span class="vs">VS</span>
+            <span class="vs" style="font-weight: bold; color: #374151; margin: 0 8px; font-size: 1.1em;">${resultDisplay}</span>
             <span class="${p2Class}" title="${p2DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p2DisplayName}')">${rankEmojis[p2Rank]||''} ${renderCodenameEffect(p2DisplayName, p2Rank)} ${rankEmojis[p2Rank]||''}</span>
           </div>
-          <div class="result-display" style="font-weight: bold; color: #374151; margin: 0 8px;">${resultDisplay}</div>
           <div class="status-badge status-${statusClass}">${statusText}</div>
         </div>`;
       });
