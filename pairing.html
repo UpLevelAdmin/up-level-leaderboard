@@ -318,16 +318,17 @@
       display: flex;
       align-items: center;
       border-radius: 16px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-      padding: 12px 16px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      padding: 16px;
       font-size: 15px;
       background: #fff;
       border: 1px solid #E5E7EB;
-      transition: all 0.2s ease;
+      transition: all 0.3s ease;
       position: relative;
       width: 100%;
       box-sizing: border-box;
-      gap: 12px;
+      gap: 8px;
+      margin-bottom: 8px;
     }
     
     .pairing-card:hover {
@@ -375,15 +376,21 @@
     .round-label {
       flex-shrink: 0;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      min-width: 60px;
+      text-align: center;
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 0.9em;
+      font-weight: 600;
     }
     
     .player-vs {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 8px;
       font-weight: 500;
       flex: 1;
-      justify-content: center;
+      justify-content: space-between;
     }
     
     .vs {
@@ -400,6 +407,32 @@
     
     .player-name:hover {
       transform: scale(1.02);
+    }
+    
+    .status-badge {
+      flex-shrink: 0;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 0.8em;
+      font-weight: 600;
+      text-align: center;
+      min-width: 70px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .status-completed {
+      background: #10B981;
+      color: white;
+    }
+    
+    .status-pending {
+      background: #F59E0B;
+      color: white;
+    }
+    
+    .status-bye {
+      background: #6B7280;
+      color: white;
     }
     
     /* Player name colors for different sections */
@@ -537,6 +570,50 @@
     .status-pending {
       background: #D97706;
       color: white;
+    }
+    
+    /* Standings Container */
+    .standings-container {
+      margin: 20px 0;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+      background: #fff;
+    }
+    
+    .standings-header {
+      background: linear-gradient(135deg, #4F46E5 0%, #3730A3 100%);
+      color: white;
+      padding: 16px 20px;
+      font-weight: 600;
+      font-size: 1.1em;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.3s ease;
+    }
+    
+    .standings-header:hover {
+      background: linear-gradient(135deg, #4338CA 0%, #312E81 100%);
+    }
+    
+    .standings-header .toggle-icon {
+      transition: transform 0.3s ease;
+    }
+    
+    .standings-header.collapsed .toggle-icon {
+      transform: rotate(-90deg);
+    }
+    
+    .standings-content {
+      max-height: 500px;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+    }
+    
+    .standings-content.collapsed {
+      max-height: 0;
     }
     
     /* Standings Table */
@@ -791,9 +868,15 @@
       
       .round-label {
         font-size: 0.8em !important;
-        padding: 3px 6px !important;
-        min-width: 40px !important;
+        padding: 4px 8px !important;
+        min-width: 50px !important;
         margin-right: 8px !important;
+      }
+      
+      .status-badge {
+        font-size: 0.7em !important;
+        padding: 3px 6px !important;
+        min-width: 60px !important;
       }
     }
   </style>
@@ -926,6 +1009,12 @@
         content.classList.add('collapsed');
         button.querySelector('span').textContent = '▶';
       }
+    }
+    
+    function toggleStandings(header) {
+      const content = header.nextElementSibling;
+      content.classList.toggle('collapsed');
+      header.classList.toggle('collapsed');
     }
     
     // Auto-collapse previous rounds and expand current round
@@ -1147,11 +1236,17 @@
             const p1DisplayName = p1Codename || getPlayerNameById(players, row[2]) || row[3] || `Player ${row[2]}`;
             const p2DisplayName = p2Codename || getPlayerNameById(players, row[8]) || row[9] || `Player ${row[8]}`;
             
-            html += `<div class="pairing-card">
-              <span class="pairing-table-no">โต๊ะ ${tableNo}</span>
-              <span class="${p1Class}" title="${p1DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p1DisplayName}')">${rankEmojis[p1Rank]||''} ${renderCodenameEffect(p1DisplayName, p1Rank)} ${rankEmojis[p1Rank]||''}</span>
-              <span class="pairing-result">${resultDisplay}</span>
-              <span class="${p2Class}" title="${p2DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p2DisplayName}')">${rankEmojis[p2Rank]||''} ${renderCodenameEffect(p2DisplayName, p2Rank)} ${rankEmojis[p2Rank]||''}</span>
+            const statusClass = result ? 'completed' : 'pending';
+            const statusText = result ? '✅ เสร็จสิ้น' : '⏳ รอผล';
+            
+            html += `<div class="pairing-card ${statusClass}">
+              <div class="round-label" style="background-color: #3B82F6; color: white; font-weight: 600; border-radius: 6px; padding: 4px 8px; font-size: 0.9em; min-width: 50px; text-align: center; margin-right: 12px;">โต๊ะ ${tableNo}</div>
+              <div class="player-vs">
+                <span class="${p1Class}" title="${p1DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p1DisplayName}')">${rankEmojis[p1Rank]||''} ${renderCodenameEffect(p1DisplayName, p1Rank)} ${rankEmojis[p1Rank]||''}</span>
+                <span class="vs" style="font-weight: bold; color: #374151; margin: 0 8px; font-size: 1.1em;">${resultDisplay}</span>
+                <span class="${p2Class}" title="${p2DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p2DisplayName}')">${rankEmojis[p2Rank]||''} ${renderCodenameEffect(p2DisplayName, p2Rank)} ${rankEmojis[p2Rank]||''}</span>
+              </div>
+              <div class="status-badge status-${statusClass}">${statusText}</div>
             </div>`;
           }
         });
@@ -1167,18 +1262,24 @@
         return '<div style="color:#888;">ยังไม่มีข้อมูลคะแนน Swiss</div>';
       }
       
-      let html = `<div style="overflow-x:auto;"><table class="standings-table">
-        <thead><tr>
-          <th>อันดับ</th>
-          <th>ชื่อ</th>
-          <th>แข่ง</th>
-          <th>ชนะ</th>
-          <th>เสมอ</th>
-          <th>แพ้</th>
-          <th>คะแนน</th>
-          <th>W%</th>
-          <th>OW%</th>
-        </tr></thead><tbody>`;
+      let html = `<div class="standings-container">
+        <div class="standings-header" onclick="toggleStandings(this)">
+          <span>🏆 ตารางคะแนน Swiss Tournament</span>
+          <span class="toggle-icon">▼</span>
+        </div>
+        <div class="standings-content">
+          <div style="overflow-x:auto;"><table class="standings-table">
+            <thead><tr>
+              <th>อันดับ</th>
+              <th>ชื่อ</th>
+              <th>แข่ง</th>
+              <th>ชนะ</th>
+              <th>เสมอ</th>
+              <th>แพ้</th>
+              <th>คะแนน</th>
+              <th>W%</th>
+              <th>OW%</th>
+            </tr></thead><tbody>`;
       
       standings.slice(1).forEach((row, i) => {
         const playerId = row[1];
@@ -1248,7 +1349,7 @@
         </tr>`;
       });
       
-      html += '</tbody></table></div>';
+      html += '</tbody></table></div></div></div>';
       return html;
     }
 
@@ -1401,19 +1502,25 @@
         return '<div style="color:#888;">ยังไม่มีข้อมูลคะแนน Round Robin</div>';
       }
       
-      let html = `<div style="overflow-x:auto;"><table class="standings-table">
-        <thead><tr>
-          <th>อันดับ</th>
-          <th>ชื่อ</th>
-          <th>แข่ง</th>
-          <th>ชนะ</th>
-          <th>เสมอ</th>
-          <th>แพ้</th>
-          <th>คะแนน</th>
-          <th>W%</th>
-                  <th>OW%</th>
-        <th>H2H</th>
-        </tr></thead><tbody>`;
+      let html = `<div class="standings-container">
+        <div class="standings-header" onclick="toggleStandings(this)">
+          <span>🏆 ตารางคะแนน Round Robin Tournament</span>
+          <span class="toggle-icon">▼</span>
+        </div>
+        <div class="standings-content">
+          <div style="overflow-x:auto;"><table class="standings-table">
+            <thead><tr>
+              <th>อันดับ</th>
+              <th>ชื่อ</th>
+              <th>แข่ง</th>
+              <th>ชนะ</th>
+              <th>เสมอ</th>
+              <th>แพ้</th>
+              <th>คะแนน</th>
+              <th>W%</th>
+              <th>OW%</th>
+              <th>H2H</th>
+            </tr></thead><tbody>`;
       
       // ตรวจสอบว่ามี header หรือไม่
       const dataRows = standings.length > 1 && standings[0][0] === 'RANK' ? standings.slice(1) : standings;
@@ -1494,7 +1601,7 @@
         </tr>`;
       });
       
-      html += '</tbody></table></div>';
+      html += '</tbody></table></div></div></div>';
       return html;
     }
 
