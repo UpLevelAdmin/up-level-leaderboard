@@ -378,7 +378,7 @@
     .round-label {
       flex-shrink: 0;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      min-width: 45px;
+      min-width: 40px;
       text-align: center;
       border-radius: 6px;
       padding: 5px 6px;
@@ -405,7 +405,7 @@
     
     .score {
       flex-shrink: 0;
-      min-width: 30px;
+      min-width: 25px;
       text-align: center;
       font-weight: 700;
       color: #374151;
@@ -421,7 +421,7 @@
       white-space: nowrap;
       overflow: visible;
       text-overflow: clip;
-      max-width: 100px;
+      max-width: 80px;
       flex-shrink: 0;
       font-size: 12px;
       min-width: 80px;
@@ -438,8 +438,8 @@
       font-size: 0.65em;
       font-weight: 600;
       text-align: center;
-      min-width: 45px;
-      max-width: 55px;
+      min-width: 40px;
+      max-width: 50px;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
       white-space: nowrap;
       overflow: hidden;
@@ -1378,7 +1378,7 @@
             
             // ย่อชื่อถ้ายาวเกินไป
             const truncateName = (name) => {
-              return name.length > 8 ? name.substring(0, 8) + '...' : name;
+              return name.length > 6 ? name.substring(0, 6) + '...' : name;
             };
             
             const p1ShortName = truncateName(p1DisplayName);
@@ -1389,9 +1389,9 @@
             
             html += `<div class="pairing-card">
               <div class="round-label" style="background-color: #3B82F6; color: white;">โต๊ะ ${tableNo}</div>
-              <span class="player-name ${p1Class}" title="${p1DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p1DisplayName}')">${rankEmojis[p1Rank]||''}${p1ShortName}${rankEmojis[p1Rank]||''}</span>
+              <span class="player-name ${p1Class}" title="${p1DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p1DisplayName}')">${rankEmojis[p1Rank]||''} ${p1ShortName} ${rankEmojis[p1Rank]||''}</span>
               <div class="score">${resultDisplay}</div>
-              <span class="player-name ${p2Class}" title="${p2DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p2DisplayName}')">${rankEmojis[p2Rank]||''}${p2ShortName}${rankEmojis[p2Rank]||''}</span>
+              <span class="player-name ${p2Class}" title="${p2DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p2DisplayName}')">${rankEmojis[p2Rank]||''} ${p2ShortName} ${rankEmojis[p2Rank]||''}</span>
               <div class="status-badge status-${statusClass}">${statusText}</div>
             </div>`;
           }
@@ -1626,7 +1626,7 @@
         
         // ย่อชื่อถ้ายาวเกินไป
         const truncateName = (name) => {
-          return name.length > 8 ? name.substring(0, 8) + '...' : name;
+          return name.length > 6 ? name.substring(0, 6) + '...' : name;
         };
         
         const p1ShortName = truncateName(p1DisplayName);
