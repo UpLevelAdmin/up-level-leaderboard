@@ -317,10 +317,9 @@
     .pairing-card {
       display: flex;
       align-items: center;
-      justify-content: space-between;
       border-radius: 16px;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-      padding: 16px 20px;
+      padding: 12px 16px;
       font-size: 15px;
       background: #fff;
       border: 1px solid #E5E7EB;
@@ -328,6 +327,7 @@
       position: relative;
       width: 100%;
       box-sizing: border-box;
+      gap: 12px;
     }
     
     .pairing-card:hover {
@@ -372,10 +372,15 @@
       color: white;
     }
     
+    .round-label {
+      flex-shrink: 0;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
     .player-vs {
       display: flex;
       align-items: center;
-      gap: 16px;
+      gap: 12px;
       font-weight: 500;
       flex: 1;
       justify-content: center;
@@ -782,6 +787,13 @@
       .vs {
         font-size: 0.9em !important;
         margin: 0 4px !important;
+      }
+      
+      .round-label {
+        font-size: 0.8em !important;
+        padding: 3px 6px !important;
+        min-width: 40px !important;
+        margin-right: 8px !important;
       }
     }
   </style>
@@ -1368,7 +1380,7 @@
         console.log('Final P1 Display Name:', p1DisplayName, 'Final P2 Display Name:', p2DisplayName);
         
         html += `<div class="pairing-card ${statusClass}" style="border-left: 4px solid ${roundColor} !important; background: ${roundBgColor} !important; background-color: ${roundBgColor} !important; background-image: none !important;">
-          <div class="table-no roundrobin-table" style="background-color: ${roundBgColor}; color: #374151; font-weight: 600; border: 1px solid ${roundColor};">รอบ ${round}</div>
+          <div class="round-label" style="background-color: ${roundColor}; color: white; font-weight: 600; border-radius: 6px; padding: 4px 8px; font-size: 0.9em; min-width: 50px; text-align: center; margin-right: 12px;">รอบ ${round}</div>
           <div class="player-vs">
             <span class="${p1Class}" title="${p1DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p1DisplayName}')">${rankEmojis[p1Rank]||''} ${renderCodenameEffect(p1DisplayName, p1Rank)} ${rankEmojis[p1Rank]||''}</span>
             <span class="vs" style="font-weight: bold; color: #374151; margin: 0 8px; font-size: 1.1em;">${resultDisplay}</span>
