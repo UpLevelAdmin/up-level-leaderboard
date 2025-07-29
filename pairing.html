@@ -318,10 +318,10 @@
     .pairing-card {
       display: flex;
       align-items: center;
-      gap: 4px;
+      gap: 2px;
       border-radius: 16px;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-      padding: 8px 10px;
+      padding: 8px 14px;
       font-size: 13px;
       background: #fff;
       border: 1px solid #E5E7EB;
@@ -419,11 +419,12 @@
       flex: 1;
       min-width: 0;
       white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      overflow: visible;
+      text-overflow: clip;
       max-width: 100px;
       flex-shrink: 0;
       font-size: 12px;
+      min-width: 80px;
     }
     
     .player-name:hover {
@@ -432,17 +433,22 @@
     
     .status-badge {
       flex-shrink: 0;
-      padding: 4px 6px;
+      padding: 4px 4px;
       border-radius: 6px;
       font-size: 0.65em;
       font-weight: 600;
       text-align: center;
-      min-width: 50px;
-      max-width: 60px;
+      min-width: 45px;
+      max-width: 55px;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      height: 20px;
+      line-height: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     
     .status-completed {
@@ -1383,9 +1389,9 @@
             
             html += `<div class="pairing-card">
               <div class="round-label" style="background-color: #3B82F6; color: white;">โต๊ะ ${tableNo}</div>
-              <span class="player-name ${p1Class}" title="${p1DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p1DisplayName}')">${rankEmojis[p1Rank]||''} ${p1ShortName} ${rankEmojis[p1Rank]||''}</span>
+              <span class="player-name ${p1Class}" title="${p1DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p1DisplayName}')">${rankEmojis[p1Rank]||''}${p1ShortName}${rankEmojis[p1Rank]||''}</span>
               <div class="score">${resultDisplay}</div>
-              <span class="player-name ${p2Class}" title="${p2DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p2DisplayName}')">${rankEmojis[p2Rank]||''} ${p2ShortName} ${rankEmojis[p2Rank]||''}</span>
+              <span class="player-name ${p2Class}" title="${p2DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p2DisplayName}')">${rankEmojis[p2Rank]||''}${p2ShortName}${rankEmojis[p2Rank]||''}</span>
               <div class="status-badge status-${statusClass}">${statusText}</div>
             </div>`;
           }
@@ -1628,9 +1634,9 @@
         
         html += `<div class="pairing-card ${statusClass}" style="border-left: 4px solid ${roundColor} !important; background: ${roundBgColor} !important; background-color: ${roundBgColor} !important;">
           <div class="round-label" style="background-color: ${roundColor}; color: white;">รอบ ${round}</div>
-          <span class="player-name ${p1Class}" title="${p1DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p1DisplayName}')">${rankEmojis[p1Rank]||''} ${p1ShortName} ${rankEmojis[p1Rank]||''}</span>
+          <span class="player-name ${p1Class}" title="${p1DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p1DisplayName}')">${rankEmojis[p1Rank]||''}${p1ShortName}${rankEmojis[p1Rank]||''}</span>
           <div class="score">${resultDisplay}</div>
-          <span class="player-name ${p2Class}" title="${p2DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p2DisplayName}')">${rankEmojis[p2Rank]||''} ${p2ShortName} ${rankEmojis[p2Rank]||''}</span>
+          <span class="player-name ${p2Class}" title="${p2DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p2DisplayName}')">${rankEmojis[p2Rank]||''}${p2ShortName}${rankEmojis[p2Rank]||''}</span>
           <div class="status-badge status-${statusClass}">${statusText}</div>
         </div>`;
       });
