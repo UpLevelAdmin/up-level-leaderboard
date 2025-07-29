@@ -420,8 +420,11 @@
       font-weight: 600;
       text-align: center;
       min-width: 60px;
+      max-width: 70px;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
       white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     
     .status-completed {
@@ -683,6 +686,76 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      max-width: 120px;
+      cursor: pointer;
+      position: relative;
+    }
+    
+    .standings-table td:nth-child(2):hover::after {
+      content: attr(data-full-text);
+      position: absolute;
+      left: 0;
+      top: -30px;
+      background: rgba(0, 0, 0, 0.9);
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.8em;
+      white-space: nowrap;
+      z-index: 1000;
+      max-width: 200px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .standings-table td:nth-child(9) {
+      max-width: 80px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      cursor: pointer;
+    }
+    
+    .standings-table td:nth-child(9):hover::after {
+      content: attr(data-full-text);
+      position: absolute;
+      left: 0;
+      top: -30px;
+      background: rgba(0, 0, 0, 0.9);
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.8em;
+      white-space: nowrap;
+      z-index: 1000;
+      max-width: 150px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .standings-table td:nth-child(10) {
+      max-width: 80px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      cursor: pointer;
+    }
+    
+    .standings-table td:nth-child(10):hover::after {
+      content: attr(data-full-text);
+      position: absolute;
+      left: 0;
+      top: -30px;
+      background: rgba(0, 0, 0, 0.9);
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.8em;
+      white-space: nowrap;
+      z-index: 1000;
+      max-width: 150px;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     
     .standings-table td:last-child {
@@ -881,6 +954,7 @@
         font-size: 0.65em !important;
         padding: 4px 6px !important;
         min-width: 50px !important;
+        max-width: 60px !important;
       }
       
       .pairing-card {
@@ -1349,7 +1423,7 @@
         
         html += `<tr>
           <td>${i+1}</td>
-          <td>
+          <td data-full-text="${displayName}">
             <span class="codename-rank" data-rank="${playerRank}"><span style="font-size:0.8rem;">${rankEmojis[playerRank]||''}</span> ${renderCodenameEffect(displayName, playerRank)} <span style="font-size:0.8rem;">${rankEmojis[playerRank]||''}</span></span>
           </td>
           <td>${played}</td>
@@ -1358,7 +1432,7 @@
           <td>${loss}</td>
           <td><strong>${points}</strong></td>
           <td>${winRate}</td>
-          <td>${ow}</td>
+          <td data-full-text="${ow}">${ow}</td>
         </tr>`;
       });
       
@@ -1494,7 +1568,7 @@
         console.log('Final P1 Display Name:', p1DisplayName, 'Final P2 Display Name:', p2DisplayName);
         
         html += `<div class="pairing-card ${statusClass}" style="border-left: 4px solid ${roundColor} !important; background: ${roundBgColor} !important; background-color: ${roundBgColor} !important; background-image: none !important;">
-          <div class="round-label" style="background-color: ${roundColor}; color: white;">รอบ ${round}</div>
+          <div class="round-label" style="background-color: ${roundColor}; color: white; font-weight: 600; border-radius: 6px; padding: 4px 8px; font-size: 0.9em; min-width: 50px; text-align: center; margin-right: 12px;">รอบ ${round}</div>
           <div class="player-vs">
             <span class="${p1Class}" title="${p1DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p1DisplayName}')">${rankEmojis[p1Rank]||''} ${renderCodenameEffect(p1DisplayName, p1Rank)} ${rankEmojis[p1Rank]||''}</span>
             <span class="vs" style="font-weight: bold; color: #374151; margin: 0 8px; font-size: 1.1em;">${resultDisplay}</span>
@@ -1600,7 +1674,7 @@
         
         html += `<tr>
           <td>${i+1}</td>
-          <td>
+          <td data-full-text="${displayName}">
             <span class="codename-rank" data-rank="${playerRank}"><span style="font-size:0.8rem;">${rankEmojis[playerRank]||''}</span> ${renderCodenameEffect(displayName, playerRank)} <span style="font-size:0.8rem;">${rankEmojis[playerRank]||''}</span></span>
           </td>
           <td>${played}</td>
@@ -1609,8 +1683,8 @@
           <td>${loss}</td>
           <td><strong>${points}</strong></td>
           <td>${winRate}</td>
-          <td>${ow}</td>
-          <td>${h2h}</td>
+          <td data-full-text="${ow}">${ow}</td>
+          <td data-full-text="${h2h}">${h2h}</td>
         </tr>`;
       });
       
