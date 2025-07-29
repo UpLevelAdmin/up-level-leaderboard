@@ -1036,7 +1036,7 @@
     </div>
     
     <!-- Swiss Tournament Tab -->
-    <div id="swiss-content" class="tab-content active">
+    <div id="swiss-content" class="tab-content swiss-content active">
       <div class="tournament-header swiss-header">
         🏆 Swiss Tournament - การแข่งขันแบบสวิส
       </div>
@@ -1367,7 +1367,7 @@
             const statusClass = result ? 'completed' : 'pending';
             const statusText = result ? '✅ เสร็จสิ้น' : '⏳ รอผล';
             
-            html += `<div class="pairing-card ${statusClass}">
+            html += `<div class="pairing-card">
               <div class="round-label" style="background-color: #3B82F6; color: white;">โต๊ะ ${tableNo}</div>
               <span class="player-name ${p1Class}" title="${p1DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p1DisplayName}')">${rankEmojis[p1Rank]||''} ${renderCodenameEffect(p1DisplayName, p1Rank)} ${rankEmojis[p1Rank]||''}</span>
               <div class="score">${resultDisplay}</div>
