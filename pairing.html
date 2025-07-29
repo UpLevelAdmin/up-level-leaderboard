@@ -1268,6 +1268,9 @@
     }
 
     function renderRoundRobinStandings(standings) {
+      console.log('renderRoundRobinStandings - standings:', standings);
+      console.log('renderRoundRobinStandings - standings.length:', standings ? standings.length : 'null');
+      
       if (!standings || standings.length <= 1) {
         return '<div style="color:#888;">ยังไม่มีข้อมูลคะแนน Round Robin</div>';
       }
@@ -1445,6 +1448,7 @@
         
         // Render Round Robin Tournament
         document.getElementById('roundrobin-pairing').innerHTML = renderRoundRobinPairing(pairingData.roundRobin, pairingData.players, phoneMap);
+        console.log('Round Robin Standings data:', pairingData.roundRobinStandings);
         document.getElementById('roundrobin-standings').innerHTML = renderRoundRobinStandings(pairingData.roundRobinStandings);
         document.getElementById('roundrobin-summary').innerHTML = renderRoundRobinSummary(pairingData.roundRobin, pairingData.roundRobinStandings);
         
