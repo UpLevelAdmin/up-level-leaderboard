@@ -1285,11 +1285,17 @@
           <th>แพ้</th>
           <th>คะแนน</th>
           <th>W%</th>
-          <th>OW%</th>
-          <th>H2H</th>
+                  <th>OW%</th>
+        <th>H2H</th>
         </tr></thead><tbody>`;
       
-      standings.slice(1).forEach((row, i) => {
+      // ตรวจสอบว่ามี header หรือไม่
+      const dataRows = standings.length > 1 && standings[0][0] === 'RANK' ? standings.slice(1) : standings;
+      
+      console.log('RoundRobin - dataRows:', dataRows);
+      console.log('RoundRobin - dataRows.length:', dataRows.length);
+      
+      dataRows.forEach((row, i) => {
         const playerId = row[1];
         const playerName = row[2];
         const played = parseInt(row[3]) || 0;
