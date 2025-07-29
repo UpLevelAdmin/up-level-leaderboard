@@ -411,11 +411,15 @@
       font-weight: 700;
       color: #6b7280;
       font-size: 12px;
+      background: #f3f4f6;
+      border: 1px solid #d1d5db;
+      min-height: 32px;
     }
     
-    /* คลาสร่วมกันสำหรับ player-name และ status-badge */
+    /* คลาสร่วมกันสำหรับ player-name, status-badge และ score */
     .player-name,
-    .status-badge {
+    .status-badge,
+    .score {
       padding: 4px 6px;
       border-radius: 8px;
       font-size: 12px;
@@ -443,9 +447,10 @@
     }
     
     .status-badge {
-      flex-shrink: 0;
+      flex: 1;
       min-width: 60px;
       text-align: center;
+      min-height: 32px;
     }
     
     .status-completed {
