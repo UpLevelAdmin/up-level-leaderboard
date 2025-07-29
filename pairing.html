@@ -318,10 +318,11 @@
     .pairing-card {
       display: flex;
       align-items: center;
-      gap: 2px;
+      min-height: 56px;
+      gap: 8px;
       border-radius: 16px;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-      padding: 8px 18px;
+      padding: 8px 12px;
       font-size: 13px;
       background: #fff;
       border: 1px solid #E5E7EB;
@@ -408,7 +409,7 @@
       min-width: 25px;
       text-align: center;
       font-weight: 700;
-      color: #374151;
+      color: #6b7280;
       font-size: 12px;
     }
     
@@ -433,13 +434,12 @@
     
     .status-badge {
       flex-shrink: 0;
-      padding: 4px 4px;
+      padding: 4px 8px;
       border-radius: 6px;
-      font-size: 0.65em;
+      font-size: 0.7em;
       font-weight: 600;
       text-align: center;
-      min-width: 40px;
-      max-width: 50px;
+      min-width: 60px;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
       white-space: nowrap;
       overflow: hidden;
@@ -1370,7 +1370,7 @@
               p2Class += ' loser';
               resultDisplay = '<span style="color:#dc2626;font-weight:600;">0 : 0</span>';
             } else {
-              resultDisplay = '<span style="color:#6b7280;font-weight:600;">- : -</span>';
+              resultDisplay = '- : -';
             }
             
             const p1DisplayName = p1Codename || getPlayerNameById(players, row[2]) || row[3] || `Player ${row[2]}`;
@@ -1608,7 +1608,7 @@
           statusClass = 'completed';
           statusText = '✅ เสร็จสิ้น';
         } else {
-          resultDisplay = '<span style="color:#6b7280;font-weight:600;">- : -</span>';
+          resultDisplay = '- : -';
         }
         
         const p1NameFromPlayers = getPlayerNameById(players, p1Id);
