@@ -419,12 +419,14 @@
       font-size: 0.75em;
       font-weight: 600;
       text-align: center;
-      min-width: 60px;
-      max-width: 70px;
+      min-width: 70px;
+      max-width: 90px;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      z-index: 1;
+      position: relative;
     }
     
     .status-completed {
@@ -639,14 +641,16 @@
       margin: 20px 0;
     }
     
+    /* Standings Table Header */
     .standings-table th {
-      background: #6366f1;
+      background: #4F46E5;
       color: #fff;
-      font-weight: 600;
-      font-size: 0.85rem;
-      padding: 0.5em 0.3em;
+      font-weight: 700;
+      font-size: 1em;
+      padding: 0.7em 0.3em;
       text-align: center;
       white-space: nowrap;
+      border-bottom: 2px solid #6366f1;
     }
     
     .standings-table th:first-child {
@@ -679,6 +683,35 @@
     
     .standings-table td:first-child {
       border-radius: 6px 0 0 6px;
+    }
+    
+    /* Standings Table Cell Truncate & Tooltip */
+    .standings-table td[data-full-text] {
+      max-width: 90px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      cursor: pointer;
+      position: relative;
+    }
+    .standings-table td[data-full-text]:active::after,
+    .standings-table td[data-full-text]:focus::after,
+    .standings-table td[data-full-text]:hover::after {
+      content: attr(data-full-text);
+      position: absolute;
+      left: 0;
+      top: -32px;
+      background: rgba(0,0,0,0.95);
+      color: #fff;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.95em;
+      white-space: pre;
+      z-index: 1000;
+      min-width: 80px;
+      max-width: 300px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+      pointer-events: none;
     }
     
     .standings-table td:nth-child(2) {
@@ -1567,7 +1600,7 @@
         const p2DisplayName = p2Codename || p2NameFromPlayers || p2NameFromColumn || `Player ${p2Id}`;
         console.log('Final P1 Display Name:', p1DisplayName, 'Final P2 Display Name:', p2DisplayName);
         
-        html += `<div class="pairing-card ${statusClass}" style="border-left: 4px solid ${roundColor} !important; background: ${roundBgColor} !important; background-color: ${roundBgColor} !important; background-image: none !important;">
+        html += `<div class="pairing-card ${statusClass}" style="border-left: 4px solid ${roundColor} !important; background: ${roundBgColor} !important; background-color: ${roundBgColor} !important;">
           <div class="round-label" style="background-color: ${roundColor}; color: white; font-weight: 600; border-radius: 6px; padding: 4px 8px; font-size: 0.9em; min-width: 50px; text-align: center; margin-right: 12px;">รอบ ${round}</div>
           <div class="player-vs">
             <span class="${p1Class}" title="${p1DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p1DisplayName}')">${rankEmojis[p1Rank]||''} ${renderCodenameEffect(p1DisplayName, p1Rank)} ${rankEmojis[p1Rank]||''}</span>
