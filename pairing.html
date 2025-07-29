@@ -327,7 +327,7 @@
       position: relative;
       width: 100%;
       box-sizing: border-box;
-      gap: 12px;
+      gap: 6px;
       margin-bottom: 8px;
       overflow: hidden;
     }
@@ -648,32 +648,36 @@
       background: #4F46E5;
       color: #fff;
       font-weight: 700;
-      font-size: 1em;
-      padding: 0.7em 0.3em;
+      font-size: 0.85em;
+      padding: 0.5em 0.2em;
       text-align: center;
       white-space: nowrap;
       border-bottom: 2px solid #6366f1;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     
     .standings-table th:first-child {
       border-radius: 6px 0 0 6px;
-      width: 8%;
+      width: 10%;
     }
     
     .standings-table th:nth-child(2) {
       text-align: left;
-      width: 25%;
+      width: 22%;
     }
     
-    .standings-table th:nth-child(3) { width: 8%; }
-    .standings-table th:nth-child(4) { width: 8%; }
-    .standings-table th:nth-child(5) { width: 8%; }
-    .standings-table th:nth-child(6) { width: 8%; }
-    .standings-table th:nth-child(7) { width: 10%; }
-    .standings-table th:nth-child(8) { width: 12%; }
+    .standings-table th:nth-child(3) { width: 10%; }
+    .standings-table th:nth-child(4) { width: 10%; }
+    .standings-table th:nth-child(5) { width: 10%; }
+    .standings-table th:nth-child(6) { width: 10%; }
+    .standings-table th:nth-child(7) { width: 12%; }
+    .standings-table th:nth-child(8) { width: 10%; }
+    .standings-table th:nth-child(9) { width: 10%; }
+    .standings-table th:nth-child(10) { width: 10%; }
     .standings-table th:last-child {
       border-radius: 0 6px 6px 0;
-      width: 13%;
+      width: 10%;
     }
     
     .standings-table td {
@@ -689,7 +693,7 @@
     
     /* Standings Table Cell Truncate & Tooltip */
     .standings-table td[data-full-text] {
-      max-width: 90px;
+      max-width: 80px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -702,18 +706,19 @@
       content: attr(data-full-text);
       position: absolute;
       left: 0;
-      top: -32px;
+      top: -35px;
       background: rgba(0,0,0,0.95);
       color: #fff;
-      padding: 6px 12px;
-      border-radius: 6px;
-      font-size: 0.95em;
-      white-space: pre;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 0.9em;
+      white-space: nowrap;
       z-index: 1000;
-      min-width: 80px;
-      max-width: 300px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+      min-width: 100px;
+      max-width: 250px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
       pointer-events: none;
+      border: 1px solid rgba(255,255,255,0.1);
     }
     
     .standings-table td:nth-child(2) {
@@ -999,6 +1004,18 @@
       
       .player-vs {
         gap: 8px !important;
+      }
+      
+      /* Mobile tooltip for standings */
+      .standings-table td[data-full-text]:active::after,
+      .standings-table td[data-full-text]:focus::after,
+      .standings-table td[data-full-text]:hover::after {
+        top: -40px !important;
+        left: -20px !important;
+        min-width: 120px !important;
+        max-width: 200px !important;
+        font-size: 0.85em !important;
+        padding: 10px 12px !important;
       }
     }
   </style>
