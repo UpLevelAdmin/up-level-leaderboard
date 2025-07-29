@@ -413,18 +413,28 @@
       font-size: 12px;
     }
     
-    .player-name {
+    /* คลาสร่วมกันสำหรับ player-name และ status-badge */
+    .player-name,
+    .status-badge {
       padding: 4px 6px;
       border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .player-name {
       transition: all 0.2s ease;
       flex: 1;
       min-width: 0;
-      white-space: nowrap;
       overflow: visible;
       text-overflow: clip;
       max-width: 80px;
       flex-shrink: 0;
-      font-size: 12px;
       min-width: 80px;
     }
     
@@ -434,17 +444,8 @@
     
     .status-badge {
       flex-shrink: 0;
-      padding: 4px 6px;
-      border-radius: 8px;
-      font-size: 12px;
-      font-weight: 600;
-      text-align: center;
       min-width: 60px;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-      white-space: nowrap;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      text-align: center;
     }
     
     .status-completed {
