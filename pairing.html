@@ -321,7 +321,7 @@
       gap: 2px;
       border-radius: 16px;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-      padding: 8px 14px;
+      padding: 8px 18px;
       font-size: 13px;
       background: #fff;
       border: 1px solid #E5E7EB;
@@ -444,8 +444,8 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      height: 20px;
-      line-height: 12px;
+      height: 24px;
+      line-height: 16px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -1370,7 +1370,7 @@
               p2Class += ' loser';
               resultDisplay = '<span style="color:#dc2626;font-weight:600;">0 : 0</span>';
             } else {
-              resultDisplay = '<span class="pairing-wait">- : -</span>';
+              resultDisplay = '<span style="color:#6b7280;font-weight:600;">- : -</span>';
             }
             
             const p1DisplayName = p1Codename || getPlayerNameById(players, row[2]) || row[3] || `Player ${row[2]}`;
@@ -1608,7 +1608,7 @@
           statusClass = 'completed';
           statusText = '✅ เสร็จสิ้น';
         } else {
-          resultDisplay = '- : -';
+          resultDisplay = '<span style="color:#6b7280;font-weight:600;">- : -</span>';
         }
         
         const p1NameFromPlayers = getPlayerNameById(players, p1Id);
