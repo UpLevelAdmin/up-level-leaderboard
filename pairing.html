@@ -318,11 +318,11 @@
     .pairing-card {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 4px;
       border-radius: 16px;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-      padding: 10px 12px;
-      font-size: 14px;
+      padding: 8px 10px;
+      font-size: 13px;
       background: #fff;
       border: 1px solid #E5E7EB;
       transition: all 0.3s ease;
@@ -382,7 +382,7 @@
       text-align: center;
       border-radius: 6px;
       padding: 5px 6px;
-      font-size: 0.75em;
+      font-size: 0.7em;
       font-weight: 600;
       white-space: nowrap;
     }
@@ -409,11 +409,11 @@
       text-align: center;
       font-weight: 700;
       color: #374151;
-      font-size: 13px;
+      font-size: 12px;
     }
     
     .player-name {
-      padding: 6px 8px;
+      padding: 4px 6px;
       border-radius: 8px;
       transition: all 0.2s ease;
       flex: 1;
@@ -423,6 +423,7 @@
       text-overflow: ellipsis;
       max-width: 100px;
       flex-shrink: 0;
+      font-size: 12px;
     }
     
     .player-name:hover {
@@ -431,9 +432,9 @@
     
     .status-badge {
       flex-shrink: 0;
-      padding: 6px 8px;
+      padding: 4px 6px;
       border-radius: 6px;
-      font-size: 0.7em;
+      font-size: 0.65em;
       font-weight: 600;
       text-align: center;
       min-width: 50px;
@@ -1169,8 +1170,8 @@
         
         let hasPending = false;
         pairingCards.forEach(card => {
-          const result = card.querySelector('.pairing-result, .pairing-wait');
-          if (result && result.textContent.trim() === '⏳') {
+          const statusBadge = card.querySelector('.status-badge');
+          if (statusBadge && statusBadge.textContent.includes('รอผล')) {
             hasPending = true;
           }
         });
@@ -1382,9 +1383,9 @@
             
             html += `<div class="pairing-card">
               <div class="round-label" style="background-color: #3B82F6; color: white;">โต๊ะ ${tableNo}</div>
-              <span class="player-name ${p1Class}" title="${p1DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p1DisplayName}')">${rankEmojis[p1Rank]||''} ${renderCodenameEffect(p1ShortName, p1Rank)} ${rankEmojis[p1Rank]||''}</span>
+              <span class="player-name ${p1Class}" title="${p1DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p1DisplayName}')">${rankEmojis[p1Rank]||''} ${p1ShortName} ${rankEmojis[p1Rank]||''}</span>
               <div class="score">${resultDisplay}</div>
-              <span class="player-name ${p2Class}" title="${p2DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p2DisplayName}')">${rankEmojis[p2Rank]||''} ${renderCodenameEffect(p2ShortName, p2Rank)} ${rankEmojis[p2Rank]||''}</span>
+              <span class="player-name ${p2Class}" title="${p2DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p2DisplayName}')">${rankEmojis[p2Rank]||''} ${p2ShortName} ${rankEmojis[p2Rank]||''}</span>
               <div class="status-badge status-${statusClass}">${statusText}</div>
             </div>`;
           }
@@ -1601,7 +1602,7 @@
           statusClass = 'completed';
           statusText = '✅ เสร็จสิ้น';
         } else {
-          resultDisplay = 'รอผล';
+          resultDisplay = '- : -';
         }
         
         const p1NameFromPlayers = getPlayerNameById(players, p1Id);
@@ -1617,11 +1618,19 @@
         const p2DisplayName = p2Codename || p2NameFromPlayers || p2NameFromColumn || `Player ${p2Id}`;
         console.log('Final P1 Display Name:', p1DisplayName, 'Final P2 Display Name:', p2DisplayName);
         
+        // ย่อชื่อถ้ายาวเกินไป
+        const truncateName = (name) => {
+          return name.length > 8 ? name.substring(0, 8) + '...' : name;
+        };
+        
+        const p1ShortName = truncateName(p1DisplayName);
+        const p2ShortName = truncateName(p2DisplayName);
+        
         html += `<div class="pairing-card ${statusClass}" style="border-left: 4px solid ${roundColor} !important; background: ${roundBgColor} !important; background-color: ${roundBgColor} !important;">
           <div class="round-label" style="background-color: ${roundColor}; color: white;">รอบ ${round}</div>
-          <span class="player-name ${p1Class}" title="${p1DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p1DisplayName}')">${rankEmojis[p1Rank]||''} ${renderCodenameEffect(p1DisplayName, p1Rank)} ${rankEmojis[p1Rank]||''}</span>
+          <span class="player-name ${p1Class}" title="${p1DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p1DisplayName}')">${rankEmojis[p1Rank]||''} ${p1ShortName} ${rankEmojis[p1Rank]||''}</span>
           <div class="score">${resultDisplay}</div>
-          <span class="player-name ${p2Class}" title="${p2DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p2DisplayName}')">${rankEmojis[p2Rank]||''} ${renderCodenameEffect(p2DisplayName, p2Rank)} ${rankEmojis[p2Rank]||''}</span>
+          <span class="player-name ${p2Class}" title="${p2DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p2DisplayName}')">${rankEmojis[p2Rank]||''} ${p2ShortName} ${rankEmojis[p2Rank]||''}</span>
           <div class="status-badge status-${statusClass}">${statusText}</div>
         </div>`;
       });
