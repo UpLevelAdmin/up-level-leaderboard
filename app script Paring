@@ -530,7 +530,7 @@ function pairNextRound() {
       pair[1],            // I: P2_ID (ต้องไม่ว่าง)
       getName(pair[1]),   // J: PLAYER 2
       '',                 // K: RESULT
-      '',                 // L: STATUS (ว่างจนกว่าจะใส่ผลการแข่งขัน)
+      'รอผล',             // L: STATUS (รอผลการแข่งขัน)
       ''                  // M: Drop
     ]);
   });
@@ -2151,7 +2151,7 @@ function createRoundRobinTournament() {
         match.player2.name, // PLAYER 2
         match.player2.rank || "", // P2_RANK
         "", // RESULT
-        "" // STATUS
+        "รอผล" // STATUS
       ];
       
       roundRobinSheet.getRange(currentRow, 1, 1, rowData.length).setValues([rowData]);
