@@ -1253,7 +1253,7 @@
         console.log('Final P1 Display Name:', p1DisplayName, 'Final P2 Display Name:', p2DisplayName);
         
         html += `<div class="pairing-card ${statusClass}" style="border-left: 4px solid ${roundColor} !important; background: ${roundBgColor} !important; background-color: ${roundBgColor} !important; background-image: none !important;">
-          <div class="table-no roundrobin-table" style="background-color: ${roundColor}; color: white;">รอบ ${round}</div>
+          <div class="table-no roundrobin-table" style="background-color: ${roundBgColor}; color: ${roundColor}; border: 1px solid ${roundColor};">รอบ ${round}</div>
           <div class="player-vs">
             <span class="${p1Class}">${rankEmojis[p1Rank]||''} ${renderCodenameEffect(p1DisplayName, p1Rank)} ${rankEmojis[p1Rank]||''}</span>
             <span class="vs">VS</span>
