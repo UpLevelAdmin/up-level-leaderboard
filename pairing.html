@@ -1304,8 +1304,11 @@
         const loss = parseInt(row[6]) || 0;
         const points = parseFloat(row[7]) || 0;
         let winRate = row[8] || '0%';
-        let ow = row[9] || '0%';
-        const h2h = row[10] || '-';
+        let ow = row[8] || '0%';  // %OW อยู่ใน column I (index 8)
+        const h2h = row[9] || '-'; // H2H อยู่ใน column J (index 9)
+        
+        console.log('RoundRobin - Row data:', row);
+        console.log('RoundRobin - Points:', points, 'WinRate:', winRate, 'OW:', ow, 'H2H:', h2h);
         
         // แปลงเป็นเปอร์เซ็นต์
         if (typeof winRate === 'number') {
