@@ -2801,7 +2801,23 @@ function doGet(e) {
   // ดึงข้อมูล Swiss Tournament
   const pairingData = pairingSheet.getDataRange().getValues();
   const playersData = playersSheet.getDataRange().getValues();
-  const standingsData = standingSheet.getLastRow() > 1 ? standingSheet.getDataRange().getValues() : [];
+  
+  // ดึงข้อมูล standings แบบ manual เพื่อรวมแถว DROP
+  let standingsData = [];
+  if (standingSheet.getLastRow() > 1) {
+    const lastRow = standingSheet.getLastRow();
+    const allData = standingSheet.getRange(1, 1, lastRow, standingSheet.getLastColumn()).getValues();
+    
+    // หาแถวสุดท้ายที่มีข้อมูลจริง (รวม DROP)
+    let actualLastRow = lastRow;
+    for (let i = lastRow - 1; i >= 0; i--) {
+      if (allData[i][0] && allData[i][0] !== "") {
+        actualLastRow = i + 1;
+        break;
+      }
+    }
+    standingsData = allData.slice(0, actualLastRow);
+  }
   
   // ดึงข้อมูล Round Robin Tournament
   const roundRobinData = roundRobinSheet.getLastRow() > 1 ? roundRobinSheet.getDataRange().getValues() : [];
