@@ -528,6 +528,23 @@
       color: #92400E;
     }
     
+    /* Dropped player styling */
+    .dropped-player {
+      background-color: #f3f4f6 !important;
+      color: #6b7280 !important;
+      font-style: italic;
+    }
+    
+    .dropped-player td {
+      background-color: #f3f4f6 !important;
+      color: #6b7280 !important;
+      font-style: italic;
+    }
+    
+    .dropped-player .codename-rank {
+      opacity: 0.7;
+    }
+    
     /* Legend for player colors */
     .color-legend {
       background: #f8fafc;
@@ -1545,8 +1562,13 @@
         
         console.log('Swiss - Final displayName:', displayName);
         
-        html += `<tr>
-          <td>${i+1}</td>
+        // ตรวจสอบว่าเป็นผู้เล่นที่ drop หรือไม่
+        const isDropped = row[0] === 'DROP';
+        const rankDisplay = isDropped ? 'DROP' : (i+1);
+        const rowClass = isDropped ? 'dropped-player' : '';
+        
+        html += `<tr class="${rowClass}">
+          <td>${rankDisplay}</td>
           <td data-full-text="${displayName}" onclick="showTooltip(this, '${displayName}')">
             <span class="codename-rank" data-rank="${playerRank}"><span style="font-size:0.8rem;">${rankEmojis[playerRank]||''}</span> ${renderCodenameEffect(displayName, playerRank)} <span style="font-size:0.8rem;">${rankEmojis[playerRank]||''}</span></span>
           </td>

@@ -996,45 +996,60 @@ function updateStandings() {
   // Merge standings with all players (including those who haven't played yet)
   const mergedStandings = { ...allPlayers, ...standings };
   
-  // Calculate points and sort standings (exclude dropped players)
-  const standingsArray = Object.entries(mergedStandings)
-    .filter(([player_id, stats]) => !dropList.includes(stats.name)) // ไม่รวมผู้เล่นที่ drop
-    .map(([player_id, stats]) => {
-      const points = stats.win * 3 + stats.draw;
-      const winRate = stats.played > 0 ? Math.round((stats.win / stats.played) * 100) : 0;
-      const owRate = calculateOW(player_id);
-      
-      return [
-        0, // Rank (will be filled later)
-        player_id,
-        stats.name,
-        stats.played,
-        stats.win,
-        stats.draw,
-        stats.loss,
-        points,
-        winRate + '%',
-        owRate + '%',
-        '' // H2H (will be filled later)
-      ];
-    });
+  // แยกผู้เล่นที่ drop และไม่ drop
+  const activePlayers = [];
+  const droppedPlayers = [];
   
-  // Sort by points (descending), win rate (descending), then OW% (descending)
-  standingsArray.sort((a, b) => {
+  Object.entries(mergedStandings).forEach(([player_id, stats]) => {
+    const points = stats.win * 3 + stats.draw;
+    const winRate = stats.played > 0 ? Math.round((stats.win / stats.played) * 100) : 0;
+    const owRate = calculateOW(player_id);
+    
+    const playerData = [
+      0, // Rank (will be filled later)
+      player_id,
+      stats.name,
+      stats.played,
+      stats.win,
+      stats.draw,
+      stats.loss,
+      points,
+      winRate + '%',
+      owRate + '%',
+      '' // H2H (will be filled later)
+    ];
+    
+    if (dropList.includes(stats.name)) {
+      droppedPlayers.push(playerData);
+    } else {
+      activePlayers.push(playerData);
+    }
+  });
+  
+  // Sort active players by points (descending), win rate (descending), then OW% (descending)
+  activePlayers.sort((a, b) => {
     if (b[7] !== a[7]) return b[7] - a[7]; // Points
     if (parseInt(b[8]) !== parseInt(a[8])) return parseInt(b[8]) - parseInt(a[8]); // Win Rate
     return parseInt(b[9]) - parseInt(a[9]); // OW%
   });
   
-  // Add H2H scores for tied players
-  for (let i = 0; i < standingsArray.length; i++) {
-    const currentPlayer = standingsArray[i];
+  // Sort dropped players by points (descending) - เอาไว้ล่างสุด
+  droppedPlayers.sort((a, b) => b[7] - a[7]); // Sort by Points (descending)
+  
+  // รวม active players และ dropped players
+  const standingsArray = [...activePlayers, ...droppedPlayers];
+  
+
+  
+  // Add H2H scores for tied players (เฉพาะ active players)
+  for (let i = 0; i < activePlayers.length; i++) {
+    const currentPlayer = activePlayers[i];
     const currentPoints = currentPlayer[7];
     const currentWinRate = parseInt(currentPlayer[8]);
     const currentOW = parseInt(currentPlayer[9]);
     
-    // Find players with same points, win rate, and OW%
-    const tiedPlayers = standingsArray.filter((player, index) => 
+    // Find players with same points, win rate, and OW% (เฉพาะ active players)
+    const tiedPlayers = activePlayers.filter((player, index) => 
       index !== i && 
       player[7] === currentPoints && 
       parseInt(player[8]) === currentWinRate && 
@@ -1069,8 +1084,8 @@ function updateStandings() {
     }
   }
   
-  // Re-sort with H2H as tie-breaker
-  standingsArray.sort((a, b) => {
+  // Re-sort active players with H2H as tie-breaker
+  activePlayers.sort((a, b) => {
     if (b[7] !== a[7]) return b[7] - a[7]; // Points
     if (parseInt(b[8]) !== parseInt(a[8])) return parseInt(b[8]) - parseInt(a[8]); // Win Rate
     if (parseInt(b[9]) !== parseInt(a[9])) return parseInt(b[9]) - parseInt(a[9]); // OW%
@@ -1078,9 +1093,19 @@ function updateStandings() {
     return a[2].localeCompare(b[2]); // เรียงตามชื่อ
   });
   
-  // Add ranks
+  // รวม active players และ dropped players อีกครั้ง
+  const standingsArray = [...activePlayers, ...droppedPlayers];
+  
+  // Add ranks และป้าย DROP
+  let rankCounter = 1;
   standingsArray.forEach((row, index) => {
-    row[0] = index + 1;
+    if (index < activePlayers.length) {
+      // Active players - ใช้ rank ปกติ
+      row[0] = rankCounter++;
+    } else {
+      // Dropped players - ใช้ป้าย DROP
+      row[0] = 'DROP';
+    }
   });
   
   // Clear existing data in Standing sheet
@@ -1117,14 +1142,23 @@ function updateStandings() {
     // Add alternating row colors for better readability
     standingsArray.forEach((_, index) => {
       const rowRange = standingSheet.getRange(2 + index, 1, 1, 11);
-      rowRange.setBackground(index % 2 === 0 ? '#f3e8ff' : '#f0f9ff'); // Purple and blue alternating
+      
+      if (index >= activePlayers.length) {
+        // Dropped players - สีเทาอ่อน
+        rowRange.setBackground('#f3f4f6');
+        rowRange.setFontColor('#6b7280'); // สีเทา
+        rowRange.setFontStyle('italic'); // ตัวเอียง
+      } else {
+        // Active players - สีสลับแถว
+        rowRange.setBackground(index % 2 === 0 ? '#f3e8ff' : '#f0f9ff'); // Purple and blue alternating
+      }
     });
 
     // Add borders
     dataRange.setBorder(true, true, true, true, true, true, '#e2e8f0', SpreadsheetApp.BorderStyle.SOLID);
     
-    // Highlight top 3 players (ทับสีสลับแถว)
-    for (let i = 0; i < Math.min(3, standingsArray.length); i++) {
+    // Highlight top 3 players (เฉพาะ active players)
+    for (let i = 0; i < Math.min(3, activePlayers.length); i++) {
       const rowRange = standingSheet.getRange(2 + i, 1, 1, 11);
       if (i === 0) {
         rowRange.setBackground('#ffd700'); // ทอง (สีเหลืองเข้ม) สำหรับอันดับ 1
