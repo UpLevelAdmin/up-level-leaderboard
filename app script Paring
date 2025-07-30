@@ -152,6 +152,9 @@ function pairFirstRound() {
   const startRow = pairingSheet.getLastRow() + 1;
   pairingSheet.getRange(startRow, 1, output.length, output[0].length).setValues(output);
   addCheckboxes(pairingSheet, output.length);
+  
+  // จัดรูปแบบการแสดงผลให้สวยงาม
+  formatPairingData(pairingSheet, startRow, output.length);
 
   // แจ้งผลลัพธ์
   const totalMatches = output.length;
