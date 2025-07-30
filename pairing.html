@@ -528,6 +528,41 @@
       color: #92400E;
     }
     
+    /* Legend for player colors */
+    .color-legend {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 16px;
+      margin: 16px 0;
+      font-size: 14px;
+    }
+    
+    .color-legend h4 {
+      margin: 0 0 12px 0;
+      color: #374151;
+      font-weight: 600;
+    }
+    
+    .legend-item {
+      display: flex;
+      align-items: center;
+      margin: 8px 0;
+      gap: 12px;
+    }
+    
+    .legend-color {
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      border: 1px solid #d1d5db;
+    }
+    
+    .legend-text {
+      color: #6b7280;
+      font-weight: 500;
+    }
+    
     /* Original format player blocks */
     .player-block {
       display: flex;
@@ -1087,6 +1122,27 @@
         <!-- จะถูกเติมด้วย JavaScript -->
       </div>
       
+      <!-- Color Legend -->
+      <div class="color-legend">
+        <h4>🎨 ความหมายของสี</h4>
+        <div class="legend-item">
+          <div class="legend-color" style="background: #DBEAFE; border-color: #3B82F6;"></div>
+          <span class="legend-text">🔵 สีฟ้า = ผู้เล่นที่ชนะ</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color" style="background: #FECACA; border-color: #EF4444;"></div>
+          <span class="legend-text">🔴 สีแดง = ผู้เล่นที่แพ้</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color" style="background: #FEF9C3; border-color: #FCD34D;"></div>
+          <span class="legend-text">🟡 สีเหลือง = เสมอ</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color" style="background: #FEF9C3; border-color: #FCD34D;"></div>
+          <span class="legend-text">⚪ สีขาว = ยังไม่แข่ง</span>
+        </div>
+      </div>
+      
       <!-- Pairing Section -->
       <div id="swiss-pairing" class="pairing-list">
         <!-- จะถูกเติมด้วย JavaScript -->
@@ -1107,6 +1163,27 @@
       <!-- Summary Stats -->
       <div id="roundrobin-summary" class="summary-stats">
         <!-- จะถูกเติมด้วย JavaScript -->
+      </div>
+      
+      <!-- Color Legend -->
+      <div class="color-legend">
+        <h4>🎨 ความหมายของสี</h4>
+        <div class="legend-item">
+          <div class="legend-color" style="background: #DBEAFE; border-color: #3B82F6;"></div>
+          <span class="legend-text">🔵 สีฟ้า = ผู้เล่นที่ชนะ</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color" style="background: #FECACA; border-color: #EF4444;"></div>
+          <span class="legend-text">🔴 สีแดง = ผู้เล่นที่แพ้</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color" style="background: #FEF9C3; border-color: #FCD34D;"></div>
+          <span class="legend-text">🟡 สีเหลือง = เสมอ</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color" style="background: #FEF9C3; border-color: #FCD34D;"></div>
+          <span class="legend-text">⚪ สีขาว = ยังไม่แข่ง</span>
+        </div>
       </div>
       
       <!-- Round Robin Matches -->
@@ -1871,9 +1948,7 @@
           // ซ่อน standings
           document.getElementById('swiss-standings').innerHTML = `
             <div style="text-align:center;padding:2rem;background:#fef3c7;border:1px solid #fcd34d;border-radius:12px;margin:1rem;">
-              <h3>👁️ ตารางคะแนนถูกซ่อนไว้</h3>
-              <p>ตารางคะแนนถูกซ่อนไว้ตามการตั้งค่าใน Google Sheets</p>
-              <p style="font-size:0.9em;color:#92400e;">กรุณาเอาติ๊กถูกออกจากช่อง L1 ในชีท Standing เพื่อแสดงตารางคะแนน</p>
+              <h3>👁️ ยังไม่เปิดเผย Standing</h3>
             </div>
           `;
         } else {
@@ -1890,9 +1965,7 @@
           // ซ่อน standings
           document.getElementById('roundrobin-standings').innerHTML = `
             <div style="text-align:center;padding:2rem;background:#fef3c7;border:1px solid #fcd34d;border-radius:12px;margin:1rem;">
-              <h3>👁️ ตารางคะแนนถูกซ่อนไว้</h3>
-              <p>ตารางคะแนนถูกซ่อนไว้ตามการตั้งค่าใน Google Sheets</p>
-              <p style="font-size:0.9em;color:#92400e;">กรุณาเอาติ๊กถูกออกจากช่อง L1 ในชีท Standing เพื่อแสดงตารางคะแนน</p>
+              <h3>👁️ ยังไม่เปิดเผย Standing</h3>
             </div>
           `;
         } else {
