@@ -2857,9 +2857,25 @@ function setupHideStandingCheckbox() {
   standingSheet.setColumnWidth(8, 80);   // Points
   standingSheet.setColumnWidth(9, 80);   // Win Rate
   standingSheet.setColumnWidth(10, 80);  // OW%
-  standingSheet.setColumnWidth(11, 200); // H2H - ขยายให้กว้างขึ้น
+  standingSheet.setColumnWidth(11, 120); // H2H - ขยายตามข้อความ
   standingSheet.setColumnWidth(12, 120); // คอลัมน์ L (checkbox)
   standingSheet.setColumnWidth(13, 150); // คอลัมน์ M (ข้อความ)
+  
+  // ปรับคอลัมน์ H2H ให้ขยายตามข้อความที่ยาวที่สุด
+  const h2hRange = standingSheet.getRange(2, 11, standingSheet.getLastRow() - 1, 1);
+  const h2hValues = h2hRange.getValues();
+  let maxLength = 0;
+  
+  h2hValues.forEach(row => {
+    const text = row[0] ? row[0].toString() : '';
+    if (text.length > maxLength) {
+      maxLength = text.length;
+    }
+  });
+  
+  // คำนวณความกว้างที่เหมาะสม (ประมาณ 8px ต่อตัวอักษร + padding)
+  const optimalWidth = Math.max(120, Math.min(300, maxLength * 8 + 20));
+  standingSheet.setColumnWidth(11, optimalWidth);
   
   // ปรับความสูงแถวที่ 1 ให้สูงขึ้น
   standingSheet.setRowHeight(1, 40);
