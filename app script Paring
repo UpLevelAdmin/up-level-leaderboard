@@ -999,16 +999,19 @@ function updateStandings() {
     // Add borders
     dataRange.setBorder(true, true, true, true, true, true, '#e2e8f0', SpreadsheetApp.BorderStyle.SOLID);
     
-    // Highlight top 3 players
+    // Highlight top 3 players (ทับสีสลับแถว)
     for (let i = 0; i < Math.min(3, standingsArray.length); i++) {
       const rowRange = standingSheet.getRange(2 + i, 1, 1, 11);
       if (i === 0) {
-        rowRange.setBackground('#fef3c7'); // Gold for 1st place
+        rowRange.setBackground('#ffd700'); // ทอง (สีเหลืองเข้ม) สำหรับอันดับ 1
         rowRange.setFontWeight('bold');
+        rowRange.setFontColor('#000000'); // ตัวอักษรสีดำ
       } else if (i === 1) {
-        rowRange.setBackground('#e5e7eb'); // Silver for 2nd place
+        rowRange.setBackground('#c0c0c0'); // เงิน (สีเทา) สำหรับอันดับ 2
+        rowRange.setFontWeight('bold');
       } else if (i === 2) {
-        rowRange.setBackground('#fde68a'); // Bronze for 3rd place
+        rowRange.setBackground('#cd7f32'); // ทองแดง (สีน้ำตาล) สำหรับอันดับ 3
+        rowRange.setFontWeight('bold');
       }
     }
   }
