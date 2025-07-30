@@ -1044,6 +1044,9 @@ function updateStandings() {
   standingSheet.setColumnWidth(9, 100);  // Win Rate
   standingSheet.setColumnWidth(10, 80);  // OW%
   standingSheet.setColumnWidth(11, 80);  // H2H
+  
+  // ตั้งค่า Hide Standing checkbox ให้ default เป็นการซ่อน
+  setupHideStandingCheckbox();
 }
 
 
@@ -2691,8 +2694,8 @@ function setupHideStandingCheckbox() {
       // เพิ่ม checkbox ที่ช่อง L1
       hideStandingCell.insertCheckboxes();
       
-      // ตั้งค่า default เป็นไม่ติ๊กถูก (แสดง Standings)
-      hideStandingCell.uncheck();
+      // ตั้งค่า default เป็นติ๊กถูก (ซ่อน Standings)
+      hideStandingCell.check();
       
       // ตั้งค่าฟอร์แมท
       hideStandingCell.setBackground('#fef3c7'); // สีเหลืองอ่อน
@@ -2700,7 +2703,7 @@ function setupHideStandingCheckbox() {
       hideStandingCell.setHorizontalAlignment('center');
       hideStandingCell.setBorder(true, true, true, true, true, true, '#fcd34d', SpreadsheetApp.BorderStyle.SOLID);
       
-      console.log('สร้าง Hide Standing checkbox ที่ L1 เรียบร้อยแล้ว');
+      console.log('สร้าง Hide Standing checkbox ที่ L1 เรียบร้อยแล้ว (default: ซ่อน Standings)');
     }
   } catch (error) {
     console.log('ไม่สามารถสร้าง checkbox ที่ L1 ได้:', error);
