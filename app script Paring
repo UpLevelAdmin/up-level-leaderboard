@@ -1037,7 +1037,7 @@ function updateStandings() {
   droppedPlayers.sort((a, b) => b[7] - a[7]); // Sort by Points (descending)
   
   // รวม active players และ dropped players
-  const standingsArray = [...activePlayers, ...droppedPlayers];
+  let standingsArray = [...activePlayers, ...droppedPlayers];
   
 
   
@@ -1089,12 +1089,11 @@ function updateStandings() {
     if (b[7] !== a[7]) return b[7] - a[7]; // Points
     if (parseInt(b[8]) !== parseInt(a[8])) return parseInt(b[8]) - parseInt(a[8]); // Win Rate
     if (parseInt(b[9]) !== parseInt(a[9])) return parseInt(b[9]) - parseInt(a[9]); // OW%
-    // ถ้า OW% เท่ากัน เรียงตามชื่อ (ไม่ใช้ H2H เป็นตัวเลข)
     return a[2].localeCompare(b[2]); // เรียงตามชื่อ
   });
   
-  // รวม active players และ dropped players อีกครั้ง
-  const standingsArray = [...activePlayers, ...droppedPlayers];
+  // รวม active players และ dropped players อีกครั้ง (หลัง sort)
+  standingsArray = [...activePlayers, ...droppedPlayers];
   
   // Add ranks และป้าย DROP
   let rankCounter = 1;
