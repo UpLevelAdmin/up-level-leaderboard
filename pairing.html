@@ -1501,6 +1501,7 @@
         const points = parseFloat(row[7]) || 0;
         let winRate = row[8] || '0%';
         let ow = row[9] || '0%';
+        const h2h = row[10] || ''; // H2H column
         
         // แปลงเป็นเปอร์เซ็นต์
         if (typeof winRate === 'number') {
@@ -1554,7 +1555,7 @@
           <td>${loss}</td>
           <td data-full-text="${winRate}" onclick="showTooltip(this, '${winRate}')">${winRate}</td>
           <td data-full-text="${ow}" onclick="showTooltip(this, '${ow}')">${ow}</td>
-          <td data-full-text="${points}" onclick="showTooltip(this, '${points}')"><strong>${points}</strong></td>
+          <td data-full-text="${h2h}" onclick="showTooltip(this, '${h2h}')">${h2h}</td>
         </tr>`;
       });
       
