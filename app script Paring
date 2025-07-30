@@ -2846,9 +2846,20 @@ function setupHideStandingCheckbox() {
   hideStandingText.setHorizontalAlignment('center');
   hideStandingText.setBorder(true, true, true, true, true, true, '#2196f3', SpreadsheetApp.BorderStyle.SOLID);
   
-  // ปรับขนาดคอลัมน์ L และ M ให้กว้างขึ้น
-  standingSheet.setColumnWidth(12, 120); // คอลัมน์ L
-  standingSheet.setColumnWidth(13, 150); // คอลัมน์ M
+  // ปรับขนาดคอลัมน์ให้เหมาะสม
+  standingSheet.setColumnWidth(1, 60);   // Rank
+  standingSheet.setColumnWidth(2, 100);  // Player ID
+  standingSheet.setColumnWidth(3, 150);  // Player Name
+  standingSheet.setColumnWidth(4, 80);   // Played
+  standingSheet.setColumnWidth(5, 60);   // Win
+  standingSheet.setColumnWidth(6, 60);   // Draw
+  standingSheet.setColumnWidth(7, 60);   // Loss
+  standingSheet.setColumnWidth(8, 80);   // Points
+  standingSheet.setColumnWidth(9, 80);   // Win Rate
+  standingSheet.setColumnWidth(10, 80);  // OW%
+  standingSheet.setColumnWidth(11, 200); // H2H - ขยายให้กว้างขึ้น
+  standingSheet.setColumnWidth(12, 120); // คอลัมน์ L (checkbox)
+  standingSheet.setColumnWidth(13, 150); // คอลัมน์ M (ข้อความ)
   
   // ปรับความสูงแถวที่ 1 ให้สูงขึ้น
   standingSheet.setRowHeight(1, 40);
