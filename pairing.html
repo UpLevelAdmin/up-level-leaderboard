@@ -1534,6 +1534,7 @@
         }
       });
       
+      console.log('Swiss standings data:', standings);
       standings.slice(1).forEach((row, i) => {
         const playerId = row[1];
         const playerName = row[2];
@@ -1979,6 +1980,7 @@
         console.log('Loaded data:', pairingData);
         console.log('phoneMap:', phoneMap);
         console.log('playersData:', pairingData.players);
+        console.log('Standings data:', pairingData.standings);
         console.log('Hide Standing Status:', pairingData.hideStanding);
         
         // ตรวจสอบสถานะ Hide Standing
@@ -2017,7 +2019,6 @@
         }
         
         console.log('Round Robin Standings data:', pairingData.roundRobinStandings);
-        document.getElementById('roundrobin-standings').innerHTML = renderRoundRobinStandings(pairingData.roundRobinStandings);
         document.getElementById('roundrobin-summary').innerHTML = renderRoundRobinSummary(pairingData.roundRobin, pairingData.roundRobinStandings);
         
       } catch (e) {
