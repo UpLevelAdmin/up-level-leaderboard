@@ -91,6 +91,21 @@
       font-size: 20px;
     }
     
+    /* Refresh Button */
+    #refreshBtn {
+      transition: all 0.3s ease;
+    }
+    
+    #refreshBtn:hover {
+      background: #059669 !important;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(16,185,129,0.4) !important;
+    }
+    
+    #refreshBtn:active {
+      transform: translateY(0);
+    }
+    
     .logo {
       width: 110px;
       filter: drop-shadow(0 4px 8px rgba(0,0,0,0.18));
@@ -1044,6 +1059,11 @@
       <h1 class="title">Tournament Display</h1>
       <div class="subtitle">การแข่งขัน Pokemon TCG - Up Level Gym</div>
       <a href="index.html" class="home-button" title="กลับหน้าหลัก"></a>
+      
+      <!-- Refresh Button -->
+      <button id="refreshBtn" onclick="loadData()" style="position:absolute;top:20px;right:20px;background:#10B981;color:white;border:none;padding:12px 16px;border-radius:50%;cursor:pointer;font-size:18px;box-shadow:0 4px 12px rgba(16,185,129,0.3);transition:all 0.3s ease;" title="รีเฟรชข้อมูล">
+        🔄
+      </button>
     </div>
     
     <!-- Tab Navigation -->
@@ -1833,18 +1853,52 @@
         // กำหนดค่า global variables
         window.playersData = pairingData.players;
         window.phoneMap = phoneMap;
+        window.hideStandingStatus = pairingData.hideStanding;
         
         console.log('Loaded data:', pairingData);
         console.log('phoneMap:', phoneMap);
         console.log('playersData:', pairingData.players);
+        console.log('Hide Standing Status:', pairingData.hideStanding);
+        
+        // ตรวจสอบสถานะ Hide Standing
+        const shouldHideStanding = pairingData.hideStanding && pairingData.hideStanding.hideStanding;
         
         // Render Swiss Tournament
         document.getElementById('swiss-pairing').innerHTML = renderSwissPairing(pairingData.pairing, pairingData.players, phoneMap);
-        document.getElementById('swiss-standings').innerHTML = renderSwissStandings(pairingData.standings);
+        
+        // Render Standings ตามสถานะ Hide Standing
+        if (shouldHideStanding) {
+          // ซ่อน standings
+          document.getElementById('swiss-standings').innerHTML = `
+            <div style="text-align:center;padding:2rem;background:#fef3c7;border:1px solid #fcd34d;border-radius:12px;margin:1rem;">
+              <h3>👁️ ตารางคะแนนถูกซ่อนไว้</h3>
+              <p>ตารางคะแนนถูกซ่อนไว้ตามการตั้งค่าใน Google Sheets</p>
+              <p style="font-size:0.9em;color:#92400e;">กรุณาเอาติ๊กถูกออกจากคอลัมน์ "Hide Standing" ในชีท Standing เพื่อแสดงตารางคะแนน</p>
+            </div>
+          `;
+        } else {
+          document.getElementById('swiss-standings').innerHTML = renderSwissStandings(pairingData.standings);
+        }
+        
         document.getElementById('swiss-summary').innerHTML = renderSwissSummary(pairingData.pairing, pairingData.standings);
         
         // Render Round Robin Tournament
         document.getElementById('roundrobin-pairing').innerHTML = renderRoundRobinPairing(pairingData.roundRobin, pairingData.players, phoneMap);
+        
+        // Render Round Robin Standings ตามสถานะ Hide Standing
+        if (shouldHideStanding) {
+          // ซ่อน standings
+          document.getElementById('roundrobin-standings').innerHTML = `
+            <div style="text-align:center;padding:2rem;background:#fef3c7;border:1px solid #fcd34d;border-radius:12px;margin:1rem;">
+              <h3>👁️ ตารางคะแนนถูกซ่อนไว้</h3>
+              <p>ตารางคะแนนถูกซ่อนไว้ตามการตั้งค่าใน Google Sheets</p>
+              <p style="font-size:0.9em;color:#92400e;">กรุณาเอาติ๊กถูกออกจากคอลัมน์ "Hide Standing" ในชีท Standing เพื่อแสดงตารางคะแนน</p>
+            </div>
+          `;
+        } else {
+          document.getElementById('roundrobin-standings').innerHTML = renderRoundRobinStandings(pairingData.roundRobinStandings);
+        }
+        
         console.log('Round Robin Standings data:', pairingData.roundRobinStandings);
         document.getElementById('roundrobin-standings').innerHTML = renderRoundRobinStandings(pairingData.roundRobinStandings);
         document.getElementById('roundrobin-summary').innerHTML = renderRoundRobinSummary(pairingData.roundRobin, pairingData.roundRobinStandings);
@@ -1877,6 +1931,12 @@
     // Load data when page loads
     loadData();
     
+    // Auto-refresh every 30 seconds
+    setInterval(() => {
+      console.log('Auto-refreshing data...');
+      loadData();
+    }, 30000);
+    
     // Retry mechanism
     window.addEventListener('online', function() {
       console.log('Network is back online, retrying...');
@@ -1888,6 +1948,14 @@
       console.log('Manual retry triggered');
       loadData();
     };
+    
+    // Add refresh button animation
+    document.getElementById('refreshBtn').addEventListener('click', function() {
+      this.style.transform = 'rotate(360deg)';
+      setTimeout(() => {
+        this.style.transform = 'rotate(0deg)';
+      }, 500);
+    });
   </script>
 </body>
 </html> 

@@ -3,6 +3,7 @@ function onOpen() {
   
   // 🏆 Tournament Management
   ui.createMenu('🏆 Tournament')
+    .addItem('🆔 สร้าง Player ID อัตโนมัติ', 'generatePlayerIDs')
     .addItem('🎲 จับคู่รอบแรก', 'pairFirstRound')
     .addItem('➡️ จับคู่รอบถัดไป', 'pairNextRound')
     .addItem('🔁 อัปเดต Standings', 'updateStandings')
@@ -24,7 +25,6 @@ function onOpen() {
   // 🛠️ Data Management
   ui.createMenu('🛠️ Data Management')
     .addItem('🧹 เคลียร์ทั้งหมด (เริ่มใหม่)', 'clearAllData')
-    .addItem('🆔 สร้าง Player ID อัตโนมัติ', 'generatePlayerIDs')
     .addItem('🔧 แก้ไขการจับคู่ที่มีปัญหา', 'fixIncompletePairing')
     .addItem('🔧 แก้ไข P2_ID ที่ว่าง', 'fixMissingPlayerIDs')
     .addSeparator()
@@ -530,7 +530,7 @@ function pairNextRound() {
       pair[1],            // I: P2_ID (ต้องไม่ว่าง)
       getName(pair[1]),   // J: PLAYER 2
       '',                 // K: RESULT
-      'รอผล',             // L: STATUS (รอผลการแข่งขัน)
+      '',                 // L: STATUS (ว่างจนกว่าจะใส่ผลการแข่งขัน)
       ''                  // M: Drop
     ]);
   });
@@ -2151,7 +2151,7 @@ function createRoundRobinTournament() {
         match.player2.name, // PLAYER 2
         match.player2.rank || "", // P2_RANK
         "", // RESULT
-        "รอผล" // STATUS
+        "" // STATUS
       ];
       
       roundRobinSheet.getRange(currentRow, 1, 1, rowData.length).setValues([rowData]);
@@ -2624,4 +2624,76 @@ function createRoundRobinStanding() {
   standingSheet.setColumnWidth(10, 120); // H2H
   
   SpreadsheetApp.getUi().alert(`🏆 สร้างสรุปผล Round Robin สำเร็จ!\n\n📊 สถิติ:\n• จำนวนผู้เล่น: ${standings.length} คน\n• ผู้เล่นที่มีผลการแข่งขัน: ${standings.filter(p => p.wins + p.draws + p.losses > 0).length} คน`);
+}
+
+// 👁️ ตรวจสอบสถานะ Hide Standing
+function checkHideStandingStatus() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const standingSheet = ss.getSheetByName('Standing');
+  
+  // หาคอลัมน์ Hide Standing (คอลัมน์ K)
+  const hideStandingCol = 11; // คอลัมน์ K
+  
+  // ตรวจสอบว่ามีข้อมูลในคอลัมน์นี้หรือไม่
+  const lastRow = standingSheet.getLastRow();
+  if (lastRow <= 1) {
+    return { hideStanding: false };
+  }
+  
+  // ดึงข้อมูล checkbox จากคอลัมน์ K
+  const checkboxRange = standingSheet.getRange(2, hideStandingCol, lastRow - 1, 1);
+  const checkboxValues = checkboxRange.getValues();
+  
+  // ตรวจสอบว่ามี checkbox ที่ติ๊กถูกหรือไม่
+  const hasCheckedBox = checkboxValues.some(value => value[0] === true);
+  
+  console.log(`Hide Standing Status: ${hasCheckedBox ? 'ซ่อน Standings' : 'แสดง Standings'}`);
+  
+  return {
+    hideStanding: hasCheckedBox
+  };
+}
+
+
+
+// 📊 อัปเดตฟังก์ชัน doGet เพื่อส่งข้อมูล Hide Pairing
+function doGet(e) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  
+  // Swiss Tournament Data
+  const pairingSheet = ss.getSheetByName('Pairing');
+  const playersSheet = ss.getSheetByName('Players');
+  const standingSheet = ss.getSheetByName('Standing');
+  
+  // Round Robin Tournament Data
+  const roundRobinSheet = ss.getSheetByName('Round Robin');
+  const roundRobinStandingSheet = ss.getSheetByName('Round Robin Standing');
+  
+  // ดึงข้อมูล Swiss Tournament
+  const pairingData = pairingSheet.getDataRange().getValues();
+  const playersData = playersSheet.getDataRange().getValues();
+  const standingsData = standingSheet.getLastRow() > 1 ? standingSheet.getDataRange().getValues() : [];
+  
+  // ดึงข้อมูล Round Robin Tournament
+  const roundRobinData = roundRobinSheet.getLastRow() > 1 ? roundRobinSheet.getDataRange().getValues() : [];
+  const roundRobinStandingData = roundRobinStandingSheet.getLastRow() > 1 ? roundRobinStandingSheet.getDataRange().getValues() : [];
+
+  // ดึงสถานะ Hide Standing
+  const hideStandingStatus = checkHideStandingStatus();
+
+  return ContentService.createTextOutput(
+    JSON.stringify({
+      // Swiss Tournament
+      pairing: pairingData,
+      players: playersData,
+      standings: standingsData,
+      
+      // Round Robin Tournament
+      roundRobin: roundRobinData,
+      roundRobinStandings: roundRobinStandingData,
+      
+      // Hide Standing Status
+      hideStanding: hideStandingStatus
+    })
+  ).setMimeType(ContentService.MimeType.JSON);
 }
