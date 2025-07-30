@@ -327,8 +327,6 @@ function pairNextRound() {
 
   // 3. สร้าง pairing แบบ backtracking - ป้องกันการซ้ำ 100%
   const paired = [];
-  const warnings = [];
-  const forcedRematches = [];
 
   // ฟังก์ชันหาคู่ที่ยังไม่เคยเจอกัน
   function getEligibleOpponents(p1, availablePlayers, matchHistory) {
@@ -374,17 +372,15 @@ function pairNextRound() {
   const success = pairPlayers(remainingPlayers, matchHistory);
 
   if (!success) {
-    // ถ้าไม่สามารถจับคู่ได้โดยไม่ซ้ำ ให้บังคับจับคู่ซ้ำ
-    const remainingPlayers = activePlayers.filter(p => !byePlayer || p.id !== byePlayer.id);
-    
-    while (remainingPlayers.length >= 2) {
-      const p1 = remainingPlayers.shift();
-      const p2 = remainingPlayers.shift();
-      paired.push([p1, p2]);
-      forcedRematches.push(`${getName(p1.id)} vs ${getName(p2.id)}`);
-    }
-    
-    warnings.push('⚠️ บังคับจับคู่ซ้ำ: ' + forcedRematches.join(', '));
+    // ห้ามจับคู่ซ้ำเด็ดขาด - ยกเลิกการจับคู่
+    SpreadsheetApp.getUi().alert(
+      '❌ ไม่สามารถจับคู่ได้โดยไม่ซ้ำ',
+      'ไม่สามารถจับคู่รอบที่ ' + nextRound + ' ได้โดยไม่มีการจับคู่ซ้ำ\n\n' +
+      'สาเหตุ: ผู้เล่นที่เหลือทั้งหมดเคยเจอกันแล้ว\n\n' +
+      'กรุณาลองใหม่ในรอบถัดไป หรือพิจารณาเพิ่มผู้เล่นใหม่',
+      SpreadsheetApp.getUi().ButtonSet.OK
+    );
+    return; // ยกเลิกการจับคู่
   }
 
   // 4. สร้างผลลัพธ์
@@ -422,12 +418,7 @@ function pairNextRound() {
   separateRoundsVisually();
 
   // แจ้งผลลัพธ์
-  let warningMsg = '';
-  if (warnings.length > 0) {
-    warningMsg = '\n\n⚠️ คำเตือน:\n' + warnings.join('\n');
-  }
-
-  SpreadsheetApp.getUi().alert('✅ จับคู่รอบ ' + nextRound + ' เรียบร้อยแล้ว (' + paired.length + ' คู่)' + warningMsg);
+  SpreadsheetApp.getUi().alert('✅ จับคู่รอบ ' + nextRound + ' เรียบร้อยแล้ว (' + paired.length + ' คู่)');
 }
 
 
