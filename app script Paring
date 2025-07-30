@@ -573,8 +573,11 @@ function pairNextRound() {
     }
     
     try {
-    pairingSheet.getRange(startRow, 1, output.length, output[0].length).setValues(output);
+      pairingSheet.getRange(startRow, 1, output.length, output[0].length).setValues(output);
       addCheckboxes(pairingSheet, output.length);
+      
+      // จัดรูปแบบการแสดงผลให้สวยงาม
+      formatPairingData(pairingSheet, startRow, output.length);
     } catch (error) {
       SpreadsheetApp.getUi().alert('❌ เกิดข้อผิดพลาดในการบันทึกข้อมูล: ' + error.toString());
       return;
@@ -640,6 +643,61 @@ function addCheckboxes(sheet, rowCount) {
   const startRow = sheet.getLastRow() - rowCount + 1;
   // เพิ่มคอลัมน์สำหรับการแพ้คู่: E=Win P1, F=Draw, G=Win P2, H=Double Loss (0:0)
   sheet.getRange(startRow, 5, rowCount, 4).insertCheckboxes();
+}
+
+// 🎨 จัดรูปแบบข้อมูลการจับคู่ให้สวยงาม
+function formatPairingData(sheet, startRow, rowCount) {
+  // จัดรูปแบบคอลัมน์ ROUND (A)
+  const roundRange = sheet.getRange(startRow, 1, rowCount, 1);
+  roundRange.setBackground('#e3f2fd');
+  roundRange.setFontWeight('bold');
+  roundRange.setHorizontalAlignment('center');
+  roundRange.setBorder(true, true, true, true, true, true, '#2196f3', SpreadsheetApp.BorderStyle.SOLID);
+  
+  // จัดรูปแบบคอลัมน์ TABLE (B)
+  const tableRange = sheet.getRange(startRow, 2, rowCount, 1);
+  tableRange.setBackground('#f3e5f5');
+  tableRange.setFontWeight('bold');
+  tableRange.setHorizontalAlignment('center');
+  tableRange.setBorder(true, true, true, true, true, true, '#9c27b0', SpreadsheetApp.BorderStyle.SOLID);
+  
+  // จัดรูปแบบคอลัมน์ P1_ID และ P2_ID (C, I)
+  const p1IdRange = sheet.getRange(startRow, 3, rowCount, 1);
+  const p2IdRange = sheet.getRange(startRow, 9, rowCount, 1);
+  p1IdRange.setBackground('#e8f5e8');
+  p2IdRange.setBackground('#e8f5e8');
+  p1IdRange.setFontWeight('bold');
+  p2IdRange.setFontWeight('bold');
+  p1IdRange.setHorizontalAlignment('center');
+  p2IdRange.setHorizontalAlignment('center');
+  p1IdRange.setBorder(true, true, true, true, true, true, '#4caf50', SpreadsheetApp.BorderStyle.SOLID);
+  p2IdRange.setBorder(true, true, true, true, true, true, '#4caf50', SpreadsheetApp.BorderStyle.SOLID);
+  
+  // จัดรูปแบบคอลัมน์ PLAYER 1 และ PLAYER 2 (D, J)
+  const p1NameRange = sheet.getRange(startRow, 4, rowCount, 1);
+  const p2NameRange = sheet.getRange(startRow, 10, rowCount, 1);
+  p1NameRange.setBackground('#fff3e0');
+  p2NameRange.setBackground('#fff3e0');
+  p1NameRange.setFontWeight('bold');
+  p2NameRange.setFontWeight('bold');
+  p1NameRange.setHorizontalAlignment('center');
+  p2NameRange.setHorizontalAlignment('center');
+  p1NameRange.setBorder(true, true, true, true, true, true, '#ff9800', SpreadsheetApp.BorderStyle.SOLID);
+  p2NameRange.setBorder(true, true, true, true, true, true, '#ff9800', SpreadsheetApp.BorderStyle.SOLID);
+  
+  // จัดรูปแบบคอลัมน์ RESULT (K)
+  const resultRange = sheet.getRange(startRow, 11, rowCount, 1);
+  resultRange.setBackground('#fce4ec');
+  resultRange.setFontWeight('bold');
+  resultRange.setHorizontalAlignment('center');
+  resultRange.setBorder(true, true, true, true, true, true, '#e91e63', SpreadsheetApp.BorderStyle.SOLID);
+  
+  // จัดรูปแบบคอลัมน์ STATUS (L)
+  const statusRange = sheet.getRange(startRow, 12, rowCount, 1);
+  statusRange.setBackground('#f1f8e9');
+  statusRange.setFontWeight('bold');
+  statusRange.setHorizontalAlignment('center');
+  statusRange.setBorder(true, true, true, true, true, true, '#8bc34a', SpreadsheetApp.BorderStyle.SOLID);
 }
 
 function onEdit(e) {
@@ -1969,12 +2027,13 @@ function generatePlayerIDs() {
     'Player ID จะถูกสร้างเป็น:\n' +
     '• P001, P002, P003, ... (สำหรับผู้เล่น 1-9 คน)\n' +
     '• P01, P02, P03, ... (สำหรับผู้เล่น 10+ คน)\n\n' +
+    'ชื่อผู้เล่นจะถูกจัดรูปแบบเป็น: ชื่อ + ตัวย่อนามสกุล (เช่น Nuttawee K.)\n\n' +
     'ต้องการสร้าง Player ID หรือไม่?',
     SpreadsheetApp.getUi().ButtonSet.YES_NO
   );
   
   if (response === SpreadsheetApp.getUi().Button.YES) {
-    // สร้าง Player ID
+    // สร้าง Player ID และจัดรูปแบบชื่อ
     let idCounter = 1;
     const idFormat = playerCount < 10 ? 'P00' : 'P0';
     
@@ -1985,6 +2044,11 @@ function generatePlayerIDs() {
       if (name && name.toString().trim() !== '' && tel && tel.toString().trim() !== '') {
         const playerID = playerCount < 10 ? 'P00' + idCounter : 'P0' + idCounter;
         playersSheet.getRange(i + 1, 1).setValue(playerID); // Column A (Player_id)
+        
+        // จัดรูปแบบชื่อ: ชื่อ + ตัวย่อนามสกุล
+        const formattedName = formatPlayerName(name.toString().trim());
+        playersSheet.getRange(i + 1, 2).setValue(formattedName); // Column B (Name)
+        
         idCounter++;
       }
     }
@@ -1996,13 +2060,46 @@ function generatePlayerIDs() {
     idRange.setHorizontalAlignment('center');
     idRange.setBorder(true, true, true, true, true, true, '#0288d1', SpreadsheetApp.BorderStyle.SOLID);
     
+    // จัดรูปแบบคอลัมน์ Name
+    const nameRange = playersSheet.getRange(2, 2, playerCount, 1);
+    nameRange.setBackground('#f3e5f5');
+    nameRange.setFontWeight('bold');
+    nameRange.setHorizontalAlignment('center');
+    nameRange.setBorder(true, true, true, true, true, true, '#9c27b0', SpreadsheetApp.BorderStyle.SOLID);
+    
+    // จัดรูปแบบคอลัมน์ Tel
+    const telRange = playersSheet.getRange(2, 3, playerCount, 1);
+    telRange.setBackground('#e8f5e8');
+    telRange.setFontWeight('bold');
+    telRange.setHorizontalAlignment('center');
+    telRange.setBorder(true, true, true, true, true, true, '#4caf50', SpreadsheetApp.BorderStyle.SOLID);
+    
     SpreadsheetApp.getUi().alert(
       '✅ สร้าง Player ID เรียบร้อยแล้ว',
       'สร้าง Player ID สำหรับผู้เล่น ' + playerCount + ' คนเรียบร้อยแล้ว\n\n' +
-      'Player ID จะไม่ซ้ำกับเลขโต๊ะและรอบการแข่งขัน',
+      'Player ID จะไม่ซ้ำกับเลขโต๊ะและรอบการแข่งขัน\n' +
+      'ชื่อผู้เล่นถูกจัดรูปแบบเป็น: ชื่อ + ตัวย่อนามสกุล',
       SpreadsheetApp.getUi().ButtonSet.OK
     );
   }
+}
+
+// 📝 จัดรูปแบบชื่อผู้เล่น: ชื่อ + ตัวย่อนามสกุล
+function formatPlayerName(fullName) {
+  const nameParts = fullName.split(' ').filter(part => part.trim() !== '');
+  
+  if (nameParts.length === 1) {
+    // มีแค่ชื่อเดียว
+    return nameParts[0];
+  } else if (nameParts.length >= 2) {
+    // มีชื่อและนามสกุล
+    const firstName = nameParts[0];
+    const lastName = nameParts[nameParts.length - 1];
+    const lastNameInitial = lastName.charAt(0).toUpperCase() + '.';
+    return firstName + ' ' + lastNameInitial;
+  }
+  
+  return fullName; // กรณีอื่นๆ
 }
 
 function showBracketPairing() {
@@ -2656,34 +2753,34 @@ function checkHideStandingStatus() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const standingSheet = ss.getSheetByName('Standing');
   
-  // ตรวจสอบ checkbox ที่ช่อง L1 (คอลัมน์ L, แถว 1)
-  const hideStandingCell = standingSheet.getRange(1, 12); // L1
+  // ตรวจสอบ checkbox ที่ช่อง M1 (คอลัมน์ M, แถว 1)
+  const hideStandingCell = standingSheet.getRange(1, 13); // M1
   
-  // ตรวจสอบว่าช่อง L1 มี checkbox หรือไม่
+  // ตรวจสอบว่าช่อง M1 มี checkbox หรือไม่
   try {
     const checkboxValue = hideStandingCell.getValue();
     const isChecked = checkboxValue === true;
     
-    console.log(`Hide Standing Status (L1): ${isChecked ? 'ซ่อน Standings' : 'แสดง Standings'}`);
+    console.log(`Hide Standing Status (M1): ${isChecked ? 'ซ่อน Standings' : 'แสดง Standings'}`);
     
-      return {
-    hideStanding: isChecked
-  };
-} catch (error) {
-  console.log('ไม่พบ checkbox ที่ L1, แสดง Standings ปกติ');
-  return {
-    hideStanding: false
-  };
-}
+    return {
+      hideStanding: isChecked
+    };
+  } catch (error) {
+    console.log('ไม่พบ checkbox ที่ M1, แสดง Standings ปกติ');
+    return {
+      hideStanding: false
+    };
+  }
 }
 
-// 🔧 ตั้งค่า Hide Standing checkbox ที่ช่อง L1
+// 🔧 ตั้งค่า Hide Standing checkbox ที่ช่อง M1
 function setupHideStandingCheckbox() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const standingSheet = ss.getSheetByName('Standing');
   
-  // ตรวจสอบว่าช่อง L1 มี checkbox หรือไม่
-  const hideStandingCell = standingSheet.getRange(1, 12); // L1
+  // ตรวจสอบว่าช่อง M1 มี checkbox หรือไม่
+  const hideStandingCell = standingSheet.getRange(1, 13); // M1
   
   try {
     // ลองดึงค่าเพื่อดูว่ามี checkbox หรือไม่
@@ -2691,7 +2788,7 @@ function setupHideStandingCheckbox() {
     
     // ถ้าไม่มี checkbox ให้สร้างใหม่
     if (currentValue === '') {
-      // เพิ่ม checkbox ที่ช่อง L1
+      // เพิ่ม checkbox ที่ช่อง M1
       hideStandingCell.insertCheckboxes();
       
       // ตั้งค่า default เป็นติ๊กถูก (ซ่อน Standings)
@@ -2703,10 +2800,13 @@ function setupHideStandingCheckbox() {
       hideStandingCell.setHorizontalAlignment('center');
       hideStandingCell.setBorder(true, true, true, true, true, true, '#fcd34d', SpreadsheetApp.BorderStyle.SOLID);
       
-      console.log('สร้าง Hide Standing checkbox ที่ L1 เรียบร้อยแล้ว (default: ซ่อน Standings)');
+      // เพิ่มกำกับ "Hide standing" ที่ช่อง M1
+      standingSheet.getRange(1, 13).setNote('Hide standing - ติ๊กเพื่อซ่อน standings ในหน้าเว็บ');
+      
+      console.log('สร้าง Hide Standing checkbox ที่ M1 เรียบร้อยแล้ว (default: ซ่อน Standings)');
     }
   } catch (error) {
-    console.log('ไม่สามารถสร้าง checkbox ที่ L1 ได้:', error);
+    console.log('ไม่สามารถสร้าง checkbox ที่ M1 ได้:', error);
   }
 }
 
