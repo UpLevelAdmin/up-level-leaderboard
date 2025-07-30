@@ -262,7 +262,7 @@
     <div class="logo">
       <img src="https://i.postimg.cc/wjzpnxjB/Up-Level-01-1.png" alt="Up Level Logo">
     </div>
-    <h2 style="text-align:center; margin-bottom: 24px;">รายชื่อผู้สมัคร Gym Battle เดือนกรกฎาคม 2568</h2>
+    <h2 style="text-align:center; margin-bottom: 24px;">รายชื่อผู้สมัคร Gym Battle เดือนสิงหาคม 2568</h2>
     <div style="display: flex; justify-content: center; margin-bottom: 24px;">
       <a class="register-btn" href="https://forms.gle/FuePJZCaxZ9fhKhr9" target="_blank" style="text-align: center;">สมัครแข่งขัน Gym Battle</a>
     </div>
@@ -273,7 +273,7 @@
   </div>
   <script>
     console.log('DEBUG: version 2');
-    const apiUrl = "https://script.google.com/macros/s/AKfycbx-zALa3bIbMJ-t_bwTkyhtVdUw9f52VbVTGJuTkDVxgSVfQE-e91XP6uX7veF2OeqU/exec?type=json";
+    const apiUrl = "https://script.google.com/macros/s/AKfycbyNx-6Tkp1Ee6qAuQ5Y_HpUnsxzVwV7cc8Qysw0MORinX4C6TxATaADBmL_D1wZ3ifezQ/exec";
     // พาสเทล 7 สี
     const pastelColors = [
       { bg: "#E3F2FD", border: "#42A5F5", th: "#42A5F5" },
@@ -283,6 +283,24 @@
       { bg: "#E8EAF6", border: "#5C6BC0", th: "#5C6BC0" },
       { bg: "#FFF3E0", border: "#FFB74D", th: "#FFB74D" },
       { bg: "#E0F2F1", border: "#26A69A", th: "#26A69A" }
+    ];
+
+    // วันที่แข่งขันเดือนสิงหาคม 2568
+    const augustDates = [
+      "วันศุกร์ที่ 1 สิงหาคม 2568",
+      "วันเสาร์ที่ 2 สิงหาคม 2568",
+      "วันอังคารที่ 5 สิงหาคม 2568",
+      "วันศุกร์ที่ 8 สิงหาคม 2568",
+      "วันเสาร์ที่ 9 สิงหาคม 2568",
+      "วันอังคารที่ 12 สิงหาคม 2568",
+      "วันศุกร์ที่ 15 สิงหาคม 2568",
+      "วันเสาร์ที่ 16 สิงหาคม 2568",
+      "วันอังคารที่ 19 สิงหาคม 2568",
+      "วันศุกร์ที่ 22 สิงหาคม 2568",
+      "วันเสาร์ที่ 23 สิงหาคม 2568",
+      "วันอังคารที่ 26 สิงหาคม 2568",
+      "วันศุกร์ที่ 29 สิงหาคม 2568",
+      "วันเสาร์ที่ 30 สิงหาคม 2568"
     ];
 
     // ดึงข้อมูลสมาชิกจาก Member Dashboard (API ใหม่)
@@ -330,8 +348,11 @@
       // วันที่ปัจจุบัน (ไทย)
       const today = new Date();
       today.setHours(0,0,0,0);
-      data.dates.forEach((date, idx) => {
-        const players = data.groupedData[date] || [];
+      
+      // ใช้ข้อมูลวันที่ที่กำหนดไว้แทน data.dates
+      augustDates.forEach((date, idx) => {
+        // หาข้อมูลผู้สมัครสำหรับวันที่นี้ (ถ้ามี)
+        const players = data.groupedData && data.groupedData[date] ? data.groupedData[date] : [];
         const color = pastelColors[idx % pastelColors.length];
         const dateObj = parseThaiDate(date);
         let isPast = false, isToday = false, isFuture = false;
