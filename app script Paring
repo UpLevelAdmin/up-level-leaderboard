@@ -1337,7 +1337,10 @@ function undoLastPairing() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const pairingSheet = ss.getSheetByName('Pairing');
 
-  const rounds = pairingSheet.getRange('A2:A').getValues().flat().filter(r => r);
+  // ดึงข้อมูลรอบทั้งหมดและกรองเฉพาะตัวเลข
+  const roundsData = pairingSheet.getRange('A2:A').getValues().flat();
+  const rounds = roundsData.filter(r => r && r !== '' && !isNaN(r)).map(r => parseInt(r));
+  
   if (rounds.length === 0) {
     SpreadsheetApp.getUi().alert('ยังไม่มีรอบใดให้ย้อน');
     return;
@@ -1349,13 +1352,27 @@ function undoLastPairing() {
   // หาแถวที่ต้องการเคลียร์ (รอบล่าสุด)
   const rowsToClear = [];
   for (let i = 1; i < data.length; i++) {
-    if (data[i][0] === lastRound) {
+    const roundValue = data[i][0];
+    if (roundValue && roundValue !== '' && !isNaN(roundValue) && parseInt(roundValue) === lastRound) {
       rowsToClear.push(i + 1); // แถวที่ i+1 (เพราะ i เริ่มจาก 0)
     }
   }
 
   if (rowsToClear.length === 0) {
     SpreadsheetApp.getUi().alert('ไม่พบข้อมูลรอบที่ ' + lastRound);
+    return;
+  }
+
+  // ยืนยันการลบ
+  const response = SpreadsheetApp.getUi().alert(
+    '↩️ ย้อนจับคู่รอบล่าสุด',
+    'ต้องการลบการจับคู่รอบที่ ' + lastRound + ' หรือไม่?\n\n' +
+    'จำนวนการจับคู่ที่จะลบ: ' + rowsToClear.length + ' รายการ\n\n' +
+    'การดำเนินการนี้ไม่สามารถยกเลิกได้',
+    SpreadsheetApp.getUi().ButtonSet.YES_NO
+  );
+
+  if (response !== SpreadsheetApp.getUi().Button.YES) {
     return;
   }
 
@@ -1376,7 +1393,7 @@ function undoLastPairing() {
     rowRange.clearFormat(); // เคลียร์ฟอร์แมททั้งหมด (สี, ขอบ, ฟอนต์)
   });
 
-  SpreadsheetApp.getUi().alert('เคลียร์ข้อมูลรอบที่ ' + lastRound + ' เรียบร้อยแล้ว');
+  SpreadsheetApp.getUi().alert('✅ เรียบร้อย', 'เคลียร์ข้อมูลรอบที่ ' + lastRound + ' เรียบร้อยแล้ว');
   updateStandings();
 }
 
@@ -3033,7 +3050,7 @@ function showDroppedPlayers() {
   SpreadsheetApp.getUi().alert('📋 ผู้เล่นที่ Drop', message);
 }
 
-// 📊 แยกรอบการแข่งขันให้ชัดเจน
+// 📊 แยกรอบการแข่งขันให้ชัดเจน (แบบง่าย - แค่เปลี่ยนสี highlight)
 function separateRoundsVisually() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const pairingSheet = ss.getSheetByName('Pairing');
@@ -3050,7 +3067,7 @@ function separateRoundsVisually() {
   const rounds = {};
   pairingData.forEach((row, index) => {
     const round = row[0];
-    if (round && round !== '') {
+    if (round && round !== '' && !isNaN(round)) {
       if (!rounds[round]) {
         rounds[round] = [];
       }
@@ -3058,7 +3075,7 @@ function separateRoundsVisually() {
     }
   });
   
-  // แยกรอบด้วยสีพื้นหลังและเส้นขอบ
+  // แยกรอบด้วยสีพื้นหลังเท่านั้น (ไม่เพิ่มแถวว่าง)
   Object.keys(rounds).forEach(roundNum => {
     const rowNumbers = rounds[roundNum];
     if (rowNumbers.length > 0) {
@@ -3093,39 +3110,10 @@ function separateRoundsVisually() {
       // ตั้งค่าสีพื้นหลัง
       roundRange.setBackground(backgroundColor);
       
-      // เพิ่มเส้นขอบหนาเพื่อแยกรอบ
-      roundRange.setBorder(true, true, true, true, true, true, '#374151', SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
-      
-      // เพิ่มหัวข้อรอบที่แถวแรกของแต่ละรอบ
-      const headerRow = pairingSheet.getRange(startRow, 1, 1, 13);
-      headerRow.setBackground('#1f2937'); // สีเทาเข้ม
-      headerRow.setFontColor('#ffffff'); // สีขาว
-      headerRow.setFontWeight('bold');
-      headerRow.setFontSize(12);
-      headerRow.setHorizontalAlignment('center');
-      
-      // เพิ่มข้อความ "รอบที่ X" ที่คอลัมน์ A
-      pairingSheet.getRange(startRow, 1).setValue(`รอบที่ ${roundNum}`);
+      // เพิ่มเส้นขอบบางเพื่อแยกรอบ
+      roundRange.setBorder(true, true, true, true, true, true, '#d1d5db', SpreadsheetApp.BorderStyle.SOLID);
     }
   });
   
-  // เพิ่มแถวว่างระหว่างรอบเพื่อแยกให้ชัดเจน
-  let addedRows = 0;
-  Object.keys(rounds).sort((a, b) => parseInt(a) - parseInt(b)).forEach((roundNum, index) => {
-    if (index > 0) { // ไม่เพิ่มแถวว่างก่อนรอบแรก
-      const rowNumbers = rounds[roundNum];
-      const startRow = Math.min(...rowNumbers);
-      
-      // เพิ่มแถวว่าง
-      pairingSheet.insertRowBefore(startRow + addedRows);
-      addedRows++;
-      
-      // ตั้งค่าแถวว่าง
-      const emptyRow = pairingSheet.getRange(startRow + addedRows - 1, 1, 1, 13);
-      emptyRow.setBackground('#f3f4f6');
-      emptyRow.setBorder(true, true, true, true, true, true, '#d1d5db', SpreadsheetApp.BorderStyle.SOLID);
-    }
-  });
-  
-  SpreadsheetApp.getUi().alert('✅ เรียบร้อย', 'แยกรอบการแข่งขันเรียบร้อยแล้ว\n\n- แต่ละรอบมีสีพื้นหลังต่างกัน\n- มีเส้นขอบหนาแยกรอบ\n- มีแถวว่างระหว่างรอบ\n- มีหัวข้อ "รอบที่ X" ที่ชัดเจน');
+  SpreadsheetApp.getUi().alert('✅ เรียบร้อย', 'แยกรอบการแข่งขันเรียบร้อยแล้ว\n\n- แต่ละรอบมีสีพื้นหลังต่างกัน\n- มีเส้นขอบบางแยกรอบ\n- ไม่เพิ่มแถวว่างเพื่อไม่ให้สับสน');
 }
