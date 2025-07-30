@@ -1383,7 +1383,7 @@ function doGet(e) {
   // ดึงข้อมูล Swiss Tournament
   const pairingData = pairingSheet.getDataRange().getValues();
   const playersData = playersSheet.getDataRange().getValues();
-  const standingsData = standingSheet.getLastRow() > 1 ? standingSheet.getDataRange().getValues() : [];
+  const standingsData = standingSheet.getLastRow() > 1 ? standingSheet.getRange(1, 1, standingSheet.getLastRow(), standingSheet.getLastColumn()).getValues() : [];
   
   // ดึงข้อมูล Round Robin Tournament
   const roundRobinData = roundRobinSheet.getLastRow() > 1 ? roundRobinSheet.getDataRange().getValues() : [];
