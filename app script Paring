@@ -2753,34 +2753,34 @@ function checkHideStandingStatus() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const standingSheet = ss.getSheetByName('Standing');
   
-  // ตรวจสอบ checkbox ที่ช่อง M1 (คอลัมน์ M, แถว 1)
-  const hideStandingCell = standingSheet.getRange(1, 13); // M1
+  // ตรวจสอบ checkbox ที่ช่อง L1 (คอลัมน์ L, แถว 1)
+  const hideStandingCell = standingSheet.getRange(1, 12); // L1
   
-  // ตรวจสอบว่าช่อง M1 มี checkbox หรือไม่
+  // ตรวจสอบว่าช่อง L1 มี checkbox หรือไม่
   try {
     const checkboxValue = hideStandingCell.getValue();
     const isChecked = checkboxValue === true;
     
-    console.log(`Hide Standing Status (M1): ${isChecked ? 'ซ่อน Standings' : 'แสดง Standings'}`);
+    console.log(`Hide Standing Status (L1): ${isChecked ? 'ซ่อน Standings' : 'แสดง Standings'}`);
     
     return {
       hideStanding: isChecked
     };
   } catch (error) {
-    console.log('ไม่พบ checkbox ที่ M1, แสดง Standings ปกติ');
+    console.log('ไม่พบ checkbox ที่ L1, แสดง Standings ปกติ');
     return {
       hideStanding: false
     };
   }
 }
 
-// 🔧 ตั้งค่า Hide Standing checkbox ที่ช่อง M1
+// 🔧 ตั้งค่า Hide Standing checkbox ที่ช่อง L1 และข้อความที่ M1
 function setupHideStandingCheckbox() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const standingSheet = ss.getSheetByName('Standing');
   
-  // ตรวจสอบว่าช่อง M1 มี checkbox หรือไม่
-  const hideStandingCell = standingSheet.getRange(1, 13); // M1
+  // ตรวจสอบว่าช่อง L1 มี checkbox หรือไม่
+  const hideStandingCell = standingSheet.getRange(1, 12); // L1
   
   try {
     // ลองดึงค่าเพื่อดูว่ามี checkbox หรือไม่
@@ -2788,7 +2788,7 @@ function setupHideStandingCheckbox() {
     
     // ถ้าไม่มี checkbox ให้สร้างใหม่
     if (currentValue === '') {
-      // เพิ่ม checkbox ที่ช่อง M1
+      // เพิ่ม checkbox ที่ช่อง L1
       hideStandingCell.insertCheckboxes();
       
       // ตั้งค่า default เป็นติ๊กถูก (ซ่อน Standings)
@@ -2800,14 +2800,19 @@ function setupHideStandingCheckbox() {
       hideStandingCell.setHorizontalAlignment('center');
       hideStandingCell.setBorder(true, true, true, true, true, true, '#fcd34d', SpreadsheetApp.BorderStyle.SOLID);
       
-      // เพิ่มกำกับ "Hide standing" ที่ช่อง M1
-      standingSheet.getRange(1, 13).setNote('Hide standing - ติ๊กเพื่อซ่อน standings ในหน้าเว็บ');
-      
-      console.log('สร้าง Hide Standing checkbox ที่ M1 เรียบร้อยแล้ว (default: ซ่อน Standings)');
+      console.log('สร้าง Hide Standing checkbox ที่ L1 เรียบร้อยแล้ว (default: ซ่อน Standings)');
     }
   } catch (error) {
-    console.log('ไม่สามารถสร้าง checkbox ที่ M1 ได้:', error);
+    console.log('ไม่สามารถสร้าง checkbox ที่ L1 ได้:', error);
   }
+  
+  // เพิ่มข้อความ "Hide Standing" ที่ช่อง M1
+  const hideStandingText = standingSheet.getRange(1, 13); // M1
+  hideStandingText.setValue('Hide Standing');
+  hideStandingText.setBackground('#e3f2fd'); // สีฟ้าอ่อน
+  hideStandingText.setFontWeight('bold');
+  hideStandingText.setHorizontalAlignment('center');
+  hideStandingText.setBorder(true, true, true, true, true, true, '#2196f3', SpreadsheetApp.BorderStyle.SOLID);
 }
 
 
