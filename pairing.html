@@ -1564,7 +1564,7 @@
         
         // ตรวจสอบว่าเป็นผู้เล่นที่ drop หรือไม่
         const isDropped = row[0] === 'DROP';
-        const rankDisplay = isDropped ? 'DROP' : (i+1);
+        const rankDisplay = isDropped ? 'DROP' : row[0]; // ใช้ rank จากข้อมูลจริง
         const rowClass = isDropped ? 'dropped-player' : '';
         
         html += `<tr class="${rowClass}">
@@ -1847,7 +1847,7 @@
         console.log('RoundRobin - Final displayName:', displayName);
         
         html += `<tr>
-          <td>${i+1}</td>
+          <td>${row[0] || (i+1)}</td>
           <td data-full-text="${displayName}" onclick="showTooltip(this, '${displayName}')">
             <span class="codename-rank" data-rank="${playerRank}"><span style="font-size:0.8rem;">${rankEmojis[playerRank]||''}</span> ${renderCodenameEffect(displayName, playerRank)} <span style="font-size:0.8rem;">${rankEmojis[playerRank]||''}</span></span>
           </td>

@@ -888,17 +888,46 @@ function updateStandings() {
   // รวม active players และ dropped players อีกครั้ง (หลัง sort)
   standingsArray = [...activePlayers, ...droppedPlayers];
   
-  // Add ranks และป้าย DROP
+  // Add ranks และป้าย DROP - จัดการอันดับร่วม
   let rankCounter = 1;
-  standingsArray.forEach((row, index) => {
-    if (index < activePlayers.length) {
-      // Active players - ใช้ rank ปกติ
-      row[0] = rankCounter++;
-    } else {
+  let currentRank = 1;
+  
+  for (let i = 0; i < standingsArray.length; i++) {
+    const row = standingsArray[i];
+    
+    if (i >= activePlayers.length) {
       // Dropped players - ใช้ป้าย DROP
       row[0] = 'DROP';
+    } else {
+      // Active players - จัดการอันดับร่วม
+      if (i === 0) {
+        // ผู้เล่นแรก
+        row[0] = currentRank;
+      } else {
+        const prevRow = standingsArray[i - 1];
+        const prevPoints = prevRow[7];
+        const prevWinRate = parseInt(prevRow[8]);
+        const prevOW = parseInt(prevRow[9]);
+        
+        const currentPoints = row[7];
+        const currentWinRate = parseInt(row[8]);
+        const currentOW = parseInt(row[9]);
+        
+        // ตรวจสอบว่าเท่ากันหรือไม่
+        if (currentPoints === prevPoints && 
+            currentWinRate === prevWinRate && 
+            currentOW === prevOW) {
+          // อันดับร่วม
+          row[0] = currentRank;
+        } else {
+          // อันดับใหม่
+          currentRank = rankCounter;
+          row[0] = currentRank;
+        }
+      }
+      rankCounter++;
     }
-  });
+  }
   
   // Clear existing data in Standing sheet
   standingSheet.clearContents();
