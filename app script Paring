@@ -30,6 +30,8 @@ function onOpen() {
     .addSeparator()
     .addItem('🗑️ ลบตาราง Standings', 'removeStandingsTable')
     .addItem('🔄 สร้างตาราง Standings ใหม่', 'recreateStandingsTable')
+    .addSeparator()
+    .addItem('📋 แสดงผู้เล่นที่ Drop', 'showDroppedPlayers')
     .addToUi();
   
   // 🎨 Formatting & Display
@@ -37,6 +39,8 @@ function onOpen() {
     .addItem('🎨 จัดรูปแบบชีท', 'formatPairingSheet')
     .addItem('✨ ปรับแต่งการแสดงผล', 'improveVisualFormatting')
     .addItem('🔧 แก้ไขการทับชื่อ', 'fixTextOverlap')
+    .addSeparator()
+    .addItem('📊 แยกรอบการแข่งขัน', 'separateRoundsVisually')
     .addToUi();
   
   // 🔧 Debug & Maintenance
@@ -2947,4 +2951,181 @@ function doGet(e) {
       hideStanding: hideStandingStatus
     })
   ).setMimeType(ContentService.MimeType.JSON);
+}
+
+// 📋 แสดงผู้เล่นที่ Drop พร้อมรอบที่ Drop
+function showDroppedPlayers() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const pairingSheet = ss.getSheetByName('Pairing');
+  const playersSheet = ss.getSheetByName('Players');
+  
+  // ดึงข้อมูลผู้เล่นทั้งหมด
+  const playersData = playersSheet.getRange(2, 1, playersSheet.getLastRow() - 1, 2).getValues();
+  const playerMap = {};
+  playersData.forEach(row => {
+    if (row[0] && row[1]) {
+      playerMap[row[1]] = row[0]; // name -> id
+    }
+  });
+  
+  // ดึงข้อมูลการแข่งขันทั้งหมด
+  const pairingData = pairingSheet.getRange(2, 1, pairingSheet.getLastRow() - 1, 13).getValues();
+  
+  // หาผู้เล่นที่ drop และรอบที่ drop
+  const droppedPlayers = [];
+  
+  pairingData.forEach((row, index) => {
+    const round = row[0];
+    const p1Name = row[3];
+    const p2Name = row[9];
+    const dropName = row[12]; // คอลัมน์ M (Drop)
+    
+    if (dropName && dropName !== '') {
+      // หา Player ID จากชื่อ
+      const playerId = playerMap[dropName] || 'ไม่พบ ID';
+      
+      // หาว่าผู้เล่นนี้ drop ในรอบไหน
+      let dropRound = round;
+      let dropReason = 'ไม่ระบุ';
+      
+      // ตรวจสอบว่าผู้เล่นนี้มีการแข่งขันในรอบนี้หรือไม่
+      if (p1Name === dropName || p2Name === dropName) {
+        dropReason = 'Drop หลังการแข่งขัน';
+      } else {
+        dropReason = 'Drop ก่อนการแข่งขัน';
+      }
+      
+      droppedPlayers.push({
+        playerId: playerId,
+        playerName: dropName,
+        dropRound: dropRound,
+        dropReason: dropReason
+      });
+    }
+  });
+  
+  // ลบข้อมูลซ้ำ
+  const uniqueDropped = [];
+  const seenNames = new Set();
+  
+  droppedPlayers.forEach(player => {
+    if (!seenNames.has(player.playerName)) {
+      seenNames.add(player.playerName);
+      uniqueDropped.push(player);
+    }
+  });
+  
+  // สร้างข้อความแสดงผล
+  if (uniqueDropped.length === 0) {
+    SpreadsheetApp.getUi().alert('📋 ผู้เล่นที่ Drop', 'ไม่มีผู้เล่นที่ drop ในขณะนี้');
+    return;
+  }
+  
+  let message = '📋 ผู้เล่นที่ Drop:\n\n';
+  uniqueDropped.forEach((player, index) => {
+    message += `${index + 1}. ${player.playerName} (${player.playerId})\n`;
+    message += `   Drop ในรอบที่: ${player.dropRound}\n`;
+    message += `   สาเหตุ: ${player.dropReason}\n\n`;
+  });
+  
+  message += `\nรวมผู้เล่นที่ drop: ${uniqueDropped.length} คน`;
+  
+  SpreadsheetApp.getUi().alert('📋 ผู้เล่นที่ Drop', message);
+}
+
+// 📊 แยกรอบการแข่งขันให้ชัดเจน
+function separateRoundsVisually() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const pairingSheet = ss.getSheetByName('Pairing');
+  
+  // ดึงข้อมูลการแข่งขันทั้งหมด
+  const pairingData = pairingSheet.getRange(2, 1, pairingSheet.getLastRow() - 1, 13).getValues();
+  
+  if (pairingData.length === 0) {
+    SpreadsheetApp.getUi().alert('ไม่พบข้อมูลการแข่งขัน');
+    return;
+  }
+  
+  // จัดกลุ่มตามรอบ
+  const rounds = {};
+  pairingData.forEach((row, index) => {
+    const round = row[0];
+    if (round && round !== '') {
+      if (!rounds[round]) {
+        rounds[round] = [];
+      }
+      rounds[round].push(index + 2); // +2 เพราะเริ่มจากแถวที่ 2 และ index เริ่มจาก 0
+    }
+  });
+  
+  // แยกรอบด้วยสีพื้นหลังและเส้นขอบ
+  Object.keys(rounds).forEach(roundNum => {
+    const rowNumbers = rounds[roundNum];
+    if (rowNumbers.length > 0) {
+      const startRow = Math.min(...rowNumbers);
+      const endRow = Math.max(...rowNumbers);
+      
+      // เลือกช่วงแถวทั้งหมดของรอบนี้
+      const roundRange = pairingSheet.getRange(startRow, 1, endRow - startRow + 1, 13);
+      
+      // ตั้งค่าสีพื้นหลังตามรอบ
+      let backgroundColor;
+      switch (parseInt(roundNum)) {
+        case 1:
+          backgroundColor = '#f0f9ff'; // สีฟ้าอ่อน
+          break;
+        case 2:
+          backgroundColor = '#fef3c7'; // สีเหลืองอ่อน
+          break;
+        case 3:
+          backgroundColor = '#f3e8ff'; // สีม่วงอ่อน
+          break;
+        case 4:
+          backgroundColor = '#ecfdf5'; // สีเขียวอ่อน
+          break;
+        case 5:
+          backgroundColor = '#fef2f2'; // สีแดงอ่อน
+          break;
+        default:
+          backgroundColor = '#f9fafb'; // สีเทาอ่อน
+      }
+      
+      // ตั้งค่าสีพื้นหลัง
+      roundRange.setBackground(backgroundColor);
+      
+      // เพิ่มเส้นขอบหนาเพื่อแยกรอบ
+      roundRange.setBorder(true, true, true, true, true, true, '#374151', SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+      
+      // เพิ่มหัวข้อรอบที่แถวแรกของแต่ละรอบ
+      const headerRow = pairingSheet.getRange(startRow, 1, 1, 13);
+      headerRow.setBackground('#1f2937'); // สีเทาเข้ม
+      headerRow.setFontColor('#ffffff'); // สีขาว
+      headerRow.setFontWeight('bold');
+      headerRow.setFontSize(12);
+      headerRow.setHorizontalAlignment('center');
+      
+      // เพิ่มข้อความ "รอบที่ X" ที่คอลัมน์ A
+      pairingSheet.getRange(startRow, 1).setValue(`รอบที่ ${roundNum}`);
+    }
+  });
+  
+  // เพิ่มแถวว่างระหว่างรอบเพื่อแยกให้ชัดเจน
+  let addedRows = 0;
+  Object.keys(rounds).sort((a, b) => parseInt(a) - parseInt(b)).forEach((roundNum, index) => {
+    if (index > 0) { // ไม่เพิ่มแถวว่างก่อนรอบแรก
+      const rowNumbers = rounds[roundNum];
+      const startRow = Math.min(...rowNumbers);
+      
+      // เพิ่มแถวว่าง
+      pairingSheet.insertRowBefore(startRow + addedRows);
+      addedRows++;
+      
+      // ตั้งค่าแถวว่าง
+      const emptyRow = pairingSheet.getRange(startRow + addedRows - 1, 1, 1, 13);
+      emptyRow.setBackground('#f3f4f6');
+      emptyRow.setBorder(true, true, true, true, true, true, '#d1d5db', SpreadsheetApp.BorderStyle.SOLID);
+    }
+  });
+  
+  SpreadsheetApp.getUi().alert('✅ เรียบร้อย', 'แยกรอบการแข่งขันเรียบร้อยแล้ว\n\n- แต่ละรอบมีสีพื้นหลังต่างกัน\n- มีเส้นขอบหนาแยกรอบ\n- มีแถวว่างระหว่างรอบ\n- มีหัวข้อ "รอบที่ X" ที่ชัดเจน');
 }
