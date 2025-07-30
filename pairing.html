@@ -1544,7 +1544,10 @@
         }
       });
       
+      // ใช้ข้อมูลทั้งหมด (ไม่ใช่แค่ 12 แถวแรก)
+      console.log('Total rows to process:', standings.slice(1).length);
       standings.slice(1).forEach((row, i) => {
+        console.log(`Processing row ${i}:`, row[0], row[1], row[2]);
         const playerId = row[1];
         const playerName = row[2];
         const played = parseInt(row[3]) || 0;
