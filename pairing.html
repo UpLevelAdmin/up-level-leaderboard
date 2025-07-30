@@ -1452,7 +1452,15 @@
             const statusClass = result ? 'completed' : 'pending';
             const statusText = result ? '✅ เสร็จสิ้น' : '⏳ รอผล';
             
-            html += `<div class="pairing-card">
+            // กำหนดสีพื้นหลังตามสถานะ
+            let cardBackground = '';
+            if (result) {
+              cardBackground = 'background: #ECFDF5;'; // สีเขียวอ่อนสำหรับเสร็จสิ้น
+            } else {
+              cardBackground = 'background: #FFFFFF;'; // สีขาวสำหรับยังไม่แข่ง
+            }
+            
+            html += `<div class="pairing-card" style="${cardBackground}">
               <div class="round-label" style="background-color: #3B82F6; color: white;">โต๊ะ ${tableNo}</div>
               <span class="player-name ${p1Class}" title="${p1DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p1DisplayName}')">${rankEmojis[p1Rank]||''} ${p1ShortName} ${rankEmojis[p1Rank]||''}</span>
               <div class="score">${resultDisplay}</div>
@@ -1720,7 +1728,15 @@
           const p1ShortName = truncateName(p1DisplayName);
           const p2ShortName = truncateName(p2DisplayName);
           
-          html += `<div class="pairing-card ${statusClass}" style="border-left: 4px solid ${roundColor} !important; background: ${roundBgColor} !important; background-color: ${roundBgColor} !important;">
+          // กำหนดสีพื้นหลังตามสถานะ
+          let cardBackground = '';
+          if (result) {
+            cardBackground = `border-left: 4px solid ${roundColor} !important; background: ${roundBgColor} !important; background-color: ${roundBgColor} !important;`; // สีตามรอบสำหรับเสร็จสิ้น
+          } else {
+            cardBackground = `border-left: 4px solid ${roundColor} !important; background: #FFFFFF !important; background-color: #FFFFFF !important;`; // สีขาวสำหรับยังไม่แข่ง
+          }
+          
+          html += `<div class="pairing-card ${statusClass}" style="${cardBackground}">
             <div class="round-label" style="background-color: ${roundColor}; color: white;">รอบ ${round}</div>
             <span class="player-name ${p1Class}" title="${p1DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p1DisplayName}')">${rankEmojis[p1Rank]||''}${p1ShortName}${rankEmojis[p1Rank]||''}</span>
             <div class="score">${resultDisplay}</div>
@@ -1985,12 +2001,6 @@
 
     // Load data when page loads
     loadData();
-    
-    // Auto-refresh every 30 seconds
-    setInterval(() => {
-      console.log('Auto-refreshing data...');
-      loadData();
-    }, 30000);
     
     // Retry mechanism
     window.addEventListener('online', function() {
