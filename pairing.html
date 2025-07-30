@@ -1535,6 +1535,15 @@
       });
       
       console.log('Swiss standings data:', standings);
+      
+      // Debug: ตรวจสอบแถว DROP
+      standings.slice(1).forEach((row, i) => {
+        console.log(`Row ${i}:`, row[0], row[1], row[2]); // แสดง rank, playerId, playerName
+        if (row[0] === 'DROP') {
+          console.log('*** FOUND DROP ROW ***:', row);
+        }
+      });
+      
       standings.slice(1).forEach((row, i) => {
         const playerId = row[1];
         const playerName = row[2];
