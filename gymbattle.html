@@ -264,7 +264,7 @@
     </div>
     <h2 style="text-align:center; margin-bottom: 24px;">รายชื่อผู้สมัคร Gym Battle เดือนสิงหาคม 2568</h2>
     <div style="display: flex; justify-content: center; margin-bottom: 24px;">
-      <a class="register-btn" href="https://forms.gle/FuePJZCaxZ9fhKhr9" target="_blank" style="text-align: center;">สมัครแข่งขัน Gym Battle</a>
+      <a class="register-btn" href="https://forms.gle/khFUt7VzPR5qNp2P7" target="_blank" style="text-align: center;">สมัครแข่งขัน Gym Battle</a>
     </div>
     <div id="gymbattle-list" style="text-align:center;">
       <div class="spinner"></div>
@@ -273,7 +273,7 @@
   </div>
   <script>
     console.log('DEBUG: version 2');
-    const apiUrl = "https://script.google.com/macros/s/AKfycbyNx-6Tkp1Ee6qAuQ5Y_HpUnsxzVwV7cc8Qysw0MORinX4C6TxATaADBmL_D1wZ3ifezQ/exec";
+    const apiUrl = "https://script.google.com/macros/s/AKfycbyNx-6Tkp1Ee6qAuQ5Y_HpUnsxzVwV7cc8Qysw0MORinX4C6TxATaADBmL_D1wZ3ifezQ/exec?type=json";
     // พาสเทล 7 สี
     const pastelColors = [
       { bg: "#E3F2FD", border: "#42A5F5", th: "#42A5F5" },
@@ -331,28 +331,28 @@
     }
 
     Promise.all([
-      fetch(apiUrl).then(res => res.json()), // ข้อมูลผู้สมัคร gym battle
-      fetch(memberDashboardApi).then(res => res.json()) // สมาชิกทั้งหมด
+      fetch(apiUrl).then(res => res.json()).catch(err => ({ error: null, groupedData: {} })), // ข้อมูลผู้สมัคร gym battle
+      fetch(memberDashboardApi).then(res => res.json()).catch(err => []) // สมาชิกทั้งหมด
     ]).then(([data, members]) => {
-      if (data.error) {
-        document.getElementById('gymbattle-list').innerText = data.error;
-        return;
-      }
       // สร้าง map เบอร์โทร -> { codename, rank }
       const phoneMap = {};
-      members.forEach(m => {
-        const phone = String(m.phone).replace(/[^\d]/g, "");
-        phoneMap[phone] = { codename: m.codename, rank: m.rank };
-      });
+      if (members && Array.isArray(members)) {
+        members.forEach(m => {
+          const phone = String(m.phone).replace(/[^\d]/g, "");
+          phoneMap[phone] = { codename: m.codename, rank: m.rank };
+        });
+      }
       let html = '';
       // วันที่ปัจจุบัน (ไทย)
       const today = new Date();
       today.setHours(0,0,0,0);
       
-      // ใช้ข้อมูลวันที่ที่กำหนดไว้แทน data.dates
-      augustDates.forEach((date, idx) => {
+      // ใช้ข้อมูลวันที่จาก API หรือ fallback ไปใช้ข้อมูลที่กำหนดไว้
+      const datesToUse = data && data.dates ? data.dates : augustDates;
+      
+      datesToUse.forEach((date, idx) => {
         // หาข้อมูลผู้สมัครสำหรับวันที่นี้ (ถ้ามี)
-        const players = data.groupedData && data.groupedData[date] ? data.groupedData[date] : [];
+        const players = data && data.groupedData && data.groupedData[date] ? data.groupedData[date] : [];
         const color = pastelColors[idx % pastelColors.length];
         const dateObj = parseThaiDate(date);
         let isPast = false, isToday = false, isFuture = false;
@@ -403,7 +403,44 @@
         });
       });
     }).catch(err => {
-      document.getElementById('gymbattle-list').innerText = "เกิดข้อผิดพลาดในการโหลดข้อมูล";
+      console.error('Error loading data:', err);
+      // แสดงข้อมูลวันที่ทั้งหมดแม้ว่า API จะมีปัญหา
+      let html = '';
+      const today = new Date();
+      today.setHours(0,0,0,0);
+      
+      augustDates.forEach((date, idx) => {
+        const color = pastelColors[idx % pastelColors.length];
+        const dateObj = parseThaiDate(date);
+        let isPast = false;
+        if (dateObj) {
+          if (dateObj < today) isPast = true;
+        }
+        const groupId = `group-${idx}`;
+        const toggleBtn = `<button class="toggle-btn" data-group="${groupId}">${isPast ? "แสดง" : "ซ่อน"}</button>`;
+        const tableStyle = isPast ? 'style="display:none;"' : '';
+        html += `<div class="date-header" style="background:${color.bg};border-left:6px solid ${color.border};display:flex;justify-content:space-between;align-items:center;">` +
+          `<span>วันที่: ${date} (จำนวน 0 คน)</span> ${toggleBtn}</div>`;
+        html += `<table id="${groupId}" ${tableStyle}><thead><tr>\n            <th style="background:${color.border};color:#fff;">ลำดับ</th><th style="background:${color.border};color:#fff;">ชื่อเล่น</th><th style="background:${color.border};color:#fff;">ระดับการเล่น</th></tr></thead><tbody>`;
+        html += `<tr><td colspan="3">ยังไม่มีผู้สมัคร</td></tr>`;
+        html += `</tbody></table>`;
+      });
+      document.getElementById('gymbattle-list').innerHTML = html;
+      
+      // เพิ่ม event listener ให้ปุ่ม toggle
+      document.querySelectorAll('.toggle-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const groupId = this.getAttribute('data-group');
+          const table = document.getElementById(groupId);
+          if (table.style.display === "none") {
+            table.style.display = "";
+            this.textContent = "ซ่อน";
+          } else {
+            table.style.display = "none";
+            this.textContent = "แสดง";
+          }
+        });
+      });
     });
 
     function renderCodenameEffect(codename, rank) {
