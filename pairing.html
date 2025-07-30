@@ -545,6 +545,22 @@
       opacity: 0.7;
     }
     
+    /* Tied rank styling */
+    .tied-rank {
+      background-color: #fef3c7 !important;
+      border-left: 4px solid #f59e0b !important;
+    }
+    
+    .tied-rank td {
+      background-color: #fef3c7 !important;
+      font-weight: 600;
+    }
+    
+    .tied-rank td:first-child {
+      color: #92400e !important;
+      font-weight: 700;
+    }
+    
     /* Legend for player colors */
     .color-legend {
       background: #f8fafc;
@@ -1508,6 +1524,16 @@
               <th>H2H</th>
             </tr></thead><tbody>`;
       
+      // สร้าง map สำหรับเก็บข้อมูลอันดับร่วม
+      const rankGroups = {};
+      standings.slice(1).forEach((row, i) => {
+        const rank = row[0];
+        if (rank !== 'DROP' && !isNaN(rank)) {
+          if (!rankGroups[rank]) rankGroups[rank] = [];
+          rankGroups[rank].push(i);
+        }
+      });
+      
       standings.slice(1).forEach((row, i) => {
         const playerId = row[1];
         const playerName = row[2];
@@ -1565,7 +1591,18 @@
         // ตรวจสอบว่าเป็นผู้เล่นที่ drop หรือไม่
         const isDropped = row[0] === 'DROP';
         const rankDisplay = isDropped ? 'DROP' : row[0]; // ใช้ rank จากข้อมูลจริง
-        const rowClass = isDropped ? 'dropped-player' : '';
+        
+        // กำหนด CSS class
+        let rowClass = '';
+        if (isDropped) {
+          rowClass = 'dropped-player';
+        } else {
+          // ตรวจสอบอันดับร่วม
+          const currentRank = row[0];
+          if (rankGroups[currentRank] && rankGroups[currentRank].length > 1) {
+            rowClass = 'tied-rank';
+          }
+        }
         
         html += `<tr class="${rowClass}">
           <td>${rankDisplay}</td>

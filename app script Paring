@@ -1388,6 +1388,9 @@ function doGet(e) {
   // ดึงข้อมูล Round Robin Tournament
   const roundRobinData = roundRobinSheet.getLastRow() > 1 ? roundRobinSheet.getDataRange().getValues() : [];
   const roundRobinStandingData = roundRobinStandingSheet.getLastRow() > 1 ? roundRobinStandingSheet.getDataRange().getValues() : [];
+  
+  // ตรวจสอบสถานะ Hide Standing
+  const hideStandingStatus = checkHideStandingStatus();
 
   return ContentService.createTextOutput(
     JSON.stringify({
@@ -1398,7 +1401,10 @@ function doGet(e) {
       
       // Round Robin Tournament
       roundRobin: roundRobinData,
-      roundRobinStandings: roundRobinStandingData
+      roundRobinStandings: roundRobinStandingData,
+      
+      // Hide Standing Status
+      hideStanding: hideStandingStatus
     })
   ).setMimeType(ContentService.MimeType.JSON);
 }
