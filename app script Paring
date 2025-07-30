@@ -269,9 +269,20 @@ function pairNextRound() {
     return;
   }
 
+  // เตรียมฟังก์ชันดึงชื่อจาก ID
+  const playerData = playersSheet.getRange(2, 1, playersSheet.getLastRow() - 1, 2).getValues();
+  const getName = id => {
+    const found = playerData.find(row => row[0] === id);
+    return found ? found[1] : id; // ถ้าไม่เจอให้ใช้ ID แทน
+  };
+  
   // ตัดคน drop และ sort ตามคะแนน
   let activePlayers = standings
-    .filter(r => r[1] && r[1] !== '' && !dropList.includes(r[1])) // ตรวจสอบ Player ID ไม่เป็นค่าว่าง
+    .filter(r => {
+      if (!r[1] || r[1] === '') return false; // ตรวจสอบ Player ID ไม่เป็นค่าว่าง
+      const playerName = getName(r[1]); // ดึงชื่อจาก ID
+      return !dropList.includes(playerName); // ตรวจสอบว่าชื่อไม่อยู่ใน drop list
+    })
     .sort((a, b) => b[2] - a[2]) // Sort by Points (descending)
     .map(r => r[1]); // เฉพาะ Player ID
 
@@ -280,13 +291,6 @@ function pairNextRound() {
     SpreadsheetApp.getUi().alert('ไม่สามารถจับคู่ได้ – ผู้เล่นน้อยเกินไป (น้อยกว่า 2 คน)');
     return;
   }
-
-  // เตรียมฟังก์ชันดึงชื่อจาก ID
-  const playerData = playersSheet.getRange(2, 1, playersSheet.getLastRow() - 1, 2).getValues();
-  const getName = id => {
-    const found = playerData.find(row => row[0] === id);
-    return found ? found[1] : id; // ถ้าไม่เจอให้ใช้ ID แทน
-  };
 
   // ดึงคนที่เคยเจอกัน
   const matchHistory = {}; // { id1: [id2, id3, ...] }
