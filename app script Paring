@@ -867,7 +867,6 @@ function updateStandings() {
   
   // Calculate Head-to-Head (H2H) score
   const calculateH2H = (playerId, opponentId) => {
-    let h2hScore = 0;
     let row = 2;
     
     while (pairingSheet.getRange(row, 1).getValue() !== '') {
@@ -877,18 +876,18 @@ function updateStandings() {
       
       if ((p1_id === playerId && p2_id === opponentId) || (p1_id === opponentId && p2_id === playerId)) {
         if (result === '1:0') {
-          if (p1_id === playerId) h2hScore += 1;
-          else h2hScore -= 1;
+          return p1_id === playerId ? 1 : -1; // ใครชนะ
         } else if (result === '0:1') {
-          if (p1_id === playerId) h2hScore -= 1;
-          else h2hScore += 1;
+          return p1_id === playerId ? -1 : 1; // ใครชนะ
+        } else if (result === '1:1') {
+          return 0; // เสมอ
         }
         break; // Found the match, no need to continue
       }
       row++;
     }
     
-    return h2hScore;
+    return 0; // ไม่เจอการแข่งขัน
   };
   
   // Calculate points and sort standings
@@ -936,13 +935,29 @@ function updateStandings() {
     
     if (tiedPlayers.length > 0) {
       // Calculate H2H against tied players
-      let h2hScore = 0;
-      tiedPlayers.forEach(tiedPlayer => {
-        h2hScore += calculateH2H(currentPlayer[1], tiedPlayer[1]);
-      });
-      currentPlayer[10] = h2hScore;
+      let h2hInfo = "";
+      for (const tiedPlayer of tiedPlayers) {
+        const h2h = calculateH2H(currentPlayer[1], tiedPlayer[1]);
+        if (h2h === 1) {
+          h2hInfo = `W vs ${tiedPlayer[2]}`; // W = Win
+          break;
+        } else if (h2h === -1) {
+          h2hInfo = `L vs ${tiedPlayer[2]}`; // L = Loss
+          break;
+        } else if (h2h === 0) {
+          h2hInfo = `D vs ${tiedPlayer[2]}`; // D = Draw
+          break;
+        }
+      }
+      
+      // ถ้าไม่มีผล H2H แสดงว่าเสมอ
+      if (h2hInfo === "") {
+        h2hInfo = `Tied with ${tiedPlayers.length} player(s)`;
+      }
+      
+      currentPlayer[10] = h2hInfo;
     } else {
-      currentPlayer[10] = 0;
+      currentPlayer[10] = ""; // ไม่มีผู้เล่นที่เท่ากัน
     }
   }
   
@@ -951,7 +966,8 @@ function updateStandings() {
     if (b[7] !== a[7]) return b[7] - a[7]; // Points
     if (parseInt(b[8]) !== parseInt(a[8])) return parseInt(b[8]) - parseInt(a[8]); // Win Rate
     if (parseInt(b[9]) !== parseInt(a[9])) return parseInt(b[9]) - parseInt(a[9]); // OW%
-    return (b[10] || 0) - (a[10] || 0); // H2H
+    // ถ้า OW% เท่ากัน เรียงตามชื่อ (ไม่ใช้ H2H เป็นตัวเลข)
+    return a[2].localeCompare(b[2]); // เรียงตามชื่อ
   });
   
   // Add ranks
