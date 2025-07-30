@@ -698,6 +698,25 @@ function formatPairingData(sheet, startRow, rowCount) {
   statusRange.setFontWeight('bold');
   statusRange.setHorizontalAlignment('center');
   statusRange.setBorder(true, true, true, true, true, true, '#8bc34a', SpreadsheetApp.BorderStyle.SOLID);
+  
+  // ปรับขนาดคอลัมน์ให้เหมาะสม
+  sheet.setColumnWidth(1, 80);   // ROUND
+  sheet.setColumnWidth(2, 80);   // TABLE
+  sheet.setColumnWidth(3, 100);  // P1_ID
+  sheet.setColumnWidth(4, 150);  // PLAYER 1
+  sheet.setColumnWidth(5, 60);   // WIN_P1
+  sheet.setColumnWidth(6, 60);   // DRAW
+  sheet.setColumnWidth(7, 60);   // WIN_P2
+  sheet.setColumnWidth(8, 60);   // Double Loss
+  sheet.setColumnWidth(9, 100);  // P2_ID
+  sheet.setColumnWidth(10, 150); // PLAYER 2
+  sheet.setColumnWidth(11, 80);  // RESULT
+  sheet.setColumnWidth(12, 100); // STATUS
+  
+  // ปรับความสูงแถวให้เหมาะสม
+  for (let i = startRow; i < startRow + rowCount; i++) {
+    sheet.setRowHeight(i, 35);
+  }
 }
 
 function onEdit(e) {
@@ -2074,6 +2093,16 @@ function generatePlayerIDs() {
     telRange.setHorizontalAlignment('center');
     telRange.setBorder(true, true, true, true, true, true, '#4caf50', SpreadsheetApp.BorderStyle.SOLID);
     
+    // ปรับขนาดคอลัมน์ให้เหมาะสม
+    playersSheet.setColumnWidth(1, 100); // Player_id
+    playersSheet.setColumnWidth(2, 150); // Name
+    playersSheet.setColumnWidth(3, 120); // Tel
+    
+    // ปรับความสูงแถวให้เหมาะสม
+    for (let i = 2; i <= playerCount + 1; i++) {
+      playersSheet.setRowHeight(i, 30);
+    }
+    
     SpreadsheetApp.getUi().alert(
       '✅ สร้าง Player ID เรียบร้อยแล้ว',
       'สร้าง Player ID สำหรับผู้เล่น ' + playerCount + ' คนเรียบร้อยแล้ว\n\n' +
@@ -2813,6 +2842,13 @@ function setupHideStandingCheckbox() {
   hideStandingText.setFontWeight('bold');
   hideStandingText.setHorizontalAlignment('center');
   hideStandingText.setBorder(true, true, true, true, true, true, '#2196f3', SpreadsheetApp.BorderStyle.SOLID);
+  
+  // ปรับขนาดคอลัมน์ L และ M ให้กว้างขึ้น
+  standingSheet.setColumnWidth(12, 120); // คอลัมน์ L
+  standingSheet.setColumnWidth(13, 150); // คอลัมน์ M
+  
+  // ปรับความสูงแถวที่ 1 ให้สูงขึ้น
+  standingSheet.setRowHeight(1, 40);
 }
 
 
