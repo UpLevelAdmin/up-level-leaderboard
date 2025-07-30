@@ -280,7 +280,7 @@ function pairNextRound() {
     return found ? found[1] : id; // ถ้าไม่เจอให้ใช้ ID แทน
   };
   
-  // ตัดคน drop และ sort ตามคะแนน
+  // ตัดคน drop และ sort ตามคะแนน (แก้ไขให้กรองอย่างถูกต้อง)
   let activePlayers = standings
     .filter(r => {
       if (!r[1] || r[1] === '') return false; // ตรวจสอบ Player ID ไม่เป็นค่าว่าง
@@ -290,9 +290,13 @@ function pairNextRound() {
     .sort((a, b) => b[2] - a[2]) // Sort by Points (descending)
     .map(r => r[1]); // เฉพาะ Player ID
 
+  // Debug: แสดงข้อมูล drop list และ active players
+  console.log('Drop List:', dropList);
+  console.log('Active Players:', activePlayers.map(id => getName(id)));
+
   // ตรวจสอบว่ามี players เพียงพอหรือไม่
   if (activePlayers.length < 2) {
-    SpreadsheetApp.getUi().alert('ไม่สามารถจับคู่ได้ – ผู้เล่นน้อยเกินไป (น้อยกว่า 2 คน)');
+    SpreadsheetApp.getUi().alert('ไม่สามารถจับคู่ได้ – ผู้เล่นน้อยเกินไป (น้อยกว่า 2 คน)\n\nผู้เล่นที่ใช้งานได้: ' + activePlayers.length + ' คน\nผู้เล่นที่ drop: ' + dropList.length + ' คน');
     return;
   }
 
@@ -589,6 +593,9 @@ function pairNextRound() {
       
       // จัดรูปแบบการแสดงผลให้สวยงาม
       formatPairingData(pairingSheet, startRow, output.length);
+      
+      // แยกสีรอบให้ชัดเจน
+      separateRoundsVisually();
     } catch (error) {
       SpreadsheetApp.getUi().alert('❌ เกิดข้อผิดพลาดในการบันทึกข้อมูล: ' + error.toString());
       return;
