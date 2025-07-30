@@ -874,6 +874,21 @@ function updateStandings() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const pairingSheet = ss.getSheetByName('Pairing');
   const standingSheet = ss.getSheetByName('Standing');
+  const playersSheet = ss.getSheetByName('Players');
+  
+  // Get all players from Players sheet first
+  const allPlayers = {};
+  if (playersSheet.getLastRow() > 1) {
+    const playersData = playersSheet.getRange(2, 1, playersSheet.getLastRow() - 1, 2).getValues();
+    playersData.forEach(row => {
+      if (row[0] && row[1]) {
+        allPlayers[row[0]] = { name: row[1], played: 0, win: 0, draw: 0, loss: 0 };
+      }
+    });
+  }
+  
+  // Get drop list
+  const dropList = pairingSheet.getRange('M2:M').getValues().flat().filter(name => name);
   
   // Get all players and their results from Pairing sheet
   const standings = {};
@@ -970,26 +985,31 @@ function updateStandings() {
     return 0; // ไม่เจอการแข่งขัน
   };
   
-  // Calculate points and sort standings
-  const standingsArray = Object.entries(standings).map(([player_id, stats]) => {
-    const points = stats.win * 3 + stats.draw;
-    const winRate = stats.played > 0 ? Math.round((stats.win / stats.played) * 100) : 0;
-    const owRate = calculateOW(player_id);
-    
-    return [
-      0, // Rank (will be filled later)
-      player_id,
-      stats.name,
-      stats.played,
-      stats.win,
-      stats.draw,
-      stats.loss,
-      points,
-      winRate + '%',
-      owRate + '%',
-      '' // H2H (will be filled later)
-    ];
-  });
+  // Merge standings with all players (including those who haven't played yet)
+  const mergedStandings = { ...allPlayers, ...standings };
+  
+  // Calculate points and sort standings (exclude dropped players)
+  const standingsArray = Object.entries(mergedStandings)
+    .filter(([player_id, stats]) => !dropList.includes(stats.name)) // ไม่รวมผู้เล่นที่ drop
+    .map(([player_id, stats]) => {
+      const points = stats.win * 3 + stats.draw;
+      const winRate = stats.played > 0 ? Math.round((stats.win / stats.played) * 100) : 0;
+      const owRate = calculateOW(player_id);
+      
+      return [
+        0, // Rank (will be filled later)
+        player_id,
+        stats.name,
+        stats.played,
+        stats.win,
+        stats.draw,
+        stats.loss,
+        points,
+        winRate + '%',
+        owRate + '%',
+        '' // H2H (will be filled later)
+      ];
+    });
   
   // Sort by points (descending), win rate (descending), then OW% (descending)
   standingsArray.sort((a, b) => {
