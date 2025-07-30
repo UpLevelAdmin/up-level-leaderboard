@@ -356,7 +356,7 @@
     
     .pairing-card.completed {
       border-left: 4px solid #10B981;
-      background: linear-gradient(135deg, #ECFDF5 0%, #FFFFFF 100%);
+      background: #ECFDF5;
     }
     
     .pairing-card.bye {
@@ -366,7 +366,7 @@
     
     .pairing-card.pending {
       border-left: 4px solid #D97706;
-      background: linear-gradient(135deg, #FEF9C3 0%, #FFFFFF 100%);
+      background: #FFFFFF;
     }
     
     .table-no {
@@ -1127,7 +1127,7 @@
         <h4>🎨 ความหมายของสี</h4>
         <div class="legend-item">
           <div class="legend-color" style="background: #DBEAFE; border-color: #3B82F6;"></div>
-          <span class="legend-text">🔵 สีฟ้า = ผู้เล่นที่ชนะ</span>
+          <span class="legend-text">�� สีฟ้า = ผู้เล่นที่ชนะ</span>
         </div>
         <div class="legend-item">
           <div class="legend-color" style="background: #FECACA; border-color: #EF4444;"></div>
@@ -1452,15 +1452,7 @@
             const statusClass = result ? 'completed' : 'pending';
             const statusText = result ? '✅ เสร็จสิ้น' : '⏳ รอผล';
             
-            // กำหนดสีพื้นหลังตามสถานะ
-            let cardBackground = '';
-            if (result) {
-              cardBackground = 'background: #ECFDF5;'; // สีเขียวอ่อนสำหรับเสร็จสิ้น
-            } else {
-              cardBackground = 'background: #FFFFFF;'; // สีขาวสำหรับยังไม่แข่ง
-            }
-            
-            html += `<div class="pairing-card" style="${cardBackground}">
+            html += `<div class="pairing-card ${statusClass}">
               <div class="round-label" style="background-color: #3B82F6; color: white;">โต๊ะ ${tableNo}</div>
               <span class="player-name ${p1Class}" title="${p1DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p1DisplayName}')">${rankEmojis[p1Rank]||''} ${p1ShortName} ${rankEmojis[p1Rank]||''}</span>
               <div class="score">${resultDisplay}</div>
@@ -1728,15 +1720,7 @@
           const p1ShortName = truncateName(p1DisplayName);
           const p2ShortName = truncateName(p2DisplayName);
           
-          // กำหนดสีพื้นหลังตามสถานะ
-          let cardBackground = '';
-          if (result) {
-            cardBackground = `border-left: 4px solid ${roundColor} !important; background: ${roundBgColor} !important; background-color: ${roundBgColor} !important;`; // สีตามรอบสำหรับเสร็จสิ้น
-          } else {
-            cardBackground = `border-left: 4px solid ${roundColor} !important; background: #FFFFFF !important; background-color: #FFFFFF !important;`; // สีขาวสำหรับยังไม่แข่ง
-          }
-          
-          html += `<div class="pairing-card ${statusClass}" style="${cardBackground}">
+          html += `<div class="pairing-card ${statusClass}" style="border-left: 4px solid ${roundColor} !important;">
             <div class="round-label" style="background-color: ${roundColor}; color: white;">รอบ ${round}</div>
             <span class="player-name ${p1Class}" title="${p1DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p1DisplayName}')">${rankEmojis[p1Rank]||''}${p1ShortName}${rankEmojis[p1Rank]||''}</span>
             <div class="score">${resultDisplay}</div>
