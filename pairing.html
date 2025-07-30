@@ -1263,53 +1263,7 @@
       header.classList.toggle('collapsed');
     }
     
-    // Auto-collapse previous rounds and expand current round
-    function autoManageAccordions() {
-      const accordions = document.querySelectorAll('.accordion');
-      let currentRound = null;
-      let latestRound = null;
-      
-      // Find the current round (round with pending matches) and latest round
-      accordions.forEach(accordion => {
-        const button = accordion.querySelector('.accordion-header');
-        const content = accordion.querySelector('.accordion-content');
-        const pairingCards = content.querySelectorAll('.pairing-card');
-        
-        // Track latest round
-        if (!latestRound) {
-          latestRound = accordion;
-        }
-        
-        let hasPending = false;
-        pairingCards.forEach(card => {
-          const statusBadge = card.querySelector('.status-badge');
-          if (statusBadge && statusBadge.textContent.includes('รอผล')) {
-            hasPending = true;
-          }
-        });
-        
-        if (hasPending) {
-          currentRound = accordion;
-        }
-      });
-      
-      // Expand current round if exists, otherwise expand latest round
-      const roundToExpand = currentRound || latestRound;
-      
-      // Collapse all rounds except the one to expand
-      accordions.forEach(accordion => {
-        const button = accordion.querySelector('.accordion-header');
-        const content = accordion.querySelector('.accordion-content');
-        
-        if (accordion === roundToExpand) {
-          content.classList.remove('collapsed');
-          button.querySelector('span').textContent = '▼';
-        } else {
-          content.classList.add('collapsed');
-          button.querySelector('span').textContent = '▶';
-        }
-      });
-    }
+
 
     // Tooltip function
     function showTooltip(element, text) {
@@ -1423,12 +1377,17 @@
       }
 
       const roundKeys = Object.keys(rounds).sort((a,b)=>a-b);
+      const latestRound = Math.max(...roundKeys.map(r => parseInt(r)));
       let html = '';
       
       for (let r of roundKeys) {
+        const isLatestRound = parseInt(r) === latestRound;
+        const accordionClass = isLatestRound ? '' : 'collapsed';
+        const arrowIcon = isLatestRound ? '▼' : '▶';
+        
         html += `<div class="accordion">
-          <button class="accordion-header swiss-accordion" onclick="toggleAccordion(this)">รอบที่ ${r} (${rounds[r].length} คู่) <span>▼</span></button>
-          <div class="accordion-content">
+          <button class="accordion-header swiss-accordion" onclick="toggleAccordion(this)">รอบที่ ${r} (${rounds[r].length} คู่) <span>${arrowIcon}</span></button>
+          <div class="accordion-content ${accordionClass}">
             <div class="pairing-list">`;
         
         rounds[r].forEach((row, idx) => {
@@ -1645,107 +1604,132 @@
         return '<div style="color:#888;text-align:center;padding:2rem;">ยังไม่มีข้อมูลการแข่งขัน Round Robin</div>';
       }
 
-      let html = '';
-      roundRobin.slice(1).forEach((row, idx) => {
-        console.log('Round Robin Row', idx, ':', row);
-        console.log('Row indices - P1_ID:', row[2], 'P1_NAME:', row[3], 'P2_ID:', row[8], 'P2_NAME:', row[9], 'P2_NAME_ALT:', row[10], 'P2_NAME_ALT2:', row[11]);
+      // จัดกลุ่มตามรอบ
+      const rounds = {};
+      for (let i = 1; i < roundRobin.length; i++) {
+        const row = roundRobin[i];
         const round = row[0];
-        const tableNo = row[1];
+        if (!rounds[round]) rounds[round] = [];
+        rounds[round].push(row);
+      }
+
+      const roundKeys = Object.keys(rounds).sort((a,b)=>a-b);
+      const latestRound = Math.max(...roundKeys.map(r => parseInt(r)));
+      let html = '';
+      
+      for (let r of roundKeys) {
+        const isLatestRound = parseInt(r) === latestRound;
+        const accordionClass = isLatestRound ? '' : 'collapsed';
+        const arrowIcon = isLatestRound ? '▼' : '▶';
         
-        // สีสำหรับแต่ละรอบ (หลีกเลี่ยงแดง/น้ำเงิน)
-        const roundColors = {
-          1: '#f59e0b', // ส้ม
-          2: '#10b981', // เขียว
-          3: '#8b5cf6', // ม่วง
-          4: '#f97316', // ส้มเข้ม
-          5: '#06b6d4'  // ฟ้าอ่อน
-        };
-        const roundColor = roundColors[round] || '#ddd';
-        const roundBgColor = roundColor + '15'; // สีพื้นหลังอ่อนกว่า
-        console.log('Round:', round, 'Color:', roundColor, 'BgColor:', roundBgColor);
-        const p1Id = row[2];
-        const p2Id = row[8];
-        console.log('P1 ID:', p1Id, 'P2 ID:', p2Id);
+        html += `<div class="accordion">
+          <button class="accordion-header roundrobin-accordion" onclick="toggleAccordion(this)">รอบที่ ${r} (${rounds[r].length} คู่) <span>${arrowIcon}</span></button>
+          <div class="accordion-content ${accordionClass}">
+            <div class="pairing-list">`;
         
-        const p1Tel = getTelById(players, p1Id);
-        const p2Tel = getTelById(players, p2Id);
-        console.log('P1 Tel:', p1Tel, 'P2 Tel:', p2Tel);
+        rounds[r].forEach((row, idx) => {
+          console.log('Round Robin Row', idx, ':', row);
+          console.log('Row indices - P1_ID:', row[2], 'P1_NAME:', row[3], 'P2_ID:', row[8], 'P2_NAME:', row[9], 'P2_NAME_ALT:', row[10], 'P2_NAME_ALT2:', row[11]);
+          const round = row[0];
+          const tableNo = row[1];
+          
+          // สีสำหรับแต่ละรอบ (หลีกเลี่ยงแดง/น้ำเงิน)
+          const roundColors = {
+            1: '#f59e0b', // ส้ม
+            2: '#10b981', // เขียว
+            3: '#8b5cf6', // ม่วง
+            4: '#f97316', // ส้มเข้ม
+            5: '#06b6d4'  // ฟ้าอ่อน
+          };
+          const roundColor = roundColors[round] || '#ddd';
+          const roundBgColor = roundColor + '15'; // สีพื้นหลังอ่อนกว่า
+          console.log('Round:', round, 'Color:', roundColor, 'BgColor:', roundBgColor);
+          const p1Id = row[2];
+          const p2Id = row[8];
+          console.log('P1 ID:', p1Id, 'P2 ID:', p2Id);
+          
+          const p1Tel = getTelById(players, p1Id);
+          const p2Tel = getTelById(players, p2Id);
+          console.log('P1 Tel:', p1Tel, 'P2 Tel:', p2Tel);
+          
+          const p1Phone = p1Tel?.replace(/\D/g,"");
+          const p2Phone = p2Tel?.replace(/\D/g,"");
+          console.log('P1 Phone:', p1Phone, 'P2 Phone:', p2Phone);
+          
+          const p1Codename = phoneMap[p1Phone]?.codename;
+          const p2Codename = phoneMap[p2Phone]?.codename;
+          console.log('P1 Codename:', p1Codename, 'P2 Codename:', p2Codename);
+          
+          const p1Rank = phoneMap[p1Phone]?.rank;
+          const p2Rank = phoneMap[p2Phone]?.rank;
+          
+          let p1Class = 'player-name';
+          let p2Class = 'player-name';
+          let result = row[12]; // RESULT column
+          let resultDisplay = '';
+          let statusClass = 'pending';
+          let statusText = '⏳ รอผล';
+          
+          if (result === '1:0') {
+            p1Class += ' winner';
+            p2Class += ' loser';
+            resultDisplay = '1 : 0';
+            statusClass = 'completed';
+            statusText = '✅ เสร็จสิ้น';
+          } else if (result === '0:1') {
+            p1Class += ' loser';
+            p2Class += ' winner';
+            resultDisplay = '0 : 1';
+            statusClass = 'completed';
+            statusText = '✅ เสร็จสิ้น';
+          } else if (result === '1:1') {
+            p1Class += ' draw';
+            p2Class += ' draw';
+            resultDisplay = '1 : 1';
+            statusClass = 'completed';
+            statusText = '✅ เสร็จสิ้น';
+          } else if (result === '0:0') {
+            p1Class += ' loser';
+            p2Class += ' loser';
+            resultDisplay = '0 : 0';
+            statusClass = 'completed';
+            statusText = '✅ เสร็จสิ้น';
+          } else {
+            resultDisplay = '- : -';
+          }
+          
+          const p1NameFromPlayers = getPlayerNameById(players, p1Id);
+          const p2NameFromPlayers = getPlayerNameById(players, p2Id);
+          console.log('P1 Name from Players:', p1NameFromPlayers, 'P2 Name from Players:', p2NameFromPlayers);
+          console.log('P1 Name from Row:', row[3], 'P2 Name from Row:', row[9]);
+          
+          // ใช้ชื่อจาก column PLAYER 2 เมื่อ P2 ID เป็น false
+          const p2NameFromColumn = row[10] || row[9] || row[11]; // ใช้ P2_NAME_ALT ก่อน เพราะมีชื่อจริง
+          console.log('P2 Name from Column:', p2NameFromColumn);
+          
+          const p1DisplayName = p1Codename || p1NameFromPlayers || row[3] || `Player ${p1Id}`;
+          const p2DisplayName = p2Codename || p2NameFromPlayers || p2NameFromColumn || `Player ${p2Id}`;
+          console.log('Final P1 Display Name:', p1DisplayName, 'Final P2 Display Name:', p2DisplayName);
+          
+          // ย่อชื่อถ้ายาวเกินไป
+          const truncateName = (name) => {
+            return name.length > 6 ? name.substring(0, 6) + '...' : name;
+          };
+          
+          const p1ShortName = truncateName(p1DisplayName);
+          const p2ShortName = truncateName(p2DisplayName);
+          
+          html += `<div class="pairing-card ${statusClass}" style="border-left: 4px solid ${roundColor} !important; background: ${roundBgColor} !important; background-color: ${roundBgColor} !important;">
+            <div class="round-label" style="background-color: ${roundColor}; color: white;">รอบ ${round}</div>
+            <span class="player-name ${p1Class}" title="${p1DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p1DisplayName}')">${rankEmojis[p1Rank]||''}${p1ShortName}${rankEmojis[p1Rank]||''}</span>
+            <div class="score">${resultDisplay}</div>
+            <span class="player-name ${p2Class}" title="${p2DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p2DisplayName}')">${rankEmojis[p2Rank]||''}${p2ShortName}${rankEmojis[p2Rank]||''}</span>
+            <div class="status-badge status-${statusClass}">${statusText}</div>
+          </div>`;
+        });
         
-        const p1Phone = p1Tel?.replace(/\D/g,"");
-        const p2Phone = p2Tel?.replace(/\D/g,"");
-        console.log('P1 Phone:', p1Phone, 'P2 Phone:', p2Phone);
-        
-        const p1Codename = phoneMap[p1Phone]?.codename;
-        const p2Codename = phoneMap[p2Phone]?.codename;
-        console.log('P1 Codename:', p1Codename, 'P2 Codename:', p2Codename);
-        
-        const p1Rank = phoneMap[p1Phone]?.rank;
-        const p2Rank = phoneMap[p2Phone]?.rank;
-        
-        let p1Class = 'player-name';
-        let p2Class = 'player-name';
-        let result = row[12]; // RESULT column
-        let resultDisplay = '';
-        let statusClass = 'pending';
-        let statusText = '⏳ รอผล';
-        
-        if (result === '1:0') {
-          p1Class += ' winner';
-          p2Class += ' loser';
-          resultDisplay = '1 : 0';
-          statusClass = 'completed';
-          statusText = '✅ เสร็จสิ้น';
-        } else if (result === '0:1') {
-          p1Class += ' loser';
-          p2Class += ' winner';
-          resultDisplay = '0 : 1';
-          statusClass = 'completed';
-          statusText = '✅ เสร็จสิ้น';
-        } else if (result === '1:1') {
-          p1Class += ' draw';
-          p2Class += ' draw';
-          resultDisplay = '1 : 1';
-          statusClass = 'completed';
-          statusText = '✅ เสร็จสิ้น';
-        } else if (result === '0:0') {
-          p1Class += ' loser';
-          p2Class += ' loser';
-          resultDisplay = '0 : 0';
-          statusClass = 'completed';
-          statusText = '✅ เสร็จสิ้น';
-        } else {
-          resultDisplay = '- : -';
-        }
-        
-        const p1NameFromPlayers = getPlayerNameById(players, p1Id);
-        const p2NameFromPlayers = getPlayerNameById(players, p2Id);
-        console.log('P1 Name from Players:', p1NameFromPlayers, 'P2 Name from Players:', p2NameFromPlayers);
-        console.log('P1 Name from Row:', row[3], 'P2 Name from Row:', row[9]);
-        
-        // ใช้ชื่อจาก column PLAYER 2 เมื่อ P2 ID เป็น false
-        const p2NameFromColumn = row[10] || row[9] || row[11]; // ใช้ P2_NAME_ALT ก่อน เพราะมีชื่อจริง
-        console.log('P2 Name from Column:', p2NameFromColumn);
-        
-        const p1DisplayName = p1Codename || p1NameFromPlayers || row[3] || `Player ${p1Id}`;
-        const p2DisplayName = p2Codename || p2NameFromPlayers || p2NameFromColumn || `Player ${p2Id}`;
-        console.log('Final P1 Display Name:', p1DisplayName, 'Final P2 Display Name:', p2DisplayName);
-        
-        // ย่อชื่อถ้ายาวเกินไป
-        const truncateName = (name) => {
-          return name.length > 6 ? name.substring(0, 6) + '...' : name;
-        };
-        
-        const p1ShortName = truncateName(p1DisplayName);
-        const p2ShortName = truncateName(p2DisplayName);
-        
-        html += `<div class="pairing-card ${statusClass}" style="border-left: 4px solid ${roundColor} !important; background: ${roundBgColor} !important; background-color: ${roundBgColor} !important;">
-          <div class="round-label" style="background-color: ${roundColor}; color: white;">รอบ ${round}</div>
-          <span class="player-name ${p1Class}" title="${p1DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p1DisplayName}')">${rankEmojis[p1Rank]||''}${p1ShortName}${rankEmojis[p1Rank]||''}</span>
-          <div class="score">${resultDisplay}</div>
-          <span class="player-name ${p2Class}" title="${p2DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p2DisplayName}')">${rankEmojis[p2Rank]||''}${p2ShortName}${rankEmojis[p2Rank]||''}</span>
-          <div class="status-badge status-${statusClass}">${statusText}</div>
-        </div>`;
-      });
+        html += '</div></div></div>';
+      }
       
       return html;
     }
@@ -1975,9 +1959,6 @@
         console.log('Round Robin Standings data:', pairingData.roundRobinStandings);
         document.getElementById('roundrobin-standings').innerHTML = renderRoundRobinStandings(pairingData.roundRobinStandings);
         document.getElementById('roundrobin-summary').innerHTML = renderRoundRobinSummary(pairingData.roundRobin, pairingData.roundRobinStandings);
-        
-        // Auto-manage accordions after rendering
-        setTimeout(autoManageAccordions, 100);
         
       } catch (e) {
         console.error('Error loading data:', e);
