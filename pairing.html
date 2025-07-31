@@ -1680,7 +1680,6 @@
         // Debug: แสดง HTML ที่สร้างสำหรับแถว DROP
         if (isDropped) {
           console.log(`*** CREATING DROP ROW HTML ***:`, rowHtml);
-          console.log(`*** ADDING DROP ROW TO HTML ***:`, html.length, 'characters');
         }
       });
       
@@ -2064,17 +2063,7 @@
           `;
         } else {
           const swissStandingsHtml = renderSwissStandings(pairingData.standings);
-          console.log('*** PUTTING SWISS STANDINGS HTML INTO DOM ***:', swissStandingsHtml);
-      console.log('*** HTML LENGTH ***:', swissStandingsHtml.length);
-      console.log('*** DROPPED PLAYERS IN HTML ***:', (swissStandingsHtml.match(/class="dropped-player"/g) || []).length);
-                      document.getElementById('swiss-standings').innerHTML = swissStandingsHtml;
-            
-            // Debug: ตรวจสอบว่า dropped players อยู่ใน DOM จริงหรือไม่
-            const droppedPlayers = document.querySelectorAll('.dropped-player');
-            console.log('*** DROPPED PLAYERS IN DOM ***:', droppedPlayers.length);
-            droppedPlayers.forEach((player, index) => {
-              console.log(`*** DROPPED PLAYER ${index + 1} ***:`, player.textContent.trim());
-            });
+                document.getElementById('swiss-standings').innerHTML = swissStandingsHtml;
         }
         
         document.getElementById('swiss-summary').innerHTML = renderSwissSummary(pairingData.pairing, pairingData.standings);
