@@ -545,6 +545,13 @@
       opacity: 0.7;
     }
     
+    .dropped-separator td {
+      background-color: #e5e7eb !important;
+      height: 2px !important;
+      padding: 0 !important;
+      border: none !important;
+    }
+    
     /* Tied rank styling */
     .tied-rank {
       background-color: #fef3c7 !important;
@@ -1545,8 +1552,21 @@
       });
       
       // ใช้ข้อมูลทั้งหมด (ไม่ใช่แค่ 12 แถวแรก)
-      console.log('Total rows to process:', standings.slice(1).length);
-      standings.slice(1).forEach((row, i) => {
+      // Sort standings to ensure dropped players appear at the bottom
+      const sortedStandings = standings.slice(1).sort((a, b) => {
+        const aIsDrop = a[0] === 'DROP';
+        const bIsDrop = b[0] === 'DROP';
+        
+        // If one is drop and the other isn't, drop goes to bottom
+        if (aIsDrop && !bIsDrop) return 1;
+        if (!aIsDrop && bIsDrop) return -1;
+        
+        // If both are drops or both are not drops, maintain original order
+        return 0;
+      });
+      
+      console.log('Total rows to process:', sortedStandings.length);
+      sortedStandings.forEach((row, i) => {
         console.log(`Processing row ${i}:`, row[0], row[1], row[2]);
         const playerId = row[1];
         const playerName = row[2];
@@ -1635,6 +1655,11 @@
         // Debug: แสดง HTML ที่สร้างสำหรับแถว DROP
         if (isDropped) {
           console.log(`*** CREATING DROP ROW HTML ***:`, rowHtml);
+        }
+        
+        // Add separator before first dropped player
+        if (isDropped && !html.includes('dropped-separator')) {
+          html += '<tr class="dropped-separator"><td colspan="8" style="background-color: #e5e7eb; height: 2px; padding: 0;"></td></tr>';
         }
       });
       
