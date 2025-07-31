@@ -539,6 +539,22 @@
       border-top: 3px solid #e5e7eb !important;
     }
     
+    /* Alternative approach for dropped player separator */
+    .dropped-player {
+      position: relative;
+    }
+    
+    .dropped-player:first-of-type::before {
+      content: '';
+      position: absolute;
+      top: -2px;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background-color: #e5e7eb;
+      z-index: 1;
+    }
+    
     .dropped-player td {
       background-color: #f3f4f6 !important;
       color: #6b7280 !important;
@@ -1661,6 +1677,7 @@
         // Debug: แสดง HTML ที่สร้างสำหรับแถว DROP
         if (isDropped) {
           console.log(`*** CREATING DROP ROW HTML ***:`, rowHtml);
+          console.log(`*** ADDING DROP ROW TO HTML ***:`, html.length, 'characters');
         }
       });
       
@@ -2045,6 +2062,8 @@
         } else {
           const swissStandingsHtml = renderSwissStandings(pairingData.standings);
           console.log('*** PUTTING SWISS STANDINGS HTML INTO DOM ***:', swissStandingsHtml);
+      console.log('*** HTML LENGTH ***:', swissStandingsHtml.length);
+      console.log('*** DROPPED PLAYERS IN HTML ***:', (swissStandingsHtml.match(/class="dropped-player"/g) || []).length);
           document.getElementById('swiss-standings').innerHTML = swissStandingsHtml;
         }
         
