@@ -1639,6 +1639,12 @@
           }
         }
         
+        // Add separator before first dropped player
+        if (isDropped && !hasAddedSeparator) {
+          html += '<tr class="dropped-separator"><td colspan="8" style="background-color: #e5e7eb; height: 2px; padding: 0;"></td></tr>';
+          hasAddedSeparator = true;
+        }
+        
         const rowHtml = `<tr class="${rowClass}">
           <td>${rankDisplay}</td>
           <td data-full-text="${displayName}" onclick="showTooltip(this, '${displayName}')">
@@ -1657,12 +1663,6 @@
         // Debug: แสดง HTML ที่สร้างสำหรับแถว DROP
         if (isDropped) {
           console.log(`*** CREATING DROP ROW HTML ***:`, rowHtml);
-        }
-        
-        // Add separator before first dropped player
-        if (isDropped && !hasAddedSeparator) {
-          html += '<tr class="dropped-separator"><td colspan="8" style="background-color: #e5e7eb; height: 2px; padding: 0;"></td></tr>';
-          hasAddedSeparator = true;
         }
       });
       
