@@ -1617,7 +1617,7 @@
           }
         }
         
-        html += `<tr class="${rowClass}">
+        const rowHtml = `<tr class="${rowClass}">
           <td>${rankDisplay}</td>
           <td data-full-text="${displayName}" onclick="showTooltip(this, '${displayName}')">
             <span class="codename-rank" data-rank="${playerRank}"><span style="font-size:0.8rem;">${rankEmojis[playerRank]||''}</span> ${renderCodenameEffect(displayName, playerRank)} <span style="font-size:0.8rem;">${rankEmojis[playerRank]||''}</span></span>
@@ -1629,6 +1629,13 @@
           <td data-full-text="${ow}" onclick="showTooltip(this, '${ow}')">${ow}</td>
           <td data-full-text="${h2h}" onclick="showTooltip(this, '${h2h}')">${h2h}</td>
         </tr>`;
+        
+        html += rowHtml;
+        
+        // Debug: แสดง HTML ที่สร้างสำหรับแถว DROP
+        if (isDropped) {
+          console.log(`*** CREATING DROP ROW HTML ***:`, rowHtml);
+        }
       });
       
       html += '</tbody></table></div></div></div>';
