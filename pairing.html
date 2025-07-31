@@ -1566,6 +1566,8 @@
       });
       
       console.log('Total rows to process:', sortedStandings.length);
+      
+      let hasAddedSeparator = false;
       sortedStandings.forEach((row, i) => {
         console.log(`Processing row ${i}:`, row[0], row[1], row[2]);
         const playerId = row[1];
@@ -1658,8 +1660,9 @@
         }
         
         // Add separator before first dropped player
-        if (isDropped && !html.includes('dropped-separator')) {
+        if (isDropped && !hasAddedSeparator) {
           html += '<tr class="dropped-separator"><td colspan="8" style="background-color: #e5e7eb; height: 2px; padding: 0;"></td></tr>';
+          hasAddedSeparator = true;
         }
       });
       
