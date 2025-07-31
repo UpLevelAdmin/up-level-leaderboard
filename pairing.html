@@ -2017,7 +2017,9 @@
             </div>
           `;
         } else {
-          document.getElementById('swiss-standings').innerHTML = renderSwissStandings(pairingData.standings);
+          const swissStandingsHtml = renderSwissStandings(pairingData.standings);
+          console.log('*** PUTTING SWISS STANDINGS HTML INTO DOM ***:', swissStandingsHtml);
+          document.getElementById('swiss-standings').innerHTML = swissStandingsHtml;
         }
         
         document.getElementById('swiss-summary').innerHTML = renderSwissSummary(pairingData.pairing, pairingData.standings);
