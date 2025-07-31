@@ -536,6 +536,12 @@
       display: table-row !important;
       visibility: visible !important;
       opacity: 1 !important;
+      height: auto !important;
+      min-height: 40px !important;
+      position: static !important;
+      overflow: visible !important;
+      clip: auto !important;
+      clip-path: none !important;
     }
     
     .dropped-player:first-of-type {
@@ -562,6 +568,13 @@
       background-color: #f3f4f6 !important;
       color: #6b7280 !important;
       font-style: italic;
+      display: table-cell !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+      height: auto !important;
+      min-height: 40px !important;
+      position: static !important;
+      overflow: visible !important;
     }
     
     .dropped-player .codename-rank {
@@ -755,9 +768,10 @@
     }
     
     .standings-content {
-      max-height: 500px;
-      overflow: hidden;
+      max-height: none !important;
+      overflow: visible !important;
       transition: max-height 0.3s ease;
+      height: auto !important;
     }
     
     .standings-content.collapsed {
@@ -773,11 +787,17 @@
       max-width: 100%;
       table-layout: fixed;
       font-family: 'Inter', sans-serif;
+      overflow: visible !important;
+      height: auto !important;
+      max-height: none !important;
     }
     
     #swiss-standings,
     #roundrobin-standings {
       margin: 20px 0;
+      overflow: visible !important;
+      height: auto !important;
+      max-height: none !important;
     }
     
     /* Standings Table Header */
@@ -2063,7 +2083,17 @@
           `;
         } else {
           const swissStandingsHtml = renderSwissStandings(pairingData.standings);
-                document.getElementById('swiss-standings').innerHTML = swissStandingsHtml;
+          console.log('*** PUTTING SWISS STANDINGS HTML INTO DOM ***:', swissStandingsHtml);
+          console.log('*** HTML LENGTH ***:', swissStandingsHtml.length);
+          console.log('*** DROPPED PLAYERS IN HTML ***:', (swissStandingsHtml.match(/class="dropped-player"/g) || []).length);
+          document.getElementById('swiss-standings').innerHTML = swissStandingsHtml;
+          
+          // Debug: ตรวจสอบว่า dropped players อยู่ใน DOM จริงหรือไม่
+          const droppedPlayers = document.querySelectorAll('.dropped-player');
+          console.log('*** DROPPED PLAYERS IN DOM ***:', droppedPlayers.length);
+          droppedPlayers.forEach((player, index) => {
+            console.log(`*** DROPPED PLAYER ${index + 1} ***:`, player.textContent.trim());
+          });
         }
         
         document.getElementById('swiss-summary').innerHTML = renderSwissSummary(pairingData.pairing, pairingData.standings);
