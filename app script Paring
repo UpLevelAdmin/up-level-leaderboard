@@ -2685,21 +2685,21 @@ function checkHideStandingStatus() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const pairingSheet = ss.getSheetByName('Pairing');
   
-  // ตรวจสอบ checkbox ที่ช่อง O1 (คอลัมน์ O, แถว 1) ในชีท Pairing
-  const hideStandingCell = pairingSheet.getRange(1, 15); // O1
+  // ตรวจสอบ checkbox ที่ช่อง O2 (คอลัมน์ O, แถว 2) ในชีท Pairing
+  const hideStandingCell = pairingSheet.getRange(2, 15); // O2
   
-  // ตรวจสอบว่าช่อง O1 มี checkbox หรือไม่
+  // ตรวจสอบว่าช่อง O2 มี checkbox หรือไม่
   try {
     const checkboxValue = hideStandingCell.getValue();
     const isChecked = checkboxValue === true;
     
-    console.log(`Hide Standing Status (O1): ${isChecked ? 'ซ่อน Standings' : 'แสดง Standings'}`);
+    console.log(`Hide Standing Status (O2): ${isChecked ? 'ซ่อน Standings' : 'แสดง Standings'}`);
     
     return {
       hideStanding: isChecked
     };
   } catch (error) {
-    console.log('ไม่พบ checkbox ที่ O1, แสดง Standings ปกติ');
+    console.log('ไม่พบ checkbox ที่ O2, แสดง Standings ปกติ');
     return {
       hideStanding: false
     };
@@ -2787,16 +2787,16 @@ function setupPairingHideStandingControls() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const pairingSheet = ss.getSheetByName('Pairing');
   
-  // เพิ่มข้อความ "Hide Standing" ที่ช่อง N1
-  const controlText = pairingSheet.getRange(1, 14); // N1
+  // เพิ่มข้อความ "Hide Standing" ที่ช่อง N2
+  const controlText = pairingSheet.getRange(2, 14); // N2
   controlText.setValue('Hide Standing');
   controlText.setBackground('#e3f2fd'); // สีฟ้าอ่อน
   controlText.setFontWeight('bold');
   controlText.setHorizontalAlignment('center');
   controlText.setBorder(true, true, true, true, true, true, '#2196f3', SpreadsheetApp.BorderStyle.SOLID);
   
-  // เพิ่ม checkbox ที่ช่อง O1
-  const hideCheckbox = pairingSheet.getRange(1, 15); // O1
+  // เพิ่ม checkbox ที่ช่อง O2
+  const hideCheckbox = pairingSheet.getRange(2, 15); // O2
   hideCheckbox.insertCheckboxes();
   hideCheckbox.check(); // ติ๊กถูกเป็น default
   hideCheckbox.setBackground('#fef3c7'); // สีเหลืองอ่อน
@@ -2808,8 +2808,8 @@ function setupPairingHideStandingControls() {
   pairingSheet.setColumnWidth(14, 120); // N - ข้อความ
   pairingSheet.setColumnWidth(15, 80);  // O - checkbox
   
-  // ปรับความสูงแถวที่ 1 ให้สูงขึ้น
-  pairingSheet.setRowHeight(1, 40);
+  // ปรับความสูงแถวที่ 2 ให้สูงขึ้น
+  pairingSheet.setRowHeight(2, 40);
   
   // ปรับขนาดคอลัมน์ D (PLAYER 1) และ J (PLAYER 2) ตามความยาวของชื่อ
   adjustPlayerNameColumns(pairingSheet);
@@ -2843,8 +2843,8 @@ function resetHideStandingControls() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const pairingSheet = ss.getSheetByName('Pairing');
   
-  // รีเซ็ต checkbox ที่ O1 เป็นติ๊กถูก
-  const hideCheckbox = pairingSheet.getRange(1, 15); // O1
+  // รีเซ็ต checkbox ที่ O2 เป็นติ๊กถูก
+  const hideCheckbox = pairingSheet.getRange(2, 15); // O2
   hideCheckbox.check();
   
   // ปรับขนาดคอลัมน์ชื่อผู้เล่น
@@ -2995,9 +2995,9 @@ function onEdit(e) {
   
   // รีเซ็ต Hide Standing checkbox เป็น default (เฉพาะชีท Pairing)
   if (sheetName === 'Pairing') {
-    // ถ้าไม่ใช่การแก้ไขที่ช่อง O1 (checkbox) ให้รีเซ็ต checkbox เป็น default
-    if (col !== 15) { // O1 = column 15
-      const hideCheckbox = sheet.getRange(1, 15); // O1
+    // ถ้าไม่ใช่การแก้ไขที่ช่อง O2 (checkbox) ให้รีเซ็ต checkbox เป็น default
+    if (col !== 15 || row !== 2) { // O2 = column 15, row 2
+      const hideCheckbox = sheet.getRange(2, 15); // O2
       
       // ตรวจสอบว่า checkbox ยังไม่ถูกติ๊ก
       if (!hideCheckbox.getValue()) {
@@ -3020,8 +3020,8 @@ function hideStandings() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const pairingSheet = ss.getSheetByName('Pairing');
   
-  // ตั้งค่า checkbox ที่ O1 เป็นติ๊กถูก
-  const hideStandingCell = pairingSheet.getRange(1, 15); // O1
+  // ตั้งค่า checkbox ที่ O2 เป็นติ๊กถูก
+  const hideStandingCell = pairingSheet.getRange(2, 15); // O2
   hideStandingCell.check();
   
   SpreadsheetApp.getUi().alert(
@@ -3036,8 +3036,8 @@ function showStandings() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const pairingSheet = ss.getSheetByName('Pairing');
   
-  // ตั้งค่า checkbox ที่ O1 เป็นไม่ติ๊ก
-  const hideStandingCell = pairingSheet.getRange(1, 15); // O1
+  // ตั้งค่า checkbox ที่ O2 เป็นไม่ติ๊ก
+  const hideStandingCell = pairingSheet.getRange(2, 15); // O2
   hideStandingCell.uncheck();
   
   SpreadsheetApp.getUi().alert(
@@ -3053,7 +3053,7 @@ function checkCurrentHideStandingStatus() {
   const pairingSheet = ss.getSheetByName('Pairing');
   
   try {
-    const hideStandingCell = pairingSheet.getRange(1, 15); // O1
+    const hideStandingCell = pairingSheet.getRange(2, 15); // O2
     const isHidden = hideStandingCell.getValue() === true;
     
     const status = isHidden ? '🔒 ซ่อนอยู่ (Default)' : '👁️ แสดงอยู่';
@@ -3460,8 +3460,8 @@ function forceResetControls() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const pairingSheet = ss.getSheetByName('Pairing');
   
-  // รีเซ็ต checkbox ที่ O1 เป็นติ๊กถูก
-  const hideCheckbox = pairingSheet.getRange(1, 15); // O1
+  // รีเซ็ต checkbox ที่ O2 เป็นติ๊กถูก
+  const hideCheckbox = pairingSheet.getRange(2, 15); // O2
   hideCheckbox.check();
   
   // ปรับขนาดคอลัมน์ชื่อผู้เล่น
