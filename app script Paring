@@ -84,7 +84,7 @@ function pairFirstRound() {
     return;
   }
   
-  const playersData = playersSheet.getRange(2, 1, playersSheet.getLastRow() - 1, 3).getValues();
+  const playersData = playersSheet.getRange(2, 1, playersSheet.getLastRow() - 1, 4).getValues();
   const dropList = pairingSheet.getRange('M2:M').getValues().flat().filter(name => name);
 
   // สร้าง dropSet สำหรับเปรียบเทียบทั้งชื่อและ ID
@@ -234,7 +234,7 @@ function pairNextRound() {
     .map(r => r[2]); // P1_ID ที่ได้บาย
 
   // เตรียมฟังก์ชันดึงชื่อจาก ID
-  const playerData = playersSheet.getRange(2, 1, playersSheet.getLastRow() - 1, 2).getValues();
+  const playerData = playersSheet.getRange(2, 1, playersSheet.getLastRow() - 1, 4).getValues();
   const getName = id => {
     const found = playerData.find(row => row[0] === id);
     return found ? found[1] : id;
@@ -432,8 +432,8 @@ function shuffle(array) {
 
 function getPlayerNameById(id) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const pairingSheet = ss.getSheetByName('Pairing');
-  const players = pairingSheet.getRange(2, 1, pairingSheet.getLastRow() - 1, 2).getValues();
+  const playersSheet = ss.getSheetByName('Players');
+  const players = playersSheet.getRange(2, 1, playersSheet.getLastRow() - 1, 4).getValues();
   for (let i = 0; i < players.length; i++) {
     if (players[i][0] === id) return players[i][1];
   }
@@ -543,14 +543,14 @@ function onEdit(e) {
     resultCol = 11;
     statusCol = 12;
   } else if (sheetName === 'Round Robin') {
-    // Round Robin sheet: columns F, G, H, I (6, 7, 8, 9)
-    winP1Col = 6;
-    drawCol = 7;
-    winP2Col = 8;
-    doubleLossCol = 9;
-    p2NameCol = 11; // PLAYER 2
-    resultCol = 13; // RESULT
-    statusCol = 14; // STATUS
+    // Round Robin sheet: columns G, H, I, J (7, 8, 9, 10)
+    winP1Col = 7;
+    drawCol = 8;
+    winP2Col = 9;
+    doubleLossCol = 10;
+    p2NameCol = 12; // PLAYER 2
+    resultCol = 15; // RESULT
+    statusCol = 16; // STATUS
   }
   
   // Only trigger for the result checkboxes
@@ -677,10 +677,10 @@ function updateStandings() {
   // Get all players from Players sheet first
   const allPlayers = {};
   if (playersSheet.getLastRow() > 1) {
-    const playersData = playersSheet.getRange(2, 1, playersSheet.getLastRow() - 1, 2).getValues();
+    const playersData = playersSheet.getRange(2, 1, playersSheet.getLastRow() - 1, 4).getValues();
     playersData.forEach(row => {
       if (row[0] && row[1]) {
-        allPlayers[row[0]] = { name: row[1], played: 0, win: 0, draw: 0, loss: 0 };
+        allPlayers[row[0]] = { name: row[1], trId: row[2] || '', played: 0, win: 0, draw: 0, loss: 0 };
       }
     });
   }
@@ -789,6 +789,22 @@ function updateStandings() {
   // Merge standings with all players (including those who haven't played yet)
   const mergedStandings = { ...allPlayers, ...standings };
   
+  // ดึงข้อมูล TR_ID จากชีท Players
+  const playersData = playersSheet.getRange(2, 1, playersSheet.getLastRow() - 1, 4).getValues();
+  const playerTrIdMap = {};
+  playersData.forEach(row => {
+    if (row[0] && row[2]) { // Player_id (A) และ TR_ID (C)
+      playerTrIdMap[row[0]] = row[2];
+    }
+  });
+  
+  // เพิ่ม TR_ID ให้กับ standings (ถ้ายังไม่มี)
+  Object.keys(mergedStandings).forEach(playerId => {
+    if (playerTrIdMap[playerId] && !mergedStandings[playerId].trId) {
+      mergedStandings[playerId].trId = playerTrIdMap[playerId];
+    }
+  });
+  
   // แยกผู้เล่นที่ drop และไม่ drop
   const activePlayers = [];
   const droppedPlayers = [];
@@ -802,6 +818,7 @@ function updateStandings() {
       0, // Rank (will be filled later)
       player_id,
       stats.name,
+      stats.trId || '', // TR_ID
       stats.played,
       stats.win,
       stats.draw,
@@ -933,16 +950,16 @@ function updateStandings() {
   standingSheet.clearContents();
   
   // Add headers
-  const headers = ['Rank', 'Player ID', 'Player Name', 'Played', 'Win', 'Draw', 'Loss', 'Points', 'Win Rate', 'OW%', 'H2H'];
+  const headers = ['Rank', 'Player ID', 'Player Name', 'TR_ID', 'Played', 'Win', 'Draw', 'Loss', 'Points', 'Win Rate', 'OW%', 'H2H'];
   standingSheet.getRange(1, 1, 1, headers.length).setValues([headers]);
   
   // Add data
   if (standingsArray.length > 0) {
-    standingSheet.getRange(2, 1, standingsArray.length, 11).setValues(standingsArray);
+    standingSheet.getRange(2, 1, standingsArray.length, 12).setValues(standingsArray);
   }
   
   // Style the table with improved formatting
-  const headerRange = standingSheet.getRange(1, 1, 1, 11);
+  const headerRange = standingSheet.getRange(1, 1, 1, 12);
   headerRange.setBackground('#6366f1'); // Indigo background
   headerRange.setFontColor('#ffffff'); // White text
   headerRange.setFontWeight('bold');
@@ -952,7 +969,7 @@ function updateStandings() {
   headerRange.setBorder(true, true, true, true, true, true, '#4f46e5', SpreadsheetApp.BorderStyle.SOLID);
   
   if (standingsArray.length > 0) {
-    const dataRange = standingSheet.getRange(2, 1, standingsArray.length, 11);
+    const dataRange = standingSheet.getRange(2, 1, standingsArray.length, 12);
     dataRange.setHorizontalAlignment('center');
     dataRange.setVerticalAlignment('middle');
     dataRange.setFontSize(11);
@@ -962,7 +979,7 @@ function updateStandings() {
     
     // Add alternating row colors for better readability
     standingsArray.forEach((_, index) => {
-      const rowRange = standingSheet.getRange(2 + index, 1, 1, 11);
+      const rowRange = standingSheet.getRange(2 + index, 1, 1, 12);
       
       if (index >= activePlayers.length) {
         // Dropped players - สีเทาอ่อน
@@ -980,7 +997,7 @@ function updateStandings() {
     
     // Highlight top 3 players (เฉพาะ active players)
     for (let i = 0; i < Math.min(3, activePlayers.length); i++) {
-      const rowRange = standingSheet.getRange(2 + i, 1, 1, 11);
+      const rowRange = standingSheet.getRange(2 + i, 1, 1, 12);
       if (i === 0) {
         rowRange.setBackground('#ffd700'); // ทอง (สีเหลืองเข้ม) สำหรับอันดับ 1
         rowRange.setFontWeight('bold');
@@ -999,14 +1016,15 @@ function updateStandings() {
   standingSheet.setColumnWidth(1, 60);   // Rank
   standingSheet.setColumnWidth(2, 100);  // Player ID
   standingSheet.setColumnWidth(3, 200);  // Player Name
-  standingSheet.setColumnWidth(4, 80);   // Played
-  standingSheet.setColumnWidth(5, 60);   // Win
-  standingSheet.setColumnWidth(6, 60);   // Draw
-  standingSheet.setColumnWidth(7, 60);   // Loss
-  standingSheet.setColumnWidth(8, 80);   // Points
-  standingSheet.setColumnWidth(9, 100);  // Win Rate
-  standingSheet.setColumnWidth(10, 80);  // OW%
-  standingSheet.setColumnWidth(11, 80);  // H2H
+  standingSheet.setColumnWidth(4, 100);  // TR_ID
+  standingSheet.setColumnWidth(5, 80);   // Played
+  standingSheet.setColumnWidth(6, 60);   // Win
+  standingSheet.setColumnWidth(7, 60);   // Draw
+  standingSheet.setColumnWidth(8, 60);   // Loss
+  standingSheet.setColumnWidth(9, 80);   // Points
+  standingSheet.setColumnWidth(10, 100); // Win Rate
+  standingSheet.setColumnWidth(11, 80);  // OW%
+  standingSheet.setColumnWidth(12, 80);  // H2H
   
   // ตั้งค่า Hide Standing checkbox ให้ default เป็นการซ่อน
   setupHideStandingCheckbox();
@@ -1844,7 +1862,7 @@ function clearAllData() {
     
     // === สร้าง header ใหม่สำหรับชีท Players ===
     if (playersSheet) {
-      const playersHeaders = ['Player_id', 'Name', 'Tel'];
+      const playersHeaders = ['Player_id', 'Name', 'TR_ID', 'Tel'];
       playersSheet.getRange(1, 1, 1, playersHeaders.length).setValues([playersHeaders]);
       
       // จัดรูปแบบ header Players
@@ -1853,6 +1871,12 @@ function clearAllData() {
       playersHeaderRange.setFontWeight('bold');
       playersHeaderRange.setHorizontalAlignment('center');
       playersHeaderRange.setBorder(true, true, true, true, true, true, '#d1d5db', SpreadsheetApp.BorderStyle.SOLID);
+      
+      // ตั้งค่าความกว้างคอลัมน์
+      playersSheet.setColumnWidth(1, 100); // Player_id
+      playersSheet.setColumnWidth(2, 200); // Name
+      playersSheet.setColumnWidth(3, 120); // TR_ID
+      playersSheet.setColumnWidth(4, 120); // Tel
     }
     
     // === สร้าง header ใหม่สำหรับชีท Pairing ===
@@ -1867,7 +1891,7 @@ function clearAllData() {
     pairingHeaderRange.setBorder(true, true, true, true, true, true, '#d1d5db', SpreadsheetApp.BorderStyle.SOLID);
     
     // === สร้าง header ใหม่สำหรับชีท Standing ===
-    const standingHeaders = ['RANK', 'PLAYER ID', 'PLAYER NAME', 'WINS', 'DRAWS', 'LOSSES', 'POINTS', 'WIN RATE', 'OW%', 'H2H'];
+    const standingHeaders = ['RANK', 'PLAYER ID', 'PLAYER NAME', 'TR_ID', 'WINS', 'DRAWS', 'LOSSES', 'POINTS', 'WIN RATE', 'OW%', 'H2H'];
     standingSheet.getRange(1, 1, 1, standingHeaders.length).setValues([standingHeaders]);
     
     // จัดรูปแบบ header Standing
@@ -1879,7 +1903,7 @@ function clearAllData() {
     
     // === สร้าง header ใหม่สำหรับชีท Round Robin ===
     if (roundRobinSheet) {
-      const rrHeaders = ['ROUND', 'MATCH', 'P1_ID', 'PLAYER 1', 'WIN_P1', 'DRAW', 'WIN_P2', 'Double Loss', 'P2_ID', 'PLAYER 2', 'RESULT', 'STATUS'];
+      const rrHeaders = ['ROUND', 'MATCH', 'P1_ID', 'PLAYER 1', 'P1_TR_ID', 'P1_RANK', 'WIN_P1', 'DRAW', 'WIN_P2', 'Double Loss', 'P2_ID', 'PLAYER 2', 'P2_TR_ID', 'P2_RANK', 'RESULT', 'STATUS'];
       roundRobinSheet.getRange(1, 1, 1, rrHeaders.length).setValues([rrHeaders]);
       
       // จัดรูปแบบ header Round Robin
@@ -1892,7 +1916,7 @@ function clearAllData() {
     
     // === สร้าง header ใหม่สำหรับชีท Round Robin Standing ===
     if (roundRobinStandingSheet) {
-      const rrStandingHeaders = ['RANK', 'PLAYER ID', 'PLAYER NAME', 'WINS', 'DRAWS', 'LOSSES', 'POINTS', 'WIN RATE', 'OW%', 'H2H'];
+      const rrStandingHeaders = ['RANK', 'PLAYER ID', 'PLAYER NAME', 'TR_ID', 'WINS', 'DRAWS', 'LOSSES', 'POINTS', 'WIN RATE', 'OW%', 'H2H'];
       roundRobinStandingSheet.getRange(1, 1, 1, rrStandingHeaders.length).setValues([rrStandingHeaders]);
       
       // จัดรูปแบบ header Round Robin Standing
@@ -1929,7 +1953,7 @@ function generatePlayerIDs() {
   // ตรวจสอบว่ามีข้อมูลในคอลัมน์ Name และ Tel หรือไม่
   for (let i = 1; i < data.length; i++) {
     const name = data[i][1]; // Column B (Name)
-    const tel = data[i][2];  // Column C (Tel)
+    const tel = data[i][3];  // Column D (Tel) - แก้ไขจาก C เป็น D
     
     if (name && name.toString().trim() !== '' && tel && tel.toString().trim() !== '') {
       playerCount++;
@@ -1939,39 +1963,61 @@ function generatePlayerIDs() {
   if (playerCount === 0) {
     SpreadsheetApp.getUi().alert(
       '❌ ไม่พบข้อมูลผู้เล่น',
-      'กรุณาใส่ชื่อและเบอร์โทรในคอลัมน์ Name และ Tel ก่อน',
+      'กรุณาใส่ชื่อในคอลัมน์ Name และเบอร์โทรในคอลัมน์ Tel ก่อน',
       SpreadsheetApp.getUi().ButtonSet.OK
     );
     return;
   }
   
   const response = SpreadsheetApp.getUi().alert(
-    '🆔 สร้าง Player ID อัตโนมัติ',
+    '🆔 สร้าง Player ID และ TR_ID อัตโนมัติ',
     'พบผู้เล่น ' + playerCount + ' คน\n\n' +
     'Player ID จะถูกสร้างเป็น:\n' +
     '• P001, P002, P003, ... (สำหรับผู้เล่น 1-9 คน)\n' +
-    '• P01, P02, P03, ... (สำหรับผู้เล่น 10+ คน)\n\n' +
-    'ชื่อผู้เล่นจะถูกจัดรูปแบบเป็น: ชื่อ + ตัวย่อนามสกุล (เช่น Nuttawee K.)\n\n' +
-    'ต้องการสร้าง Player ID หรือไม่?',
+    '• P01, P02, P03, ... (สำหรับผู้เล่น 10-99 คน)\n' +
+    '• P1, P2, P3, ... (สำหรับผู้เล่น 100+ คน)\n\n' +
+    'TR_ID จะถูกสร้างเป็น:\n' +
+    '• th + เลข 8 หลัก (เช่น th12345678)\n\n' +
+    'ชื่อผู้เล่นจะถูกจัดรูปแบบเป็น: TR_ID_ชื่อ (เช่น th34294245_Visthisidh L.)\n\n' +
+    'เบอร์โทรจะยังคงอยู่ในคอลัมน์ Tel (ไม่เปลี่ยนแปลง)\n\n' +
+    'ต้องการสร้าง Player ID และ TR_ID หรือไม่?',
     SpreadsheetApp.getUi().ButtonSet.YES_NO
   );
   
   if (response === SpreadsheetApp.getUi().Button.YES) {
-    // สร้าง Player ID และจัดรูปแบบชื่อ
+    // สร้าง Player ID, TR_ID และจัดรูปแบบชื่อ
     let idCounter = 1;
     const idFormat = playerCount < 10 ? 'P00' : 'P0';
     
     for (let i = 1; i < data.length; i++) {
       const name = data[i][1]; // Column B (Name)
-      const tel = data[i][2];  // Column C (Tel)
+      const tel = data[i][3];  // Column D (Tel) - แก้ไขจาก C เป็น D
       
       if (name && name.toString().trim() !== '' && tel && tel.toString().trim() !== '') {
-        const playerID = playerCount < 10 ? 'P00' + idCounter : 'P0' + idCounter;
-        playersSheet.getRange(i + 1, 1).setValue(playerID); // Column A (Player_id)
+            // สร้าง Player ID
+    let playerID;
+    if (playerCount < 10) {
+      // สำหรับผู้เล่น 1-9 คน: P001, P002, P003, ...
+      playerID = 'P00' + idCounter;
+    } else if (playerCount < 100) {
+      // สำหรับผู้เล่น 10-99 คน: P01, P02, P03, ...
+      playerID = 'P0' + idCounter;
+    } else {
+      // สำหรับผู้เล่น 100+ คน: P1, P2, P3, ...
+      playerID = 'P' + idCounter;
+    }
+    playersSheet.getRange(i + 1, 1).setValue(playerID); // Column A (Player_id)
         
-        // จัดรูปแบบชื่อ: ชื่อ + ตัวย่อนามสกุล
-        const formattedName = formatPlayerName(name.toString().trim());
+        // สร้าง TR_ID (th + เลข 8 หลัก)
+        const trId = 'th' + Math.floor(Math.random() * 90000000 + 10000000); // เลข 8 หลัก
+        playersSheet.getRange(i + 1, 3).setValue(trId); // Column C (TR_ID)
+        
+        // จัดรูปแบบชื่อ: TR_ID_ชื่อ
+        const formattedName = formatPlayerNameWithTRID(trId, name.toString().trim());
         playersSheet.getRange(i + 1, 2).setValue(formattedName); // Column B (Name)
+        
+        // เก็บเบอร์โทรในคอลัมน์ D (ไม่เปลี่ยนแปลง)
+        playersSheet.getRange(i + 1, 4).setValue(tel); // Column D (Tel)
         
         idCounter++;
       }
@@ -1991,8 +2037,15 @@ function generatePlayerIDs() {
     nameRange.setHorizontalAlignment('center');
     nameRange.setBorder(true, true, true, true, true, true, '#9c27b0', SpreadsheetApp.BorderStyle.SOLID);
     
+    // จัดรูปแบบคอลัมน์ TR_ID
+    const trIdRange = playersSheet.getRange(2, 3, playerCount, 1);
+    trIdRange.setBackground('#fff3e0');
+    trIdRange.setFontWeight('bold');
+    trIdRange.setHorizontalAlignment('center');
+    trIdRange.setBorder(true, true, true, true, true, true, '#ff9800', SpreadsheetApp.BorderStyle.SOLID);
+    
     // จัดรูปแบบคอลัมน์ Tel
-    const telRange = playersSheet.getRange(2, 3, playerCount, 1);
+    const telRange = playersSheet.getRange(2, 4, playerCount, 1);
     telRange.setBackground('#e8f5e8');
     telRange.setFontWeight('bold');
     telRange.setHorizontalAlignment('center');
@@ -2000,8 +2053,9 @@ function generatePlayerIDs() {
     
     // ปรับขนาดคอลัมน์ให้เหมาะสม
     playersSheet.setColumnWidth(1, 100); // Player_id
-    playersSheet.setColumnWidth(2, 150); // Name
-    playersSheet.setColumnWidth(3, 120); // Tel
+    playersSheet.setColumnWidth(2, 200); // Name (ขยายเพื่อรองรับ TR_ID_ชื่อ)
+    playersSheet.setColumnWidth(3, 120); // TR_ID
+    playersSheet.setColumnWidth(4, 120); // Tel (เบอร์โทร)
     
     // ปรับความสูงแถวให้เหมาะสม
     for (let i = 2; i <= playerCount + 1; i++) {
@@ -2009,10 +2063,13 @@ function generatePlayerIDs() {
     }
     
     SpreadsheetApp.getUi().alert(
-      '✅ สร้าง Player ID เรียบร้อยแล้ว',
-      'สร้าง Player ID สำหรับผู้เล่น ' + playerCount + ' คนเรียบร้อยแล้ว\n\n' +
+      '✅ สร้าง Player ID และ TR_ID เรียบร้อยแล้ว',
+      'สร้าง Player ID และ TR_ID สำหรับผู้เล่น ' + playerCount + ' คนเรียบร้อยแล้ว\n\n' +
       'Player ID จะไม่ซ้ำกับเลขโต๊ะและรอบการแข่งขัน\n' +
-      'ชื่อผู้เล่นถูกจัดรูปแบบเป็น: ชื่อ + ตัวย่อนามสกุล',
+      'TR_ID เป็นเลข 8 หลักที่ไม่ซ้ำกัน\n' +
+      'ชื่อผู้เล่นถูกจัดรูปแบบเป็น: TR_ID_ชื่อ\n' +
+      'เบอร์โทรยังคงอยู่ในคอลัมน์ Tel (ไม่เปลี่ยนแปลง)\n\n' +
+      '📝 หมายเหตุ: Player ID จะมีเลข 0 นำหน้าตามจำนวนผู้เล่น',
       SpreadsheetApp.getUi().ButtonSet.OK
     );
   }
@@ -2036,6 +2093,12 @@ function formatPlayerName(fullName) {
   return fullName; // กรณีอื่นๆ
 }
 
+// 📝 จัดรูปแบบชื่อผู้เล่นพร้อม TR_ID: TR_ID_ชื่อ
+function formatPlayerNameWithTRID(trId, fullName) {
+  const formattedName = formatPlayerName(fullName);
+  return trId + '_' + formattedName;
+}
+
 function showBracketPairing() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const pairingSheet = ss.getSheetByName('Pairing');
@@ -2057,7 +2120,7 @@ function showBracketPairing() {
   }
 
   // เตรียมฟังก์ชันดึงชื่อจาก ID
-  const playerData = playersSheet.getRange(2, 1, playersSheet.getLastRow() - 1, 2).getValues();
+  const playerData = playersSheet.getRange(2, 1, playersSheet.getLastRow() - 1, 4).getValues();
   const getName = id => {
     const found = playerData.find(row => row[0] === id);
     return found ? found[1] : id;
@@ -2145,6 +2208,7 @@ function createRoundRobinTournament() {
   // หาคอลัมน์ที่ต้องการ
   const idCol = headers.indexOf("Player_id");
   const nameCol = headers.indexOf("Name");
+  const trIdCol = headers.indexOf("TR_ID");
   const rankCol = headers.indexOf("Rank");
   
   if (idCol === -1 || nameCol === -1) {
@@ -2167,16 +2231,16 @@ function createRoundRobinTournament() {
   const matchesPerRound = Math.floor(playerCount / 2);
   
   // สร้าง Round Robin Schedule
-  const schedule = generateRoundRobinSchedule(activePlayers, idCol, nameCol);
+  const schedule = generateRoundRobinSchedule(activePlayers, idCol, nameCol, trIdCol);
   
   // ล้างข้อมูลเก่าในชีท Round Robin
   roundRobinSheet.clearContents();
   
   // สร้าง Headers
   const roundRobinHeaders = [
-    "ROUND", "MATCH", "P1_ID", "PLAYER 1", "P1_RANK", 
+    "ROUND", "MATCH", "P1_ID", "PLAYER 1", "P1_TR_ID", "P1_RANK", 
     "WIN_P1", "DRAW", "WIN_P2", "Double Loss",
-    "P2_ID", "PLAYER 2", "P2_RANK", "RESULT", "STATUS"
+    "P2_ID", "PLAYER 2", "P2_TR_ID", "P2_RANK", "RESULT", "STATUS"
   ];
   
   roundRobinSheet.getRange(1, 1, 1, roundRobinHeaders.length).setValues([roundRobinHeaders]);
@@ -2198,6 +2262,7 @@ function createRoundRobinTournament() {
         matchIndex + 1, // MATCH
         match.player1.id, // P1_ID
         match.player1.name, // PLAYER 1
+        match.player1.trId || "", // P1_TR_ID
         match.player1.rank || "", // P1_RANK
         false, // WIN_P1 (checkbox)
         false, // DRAW (checkbox)
@@ -2205,6 +2270,7 @@ function createRoundRobinTournament() {
         false, // Double Loss (checkbox)
         match.player2.id, // P2_ID
         match.player2.name, // PLAYER 2
+        match.player2.trId || "", // P2_TR_ID
         match.player2.rank || "", // P2_RANK
         "", // RESULT
         "" // STATUS
@@ -2213,7 +2279,7 @@ function createRoundRobinTournament() {
       roundRobinSheet.getRange(currentRow, 1, 1, rowData.length).setValues([rowData]);
       
       // ตั้งค่า checkboxes
-      roundRobinSheet.getRange(currentRow, 6, 1, 4).insertCheckboxes();
+      roundRobinSheet.getRange(currentRow, 7, 1, 4).insertCheckboxes();
       
       // ตั้งค่าฟอร์แมท
       const rowRange = roundRobinSheet.getRange(currentRow, 1, 1, rowData.length);
@@ -2233,16 +2299,18 @@ function createRoundRobinTournament() {
   roundRobinSheet.setColumnWidth(2, 60); // MATCH
   roundRobinSheet.setColumnWidth(3, 80); // P1_ID
   roundRobinSheet.setColumnWidth(4, 120); // PLAYER 1
-  roundRobinSheet.setColumnWidth(5, 80); // P1_RANK
-  roundRobinSheet.setColumnWidth(6, 60); // WIN_P1
-  roundRobinSheet.setColumnWidth(7, 60); // DRAW
-  roundRobinSheet.setColumnWidth(8, 60); // WIN_P2
-  roundRobinSheet.setColumnWidth(9, 80); // Double Loss
-  roundRobinSheet.setColumnWidth(10, 80); // P2_ID
-  roundRobinSheet.setColumnWidth(11, 120); // PLAYER 2
-  roundRobinSheet.setColumnWidth(12, 80); // P2_RANK
-  roundRobinSheet.setColumnWidth(13, 80); // RESULT
-  roundRobinSheet.setColumnWidth(14, 80); // STATUS
+  roundRobinSheet.setColumnWidth(5, 100); // P1_TR_ID
+  roundRobinSheet.setColumnWidth(6, 80); // P1_RANK
+  roundRobinSheet.setColumnWidth(7, 60); // WIN_P1
+  roundRobinSheet.setColumnWidth(8, 60); // DRAW
+  roundRobinSheet.setColumnWidth(9, 60); // WIN_P2
+  roundRobinSheet.setColumnWidth(10, 80); // Double Loss
+  roundRobinSheet.setColumnWidth(11, 80); // P2_ID
+  roundRobinSheet.setColumnWidth(12, 120); // PLAYER 2
+  roundRobinSheet.setColumnWidth(13, 100); // P2_TR_ID
+  roundRobinSheet.setColumnWidth(14, 80); // P2_RANK
+  roundRobinSheet.setColumnWidth(15, 80); // RESULT
+  roundRobinSheet.setColumnWidth(16, 80); // STATUS
   
   // สร้างสรุป
   const summary = `
@@ -2267,7 +2335,7 @@ function createRoundRobinTournament() {
 }
 
 // 🔄 สร้างตารางการแข่งขัน Round Robin
-function generateRoundRobinSchedule(players, idCol, nameCol) {
+function generateRoundRobinSchedule(players, idCol, nameCol, trIdCol) {
   const playerCount = players.length;
   const schedule = [];
   
@@ -2277,6 +2345,7 @@ function generateRoundRobinSchedule(players, idCol, nameCol) {
     playerList.push({
       [idCol]: "BYE",
       [nameCol]: "BYE",
+      [trIdCol]: "BYE",
       rank: ""
     });
   }
@@ -2301,11 +2370,13 @@ function generateRoundRobinSchedule(players, idCol, nameCol) {
         player1: {
           id: playerList[player1Index][idCol],
           name: playerList[player1Index][nameCol],
+          trId: playerList[player1Index][trIdCol] || "",
           rank: playerList[player1Index].rank || ""
         },
         player2: {
           id: playerList[player2Index][idCol],
           name: playerList[player2Index][nameCol],
+          trId: playerList[player2Index][trIdCol] || "",
           rank: playerList[player2Index].rank || ""
         }
       });
@@ -2402,8 +2473,10 @@ function createRoundRobinStanding() {
   // หาคอลัมน์ที่ต้องการ
   const p1IdCol = headers.indexOf("P1_ID");
   const p1NameCol = headers.indexOf("PLAYER 1");
+  const p1TrIdCol = headers.indexOf("P1_TR_ID");
   const p2IdCol = headers.indexOf("P2_ID");
   const p2NameCol = headers.indexOf("PLAYER 2");
+  const p2TrIdCol = headers.indexOf("P2_TR_ID");
   const resultCol = headers.indexOf("RESULT");
   
   // สร้าง object เก็บสถิติผู้เล่น
@@ -2427,6 +2500,7 @@ function createRoundRobinStanding() {
       playerStats[p1Id] = {
         id: p1Id,
         name: p1Name,
+        trId: row[p1TrIdCol] || "",
         wins: 0,
         draws: 0,
         losses: 0,
@@ -2438,6 +2512,7 @@ function createRoundRobinStanding() {
       playerStats[p2Id] = {
         id: p2Id,
         name: p2Name,
+        trId: row[p2TrIdCol] || "",
         wins: 0,
         draws: 0,
         losses: 0,
@@ -2562,7 +2637,7 @@ function createRoundRobinStanding() {
   
   // สร้าง Headers
   const standingHeaders = [
-    "RANK", "PLAYER ID", "PLAYER NAME", "WINS", "DRAWS", "LOSSES", "POINTS", "WIN RATE", "OW%", "H2H"
+    "RANK", "PLAYER ID", "PLAYER NAME", "TR_ID", "WINS", "DRAWS", "LOSSES", "POINTS", "WIN RATE", "OW%", "H2H"
   ];
   
   standingSheet.getRange(1, 1, 1, standingHeaders.length).setValues([standingHeaders]);
@@ -2636,6 +2711,7 @@ function createRoundRobinStanding() {
       index + 1, // RANK
       player.id, // PLAYER ID
       player.name, // PLAYER NAME
+      player.trId || "", // TR_ID
       player.wins, // WINS
       player.draws, // DRAWS
       player.losses, // LOSSES
@@ -2671,13 +2747,14 @@ function createRoundRobinStanding() {
   standingSheet.setColumnWidth(1, 60); // RANK
   standingSheet.setColumnWidth(2, 100); // PLAYER ID
   standingSheet.setColumnWidth(3, 150); // PLAYER NAME
-  standingSheet.setColumnWidth(4, 80); // WINS
-  standingSheet.setColumnWidth(5, 80); // DRAWS
-  standingSheet.setColumnWidth(6, 80); // LOSSES
-  standingSheet.setColumnWidth(7, 80); // POINTS
-  standingSheet.setColumnWidth(8, 100); // WIN RATE
-  standingSheet.setColumnWidth(9, 100); // OW%
-  standingSheet.setColumnWidth(10, 120); // H2H
+  standingSheet.setColumnWidth(4, 100); // TR_ID
+  standingSheet.setColumnWidth(5, 80); // WINS
+  standingSheet.setColumnWidth(6, 80); // DRAWS
+  standingSheet.setColumnWidth(7, 80); // LOSSES
+  standingSheet.setColumnWidth(8, 80); // POINTS
+  standingSheet.setColumnWidth(9, 100); // WIN RATE
+  standingSheet.setColumnWidth(10, 100); // OW%
+  standingSheet.setColumnWidth(11, 120); // H2H
   
   SpreadsheetApp.getUi().alert(`🏆 สร้างสรุปผล Round Robin สำเร็จ!\n\n📊 สถิติ:\n• จำนวนผู้เล่น: ${standings.length} คน\n• ผู้เล่นที่มีผลการแข่งขัน: ${standings.filter(p => p.wins + p.draws + p.losses > 0).length} คน`);
 }
@@ -2752,19 +2829,20 @@ function setupHideStandingCheckbox() {
   standingSheet.setColumnWidth(1, 60);   // Rank
   standingSheet.setColumnWidth(2, 100);  // Player ID
   standingSheet.setColumnWidth(3, 150);  // Player Name
-  standingSheet.setColumnWidth(4, 80);   // Played
-  standingSheet.setColumnWidth(5, 60);   // Win
-  standingSheet.setColumnWidth(6, 60);   // Draw
-  standingSheet.setColumnWidth(7, 60);   // Loss
-  standingSheet.setColumnWidth(8, 80);   // Points
-  standingSheet.setColumnWidth(9, 80);   // Win Rate
-  standingSheet.setColumnWidth(10, 80);  // OW%
-  standingSheet.setColumnWidth(11, 120); // H2H - ขยายตามข้อความ
-  standingSheet.setColumnWidth(12, 120); // คอลัมน์ L (checkbox)
-  standingSheet.setColumnWidth(13, 150); // คอลัมน์ M (ข้อความ)
+  standingSheet.setColumnWidth(4, 100);  // TR_ID
+  standingSheet.setColumnWidth(5, 80);   // Played
+  standingSheet.setColumnWidth(6, 60);   // Win
+  standingSheet.setColumnWidth(7, 60);   // Draw
+  standingSheet.setColumnWidth(8, 60);   // Loss
+  standingSheet.setColumnWidth(9, 80);   // Points
+  standingSheet.setColumnWidth(10, 80);  // Win Rate
+  standingSheet.setColumnWidth(11, 80);  // OW%
+  standingSheet.setColumnWidth(12, 120); // H2H - ขยายตามข้อความ
+  standingSheet.setColumnWidth(13, 120); // คอลัมน์ L (checkbox)
+  standingSheet.setColumnWidth(14, 150); // คอลัมน์ M (ข้อความ)
   
   // ปรับคอลัมน์ H2H ให้ขยายตามข้อความที่ยาวที่สุด
-  const h2hRange = standingSheet.getRange(2, 11, standingSheet.getLastRow() - 1, 1);
+  const h2hRange = standingSheet.getRange(2, 12, standingSheet.getLastRow() - 1, 1);
   const h2hValues = h2hRange.getValues();
   let maxLength = 0;
   
@@ -2777,7 +2855,7 @@ function setupHideStandingCheckbox() {
   
   // คำนวณความกว้างที่เหมาะสม (ประมาณ 8px ต่อตัวอักษร + padding)
   const optimalWidth = Math.max(120, Math.min(300, maxLength * 8 + 20));
-  standingSheet.setColumnWidth(11, optimalWidth);
+  standingSheet.setColumnWidth(12, optimalWidth);
   
   // ปรับความสูงแถวที่ 1 ให้สูงขึ้น
   standingSheet.setRowHeight(1, 40);
@@ -2850,11 +2928,11 @@ function showDroppedPlayers() {
   const playersSheet = ss.getSheetByName('Players');
   
   // ดึงข้อมูลผู้เล่นทั้งหมด
-  const playersData = playersSheet.getRange(2, 1, playersSheet.getLastRow() - 1, 2).getValues();
+  const playersData = playersSheet.getRange(2, 1, playersSheet.getLastRow() - 1, 4).getValues();
   const playerMap = {};
   playersData.forEach(row => {
     if (row[0] && row[1]) {
-      playerMap[row[1]] = row[0]; // name -> id
+      playerMap[row[1]] = row[0]; // name (B) -> id (A)
     }
   });
   
@@ -2998,10 +3076,10 @@ function dropPlayerDropdown() {
   const playersSheet = ss.getSheetByName('Players');
   
   // ดึงรายชื่อผู้เล่นทั้งหมด
-  const playersData = playersSheet.getRange(2, 1, playersSheet.getLastRow() - 1, 2).getValues();
+  const playersData = playersSheet.getRange(2, 1, playersSheet.getLastRow() - 1, 4).getValues();
   const playerNames = playersData
     .filter(row => row[0] && row[1])
-    .map(row => `${row[1]} (${row[0]})`); // ชื่อ (ID)
+    .map(row => `${row[1]} (${row[0]})`); // ชื่อ (B) และ ID (A)
   
   if (playerNames.length === 0) {
     SpreadsheetApp.getUi().alert('❌ ไม่พบข้อมูลผู้เล่น');
@@ -3076,4 +3154,75 @@ function dropPlayerDropdown() {
   updateStandings();
   
   SpreadsheetApp.getUi().alert(`✅ Drop ผู้เล่น: ${playerName} (${playerId}) เรียบร้อยแล้ว\n\nStandings ได้รับการอัปเดตแล้ว`);
+}
+
+// 🔍 ตรวจสอบสมาชิกที่ตกหล่น
+function checkMissingMembers() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const playersSheet = ss.getSheetByName('Players');
+  const pairingSheet = ss.getSheetByName('Pairing');
+  const standingSheet = ss.getSheetByName('Standing');
+  
+  // ดึงข้อมูลผู้เล่นทั้งหมด
+  const playersData = playersSheet.getRange(2, 1, playersSheet.getLastRow() - 1, 4).getValues();
+  const activePlayers = playersData.filter(row => row[0] && row[1]); // มี Player_id (A) และ Name (B)
+  
+  // ดึงข้อมูลการแข่งขันทั้งหมด
+  const pairingData = pairingSheet.getRange(2, 1, pairingSheet.getLastRow() - 1, 13).getValues();
+  const competedPlayers = new Set();
+  
+  pairingData.forEach(row => {
+    const p1Id = row[2]; // P1_ID
+    const p2Id = row[8]; // P2_ID
+    if (p1Id && p1Id !== '') competedPlayers.add(p1Id);
+    if (p2Id && p2Id !== '' && p2Id !== 'BYE') competedPlayers.add(p2Id);
+  });
+  
+  // ดึงข้อมูล Standings
+  const standingsData = standingSheet.getLastRow() > 1 ? 
+    standingSheet.getRange(2, 1, standingSheet.getLastRow() - 1, 12).getValues() : [];
+  const standingPlayers = new Set();
+  
+  standingsData.forEach(row => {
+    const playerId = row[1]; // Player ID
+    if (playerId && playerId !== '') standingPlayers.add(playerId);
+  });
+  
+  // หาผู้เล่นที่ตกหล่น
+  const missingInPairing = activePlayers.filter(player => !competedPlayers.has(player[0]));
+  const missingInStanding = activePlayers.filter(player => !standingPlayers.has(player[0]));
+  
+  // สร้างข้อความรายงาน
+  let message = '🔍 รายงานการตรวจสอบสมาชิกที่ตกหล่น\n\n';
+  
+  if (missingInPairing.length === 0 && missingInStanding.length === 0) {
+    message += '✅ ไม่พบสมาชิกที่ตกหล่น\n';
+    message += '• ผู้เล่นทั้งหมดปรากฏในการจับคู่\n';
+    message += '• ผู้เล่นทั้งหมดปรากฏใน Standings\n';
+  } else {
+    if (missingInPairing.length > 0) {
+      message += '⚠️ ผู้เล่นที่ไม่ได้ปรากฏในการจับคู่:\n';
+      missingInPairing.forEach((player, index) => {
+        message += `${index + 1}. ${player[1]} (${player[0]})\n`;
+      });
+      message += '\n';
+    }
+    
+    if (missingInStanding.length > 0) {
+      message += '⚠️ ผู้เล่นที่ไม่ได้ปรากฏใน Standings:\n';
+      missingInStanding.forEach((player, index) => {
+        message += `${index + 1}. ${player[1]} (${player[0]})\n`;
+      });
+      message += '\n';
+    }
+  }
+  
+  message += `\n📊 สรุป:\n`;
+  message += `• ผู้เล่นทั้งหมด: ${activePlayers.length} คน\n`;
+  message += `• ผู้เล่นในการจับคู่: ${competedPlayers.size} คน\n`;
+  message += `• ผู้เล่นใน Standings: ${standingPlayers.size} คน\n`;
+  message += `• ตกหล่นในการจับคู่: ${missingInPairing.length} คน\n`;
+  message += `• ตกหล่นใน Standings: ${missingInStanding.length} คน`;
+  
+  SpreadsheetApp.getUi().alert(message);
 }

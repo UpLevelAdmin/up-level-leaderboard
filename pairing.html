@@ -1404,7 +1404,7 @@
     function getTelById(players, id) {
       for (let i = 1; i < players.length; i++) {
         if (String(players[i][0]) === String(id)) {
-          return players[i][2]; // Phone number
+          return players[i][3]; // Phone number (คอลัมน์ D)
         }
       }
       return null;
@@ -1644,7 +1644,7 @@
             const playerRow = window.playersData[j];
             console.log('Swiss - Checking playerRow:', playerRow, 'against playerId:', playerId);
             if (playerRow[0] === playerId) {
-              const phone = playerRow[2]?.replace(/\D/g, "");
+              const phone = playerRow[3]?.replace(/\D/g, ""); // แก้ไขจาก [2] เป็น [3] (คอลัมน์ D)
               console.log('Swiss - Found match! Phone:', phone, 'phoneMap:', window.phoneMap);
               console.log('Swiss - phoneMap[phone]:', window.phoneMap ? window.phoneMap[phone] : 'phoneMap is null');
               if (window.phoneMap && window.phoneMap[phone]) {
@@ -1951,7 +1951,7 @@
             const playerRow = window.playersData[j];
             console.log('RoundRobin - Checking playerRow:', playerRow, 'against playerId:', playerId);
             if (playerRow[0] === playerId) {
-              const phone = playerRow[2]?.replace(/\D/g, "");
+              const phone = playerRow[3]?.replace(/\D/g, ""); // แก้ไขจาก [2] เป็น [3] (คอลัมน์ D)
               console.log('RoundRobin - Found match! Phone:', phone, 'phoneMap:', window.phoneMap);
               console.log('RoundRobin - phoneMap[phone]:', window.phoneMap ? window.phoneMap[phone] : 'phoneMap is null');
               if (window.phoneMap && window.phoneMap[phone]) {
