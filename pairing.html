@@ -1423,6 +1423,19 @@
       return null;
     }
 
+    // ฟังก์ชันใหม่: แยกชื่อจริงออกจาก TR_ID
+    function extractRealName(fullName) {
+      if (!fullName || typeof fullName !== 'string') return fullName;
+      
+      // ตรวจสอบรูปแบบ TR_ID_ชื่อ เช่น th53522397_Narupol P.
+      const match = fullName.match(/^th\d+_(.+)$/);
+      if (match) {
+        return match[1]; // ส่งคืนเฉพาะชื่อจริง
+      }
+      
+      return fullName; // ถ้าไม่ใช่รูปแบบ TR_ID_ชื่อ ให้ส่งคืนชื่อเดิม
+    }
+
     function renderCodenameEffect(codename, rank) {
       if (!codename) return '';
       if (rank === 'Gold') {
@@ -1488,7 +1501,7 @@
           if (row[8] === 'BYE') {
             p1Class += ' player-bg-win';
             resultDisplay = '<span style="color:#059669;font-weight:600;">BYE</span>';
-            const p1DisplayName = p1Codename || getPlayerNameById(players, row[2]) || row[3] || `Player ${row[2]}`;
+            const p1DisplayName = p1Codename || extractRealName(getPlayerNameById(players, row[2])) || extractRealName(row[3]) || `Player ${row[2]}`;
             html += `<div class="pairing-card">
               <span class="pairing-table-no">โต๊ะ ${tableNo}</span>
               <span class="${p1Class}" title="${p1DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p1DisplayName}')">${rankEmojis[p1Rank]||''} ${renderCodenameEffect(p1DisplayName, p1Rank)} ${rankEmojis[p1Rank]||''}</span>
@@ -1516,8 +1529,8 @@
               resultDisplay = '- : -';
             }
             
-            const p1DisplayName = p1Codename || getPlayerNameById(players, row[2]) || row[3] || `Player ${row[2]}`;
-            const p2DisplayName = p2Codename || getPlayerNameById(players, row[8]) || row[9] || `Player ${row[8]}`;
+            const p1DisplayName = p1Codename || extractRealName(getPlayerNameById(players, row[2])) || extractRealName(row[3]) || `Player ${row[2]}`;
+            const p2DisplayName = p2Codename || extractRealName(getPlayerNameById(players, row[8])) || extractRealName(row[9]) || `Player ${row[8]}`;
             
             // ย่อชื่อถ้ายาวเกินไป
             const truncateName = (name) => {
@@ -1648,11 +1661,12 @@
               console.log('Swiss - Found match! Phone:', phone, 'phoneMap:', window.phoneMap);
               console.log('Swiss - phoneMap[phone]:', window.phoneMap ? window.phoneMap[phone] : 'phoneMap is null');
               if (window.phoneMap && window.phoneMap[phone]) {
-                displayName = window.phoneMap[phone].codename || playerName;
+                displayName = window.phoneMap[phone].codename || extractRealName(playerName);
                 playerRank = window.phoneMap[phone].rank || '';
                 console.log('Swiss - Using codename:', displayName, 'rank:', playerRank);
               } else {
-                console.log('Swiss - No codename found, using original name');
+                displayName = extractRealName(playerName);
+                console.log('Swiss - No codename found, using extracted real name:', displayName);
               }
               break;
             }
@@ -1852,8 +1866,8 @@
           const p2NameFromColumn = row[10] || row[9] || row[11]; // ใช้ P2_NAME_ALT ก่อน เพราะมีชื่อจริง
           console.log('P2 Name from Column:', p2NameFromColumn);
           
-          const p1DisplayName = p1Codename || p1NameFromPlayers || row[3] || `Player ${p1Id}`;
-          const p2DisplayName = p2Codename || p2NameFromPlayers || p2NameFromColumn || `Player ${p2Id}`;
+          const p1DisplayName = p1Codename || extractRealName(p1NameFromPlayers) || extractRealName(row[3]) || `Player ${p1Id}`;
+          const p2DisplayName = p2Codename || extractRealName(p2NameFromPlayers) || extractRealName(p2NameFromColumn) || `Player ${p2Id}`;
           console.log('Final P1 Display Name:', p1DisplayName, 'Final P2 Display Name:', p2DisplayName);
           
           // ย่อชื่อถ้ายาวเกินไป
@@ -1955,11 +1969,12 @@
               console.log('RoundRobin - Found match! Phone:', phone, 'phoneMap:', window.phoneMap);
               console.log('RoundRobin - phoneMap[phone]:', window.phoneMap ? window.phoneMap[phone] : 'phoneMap is null');
               if (window.phoneMap && window.phoneMap[phone]) {
-                displayName = window.phoneMap[phone].codename || playerName;
+                displayName = window.phoneMap[phone].codename || extractRealName(playerName);
                 playerRank = window.phoneMap[phone].rank || '';
                 console.log('RoundRobin - Using codename:', displayName, 'rank:', playerRank);
               } else {
-                console.log('RoundRobin - No codename found, using original name');
+                displayName = extractRealName(playerName);
+                console.log('RoundRobin - No codename found, using extracted real name:', displayName);
               }
               break;
             }
