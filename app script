@@ -2,40 +2,57 @@
 
 function onOpen() {
   const ui = SpreadsheetApp.getUi();
-  ui.createMenu("⬆️ Up Level Guild")
-    // 🎉 เมนูปาร์ตี้
+  
+  // 🎉 เมนูปาร์ตี้
+  const partyMenu = ui.createMenu("🎉 ปาร์ตี้")
     .addItem("📊 สรุปข้อมูลปาร์ตี้", "showPartySummary")
-    .addItem("✨ สร้างปาร์ตี้ (จากเบอร์โทร)", "createParty")
+    .addItem("✨ สร้างปาร์ตี้", "createParty")
     .addItem("➕ เชิญเข้าปาร์ตี้", "addMemberToParty")
     .addItem("❌ ออกจากปาร์ตี้", "removeFromParty")
     .addItem("🔁 ย้ายปาร์ตี้", "moveToAnotherParty")
-    .addItem("💥 ยุบปาร์ตี้", "disbandParty")
-    
-    .addSeparator()
+    .addItem("💥 ยุบปาร์ตี้", "disbandParty");
 
-    // ⚔️ EXP & Party Point
-    .addItem("📥 เพิ่ม EXP & Party Point จากกิจกรรม (1 คน)", "addExpFromActivity")
-    .addItem("📥 เพิ่ม EXP & Party Point จากกิจกรรม (หลายคน)", "addExpFromActivityBulk")
+  // ⚔️ เมนู EXP & กิจกรรม
+  const expMenu = ui.createMenu("⚔️ EXP & กิจกรรม")
+    .addItem("📥 เพิ่ม EXP จากกิจกรรม (1 คน)", "addExpFromActivity")
+    .addItem("📥 เพิ่ม EXP จากกิจกรรม (หลายคน)", "addExpFromActivityBulk")
     .addItem("🟢 เพิ่ม EXP แบบ Manual", "manualAddExp")
-    .addItem("🧩 เพิ่ม Party Point แบบ Manual", "manualAddPartyPoint")
+    .addItem("🧩 เพิ่ม Party Point", "manualAddPartyPoint")
     .addItem("🎁 แลกแต้ม Party Point", "redeemPartyPoint")
-    .addItem("✅ อนุมัติเควส (ระบุเบอร์)", "approveQuestByPhone")
-    .addItem("↩️ ย้อน EXP ล่าสุด (1 คน)", "undoLastExpSingle")
-    .addItem("↩️ ย้อน EXP ล่าสุด (หลายคน)", "undoLastExpBulk")
+    .addItem("✅ อนุมัติเควส", "approveQuestByPhone")
+    .addItem("↩️ ย้อน EXP (1 คน)", "undoLastExpSingle")
+    .addItem("↩️ ย้อน EXP (หลายคน)", "undoLastExpBulk");
+
+  // 🏆 เมนูการแข่งขัน
+  const challengeMenu = ui.createMenu("🏆 การแข่งขัน")
     .addItem("✅ อนุมัติคำท้า", "approveChallenge")
-    .addItem("✅ อนุมัติ Party vs Party", "approvePartyChallenge") // <-- เพิ่มปุ่มนี้
+    .addItem("✅ อนุมัติ Party vs Party", "approvePartyChallenge")
     .addItem("📊 บันทึกผลการท้าแข่ง", "recordChallengeResult")
-    .addItem("🏆 บันทึกผล Party vs Party", "recordPartyChallengeResult") // 🆕 เพิ่มเมนูใหม่
+    .addItem("🏆 บันทึกผล Party vs Party", "recordPartyChallengeResult");
 
-    .addSeparator()
+  // 🔄 เมนู Rebirth
+  const rebirthMenu = ui.createMenu("🔄 Rebirth")
+    .addItem("🔄 จุติ (Legend → Rookie II)", "performRebirth")
+    .addItem("📊 ดูสถิติการจุติ", "showRebirthStats")
+    .addItem("🎯 อัปเดต Rank (Multiplier)", "updateRanksWithMultiplier")
+    .addItem("🧪 ทดสอบระบบ", "testRebirthSystem");
 
-    // 🛠️ ระบบ & ข้อมูล
-    .addItem("🎯 อัปเดต Rank", "updateRanks")
+  // 🛠️ เมนูระบบ
+  const systemMenu = ui.createMenu("🛠️ ระบบ")
+    .addItem("🎯 อัปเดต Rank (ปกติ)", "updateRanks")
     .addItem("🏆 อัปเดต Leaderboard", "updateLeaderboard")
     .addItem("🗑️ ลบข้อมูลซ้ำ", "clearDuplicateEntriesDebug")
     .addItem("❌ ลบข้อมูลสมาชิก", "removeMember")
-    .addItem("🔑 เพิ่มแอดมินใหม่", "addAdminEmail")
-    .addItem("🔄 เปลี่ยนเบอร์สมาชิก", "changeMemberPhoneNumber") // 🆕 เพิ่มเมนูใหม่
+    .addItem("🔑 เพิ่มแอดมิน", "addAdminEmail")
+    .addItem("🔄 เปลี่ยนเบอร์สมาชิก", "changeMemberPhoneNumber");
+
+  // สร้างเมนูหลัก
+  ui.createMenu("⬆️ Up Level Guild")
+    .addSubMenu(partyMenu)
+    .addSubMenu(expMenu)
+    .addSubMenu(challengeMenu)
+    .addSubMenu(rebirthMenu)
+    .addSubMenu(systemMenu)
     .addToUi();
 }
 
@@ -276,7 +293,7 @@ function addExpToPhone(phone, amount) {
   }
 }
 
-// ✅ คำนวณ Rank จาก EXP แล้วอัปเดตให้สมาชิกทุกคน
+// ✅ คำนวณ Rank จาก EXP แล้วอัปเดตให้สมาชิกทุกคน (ระบบเดิม)
 function updateRanks() {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Member Dashboard");
   const data = sheet.getDataRange().getValues();
@@ -298,24 +315,68 @@ function updateRanks() {
 }
 
 
-// ✅ อัปเดตตาราง Leaderboard โดยเรียงตาม EXP มากสุด
+// ✅ อัปเดตตาราง Leaderboard โดยเรียงตามลำดับความสำคัญของ Rank
 function updateLeaderboard() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const dash = ss.getSheetByName("Member Dashboard");
   const lb = ss.getSheetByName("Leaderboard");
-  const data = dash.getRange(2, 1, dash.getLastRow() - 1, 6).getValues();
-  const result = [["ชื่อเล่น", "Phone", "Codename", "Rank", "EXP", "Party"]];
+  const data = dash.getRange(2, 1, dash.getLastRow() - 1, 8).getValues(); // เพิ่มคอลัมน์ Rebirth Count และ EXP Multiplier
+  const result = [["ชื่อเล่น", "Phone", "Codename", "Rank", "EXP", "Party", "Rebirth Count", "EXP Multiplier"]];
+  
   for (let i = 0; i < data.length; i++) {
     // --- Normalize เบอร์โทรให้เป็น string 10 หลัก ---
     let phone = String(data[i][1]).trim();
     if (phone.length === 9 && phone[0] !== "0") phone = "0" + phone;
     if (phone.length !== 10) phone = ""; // กันเบอร์ผิด
-    result.push([data[i][0], phone, data[i][2], data[i][3], data[i][4], data[i][5] || ""]);
+    
+    const rebirthCount = Number(data[i][6]) || 0; // Rebirth Count
+    const multiplier = Number(data[i][7]) || 1; // EXP Multiplier
+    
+    result.push([
+      data[i][0], // ชื่อเล่น
+      phone, // เบอร์โทร
+      data[i][2], // Codename
+      data[i][3], // Rank
+      data[i][4], // EXP
+      data[i][5] || "", // Party
+      rebirthCount, // Rebirth Count
+      multiplier // EXP Multiplier
+    ]);
   }
-  result.sort((a, b) => b[4] - a[4]);
+  
+  // เรียงตามลำดับความสำคัญของ Rank และ EXP เทียบเท่า
+  result.sort((a, b) => {
+    const rankA = a[3]; // Rank ของ A
+    const rankB = b[3]; // Rank ของ B
+    const expA = Number(a[4]); // EXP ของ A
+    const expB = Number(b[4]); // EXP ของ B
+    const multiplierA = Number(a[7]) || 1; // Multiplier ของ A
+    const multiplierB = Number(b[7]) || 1; // Multiplier ของ B
+    
+    // คำนวณ EXP เทียบเท่า (หารด้วย Multiplier)
+    const equivalentExpA = expA / multiplierA;
+    const equivalentExpB = expB / multiplierB;
+    
+    // เรียงตาม EXP เทียบเท่า (มากไปน้อย)
+    if (equivalentExpA !== equivalentExpB) {
+      return equivalentExpB - equivalentExpA;
+    }
+    
+    // ถ้า EXP เทียบเท่าเท่ากัน เรียงตาม Multiplier (น้อยไปมาก)
+    // เพราะ Multiplier น้อย = จุติน้อย = เก่ากว่า
+    if (multiplierA !== multiplierB) {
+      return multiplierA - multiplierB;
+    }
+    
+    // ถ้า Multiplier เท่ากัน เรียงตามชื่อ
+    return a[0].localeCompare(b[0]);
+  });
+  
   lb.clearContents();
   lb.getRange(1, 1, result.length, result[0].length).setValues(result);
 }
+
+
 
 // ✅ สำหรับใช้กับ Web App เรียกข้อมูลจากชีท Leaderboard
 function getLeaderboardData() {
@@ -3674,4 +3735,355 @@ function createRoundRobinStanding() {
   standingSheet.setColumnWidth(8, 100); // WIN RATE
   
   ui.alert(`🏆 สร้างสรุปผล Round Robin สำเร็จ!\n\n📊 สถิติ:\n• จำนวนผู้เล่น: ${standings.length} คน\n• ผู้เล่นที่มีผลการแข่งขัน: ${standings.filter(p => p.wins + p.draws + p.losses > 0).length} คน`);
+}
+
+// 🔄 ระบบ Rebirth (จุติ) - ฟังก์ชันหลัก
+function performRebirth() {
+  const ui = SpreadsheetApp.getUi();
+  const currentUserEmail = Session.getActiveUser().getEmail();
+
+  if (!isAdmin(currentUserEmail)) {
+    ui.alert("🔒 Access Denied", "คุณไม่มีสิทธิ์ในการใช้ฟังก์ชันนี้", ui.ButtonSet.OK);
+    return;
+  }
+
+  // รับเบอร์โทรผู้เล่นที่ต้องการจุติ
+  const phonePrompt = ui.prompt("🔄 ระบบจุติ Rebirth", "กรอกเบอร์โทรผู้เล่นที่ต้องการจุติ (ต้องเป็น Legend เท่านั้น):", ui.ButtonSet.OK_CANCEL);
+  if (phonePrompt.getSelectedButton() !== ui.Button.OK) return;
+  
+  const phone = normalizePhone(phonePrompt.getResponseText().trim());
+  if (!phone) {
+    ui.alert("❌ ข้อมูลไม่ถูกต้อง", "กรุณากรอกเบอร์โทรให้ถูกต้อง", ui.ButtonSet.OK);
+    return;
+  }
+
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const dashSheet = ss.getSheetByName("Member Dashboard");
+  const rebirthSheet = ss.getSheetByName("Rebirth History");
+  const rebirthLogSheet = ss.getSheetByName("Rebirth Log");
+  
+  // ค้นหาผู้เล่น
+  const dashData = dashSheet.getDataRange().getValues();
+  const memberIndex = dashData.findIndex(row => normalizePhone(row[1]) === phone);
+  
+  if (memberIndex === -1) {
+    logRebirthActivity("❌ ไม่พบผู้เล่น", `เบอร์โทร: ${phone}`, currentUserEmail, "ล้มเหลว");
+    ui.alert("❌ ไม่พบผู้เล่น", "ไม่พบเบอร์โทรนี้ในระบบ", ui.ButtonSet.OK);
+    return;
+  }
+
+  const member = dashData[memberIndex];
+  const nickname = member[0];
+  const codename = member[2];
+  const currentRank = member[3];
+  const currentExp = Number(member[4]) || 0;
+  const party = member[5] || "";
+
+  // ตรวจสอบว่าเป็น Legend ที่ถูกต้องหรือไม่
+  const currentRebirthCount = getRebirthCount(phone);
+  const expectedLegendRank = currentRebirthCount === 0 ? "Legend" : `Legend${getRebirthSuffix(currentRebirthCount)}`;
+  
+  if (currentRank !== expectedLegendRank) {
+    logRebirthActivity("❌ ไม่สามารถจุติได้", `${nickname} (${codename}) - Rank: ${currentRank}, ต้องการ: ${expectedLegendRank}`, currentUserEmail, "ล้มเหลว");
+    ui.alert("❌ ไม่สามารถจุติได้", `ผู้เล่น ${nickname} (${codename}) มี Rank: ${currentRank}\n\nต้องเป็น ${expectedLegendRank} เท่านั้นจึงจะสามารถจุติได้`, ui.ButtonSet.OK);
+    return;
+  }
+
+  // ตรวจสอบว่า EXP ถึง 200 หรือไม่
+  if (currentExp < 200) {
+    logRebirthActivity("❌ ไม่สามารถจุติได้", `${nickname} (${codename}) - EXP: ${currentExp}`, currentUserEmail, "ล้มเหลว");
+    ui.alert("❌ ไม่สามารถจุติได้", `ผู้เล่น ${nickname} (${codename}) มี EXP: ${currentExp}\n\nต้องมี EXP อย่างน้อย 200 จึงจะสามารถจุติได้`, ui.ButtonSet.OK);
+    return;
+  }
+
+  // คำนวณจำนวนครั้งที่จุติใหม่
+  const newRebirthCount = currentRebirthCount + 1;
+
+  // คำนวณ EXP multiplier สำหรับรอบใหม่
+  const expMultiplier = newRebirthCount;
+
+  // สร้าง Rank suffix
+  const rankSuffix = getRebirthSuffix(newRebirthCount);
+  const newRank = "Rookie" + rankSuffix;
+
+  // ยืนยันการจุติ
+  const confirmMsg = `🔄 ยืนยันการจุติ Rebirth\n\n👤 ผู้เล่น: ${nickname} (${codename})\n📱 เบอร์โทร: ${phone}\n🏆 Rank ปัจจุบัน: ${currentRank}\n💎 EXP ปัจจุบัน: ${currentExp}\n🔄 ครั้งที่จุติ: ${newRebirthCount}\n\n📈 หลังจากจุติ:\n• Rank จะเป็น: ${newRank}\n• EXP จะเป็น: 0\n• EXP multiplier: x${expMultiplier}\n\n⚠️ ข้อมูลที่ยังคงอยู่:\n• ชื่อเล่นและ Codename\n• ปาร์ตี้\n• ส่วนลดสะสม\n\nต้องการดำเนินการต่อหรือไม่?`;
+  
+  const confirm = ui.alert("🔄 ยืนยันการจุติ", confirmMsg, ui.ButtonSet.YES_NO);
+  if (confirm !== ui.Button.YES) {
+    logRebirthActivity("❌ ยกเลิกการจุติ", `${nickname} (${codename}) - ผู้ใช้ยกเลิก`, currentUserEmail, "ยกเลิก");
+    return;
+  }
+
+  try {
+    // 1. อัปเดตข้อมูลใน Member Dashboard
+    dashSheet.getRange(memberIndex + 1, 4).setValue(newRank); // Rank ใหม่
+    dashSheet.getRange(memberIndex + 1, 5).setValue(0); // EXP กลับเป็น 0
+    
+    // เพิ่มคอลัมน์ Rebirth Count และ EXP Multiplier ถ้ายังไม่มี
+    const currentCols = dashSheet.getLastColumn();
+    if (currentCols < 7) {
+      dashSheet.getRange(1, 7).setValue("Rebirth Count");
+      dashSheet.getRange(1, 8).setValue("EXP Multiplier");
+    }
+    
+    dashSheet.getRange(memberIndex + 1, 7).setValue(newRebirthCount); // Rebirth Count
+    dashSheet.getRange(memberIndex + 1, 8).setValue(expMultiplier); // EXP Multiplier
+
+    // 2. บันทึกประวัติการจุติ
+    const now = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "dd/MM/yyyy HH:mm:ss");
+    rebirthSheet.appendRow([
+      now,
+      phone,
+      nickname,
+      codename,
+      currentRank,
+      currentExp,
+      newRebirthCount,
+      expMultiplier,
+      party,
+      currentUserEmail
+    ]);
+
+    // 3. บันทึก Log
+    logRebirthActivity("🔄 จุติสำเร็จ", `${nickname} (${codename}) - ${currentRank} → ${newRank}, EXP: ${currentExp} → 0, Multiplier: x${expMultiplier}`, currentUserEmail, "สำเร็จ");
+
+    // 4. อัปเดต Leaderboard
+    updateLeaderboard();
+
+    // 5. แสดงผลลัพธ์
+    const successMsg = `✅ จุติ Rebirth สำเร็จ!\n\n👤 ผู้เล่น: ${nickname} (${codename})\n🔄 ครั้งที่จุติ: ${newRebirthCount}\n🏆 Rank ใหม่: ${newRank}\n📈 EXP Multiplier: x${expMultiplier}\n\n💡 ใช้เมนู "🎯 อัปเดต Rank (พร้อม Multiplier)" เพื่ออัปเดต Rank ตาม Multiplier`;
+    
+    ui.alert("🔄 จุติสำเร็จ", successMsg, ui.ButtonSet.OK);
+
+  } catch (error) {
+    console.error("Error during rebirth:", error);
+    logRebirthActivity("❌ เกิดข้อผิดพลาด", `${nickname} (${codename}) - ${error.toString()}`, currentUserEmail, "ล้มเหลว");
+    ui.alert("❌ เกิดข้อผิดพลาด", `เกิดข้อผิดพลาดในการจุติ: ${error.toString()}`, ui.ButtonSet.OK);
+  }
+}
+
+// 📊 แสดงสถิติการจุติ
+function showRebirthStats() {
+  const ui = SpreadsheetApp.getUi();
+  const rebirthSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Rebirth History");
+  
+  if (!rebirthSheet || rebirthSheet.getLastRow() <= 1) {
+    ui.alert("📊 สถิติการจุติ", "ยังไม่มีข้อมูลการจุติ", ui.ButtonSet.OK);
+    return;
+  }
+
+  const data = rebirthSheet.getRange(2, 1, rebirthSheet.getLastRow() - 1, rebirthSheet.getLastColumn()).getValues();
+  
+  // สุปสถิติ
+  const totalRebirths = data.length;
+  const uniquePlayers = new Set(data.map(row => row[1])).size; // เบอร์โทรที่ไม่ซ้ำ
+  
+  // หาผู้เล่นที่จุติมากที่สุด
+  const playerRebirthCounts = {};
+  data.forEach(row => {
+    const phone = row[1];
+    playerRebirthCounts[phone] = (playerRebirthCounts[phone] || 0) + 1;
+  });
+  
+  const maxRebirthPlayer = Object.entries(playerRebirthCounts)
+    .sort((a, b) => b[1] - a[1])[0];
+  
+  // สุปข้อมูลล่าสุด
+  const latestRebirths = data.slice(-5).reverse(); // 5 รายการล่าสุด
+  
+  let statsMsg = `📊 สถิติการจุติ Rebirth\n\n📈 สรุป:\n• จำนวนการจุติทั้งหมด: ${totalRebirths} ครั้ง\n• จำนวนผู้เล่นที่จุติ: ${uniquePlayers} คน\n• ผู้เล่นที่จุติมากที่สุด: ${maxRebirthPlayer ? `${maxRebirthPlayer[0]} (${maxRebirthPlayer[1]} ครั้ง)` : 'ไม่มี'}\n\n🔄 การจุติล่าสุด (5 รายการ):\n`;
+  
+  latestRebirths.forEach((row, index) => {
+    const [date, phone, nickname, codename, oldRank, oldExp, rebirthCount, multiplier, party, admin] = row;
+    statsMsg += `${index + 1}. ${nickname} (${codename}) - ครั้งที่ ${rebirthCount} (${date})\n`;
+  });
+  
+  ui.alert("📊 สถิติการจุติ", statsMsg, ui.ButtonSet.OK);
+}
+
+// 🎯 อัปเดต Rank พร้อม Multiplier และ Suffix
+function updateRanksWithMultiplier() {
+  const ui = SpreadsheetApp.getUi();
+  const currentUserEmail = Session.getActiveUser().getEmail();
+
+  if (!isAdmin(currentUserEmail)) {
+    ui.alert("🔒 Access Denied", "คุณไม่มีสิทธิ์ในการใช้ฟังก์ชันนี้", ui.ButtonSet.OK);
+    return;
+  }
+
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Member Dashboard");
+  const data = sheet.getDataRange().getValues();
+  let updatedCount = 0;
+  
+  try {
+    for (let i = 1; i < data.length; i++) {
+      const rawExp = data[i][4];
+      const exp = Number(rawExp) || 0;
+      const rebirthCount = Number(data[i][6]) || 0; // Rebirth Count (คอลัมน์ 7)
+      const multiplier = Number(data[i][7]) || 1; // EXP Multiplier (คอลัมน์ 8)
+      
+      // คำนวณ EXP ที่ต้องใช้ตาม multiplier
+      const requiredExp = calculateRequiredExp(multiplier);
+      
+      // สร้าง Rank suffix
+      const rankSuffix = getRebirthSuffix(rebirthCount);
+      
+      // คำนวณ Rank ใหม่
+      let newRank = "Rookie";
+      if (exp >= requiredExp.legend) newRank = "Legend";
+      else if (exp >= requiredExp.grandmaster) newRank = "Grandmaster";
+      else if (exp >= requiredExp.diamond) newRank = "Diamond";
+      else if (exp >= requiredExp.platinum) newRank = "Platinum";
+      else if (exp >= requiredExp.gold) newRank = "Gold";
+      else if (exp >= requiredExp.silver) newRank = "Silver";
+      else if (exp >= requiredExp.bronze) newRank = "Bronze";
+      
+      // เพิ่ม suffix ถ้ามีการจุติ
+      if (rebirthCount > 0) {
+        newRank += rankSuffix;
+      }
+      
+      // อัปเดต Rank ถ้าเปลี่ยน
+      const currentRank = data[i][3];
+      if (currentRank !== newRank) {
+        sheet.getRange(i + 1, 4).setValue(newRank);
+        updatedCount++;
+        
+        // บันทึก Log
+        logRebirthActivity("🎯 อัปเดต Rank", `${data[i][0]} (${data[i][2]}) - ${currentRank} → ${newRank}, EXP: ${exp}, Multiplier: x${multiplier}`, currentUserEmail, "สำเร็จ");
+      }
+    }
+    
+    // อัปเดต Leaderboard
+    updateLeaderboard();
+    
+    ui.alert("🎯 อัปเดต Rank สำเร็จ", `อัปเดต Rank จำนวน ${updatedCount} คน\n\n✅ ระบบได้คำนวณ Rank ตาม EXP Multiplier แล้ว\n✅ อัปเดต Leaderboard แล้ว`, ui.ButtonSet.OK);
+    
+  } catch (error) {
+    console.error("Error updating ranks with multiplier:", error);
+    logRebirthActivity("❌ เกิดข้อผิดพลาด", `อัปเดต Rank - ${error.toString()}`, currentUserEmail, "ล้มเหลว");
+    ui.alert("❌ เกิดข้อผิดพลาด", `เกิดข้อผิดพลาดในการอัปเดต Rank: ${error.toString()}`, ui.ButtonSet.OK);
+  }
+}
+
+// 🔧 ฟังก์ชันช่วยเหลือสำหรับระบบ Rebirth
+
+// นับจำนวนครั้งที่จุติ
+function getRebirthCount(phone) {
+  const rebirthSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Rebirth History");
+  if (!rebirthSheet || rebirthSheet.getLastRow() <= 1) return 0;
+  
+  const data = rebirthSheet.getDataRange().getValues();
+  const playerRebirths = data.filter((row, index) => {
+    if (index === 0) return false; // ข้าม header
+    return normalizePhone(row[1]) === phone;
+  });
+  
+  return playerRebirths.length;
+}
+
+// สร้าง Rank suffix ตามจำนวนครั้งที่จุติ
+function getRebirthSuffix(rebirthCount) {
+  if (rebirthCount <= 1) return "";
+  
+  const suffixes = ["", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
+  if (rebirthCount <= 10) {
+    return " " + suffixes[rebirthCount];
+  } else {
+    return " " + rebirthCount;
+  }
+}
+
+// คำนวณ EXP ที่ต้องใช้ตาม multiplier
+function calculateRequiredExp(multiplier) {
+  const baseExp = {
+    bronze: 5,
+    silver: 15,
+    gold: 30,
+    platinum: 50,
+    diamond: 75,
+    grandmaster: 120,
+    legend: 200
+  };
+
+  return {
+    bronze: baseExp.bronze * multiplier,
+    silver: baseExp.silver * multiplier,
+    gold: baseExp.gold * multiplier,
+    platinum: baseExp.platinum * multiplier,
+    diamond: baseExp.diamond * multiplier,
+    grandmaster: baseExp.grandmaster * multiplier,
+    legend: baseExp.legend * multiplier
+  };
+}
+
+// บันทึก Log การจุติ
+function logRebirthActivity(action, details, adminEmail, result) {
+  try {
+    const rebirthLogSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Rebirth Log");
+    if (!rebirthLogSheet) return;
+    
+    const now = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "dd/MM/yyyy HH:mm:ss");
+    rebirthLogSheet.appendRow([
+      now,
+      action,
+      details,
+      adminEmail,
+      result
+    ]);
+  } catch (error) {
+    console.error("Error logging rebirth activity:", error);
+  }
+}
+
+// 🧪 ฟังก์ชันทดสอบระบบ Rebirth
+function testRebirthSystem() {
+  const ui = SpreadsheetApp.getUi();
+  
+  let testMsg = `🧪 ทดสอบระบบ Rebirth\n\n📊 ตัวอย่างการทำงาน:\n\n`;
+  
+  // ทดสอบการจุติครั้งที่ 1
+  testMsg += `🔄 การจุติครั้งที่ 1:\n`;
+  testMsg += `• ต้องเป็น: Legend (EXP ≥ 200)\n`;
+  testMsg += `• หลังจากจุติ: Rookie II (EXP = 0, Multiplier = x1)\n`;
+  testMsg += `• EXP ที่ต้องใช้: Bronze II = 10, Silver II = 30, Gold II = 60, ฯลฯ\n\n`;
+  
+  // ทดสอบการจุติครั้งที่ 2
+  testMsg += `🔄 การจุติครั้งที่ 2:\n`;
+  testMsg += `• ต้องเป็น: Legend II (EXP ≥ 400)\n`;
+  testMsg += `• หลังจากจุติ: Rookie III (EXP = 0, Multiplier = x2)\n`;
+  testMsg += `• EXP ที่ต้องใช้: Bronze III = 15, Silver III = 45, Gold III = 90, ฯลฯ\n\n`;
+  
+  // ทดสอบการจุติครั้งที่ 3
+  testMsg += `🔄 การจุติครั้งที่ 3:\n`;
+  testMsg += `• ต้องเป็น: Legend III (EXP ≥ 600)\n`;
+  testMsg += `• หลังจากจุติ: Rookie IV (EXP = 0, Multiplier = x3)\n`;
+  testMsg += `• EXP ที่ต้องใช้: Bronze IV = 20, Silver IV = 60, Gold IV = 120, ฯลฯ\n\n`;
+  
+  // ทดสอบ Leaderboard
+  testMsg += `🏆 ตัวอย่างการเรียงลำดับใน Leaderboard (ระบบใหม่):\n\n`;
+  
+  testMsg += `📊 ตัวอย่างที่ 1: EXP เท่ากัน (60)\n`;
+  testMsg += `• Player A: Gold (EXP 60, Multiplier x1) → เทียบเท่า 60\n`;
+  testMsg += `• Player B: Silver II (EXP 60, Multiplier x2) → เทียบเท่า 30\n`;
+  testMsg += `• Player C: Bronze III (EXP 60, Multiplier x3) → เทียบเท่า 20\n`;
+  testMsg += `→ ผลการเรียง: A > B > C (ตาม EXP เทียบเท่า)\n\n`;
+  
+  testMsg += `📊 ตัวอย่างที่ 2: EXP เทียบเท่าเท่ากัน\n`;
+  testMsg += `• Player X: Gold (EXP 60, Multiplier x1) → เทียบเท่า 60\n`;
+  testMsg += `• Player Y: Silver II (EXP 120, Multiplier x2) → เทียบเท่า 60\n`;
+  testMsg += `→ ผลการเรียง: X > Y (Multiplier น้อย = เก่ากว่า)\n\n`;
+  
+  testMsg += `📊 ตัวอย่างที่ 3: ทุกอย่างเท่ากัน\n`;
+  testMsg += `• Player P: Gold (EXP 60, Multiplier x1) → เทียบเท่า 60\n`;
+  testMsg += `• Player Q: Gold (EXP 60, Multiplier x1) → เทียบเท่า 60\n`;
+  testMsg += `→ ผลการเรียง: ตามชื่อ (A-Z)\n\n`;
+  
+  testMsg += `💡 หลักการเรียงลำดับ:\n`;
+  testMsg += `1. เรียงตาม EXP เทียบเท่า (EXP ÷ Multiplier) - มากไปน้อย\n`;
+  testMsg += `2. ถ้าเท่ากัน เรียงตาม Multiplier (น้อยไปมาก)\n`;
+  testMsg += `3. ถ้าเท่ากัน เรียงตามชื่อ (A-Z)\n`;
+  
+  ui.alert("🧪 ทดสอบระบบ Rebirth", testMsg, ui.ButtonSet.OK);
 }
