@@ -1577,6 +1577,7 @@
               <th>แข่ง</th>
               <th>W</th>
               <th>L</th>
+              <th>คะแนน</th>
               <th>%W</th>
               <th>%OW</th>
               <th>H2H</th>
@@ -1623,14 +1624,14 @@
         console.log(`Processing row ${i}:`, row[0], row[1], row[2]);
         const playerId = row[1];
         const playerName = row[2];
-        const played = parseInt(row[3]) || 0;
-        const win = parseInt(row[4]) || 0;
-        const draw = parseInt(row[5]) || 0;
-        const loss = parseInt(row[6]) || 0;
-        const points = parseFloat(row[7]) || 0;
-        let winRate = row[8] || '0%';
-        let ow = row[9] || '0%';
-        const h2h = row[10] || ''; // H2H column
+        const played = parseInt(row[4]) || 0; // Played (index 4)
+        const win = parseInt(row[5]) || 0; // Win (index 5)
+        const draw = parseInt(row[6]) || 0; // Draw (index 6)
+        const loss = parseInt(row[7]) || 0; // Loss (index 7)
+        const points = parseInt(row[8]) || 0; // Points (index 8) - แสดงเป็นตัวเลขธรรมดา
+        let winRate = row[9] || '0%'; // Win Rate (index 9)
+        let ow = row[10] || '0%'; // OW% (index 10)
+        const h2h = row[11] || ''; // H2H (index 11)
         
         // แปลงเป็นเปอร์เซ็นต์
         if (typeof winRate === 'number') {
@@ -1704,6 +1705,7 @@
           <td>${played}</td>
           <td>${win}</td>
           <td>${loss}</td>
+          <td>${points}</td>
           <td data-full-text="${winRate}" onclick="showTooltip(this, '${winRate}')">${winRate}</td>
           <td data-full-text="${ow}" onclick="showTooltip(this, '${ow}')">${ow}</td>
           <td data-full-text="${h2h}" onclick="showTooltip(this, '${h2h}')">${h2h}</td>
@@ -1928,14 +1930,14 @@
       dataRows.forEach((row, i) => {
         const playerId = row[1];
         const playerName = row[2];
-        const played = parseInt(row[3]) || 0;
-        const win = parseInt(row[4]) || 0;
-        const draw = parseInt(row[5]) || 0;
-        const loss = parseInt(row[6]) || 0;
-        const points = parseFloat(row[7]) || 0;
-        let winRate = row[8] || '0%';
-        let ow = row[8] || '0%';  // %OW อยู่ใน column I (index 8)
-        const h2h = row[9] || '-'; // H2H อยู่ใน column J (index 9)
+        const played = parseInt(row[4]) || 0; // Played (index 4)
+        const win = parseInt(row[5]) || 0; // Win (index 5)
+        const draw = parseInt(row[6]) || 0; // Draw (index 6)
+        const loss = parseInt(row[7]) || 0; // Loss (index 7)
+        const points = parseInt(row[8]) || 0; // Points (index 8) - แสดงเป็นตัวเลขธรรมดา
+        let winRate = row[9] || '0%'; // Win Rate (index 9)
+        let ow = row[10] || '0%'; // OW% (index 10)
+        const h2h = row[11] || '-'; // H2H (index 11)
         
         console.log('RoundRobin - Row data:', row);
         console.log('RoundRobin - Points:', points, 'WinRate:', winRate, 'OW:', ow, 'H2H:', h2h);
@@ -1991,6 +1993,7 @@
           <td>${played}</td>
           <td>${win}</td>
           <td>${loss}</td>
+          <td>${points}</td>
           <td data-full-text="${winRate}" onclick="showTooltip(this, '${winRate}')">${winRate}</td>
           <td data-full-text="${ow}" onclick="showTooltip(this, '${ow}')">${ow}</td>
           <td data-full-text="${h2h}" onclick="showTooltip(this, '${h2h}')">${h2h}</td>
