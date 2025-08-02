@@ -62,6 +62,11 @@ function onOpen() {
   // ตั้งค่า Hide Standing checkbox เมื่อเปิดชีท
   setupHideStandingCheckbox();
   setupPairingHideStandingControls();
+
+  ui.createMenu('Pairing Tools')
+    .addItem('จับคู่รอบถัดไป (Swiss)', 'pairNextRound')
+    .addItem('จับคู่รอบล่าสุดอีกครั้ง (สุ่มใหม่)', 'rePairLastRound')
+    .addToUi();
 }
 
 
@@ -272,7 +277,14 @@ function pairNextRound() {
       points: row[7], // คะแนน
       rank: row[0]
     }))
-    .sort((a, b) => b.points - a.points); // เรียงตามคะแนน
+    .sort((a, b) => {
+      // เรียงตามคะแนนจากมากไปน้อย
+      if (b.points !== a.points) {
+        return b.points - a.points;
+      }
+      // ถ้าคะแนนเท่ากัน ให้เรียงตาม ID เพื่อความเสถียร
+      return a.id.localeCompare(b.id);
+    });
 
   // Debug: แสดงข้อมูล active players
   console.log('Active Players:', activePlayers.map(p => `${p.name} (${p.id}) - ${p.points} pts`));
@@ -301,6 +313,9 @@ function pairNextRound() {
     if (!playerBrackets[points]) playerBrackets[points] = [];
     playerBrackets[points].push(player);
   });
+
+  // Debug: แสดงการจัดกลุ่มตามคะแนน
+  console.log('Player Brackets:', playerBrackets);
 
   // 2. แจกบายถ้าคนคี่ - เลือกผู้เล่นที่ยังไม่เคยได้ BYE และมีคะแนนต่ำที่สุด
   let byePlayer = null;
@@ -355,16 +370,86 @@ function pairNextRound() {
     return eligible;
   }
 
+  // ฟังก์ชันคำนวณคะแนนความเหมาะสมของคู่ต่อสู้
+  function calculatePairingScore(p1, p2) {
+    const pointDiff = Math.abs(p1.points - p2.points);
+    const avgPoints = (p1.points + p2.points) / 2;
+    
+    // ให้ความสำคัญกับคะแนนใกล้เคียง แต่ไม่มากเกินไป
+    const pointScore = Math.max(0, 10 - pointDiff);
+    
+    // ให้ความสำคัญกับคะแนนเฉลี่ย (คนที่มีคะแนนสูงควรเจอคนที่มีคะแนนสูง)
+    const avgScore = avgPoints / 10;
+    
+    // เพิ่มการพิจารณาความสมดุลของคะแนน
+    // คนที่มีคะแนนสูงควรเจอคนที่มีคะแนนสูงก่อน
+    const balanceScore = Math.min(p1.points, p2.points) / 10;
+    
+    // คำนวณคะแนนรวม (ให้ความสำคัญกับคะแนนเฉลี่ยมากที่สุด)
+    return (pointScore * 0.3) + (avgScore * 0.5) + (balanceScore * 0.2);
+  }
+
   // ฟังก์ชันจับคู่แบบ backtracking
   function pairPlayers(players, matchHistory) {
     if (players.length === 0) return true;
     if (players.length === 1) return false;
 
+    // --- บังคับคนคะแนนเท่ากันเจอกันก่อน (ถ้ายังไม่เคยเจอกัน) ---
+    if (players.length >= 2) {
+      // จัดกลุ่มผู้เล่นตามคะแนน
+      const pointsGroups = {};
+      players.forEach(player => {
+        if (!pointsGroups[player.points]) pointsGroups[player.points] = [];
+        pointsGroups[player.points].push(player);
+      });
+      
+      // หาคะแนนสูงสุดที่มีคน 2 คนขึ้นไป
+      const sortedPoints = Object.keys(pointsGroups).map(Number).sort((a, b) => b - a);
+      
+      for (let points of sortedPoints) {
+        const playersInGroup = pointsGroups[points];
+        if (playersInGroup.length >= 2) {
+          // หาคู่ที่ยังไม่เคยเจอกัน
+          for (let i = 0; i < playersInGroup.length; i++) {
+            for (let j = i + 1; j < playersInGroup.length; j++) {
+              const p1 = playersInGroup[i];
+              const p2 = playersInGroup[j];
+              
+              // ตรวจสอบว่ายังไม่เคยเจอกัน
+              const hasPlayed = matchHistory[p1.id] && matchHistory[p1.id].includes(p2.id);
+              
+              if (!hasPlayed) {
+                console.log(`บังคับจับคู่ (คะแนนเท่ากัน): ${p1.name} (${p1.points} pts) vs ${p2.name} (${p2.points} pts)`);
+                
+                const remainingPlayers = players.filter(p => p.id !== p1.id && p.id !== p2.id);
+                paired.push([p1, p2]);
+                
+                if (pairPlayers(remainingPlayers, matchHistory)) {
+                  return true;
+                }
+                
+                paired.pop(); // backtrack
+                console.log(`ไม่สามารถจับคู่ที่เหลือได้หลังจากจับคู่ ${p1.name} vs ${p2.name}`);
+                return false; // ถ้าจับคู่นี้แล้วที่เหลือจับไม่ได้
+              } else {
+                console.log(`${p1.name} และ ${p2.name} เคยเจอกันแล้ว`);
+              }
+            }
+          }
+        }
+      }
+    }
+    // --- จบบังคับ ---
+
     const p1 = players[0];
     const eligibleOpponents = getEligibleOpponents(p1, players.slice(1), matchHistory);
     
-    // เรียงตามคะแนนใกล้เคียง
-    eligibleOpponents.sort((a, b) => Math.abs(a.points - p1.points) - Math.abs(b.points - p1.points));
+    // เรียงตามคะแนนความเหมาะสม (คะแนนใกล้เคียง + คะแนนเฉลี่ย)
+    eligibleOpponents.sort((a, b) => {
+      const scoreA = calculatePairingScore(p1, a);
+      const scoreB = calculatePairingScore(p1, b);
+      return scoreB - scoreA; // เรียงจากมากไปน้อย
+    });
     
     for (let p2 of eligibleOpponents) {
       const remainingPlayers = players.filter(p => p.id !== p1.id && p.id !== p2.id);
@@ -382,6 +467,10 @@ function pairNextRound() {
 
   // ลองจับคู่แบบ backtracking
   const remainingPlayers = activePlayers.filter(p => !byePlayer || p.id !== byePlayer.id);
+  
+  // Debug: แสดงผู้เล่นที่เหลือสำหรับการจับคู่
+  console.log('Remaining Players for Pairing:', remainingPlayers.map(p => `${p.name} (${p.id}) - ${p.points} pts`));
+  
   const success = pairPlayers(remainingPlayers, matchHistory);
 
   if (!success) {
@@ -396,11 +485,16 @@ function pairNextRound() {
     return; // ยกเลิกการจับคู่
   }
 
-  // 4. สร้างผลลัพธ์
+  // 4. สร้างผลลัพธ์ (จัดโต๊ะตามคะแนนสูง-ต่ำ)
   const output = [];
+  
+  // เรียงคู่ตามคะแนนเฉลี่ย (สูงไปต่ำ)
+  const sortedPairs = paired.map(([p1, p2]) => ({
+    p1, p2, avgPoints: (p1.points + p2.points) / 2
+  })).sort((a, b) => b.avgPoints - a.avgPoints);
+  
   let tableNumber = 1;
-
-  paired.forEach(([p1, p2]) => {
+  sortedPairs.forEach(({p1, p2}) => {
     output.push([
       nextRound,
       tableNumber++,
@@ -2685,21 +2779,21 @@ function checkHideStandingStatus() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const pairingSheet = ss.getSheetByName('Pairing');
   
-  // ตรวจสอบ checkbox ที่ช่อง O2 (คอลัมน์ O, แถว 2) ในชีท Pairing
-  const hideStandingCell = pairingSheet.getRange(2, 15); // O2
+  // ตรวจสอบ checkbox ที่ช่อง N1 (คอลัมน์ N, แถว 1) ในชีท Pairing
+  const hideStandingCell = pairingSheet.getRange(1, 14); // N1
   
-  // ตรวจสอบว่าช่อง O2 มี checkbox หรือไม่
+  // ตรวจสอบว่าช่อง N1 มี checkbox หรือไม่
   try {
     const checkboxValue = hideStandingCell.getValue();
     const isChecked = checkboxValue === true;
     
-    console.log(`Hide Standing Status (O2): ${isChecked ? 'ซ่อน Standings' : 'แสดง Standings'}`);
+    console.log(`Hide Standing Status (N1): ${isChecked ? 'ซ่อน Standings' : 'แสดง Standings'}`);
     
     return {
       hideStanding: isChecked
     };
   } catch (error) {
-    console.log('ไม่พบ checkbox ที่ O2, แสดง Standings ปกติ');
+    console.log('ไม่พบ checkbox ที่ N1, แสดง Standings ปกติ');
     return {
       hideStanding: false
     };
@@ -2857,362 +2951,230 @@ function resetHideStandingControls() {
   );
 }
 
-// 📏 ปรับขนาดคอลัมน์ชื่อผู้เล่นตามความยาวของชื่อ
-function adjustPlayerNameColumns(sheet) {
-  // คอลัมน์ D (PLAYER 1) และ J (PLAYER 2)
-  const playerColumns = [4, 10]; // D = 4, J = 10
-  
-  playerColumns.forEach(col => {
-    // ดึงข้อมูลทั้งหมดในคอลัมน์
-    const lastRow = sheet.getLastRow();
-    if (lastRow > 1) {
-      const columnData = sheet.getRange(2, col, lastRow - 1, 1).getValues();
-      
-      // หาความยาวของชื่อที่ยาวที่สุด
-      let maxLength = 0;
-      columnData.forEach(row => {
-        const text = row[0] ? row[0].toString() : '';
-        if (text.length > maxLength) {
-          maxLength = text.length;
-        }
-      });
-      
-      // คำนวณความกว้างที่เหมาะสม (ประมาณ 8px ต่อตัวอักษร + padding)
-      const optimalWidth = Math.max(150, Math.min(400, maxLength * 8 + 20));
-      sheet.setColumnWidth(col, optimalWidth);
-      
-      console.log(`ปรับขนาดคอลัมน์ ${String.fromCharCode(64 + col)} (${col}) เป็น ${optimalWidth}px (ความยาวสูงสุด: ${maxLength} ตัวอักษร)`);
-    }
-  });
-}
-
-// 🔄 ฟังก์ชัน onEdit รวม - อัปเดต RESULT และรีเซ็ต Hide Standing checkbox
-function onEdit(e) {
-  const range = e.range;
-  const sheet = range.getSheet();
-  const sheetName = sheet.getName();
-  const row = range.getRow();
-  const col = range.getColumn();
-  
-  // ตรวจสอบว่าเป็นชีทที่ต้องการและไม่ใช่แถวแรก
-  if ((sheetName !== 'Pairing' && sheetName !== 'Round Robin') || row < 2) return;
-
-  // กำหนดคอลัมน์ตามชีท
-  let winP1Col, drawCol, winP2Col, doubleLossCol, p2NameCol, resultCol, statusCol;
-  
-  if (sheetName === 'Pairing') {
-    // Pairing sheet: columns E, F, G, H (5, 6, 7, 8)
-    winP1Col = 5;
-    drawCol = 6;
-    winP2Col = 7;
-    doubleLossCol = 8;
-    p2NameCol = 9;
-    resultCol = 11;
-    statusCol = 12;
-  } else if (sheetName === 'Round Robin') {
-    // Round Robin sheet: columns G, H, I, J (7, 8, 9, 10)
-    winP1Col = 7;
-    drawCol = 8;
-    winP2Col = 9;
-    doubleLossCol = 10;
-    p2NameCol = 12; // PLAYER 2
-    resultCol = 15; // RESULT
-    statusCol = 16; // STATUS
-  }
-  
-  // อัปเดต RESULT เมื่อแก้ไข checkbox
-  if (col >= winP1Col && col <= doubleLossCol) {
-    // If a box was checked, uncheck the others in the same row
-    if (range.getValue() === true) {
-      if (col === winP1Col) { // Win P1
-        sheet.getRange(row, drawCol, 1, 3).uncheck(); // uncheck DRAW, WIN_P2, Double Loss
-      } else if (col === drawCol) { // Draw
-        sheet.getRange(row, winP1Col).uncheck(); // uncheck WIN_P1
-        sheet.getRange(row, winP2Col, 1, 2).uncheck(); // uncheck WIN_P2, Double Loss
-      } else if (col === winP2Col) { // Win P2
-        sheet.getRange(row, winP1Col, 1, 2).uncheck(); // uncheck WIN_P1, DRAW
-        sheet.getRange(row, doubleLossCol).uncheck(); // uncheck Double Loss
-      } else if (col === doubleLossCol) { // Double Loss (0:0)
-        sheet.getRange(row, winP1Col, 1, 3).uncheck(); // uncheck WIN_P1, DRAW, WIN_P2
-      }
-    }
-    
-    SpreadsheetApp.flush(); // Ensure sheet updates before reading values
-
-    const winP1 = sheet.getRange(row, winP1Col).getValue();
-    const draw = sheet.getRange(row, drawCol).getValue();
-    const winP2 = sheet.getRange(row, winP2Col).getValue();
-    const doubleLoss = sheet.getRange(row, doubleLossCol).getValue();
-    
-    const p2_name = sheet.getRange(row, p2NameCol).getValue();
-    if (p2_name === 'BYE') return;
-
-    let result = '';
-    let status = '';
-
-    if (winP1) {
-      result = '1:0';
-      status = 'OK';
-    } else if (winP2) {
-      result = '0:1';
-      status = 'OK';
-    } else if (draw) {
-      result = '1:1';
-      status = 'OK';
-    } else if (doubleLoss) {
-      result = '0:0';
-      status = 'OK';
-    } else {
-      result = ''; // Clear result if all are unchecked
-      status = ''; // Clear status if no result
-    }
-
-    // อัปเดตผลลัพธ์และจัดรูปแบบ
-    const resultCell = sheet.getRange(row, resultCol);
-    const statusCell = sheet.getRange(row, statusCol);
-    
-    resultCell.setValue(result);
-    statusCell.setValue(status);
-    
-    // จัดรูปแบบผลลัพธ์ตามประเภท
-    if (result === '1:0') {
-      resultCell.setBackground('#dcfce7'); // สีเขียวอ่อน
-      resultCell.setFontColor('#166534'); // สีเขียวเข้ม
-    } else if (result === '0:1') {
-      resultCell.setBackground('#fee2e2'); // สีแดงอ่อน
-      resultCell.setFontColor('#dc2626'); // สีแดงเข้ม
-    } else if (result === '1:1') {
-      resultCell.setBackground('#fef3c7'); // สีเหลืองอ่อน
-      resultCell.setFontColor('#92400e'); // สีเหลืองเข้ม
-    } else if (result === '0:0') {
-      resultCell.setBackground('#fee2e2'); // สีแดงอ่อน
-      resultCell.setFontColor('#dc2626'); // สีแดงเข้ม
-    } else {
-      resultCell.setBackground(null);
-      resultCell.setFontColor(null);
-    }
-  }
-  
-  // รีเซ็ต Hide Standing checkbox เป็น default (เฉพาะชีท Pairing)
-  if (sheetName === 'Pairing') {
-    // ถ้าไม่ใช่การแก้ไขที่ช่อง O2 (checkbox) ให้รีเซ็ต checkbox เป็น default
-    if (col !== 15 || row !== 2) { // O2 = column 15, row 2
-      const hideCheckbox = sheet.getRange(2, 15); // O2
-      
-      // ตรวจสอบว่า checkbox ยังไม่ถูกติ๊ก
-      if (!hideCheckbox.getValue()) {
-        hideCheckbox.check(); // ติ๊กกลับเป็น default
-        
-        // แสดงข้อความแจ้งเตือน (optional)
-        console.log('รีเซ็ต Hide Standing checkbox เป็น default หลังจากแก้ไขข้อมูล');
-      }
-      
-      // ถ้าเป็นการแก้ไขที่คอลัมน์ D (PLAYER 1) หรือ J (PLAYER 2) ให้ปรับขนาดคอลัมน์
-      if (col === 4 || col === 10) { // D = 4, J = 10
-        adjustPlayerNameColumns(sheet);
-      }
-    }
-  }
-}
-
-// 🔒 ฟังก์ชันซ่อน Standings
-function hideStandings() {
+// 📏 ปรับขนาดคอลัมน์ชื่อผู้เล่นในชีท Pairing
+function adjustPairingColumns() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const pairingSheet = ss.getSheetByName('Pairing');
   
-  // ตั้งค่า checkbox ที่ O2 เป็นติ๊กถูก
-  const hideStandingCell = pairingSheet.getRange(2, 15); // O2
-  hideStandingCell.check();
+  adjustPlayerNameColumns(pairingSheet);
   
   SpreadsheetApp.getUi().alert(
-    '🔒 ซ่อน Standings เรียบร้อยแล้ว',
-    'Standings ถูกซ่อนแล้ว (Default)\n\nผู้เล่นจะไม่เห็นตารางคะแนนในเว็บไซต์\n\nเมื่อต้องการแสดง Standings ให้กดปุ่ม "👁️ แสดง Standings"',
+    '📏 ปรับขนาดคอลัมน์เรียบร้อยแล้ว',
+    'คอลัมน์ D (PLAYER 1) และ J (PLAYER 2) ถูกปรับขนาดตามความยาวของชื่อที่ยาวที่สุดแล้ว',
     SpreadsheetApp.getUi().ButtonSet.OK
   );
 }
 
-// 👁️ ฟังก์ชันแสดง Standings
-function showStandings() {
+// ⚡ รีเซ็ต Controls ทันที (บังคับ)
+function forceResetControls() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const pairingSheet = ss.getSheetByName('Pairing');
   
-  // ตั้งค่า checkbox ที่ O2 เป็นไม่ติ๊ก
-  const hideStandingCell = pairingSheet.getRange(2, 15); // O2
-  hideStandingCell.uncheck();
+  // รีเซ็ต checkbox ที่ O2 เป็นติ๊กถูก
+  const hideCheckbox = pairingSheet.getRange(2, 15); // O2
+  hideCheckbox.check();
+  
+  // ปรับขนาดคอลัมน์ชื่อผู้เล่น
+  adjustPlayerNameColumns(pairingSheet);
+  
+  // อัปเดต Standings
+  updateStandings();
   
   SpreadsheetApp.getUi().alert(
-    '👁️ แสดง Standings เรียบร้อยแล้ว',
-    'Standings ถูกแสดงแล้ว\n\nผู้เล่นจะเห็นตารางคะแนนในเว็บไซต์\n\nเมื่อต้องการซ่อน Standings อีกครั้ง ให้กดปุ่ม "🔒 ซ่อน Standings (Default)"',
+    '⚡ รีเซ็ตเรียบร้อยแล้ว',
+    'Hide Standing checkbox ถูกติ๊กกลับเป็น default\nปรับขนาดคอลัมน์ชื่อผู้เล่น\nและอัปเดต Standings แล้ว',
     SpreadsheetApp.getUi().ButtonSet.OK
   );
 }
 
-// 📊 ตรวจสอบสถานะ Hide Standing ปัจจุบัน
-function checkCurrentHideStandingStatus() {
+// === ฟังก์ชันสุ่มจับคู่รอบล่าสุดใหม่ (Swiss, ไม่ซ้ำคู่เดิม) ===
+function rePairLastRound() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const pairingSheet = ss.getSheetByName('Pairing');
-  
-  try {
-    const hideStandingCell = pairingSheet.getRange(2, 15); // O2
-    const isHidden = hideStandingCell.getValue() === true;
-    
-    const status = isHidden ? '🔒 ซ่อนอยู่ (Default)' : '👁️ แสดงอยู่';
-    const message = isHidden ? 
-      'Standings ถูกซ่อนอยู่ (Default)\n\nผู้เล่นจะไม่เห็นตารางคะแนนในเว็บไซต์\n\nเมื่อต้องการแสดง Standings ให้กดปุ่ม "👁️ แสดง Standings"' : 
-      'Standings ถูกแสดงอยู่\n\nผู้เล่นจะเห็นตารางคะแนนในเว็บไซต์\n\nเมื่อต้องการซ่อน Standings อีกครั้ง ให้กดปุ่ม "🔒 ซ่อน Standings (Default)"';
-    
-    SpreadsheetApp.getUi().alert(
-      `📊 สถานะ Hide Standing: ${status}`,
-      message,
-      SpreadsheetApp.getUi().ButtonSet.OK
-    );
-  } catch (error) {
-    SpreadsheetApp.getUi().alert(
-      '❌ ไม่สามารถตรวจสอบสถานะได้',
-      'กรุณาลองใหม่อีกครั้ง หรือติดต่อผู้ดูแลระบบ',
-      SpreadsheetApp.getUi().ButtonSet.OK
-    );
-  }
-}
-
-
-
-// 📊 อัปเดตฟังก์ชัน doGet เพื่อส่งข้อมูล Hide Pairing
-function doGet(e) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  
-  // Swiss Tournament Data
-  const pairingSheet = ss.getSheetByName('Pairing');
-  const playersSheet = ss.getSheetByName('Players');
   const standingSheet = ss.getSheetByName('Standing');
-  
-  // Round Robin Tournament Data
-  const roundRobinSheet = ss.getSheetByName('Round Robin');
-  const roundRobinStandingSheet = ss.getSheetByName('Round Robin Standing');
-  
-  // ดึงข้อมูล Swiss Tournament
-  const pairingData = pairingSheet.getDataRange().getValues();
-  const playersData = playersSheet.getDataRange().getValues();
-  
-  // ดึงข้อมูล standings แบบ manual เพื่อรวมแถว DROP
-  let standingsData = [];
-  if (standingSheet.getLastRow() > 1) {
-    const lastRow = standingSheet.getLastRow();
-    const allData = standingSheet.getRange(1, 1, lastRow, standingSheet.getLastColumn()).getValues();
-    
-    // หาแถวสุดท้ายที่มีข้อมูลจริง (รวม DROP)
-    let actualLastRow = lastRow;
-    for (let i = lastRow - 1; i >= 0; i--) {
-      if (allData[i][0] && allData[i][0] !== "") {
-        actualLastRow = i + 1;
-        break;
-      }
-    }
-    standingsData = allData.slice(0, actualLastRow);
-  }
-  
-  // ดึงข้อมูล Round Robin Tournament
-  const roundRobinData = roundRobinSheet.getLastRow() > 1 ? roundRobinSheet.getDataRange().getValues() : [];
-  const roundRobinStandingData = roundRobinStandingSheet.getLastRow() > 1 ? roundRobinStandingSheet.getDataRange().getValues() : [];
-
-  // ดึงสถานะ Hide Standing
-  const hideStandingStatus = checkHideStandingStatus();
-
-  return ContentService.createTextOutput(
-    JSON.stringify({
-      // Swiss Tournament
-      pairing: pairingData,
-      players: playersData,
-      standings: standingsData,
-      
-      // Round Robin Tournament
-      roundRobin: roundRobinData,
-      roundRobinStandings: roundRobinStandingData,
-      
-      // Hide Standing Status
-      hideStanding: hideStandingStatus
-    })
-  ).setMimeType(ContentService.MimeType.JSON);
-}
-
-// 📋 แสดงผู้เล่นที่ Drop พร้อมรอบที่ Drop
-function showDroppedPlayers() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const pairingSheet = ss.getSheetByName('Pairing');
   const playersSheet = ss.getSheetByName('Players');
-  
-  // ดึงข้อมูลผู้เล่นทั้งหมด
-  const playersData = playersSheet.getRange(2, 1, playersSheet.getLastRow() - 1, 4).getValues();
-  const playerMap = {};
-  playersData.forEach(row => {
-    if (row[0] && row[1]) {
-      playerMap[row[1]] = row[0]; // name (B) -> id (A)
-    }
-  });
-  
-  // ดึงข้อมูลการแข่งขันทั้งหมด
-  const pairingData = pairingSheet.getRange(2, 1, pairingSheet.getLastRow() - 1, 13).getValues();
-  
-  // หาผู้เล่นที่ drop และรอบที่ drop
-  const droppedPlayers = [];
-  
-  pairingData.forEach((row, index) => {
-    const round = row[0];
-    const p1Name = row[3];
-    const p2Name = row[9];
-    const dropName = row[12]; // คอลัมน์ M (Drop)
-    
-    if (dropName && dropName !== '') {
-      // หา Player ID จากชื่อ
-      const playerId = playerMap[dropName] || 'ไม่พบ ID';
-      
-      // หาว่าผู้เล่นนี้ drop ในรอบไหน
-      let dropRound = round;
-      let dropReason = 'ไม่ระบุ';
-      
-      // ตรวจสอบว่าผู้เล่นนี้มีการแข่งขันในรอบนี้หรือไม่
-      if (p1Name === dropName || p2Name === dropName) {
-        dropReason = 'Drop หลังการแข่งขัน';
-      } else {
-        dropReason = 'Drop ก่อนการแข่งขัน';
-      }
-      
-      droppedPlayers.push({
-        playerId: playerId,
-        playerName: dropName,
-        dropRound: dropRound,
-        dropReason: dropReason
-      });
-    }
-  });
-  
-  // ลบข้อมูลซ้ำ
-  const uniqueDropped = [];
-  const seenNames = new Set();
-  
-  droppedPlayers.forEach(player => {
-    if (!seenNames.has(player.playerName)) {
-      seenNames.add(player.playerName);
-      uniqueDropped.push(player);
-    }
-  });
-  
-  // สร้างข้อความแสดงผล
-  if (uniqueDropped.length === 0) {
-    SpreadsheetApp.getUi().alert('ไม่มีผู้เล่นที่ drop ในขณะนี้');
+
+  // ดึงรอบล่าสุด
+  const roundData = pairingSheet.getRange('A2:A').getValues().flat().filter(r => r);
+  const lastRound = roundData.length ? Math.max(...roundData) : 1;
+  const nextRound = lastRound + 1;
+
+  // ดึง standings ล่าสุด
+  let standings = [];
+  if (standingSheet.getLastRow() > 1) {
+    standings = standingSheet.getRange(2, 1, standingSheet.getLastRow() - 1, 11).getValues();
+  }
+  if (standings.length === 0) {
+    SpreadsheetApp.getUi().alert('ไม่พบข้อมูล standings สำหรับการจับคู่\n\nกรุณาอัปเดต Standings ก่อน');
     return;
   }
-  
-  let message = '📋 ผู้เล่นที่ Drop:\n\n';
-  uniqueDropped.forEach((player, index) => {
-    message += `${index + 1}. ${player.playerName} (${player.playerId})\n`;
-    message += `   Drop ในรอบที่: ${player.dropRound}\n`;
-    message += `   สาเหตุ: ${player.dropReason}\n\n`;
+
+  // กรอง activePlayers จาก standings (ไม่รวมผู้เล่นที่ drop)
+  let activePlayers = standings
+    .filter(row => row[0] !== 'DROP' && row[1] && row[1] !== '')
+    .map(row => ({
+      id: row[1],
+      name: row[2],
+      points: row[7],
+      rank: row[0]
+    }))
+    .sort((a, b) => b.points - a.points || a.id.localeCompare(b.id));
+
+  if (activePlayers.length < 2) {
+    SpreadsheetApp.getUi().alert('ไม่สามารถจับคู่ได้ – ผู้เล่นน้อยเกินไป (น้อยกว่า 2 คน)');
+    return;
+  }
+
+  // คนที่เคยได้บาย
+  const allPairingData = pairingSheet.getDataRange().getValues();
+  const byeList = allPairingData.filter(r => r[8] === 'BYE').map(r => r[2]);
+
+  // ดึงคนที่เคยเจอกัน (รวมทุกคู่ก่อนหน้า)
+  const matchHistory = {};
+  allPairingData.slice(1).forEach(row => {
+    const p1 = row[2], p2 = row[8];
+    if (!p1 || !p2 || p1 === '' || p2 === '' || p2 === 'BYE' || p1 === 'BYE') return;
+    if (!matchHistory[p1]) matchHistory[p1] = [];
+    if (!matchHistory[p2]) matchHistory[p2] = [];
+    matchHistory[p1].push(p2);
+    matchHistory[p2].push(p1);
   });
-  
-  message += `\nรวมผู้เล่นที่ drop: ${uniqueDropped.length} คน`;
-  
-  SpreadsheetApp.getUi().alert(message);
+
+  // ดึงคู่ของรอบล่าสุด (เพื่อกันไม่ให้ซ้ำ)
+  const lastRoundPairs = allPairingData.filter(r => r[0] === lastRound && r[8] !== 'BYE')
+    .map(r => [r[2], r[8]]);
+
+  // แจกบายถ้าคนคี่
+  let byePlayer = null;
+  if (activePlayers.length % 2 === 1) {
+    // จัดกลุ่มผู้เล่นตามคะแนน (เหมือนใน pairNextRound)
+    const playerBrackets = {};
+    activePlayers.forEach(player => {
+      const points = player.points;
+      if (!playerBrackets[points]) playerBrackets[points] = [];
+      playerBrackets[points].push(player);
+    });
+    
+    const sortedPoints = Object.keys(playerBrackets).map(Number).sort((a, b) => a - b);
+    for (let points of sortedPoints) {
+      const playersInBracket = playerBrackets[points];
+      for (let player of playersInBracket) {
+        if (!byeList.includes(player.id)) {
+          byePlayer = player;
+          activePlayers = activePlayers.filter(p => p.id !== player.id);
+          break;
+        }
+      }
+      if (byePlayer) break;
+    }
+    if (!byePlayer) {
+      byePlayer = activePlayers[activePlayers.length - 1];
+      activePlayers = activePlayers.slice(0, -1);
+    }
+  }
+
+  // สุ่มลำดับผู้เล่นก่อนจับคู่
+  shuffle(activePlayers);
+
+  // ฟังก์ชันจับคู่แบบ backtracking (เหมือนเดิม แต่กันซ้ำคู่รอบล่าสุด)
+  const paired = [];
+  function getEligibleOpponents(p1, availablePlayers, matchHistory) {
+    const eligible = [];
+    availablePlayers.forEach(p2 => {
+      if (p1.id !== p2.id) {
+        const hasPlayed = matchHistory[p1.id] && matchHistory[p1.id].includes(p2.id);
+        const isLastRoundPair = lastRoundPairs.some(pair =>
+          (pair[0] === p1.id && pair[1] === p2.id) || (pair[0] === p2.id && pair[1] === p1.id)
+        );
+        if (!hasPlayed && !isLastRoundPair) {
+          eligible.push(p2);
+        }
+      }
+    });
+    return eligible;
+  }
+  function calculatePairingScore(p1, p2) {
+    const pointDiff = Math.abs(p1.points - p2.points);
+    const avgPoints = (p1.points + p2.points) / 2;
+    const pointScore = Math.max(0, 10 - pointDiff);
+    const avgScore = avgPoints / 10;
+    const balanceScore = Math.min(p1.points, p2.points) / 10;
+    return (pointScore * 0.3) + (avgScore * 0.5) + (balanceScore * 0.2);
+  }
+  function pairPlayers(players, matchHistory) {
+    if (players.length === 0) return true;
+    if (players.length === 1) return false;
+    // บังคับคนคะแนนสูงสุดสองคนเจอกันก่อน (ถ้าไม่ซ้ำรอบล่าสุด)
+    if (players.length >= 2) {
+      const sorted = [...players].sort((a, b) => b.points - a.points || a.id.localeCompare(b.id));
+      const top1 = sorted[0];
+      const top2 = sorted[1];
+      const isLastRoundPair = lastRoundPairs.some(pair =>
+        (pair[0] === top1.id && pair[1] === top2.id) || (pair[0] === top2.id && pair[1] === top1.id)
+      );
+      if (!matchHistory[top1.id] || !matchHistory[top1.id].includes(top2.id)) {
+        if (!isLastRoundPair) {
+          const remainingPlayers = players.filter(p => p.id !== top1.id && p.id !== top2.id);
+          paired.push([top1, top2]);
+          if (pairPlayers(remainingPlayers, matchHistory)) {
+            return true;
+          }
+          paired.pop();
+          return false;
+        }
+      }
+    }
+    const p1 = players[0];
+    const eligibleOpponents = getEligibleOpponents(p1, players.slice(1), matchHistory);
+    eligibleOpponents.sort((a, b) => {
+      const scoreA = calculatePairingScore(p1, a);
+      const scoreB = calculatePairingScore(p1, b);
+      return scoreB - scoreA;
+    });
+    for (let p2 of eligibleOpponents) {
+      const remainingPlayers = players.filter(p => p.id !== p1.id && p.id !== p2.id);
+      paired.push([p1, p2]);
+      if (pairPlayers(remainingPlayers, matchHistory)) {
+        return true;
+      }
+      paired.pop();
+    }
+    return false;
+  }
+
+  // ลองจับคู่
+  const success = pairPlayers(activePlayers, matchHistory);
+  if (!success) {
+    SpreadsheetApp.getUi().alert('❌ ไม่สามารถจับคู่ใหม่ได้โดยไม่ซ้ำคู่เดิมรอบล่าสุด');
+    return;
+  }
+
+  // สร้างผลลัพธ์
+  const output = [];
+  let tableNumber = 1;
+  paired.forEach(([p1, p2]) => {
+    output.push([
+      nextRound,
+      tableNumber++,
+      p1.id, p1.name, false, false, false, false,
+      p2.id, p2.name, '', 'OK', ''
+    ]);
+  });
+  if (byePlayer) {
+    output.push([
+      nextRound,
+      tableNumber,
+      byePlayer.id, byePlayer.name, true, false, false, false,
+      'BYE', 'BYE', '1:0', 'BYE WIN', ''
+    ]);
+  }
+  // เขียนผลลัพธ์ลง Pairing
+  const startRow = pairingSheet.getLastRow() + 1;
+  pairingSheet.getRange(startRow, 1, output.length, output[0].length).setValues(output);
+  addCheckboxes(pairingSheet, output.length);
+  formatPairingData(pairingSheet, startRow, output.length);
+  separateRoundsVisually();
+  SpreadsheetApp.getUi().alert('✅ จับคู่รอบ ' + nextRound + ' (สุ่มใหม่) เรียบร้อยแล้ว (' + paired.length + ' คู่)');
 }
 
 // 📊 แยกรอบการแข่งขันให้ชัดเจน (แบบง่าย - แค่เปลี่ยนสี highlight)
@@ -3281,198 +3243,4 @@ function separateRoundsVisually() {
   });
   
   SpreadsheetApp.getUi().alert('แยกรอบการแข่งขันเรียบร้อยแล้ว\n\n- แต่ละรอบมีสีพื้นหลังต่างกัน\n- มีเส้นขอบบางแยกรอบ\n- ไม่เพิ่มแถวว่างเพื่อไม่ให้สับสน');
-}
-
-// ❌ Drop ผู้เล่นผ่าน Dropdown
-function dropPlayerDropdown() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const pairingSheet = ss.getSheetByName('Pairing');
-  const playersSheet = ss.getSheetByName('Players');
-  
-  // ดึงรายชื่อผู้เล่นทั้งหมด
-  const playersData = playersSheet.getRange(2, 1, playersSheet.getLastRow() - 1, 4).getValues();
-  const playerNames = playersData
-    .filter(row => row[0] && row[1])
-    .map(row => `${row[1]} (${row[0]})`); // ชื่อ (B) และ ID (A)
-  
-  if (playerNames.length === 0) {
-    SpreadsheetApp.getUi().alert('❌ ไม่พบข้อมูลผู้เล่น');
-    return;
-  }
-  
-  // สร้าง dropdown options
-  const options = playerNames.map((name, index) => `${index + 1}. ${name}`).join('\n');
-  
-  // แสดง dropdown
-  const response = SpreadsheetApp.getUi().prompt(
-    '❌ Drop ผู้เล่น',
-    `เลือกผู้เล่นที่ต้องการ Drop:\n\n${options}\n\nกรอกหมายเลขผู้เล่น:`,
-    SpreadsheetApp.getUi().ButtonSet.OK_CANCEL
-  );
-  
-  if (response.getSelectedButton() !== SpreadsheetApp.getUi().Button.OK) {
-    return;
-  }
-  
-  const selectedIndex = parseInt(response.getResponseText().trim()) - 1;
-  if (isNaN(selectedIndex) || selectedIndex < 0 || selectedIndex >= playerNames.length) {
-    SpreadsheetApp.getUi().alert('❌ เลือกผู้เล่นไม่ถูกต้อง');
-    return;
-  }
-  
-  const selectedPlayer = playersData[selectedIndex];
-  const playerName = selectedPlayer[1];
-  const playerId = selectedPlayer[0];
-  
-  // หารอบปัจจุบัน (รอบล่าสุดที่มีการจับคู่)
-  const pairingData = pairingSheet.getRange(2, 1, pairingSheet.getLastRow() - 1, 1).getValues();
-  let currentRound = 1;
-  for (let i = pairingData.length - 1; i >= 0; i--) {
-    if (pairingData[i][0] && !isNaN(pairingData[i][0])) {
-      currentRound = pairingData[i][0];
-      break;
-    }
-  }
-  
-  // หาแถวของรอบปัจจุบันในคอลัมน์ M
-  let targetRow = 2; // default
-  const allData = pairingSheet.getRange(2, 1, pairingSheet.getLastRow() - 1, 13).getValues();
-  
-  for (let i = 0; i < allData.length; i++) {
-    const rowRound = allData[i][0];
-    if (rowRound === currentRound) {
-      // หาแถวว่างในคอลัมน์ M ของรอบนี้
-      const dropValue = allData[i][12]; // คอลัมน์ M (index 12)
-      if (!dropValue || dropValue === '') {
-        targetRow = i + 2; // +2 เพราะเริ่มจากแถวที่ 2 และ index เริ่มจาก 0
-        break;
-      }
-    }
-  }
-  
-  // หากไม่พบแถวว่างในรอบปัจจุบัน ให้หาแถวว่างถัดไป
-  if (targetRow === 2) {
-    const dropColumn = pairingSheet.getRange('M2:M').getValues();
-    for (let i = 0; i < dropColumn.length; i++) {
-      if (!dropColumn[i][0]) {
-        targetRow = i + 2;
-        break;
-      }
-    }
-  }
-  
-  // เพิ่มชื่อผู้เล่นในคอลัมน์ Drop
-  pairingSheet.getRange(targetRow, 13).setValue(playerName);
-  
-  // อัปเดต standings เพื่อให้ผู้เล่นที่ drop ปรากฏใน standings ด้วย rank 'DROP'
-  updateStandings();
-  
-  SpreadsheetApp.getUi().alert(`✅ Drop ผู้เล่น: ${playerName} (${playerId}) เรียบร้อยแล้ว\n\nStandings ได้รับการอัปเดตแล้ว`);
-}
-
-// 🔍 ตรวจสอบสมาชิกที่ตกหล่น
-function checkMissingMembers() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const playersSheet = ss.getSheetByName('Players');
-  const pairingSheet = ss.getSheetByName('Pairing');
-  const standingSheet = ss.getSheetByName('Standing');
-  
-  // ดึงข้อมูลผู้เล่นทั้งหมด
-  const playersData = playersSheet.getRange(2, 1, playersSheet.getLastRow() - 1, 4).getValues();
-  const activePlayers = playersData.filter(row => row[0] && row[1]); // มี Player_id (A) และ Name (B)
-  
-  // ดึงข้อมูลการแข่งขันทั้งหมด
-  const pairingData = pairingSheet.getRange(2, 1, pairingSheet.getLastRow() - 1, 13).getValues();
-  const competedPlayers = new Set();
-  
-  pairingData.forEach(row => {
-    const p1Id = row[2]; // P1_ID
-    const p2Id = row[8]; // P2_ID
-    if (p1Id && p1Id !== '') competedPlayers.add(p1Id);
-    if (p2Id && p2Id !== '' && p2Id !== 'BYE') competedPlayers.add(p2Id);
-  });
-  
-  // ดึงข้อมูล Standings
-  const standingsData = standingSheet.getLastRow() > 1 ? 
-    standingSheet.getRange(2, 1, standingSheet.getLastRow() - 1, 12).getValues() : [];
-  const standingPlayers = new Set();
-  
-  standingsData.forEach(row => {
-    const playerId = row[1]; // Player ID
-    if (playerId && playerId !== '') standingPlayers.add(playerId);
-  });
-  
-  // หาผู้เล่นที่ตกหล่น
-  const missingInPairing = activePlayers.filter(player => !competedPlayers.has(player[0]));
-  const missingInStanding = activePlayers.filter(player => !standingPlayers.has(player[0]));
-  
-  // สร้างข้อความรายงาน
-  let message = '🔍 รายงานการตรวจสอบสมาชิกที่ตกหล่น\n\n';
-  
-  if (missingInPairing.length === 0 && missingInStanding.length === 0) {
-    message += '✅ ไม่พบสมาชิกที่ตกหล่น\n';
-    message += '• ผู้เล่นทั้งหมดปรากฏในการจับคู่\n';
-    message += '• ผู้เล่นทั้งหมดปรากฏใน Standings\n';
-  } else {
-    if (missingInPairing.length > 0) {
-      message += '⚠️ ผู้เล่นที่ไม่ได้ปรากฏในการจับคู่:\n';
-      missingInPairing.forEach((player, index) => {
-        message += `${index + 1}. ${player[1]} (${player[0]})\n`;
-      });
-      message += '\n';
-    }
-    
-    if (missingInStanding.length > 0) {
-      message += '⚠️ ผู้เล่นที่ไม่ได้ปรากฏใน Standings:\n';
-      missingInStanding.forEach((player, index) => {
-        message += `${index + 1}. ${player[1]} (${player[0]})\n`;
-      });
-      message += '\n';
-    }
-  }
-  
-  message += `\n📊 สรุป:\n`;
-  message += `• ผู้เล่นทั้งหมด: ${activePlayers.length} คน\n`;
-  message += `• ผู้เล่นในการจับคู่: ${competedPlayers.size} คน\n`;
-  message += `• ผู้เล่นใน Standings: ${standingPlayers.size} คน\n`;
-  message += `• ตกหล่นในการจับคู่: ${missingInPairing.length} คน\n`;
-  message += `• ตกหล่นใน Standings: ${missingInStanding.length} คน`;
-  
-  SpreadsheetApp.getUi().alert(message);
-}
-
-// 📏 ฟังก์ชันปรับขนาดคอลัมน์ชื่อผู้เล่นในชีท Pairing
-function adjustPairingColumns() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const pairingSheet = ss.getSheetByName('Pairing');
-  
-  adjustPlayerNameColumns(pairingSheet);
-  
-  SpreadsheetApp.getUi().alert(
-    '📏 ปรับขนาดคอลัมน์เรียบร้อยแล้ว',
-    'คอลัมน์ D (PLAYER 1) และ J (PLAYER 2) ถูกปรับขนาดตามความยาวของชื่อที่ยาวที่สุดแล้ว',
-    SpreadsheetApp.getUi().ButtonSet.OK
-  );
-}
-
-// ⚡ รีเซ็ต Controls ทันที (บังคับ)
-function forceResetControls() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const pairingSheet = ss.getSheetByName('Pairing');
-  
-  // รีเซ็ต checkbox ที่ O2 เป็นติ๊กถูก
-  const hideCheckbox = pairingSheet.getRange(2, 15); // O2
-  hideCheckbox.check();
-  
-  // ปรับขนาดคอลัมน์ชื่อผู้เล่น
-  adjustPlayerNameColumns(pairingSheet);
-  
-  // อัปเดต Standings
-  updateStandings();
-  
-  SpreadsheetApp.getUi().alert(
-    '⚡ รีเซ็ตเรียบร้อยแล้ว',
-    'Hide Standing checkbox ถูกติ๊กกลับเป็น default\nปรับขนาดคอลัมน์ชื่อผู้เล่น\nและอัปเดต Standings แล้ว',
-    SpreadsheetApp.getUi().ButtonSet.OK
-  );
 }

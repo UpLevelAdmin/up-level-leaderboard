@@ -1481,7 +1481,10 @@
           <div class="accordion-content ${accordionClass}">
             <div class="pairing-list">`;
         
-        rounds[r].forEach((row, idx) => {
+        // เรียงตาม table number (โต๊ะ 1, 2, 3, ...)
+        const sortedMatches = rounds[r].sort((a, b) => parseInt(a[1]) - parseInt(b[1]));
+        
+        sortedMatches.forEach((row, idx) => {
           const tableNo = row[1];
           const p1Tel = getTelById(players, row[2]);
           const p2Tel = getTelById(players, row[8]);
@@ -2084,9 +2087,11 @@
         console.log('playersData:', pairingData.players);
         console.log('Standings data:', pairingData.standings);
         console.log('Hide Standing Status:', pairingData.hideStanding);
+        console.log('Hide Standing raw value:', pairingData.hideStanding);
         
         // ตรวจสอบสถานะ Hide Standing
-        const shouldHideStanding = pairingData.hideStanding && pairingData.hideStanding.hideStanding;
+        const shouldHideStanding = pairingData.hideStanding && pairingData.hideStanding.hideStanding === true;
+        console.log('Should hide standing:', shouldHideStanding);
         
         // Render Swiss Tournament
         document.getElementById('swiss-pairing').innerHTML = renderSwissPairing(pairingData.pairing, pairingData.players, phoneMap);
