@@ -2779,21 +2779,22 @@ function checkHideStandingStatus() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const pairingSheet = ss.getSheetByName('Pairing');
   
-  // ตรวจสอบ checkbox ที่ช่อง N1 (คอลัมน์ N, แถว 1) ในชีท Pairing
-  const hideStandingCell = pairingSheet.getRange(1, 14); // N1
+  // ตรวจสอบ checkbox ที่ช่อง O1 (คอลัมน์ O, แถว 1) ในชีท Pairing
+  const hideStandingCell = pairingSheet.getRange(1, 15); // O1
   
-  // ตรวจสอบว่าช่อง N1 มี checkbox หรือไม่
+  // ตรวจสอบว่าช่อง O1 มี checkbox หรือไม่
   try {
     const checkboxValue = hideStandingCell.getValue();
     const isChecked = checkboxValue === true;
     
-    console.log(`Hide Standing Status (N1): ${isChecked ? 'ซ่อน Standings' : 'แสดง Standings'}`);
+    console.log(`Hide Standing Status (O1): ${isChecked ? 'ซ่อน Standings' : 'แสดง Standings'}`);
+    console.log(`Raw checkbox value: ${checkboxValue}, Type: ${typeof checkboxValue}`);
     
     return {
       hideStanding: isChecked
     };
   } catch (error) {
-    console.log('ไม่พบ checkbox ที่ N1, แสดง Standings ปกติ');
+    console.log('ไม่พบ checkbox ที่ O1, แสดง Standings ปกติ');
     return {
       hideStanding: false
     };
