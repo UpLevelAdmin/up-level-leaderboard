@@ -1865,13 +1865,14 @@
           const p1NameFromPlayers = getPlayerNameById(players, p1Id);
           const p2NameFromPlayers = getPlayerNameById(players, p2Id);
           console.log('P1 Name from Players:', p1NameFromPlayers, 'P2 Name from Players:', p2NameFromPlayers);
-          console.log('P1 Name from Row:', row[3], 'P2 Name from Row:', row[9]);
+          console.log('P1 Name from Row:', row[3], 'P2 Name from Row:', row[11]);
           
-          // ใช้ชื่อจาก column PLAYER 2 เมื่อ P2 ID เป็น false
-          const p2NameFromColumn = row[10] || row[9] || row[11]; // ใช้ P2_NAME_ALT ก่อน เพราะมีชื่อจริง
-          console.log('P2 Name from Column:', p2NameFromColumn);
+          // ใช้ชื่อจากคอลัมน์ที่ถูกต้อง
+          const p1NameFromColumn = row[3]; // PLAYER 1 (คอลัมน์ D)
+          const p2NameFromColumn = row[11]; // PLAYER 2 (คอลัมน์ L)
+          console.log('P1 Name from Column:', p1NameFromColumn, 'P2 Name from Column:', p2NameFromColumn);
           
-          const p1DisplayName = p1Codename || extractRealName(p1NameFromPlayers) || extractRealName(row[3]) || `Player ${p1Id}`;
+          const p1DisplayName = p1Codename || extractRealName(p1NameFromPlayers) || extractRealName(p1NameFromColumn) || `Player ${p1Id}`;
           const p2DisplayName = p2Codename || extractRealName(p2NameFromPlayers) || extractRealName(p2NameFromColumn) || `Player ${p2Id}`;
           console.log('Final P1 Display Name:', p1DisplayName, 'Final P2 Display Name:', p2DisplayName);
           
