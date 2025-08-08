@@ -3362,7 +3362,18 @@ function onEdit(e) {
       if (col === winP1Col || col === drawCol || col === winP2Col || col === doubleLossCol) {
         console.log(`Checkbox changed at row ${row}, col ${col}`);
         
-        // ดึงค่า checkbox ทั้ง 4 ตัว
+        // เมื่อติ๊กช่องใหม่ ลบช่องเก่าออกก่อน (ยกเว้น Double Loss)
+        const currentValue = sheet.getRange(row, col).getValue() === true;
+        
+        if (currentValue && col !== doubleLossCol) {
+          // ลบ checkbox อื่นๆ เมื่อติ๊กช่องใหม่
+          if (col !== winP1Col) sheet.getRange(row, winP1Col).setValue(false);
+          if (col !== drawCol) sheet.getRange(row, drawCol).setValue(false);
+          if (col !== winP2Col) sheet.getRange(row, winP2Col).setValue(false);
+          if (col !== doubleLossCol) sheet.getRange(row, doubleLossCol).setValue(false);
+        }
+        
+        // ดึงค่า checkbox ทั้ง 4 ตัวหลังจากการล้างแล้ว
         const winP1 = sheet.getRange(row, winP1Col).getValue() === true;
         const draw = sheet.getRange(row, drawCol).getValue() === true;
         const winP2 = sheet.getRange(row, winP2Col).getValue() === true;
@@ -3373,28 +3384,24 @@ function onEdit(e) {
         
         // กำหนด result และ status ตามการติ๊ก checkbox
         if (doubleLoss) {
-          result = "Double Loss";
-          status = "OK";
+          result = "0:0";
+          status = "Double Loss";
           // ยกเลิก checkbox อื่นๆ เมื่อติ๊ก Double Loss
           if (winP1) sheet.getRange(row, winP1Col).setValue(false);
           if (draw) sheet.getRange(row, drawCol).setValue(false);
           if (winP2) sheet.getRange(row, winP2Col).setValue(false);
-        } else if (winP1 && !draw && !winP2) {
-          result = "P1 Win";
+        } else if (winP1) {
+          result = "1:0";
           status = "OK";
-        } else if (!winP1 && draw && !winP2) {
-          result = "Draw";
+        } else if (draw) {
+          result = "1:1";
           status = "OK";
-        } else if (!winP1 && !draw && winP2) {
-          result = "P2 Win";
+        } else if (winP2) {
+          result = "0:1";
           status = "OK";
-        } else if (!winP1 && !draw && !winP2) {
+        } else {
           result = "";
           status = "";
-        } else {
-          // มีการติ๊กมากกว่า 1 ตัว (ไม่รวม Double Loss)
-          result = "ERROR";
-          status = "Multiple selections";
         }
         
         // อัปเดต RESULT และ STATUS
@@ -3405,13 +3412,19 @@ function onEdit(e) {
           sheet.getRange(row, statusCol).setValue(status);
         }
         
-        console.log(`Updated: Result="${result}", Status="${status}"`);
+        console.log(`Updated Row ${row}: Result="${result}", Status="${status}"`);
         
         // อัปเดต Standings หลังจากเปลี่ยน result
-        if (result && result !== "ERROR") {
-          // รอสักครู่ก่อนอัปเดต standings เพื่อให้ชีทอัปเดตเสร็จก่อน
-          Utilities.sleep(500);
-          updateStandings();
+        if (result && result !== "") {
+          console.log(`Triggering standings update for result: ${result}`);
+          try {
+            // รอสักครู่ก่อนอัปเดต standings เพื่อให้ชีทอัปเดตเสร็จก่อน
+            Utilities.sleep(300);
+            updateStandings();
+            console.log(`Standings updated successfully`);
+          } catch (error) {
+            console.log(`Error updating standings: ${error}`);
+          }
         }
       }
     }
