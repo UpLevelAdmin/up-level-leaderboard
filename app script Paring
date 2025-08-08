@@ -3331,6 +3331,72 @@ function smartResizeAllSheetsSilent() {
   }
 }
 
+// 🎨 แยกรอบการแข่งขันด้วยสีที่ต่างกัน
+function separateRoundsVisually() {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const pairingSheet = ss.getSheetByName('Pairing');
+    
+    if (!pairingSheet || pairingSheet.getLastRow() <= 1) {
+      console.log('ไม่พบข้อมูลในชีท Pairing');
+      return;
+    }
+    
+    const lastRow = pairingSheet.getLastRow();
+    const data = pairingSheet.getRange(2, 1, lastRow - 1, pairingSheet.getLastColumn()).getValues();
+    
+    // สีสำหรับแต่ละรอบ (สีอ่อนๆ ให้อ่านง่าย)
+    const roundColors = [
+      '#f3f4f6', // สีเทาอ่อน - รอบ 1
+      '#fef3c7', // สีเหลืองอ่อน - รอบ 2
+      '#dbeafe', // สีฟ้าอ่อน - รอบ 3
+      '#dcfce7', // สีเขียวอ่อน - รอบ 4
+      '#fce7f3', // สีชมพูอ่อน - รอบ 5
+      '#f3e8ff', // สีม่วงอ่อน - รอบ 6
+      '#fed7d7', // สีแดงอ่อน - รอบ 7
+      '#fdf4ff', // สีม่วงอ่อนมาก - รอบ 8
+      '#f0fdfa', // สีเขียวมิ้นท์อ่อน - รอบ 9
+      '#fefce8'  // สีเหลืองอ่อนมาก - รอบ 10
+    ];
+    
+    let currentRound = null;
+    let colorIndex = 0;
+    
+    // วนลูปผ่านข้อมูลแต่ละแถว
+    for (let i = 0; i < data.length; i++) {
+      const round = data[i][0]; // คอลัมน์ ROUND
+      
+      // ถ้าเป็นรอบใหม่ ให้เปลี่ยนสี
+      if (round !== currentRound && round !== '') {
+        currentRound = round;
+        colorIndex = (round - 1) % roundColors.length;
+      }
+      
+      // ถ้ามีข้อมูลรอบ ให้ทำสี
+      if (round !== '') {
+        const rowRange = pairingSheet.getRange(i + 2, 1, 1, pairingSheet.getLastColumn());
+        rowRange.setBackground(roundColors[colorIndex]);
+        
+        // ถ้าเป็นแถวแรกของรอบ ให้ทำเส้นขอบด้านบน
+        if (i === 0 || data[i-1][0] !== round) {
+          rowRange.setBorder(true, null, null, null, null, null, '#9ca3af', SpreadsheetApp.BorderStyle.SOLID);
+        }
+      }
+    }
+    
+    // ปรับสีสำหรับ header
+    const headerRange = pairingSheet.getRange(1, 1, 1, pairingSheet.getLastColumn());
+    headerRange.setBackground('#1f2937'); // สีเทาเข้ม
+    headerRange.setFontColor('#ffffff'); // ตัวอักษรสีขาว
+    headerRange.setFontWeight('bold');
+    
+    console.log(`แยกรอบการแข่งขันด้วยสีเรียบร้อยแล้ว (${colorIndex + 1} รอบ)`);
+    
+  } catch (error) {
+    console.log('เกิดข้อผิดพลาดในการแยกรอบด้วยสี:', error);
+  }
+}
+
 // 🎯 ฟังก์ชัน onEdit - ทำงานอัตโนมัติเมื่อแก้ไขชีท
 function onEdit(e) {
   try {
