@@ -3331,6 +3331,96 @@ function smartResizeAllSheetsSilent() {
   }
 }
 
+// 🎯 ฟังก์ชัน onEdit - ทำงานอัตโนมัติเมื่อแก้ไขชีท
+function onEdit(e) {
+  try {
+    const sheet = e.source.getActiveSheet();
+    const sheetName = sheet.getName();
+    const range = e.range;
+    const row = range.getRow();
+    const col = range.getColumn();
+    
+    // ตรวจสอบว่าเป็นการแก้ไขในชีท Pairing หรือ Round Robin
+    if (sheetName === 'Pairing' || sheetName === 'Round Robin') {
+      console.log(`onEdit triggered: ${sheetName}, Row: ${row}, Col: ${col}`);
+      
+      // ข้ามแถวแรก (header)
+      if (row === 1) return;
+      
+      // ดึง headers
+      const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+      
+      // หาตำแหน่งคอลัมน์
+      const winP1Col = headers.indexOf("WIN_P1") + 1;
+      const drawCol = headers.indexOf("DRAW") + 1;
+      const winP2Col = headers.indexOf("WIN_P2") + 1;
+      const doubleLossCol = headers.indexOf("Double Loss") + 1;
+      const resultCol = headers.indexOf("RESULT") + 1;
+      const statusCol = headers.indexOf("STATUS") + 1;
+      
+      // ตรวจสอบว่าการแก้ไขเกิดขึ้นในคอลัมน์ checkbox หรือไม่
+      if (col === winP1Col || col === drawCol || col === winP2Col || col === doubleLossCol) {
+        console.log(`Checkbox changed at row ${row}, col ${col}`);
+        
+        // ดึงค่า checkbox ทั้ง 4 ตัว
+        const winP1 = sheet.getRange(row, winP1Col).getValue() === true;
+        const draw = sheet.getRange(row, drawCol).getValue() === true;
+        const winP2 = sheet.getRange(row, winP2Col).getValue() === true;
+        const doubleLoss = sheet.getRange(row, doubleLossCol).getValue() === true;
+        
+        let result = "";
+        let status = "";
+        
+        // กำหนด result และ status ตามการติ๊ก checkbox
+        if (doubleLoss) {
+          result = "Double Loss";
+          status = "OK";
+          // ยกเลิก checkbox อื่นๆ เมื่อติ๊ก Double Loss
+          if (winP1) sheet.getRange(row, winP1Col).setValue(false);
+          if (draw) sheet.getRange(row, drawCol).setValue(false);
+          if (winP2) sheet.getRange(row, winP2Col).setValue(false);
+        } else if (winP1 && !draw && !winP2) {
+          result = "P1 Win";
+          status = "OK";
+        } else if (!winP1 && draw && !winP2) {
+          result = "Draw";
+          status = "OK";
+        } else if (!winP1 && !draw && winP2) {
+          result = "P2 Win";
+          status = "OK";
+        } else if (!winP1 && !draw && !winP2) {
+          result = "";
+          status = "";
+        } else {
+          // มีการติ๊กมากกว่า 1 ตัว (ไม่รวม Double Loss)
+          result = "ERROR";
+          status = "Multiple selections";
+        }
+        
+        // อัปเดต RESULT และ STATUS
+        if (resultCol > 0) {
+          sheet.getRange(row, resultCol).setValue(result);
+        }
+        if (statusCol > 0) {
+          sheet.getRange(row, statusCol).setValue(status);
+        }
+        
+        console.log(`Updated: Result="${result}", Status="${status}"`);
+        
+        // อัปเดต Standings หลังจากเปลี่ยน result
+        if (result && result !== "ERROR") {
+          // รอสักครู่ก่อนอัปเดต standings เพื่อให้ชีทอัปเดตเสร็จก่อน
+          Utilities.sleep(500);
+          updateStandings();
+        }
+      }
+    }
+    
+  } catch (error) {
+    console.log('Error in onEdit:', error);
+  }
+}
+
 // === ฟังก์ชันสุ่มจับคู่รอบล่าสุดใหม่ (Swiss, ไม่ซ้ำคู่เดิม) ===
 function rePairLastRound() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
