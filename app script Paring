@@ -3209,6 +3209,74 @@ function removeDuplicateHideStandingSilent() {
   }
 }
 
+// 📏 ปรับขนาดคอลัมน์ทุกชีทให้พอดีกับข้อมูล (แบบเงียบๆ)
+function smartResizeAllSheetsSilent() {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheets = ss.getSheets();
+    
+    sheets.forEach(sheet => {
+      const sheetName = sheet.getName();
+      
+      // ข้ามชีทที่ไม่ต้องการปรับขนาด
+      if (sheetName.startsWith('Form Responses') || 
+          sheetName.startsWith('_') || 
+          sheetName === 'Instructions') {
+        return;
+      }
+      
+      console.log(`ปรับขนาดคอลัมน์ในชีท: ${sheetName}`);
+      
+      const lastRow = sheet.getLastRow();
+      const lastCol = sheet.getLastColumn();
+      
+      if (lastRow > 0 && lastCol > 0) {
+        // ปรับขนาดคอลัมน์ให้พอดีกับเนื้อหา
+        for (let col = 1; col <= lastCol; col++) {
+          try {
+            // ดึงข้อมูลในคอลัมน์
+            const range = sheet.getRange(1, col, lastRow, 1);
+            const values = range.getValues();
+            
+            // หาความยาวสูงสุด
+            let maxLength = 0;
+            values.forEach(row => {
+              const text = row[0] ? row[0].toString() : '';
+              if (text.length > maxLength) {
+                maxLength = text.length;
+              }
+            });
+            
+            // คำนวณความกว้างที่เหมาะสม (ประมาณ 8px ต่อตัวอักษร + padding)
+            let optimalWidth = Math.max(60, Math.min(400, maxLength * 8 + 20));
+            
+            // กรณีพิเศษสำหรับคอลัมน์ที่มีชื่อเฉพาะ
+            const headerText = sheet.getRange(1, col).getValue().toString().toLowerCase();
+            
+            if (headerText.includes('name') || headerText.includes('ชื่อ')) {
+              optimalWidth = Math.max(150, optimalWidth); // ชื่อผู้เล่นต้องกว้างพอ
+            } else if (headerText.includes('id') || headerText.includes('rank')) {
+              optimalWidth = Math.max(60, Math.min(100, optimalWidth)); // ID และ Rank ไม่ต้องกว้างมาก
+            } else if (headerText.includes('result') || headerText.includes('ผลการแข่ง')) {
+              optimalWidth = Math.max(80, optimalWidth);
+            }
+            
+            sheet.setColumnWidth(col, optimalWidth);
+            
+          } catch (error) {
+            console.log(`ไม่สามารถปรับคอลัมน์ ${col} ในชีท ${sheetName}: ${error}`);
+          }
+        }
+      }
+    });
+    
+    console.log('ปรับขนาดคอลัมน์ทุกชีทเรียบร้อยแล้ว (เงียบๆ)');
+    
+  } catch (error) {
+    console.log('เกิดข้อผิดพลาดในการปรับขนาดคอลัมน์:', error);
+  }
+}
+
 // === ฟังก์ชันสุ่มจับคู่รอบล่าสุดใหม่ (Swiss, ไม่ซ้ำคู่เดิม) ===
 function rePairLastRound() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
