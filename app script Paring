@@ -4,6 +4,7 @@ function onOpen() {
   // 🏆 Tournament Management
   ui.createMenu('🏆 Tournament')
     .addItem('🆔 สร้าง Player ID อัตโนมัติ', 'generatePlayerIDs')
+    .addItem('📞 แก้ไขเบอร์โทรให้มี 0 นำหน้า', 'fixPhoneNumbers')
     .addItem('🎲 จับคู่รอบแรก', 'pairFirstRound')
     .addItem('➡️ จับคู่รอบถัดไป', 'pairNextRound')
     .addItem('🚀 จับคู่รอบถัดไป (เร็ว)', 'pairNextRoundFast')
@@ -2118,7 +2119,11 @@ function generatePlayerIDs() {
         if (!formattedTel.startsWith('0')) {
           formattedTel = '0' + formattedTel;
         }
-        playersSheet.getRange(i + 1, 4).setValue(formattedTel); // Column D (Tel)
+        
+        // ตั้งค่าเป็น text format เพื่อรักษา 0 นำหน้า
+        const telCell = playersSheet.getRange(i + 1, 4); // Column D (Tel)
+        telCell.setNumberFormat('@'); // @ = text format
+        telCell.setValue(formattedTel);
         
         idCounter++;
       }
@@ -2145,11 +2150,12 @@ function generatePlayerIDs() {
     trIdRange.setHorizontalAlignment('center');
     trIdRange.setBorder(true, true, true, true, true, true, '#ff9800', SpreadsheetApp.BorderStyle.SOLID);
     
-    // จัดรูปแบบคอลัมน์ Tel
+    // จัดรูปแบบคอลัมน์ Tel - ตั้งเป็น text format
     const telRange = playersSheet.getRange(2, 4, playerCount, 1);
     telRange.setBackground('#e8f5e8');
     telRange.setFontWeight('bold');
     telRange.setHorizontalAlignment('center');
+    telRange.setNumberFormat('@'); // ตั้งเป็น text format เพื่อรักษา 0 นำหน้า
     telRange.setBorder(true, true, true, true, true, true, '#4caf50', SpreadsheetApp.BorderStyle.SOLID);
     
     // ปรับขนาดคอลัมน์ให้เหมาะสม
@@ -3632,6 +3638,62 @@ function cancelPlayerDrop() {
   } catch (error) {
     console.log('Error in cancelPlayerDrop:', error);
     SpreadsheetApp.getUi().alert('เกิดข้อผิดพลาดในการยกเลิก drop ผู้เล่น: ' + error.toString());
+  }
+}
+
+// 📞 แก้ไขเบอร์โทรให้มี 0 นำหน้า
+function fixPhoneNumbers() {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const playersSheet = ss.getSheetByName('Players');
+    
+    if (!playersSheet || playersSheet.getLastRow() <= 1) {
+      SpreadsheetApp.getUi().alert('ไม่พบข้อมูลผู้เล่น');
+      return;
+    }
+    
+    const lastRow = playersSheet.getLastRow();
+    const telRange = playersSheet.getRange(2, 4, lastRow - 1, 1); // คอลัมน์ D (Tel)
+    const telValues = telRange.getValues();
+    
+    let fixedCount = 0;
+    
+    // ตั้งค่าทั้งคอลัมน์เป็น text format ก่อน
+    telRange.setNumberFormat('@');
+    
+    // แก้ไขเบอร์โทรทีละช่อง
+    for (let i = 0; i < telValues.length; i++) {
+      const currentTel = telValues[i][0];
+      if (currentTel && currentTel !== '') {
+        let formattedTel = currentTel.toString().trim();
+        
+        // ถ้าไม่ขึ้นต้นด้วย 0 ให้เพิ่ม 0 นำหน้า
+        if (!formattedTel.startsWith('0') && formattedTel.length >= 9) {
+          formattedTel = '0' + formattedTel;
+          
+          // บันทึกค่าใหม่
+          const cell = playersSheet.getRange(i + 2, 4);
+          cell.setNumberFormat('@'); // ตั้งเป็น text format
+          cell.setValue(formattedTel);
+          
+          fixedCount++;
+          console.log(`Fixed phone: ${currentTel} → ${formattedTel}`);
+        }
+      }
+    }
+    
+    SpreadsheetApp.getUi().alert(
+      '✅ แก้ไขเบอร์โทรเรียบร้อยแล้ว',
+      `แก้ไขเบอร์โทรจำนวน ${fixedCount} รายการ\n\n` +
+      `• เพิ่ม 0 นำหน้าให้เบอร์โทรที่ไม่มี\n` +
+      `• ตั้งค่าคอลัมน์เป็น text format เพื่อรักษา 0 นำหน้า\n` +
+      `• ตัวอย่าง: 936106031 → 0936106031`,
+      SpreadsheetApp.getUi().ButtonSet.OK
+    );
+    
+  } catch (error) {
+    console.log('Error in fixPhoneNumbers:', error);
+    SpreadsheetApp.getUi().alert('เกิดข้อผิดพลาดในการแก้ไขเบอร์โทร: ' + error.toString());
   }
 }
 
