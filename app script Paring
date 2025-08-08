@@ -595,13 +595,9 @@ function pairNextRound() {
   pairingSheet.getRange(startRow, 1, output.length, output[0].length).setValues(output);
   addCheckboxes(pairingSheet, output.length);
   
-  // จัดรูปแบบการแสดงผลให้สวยงาม
+  // จัดรูปแบบ, แยกรอบ, และอัปเดต (ครั้งเดียว)
   formatPairingData(pairingSheet, startRow, output.length);
-  
-  // แยกรอบการแข่งขัน
   separateRoundsVisually();
-
-  // อัปเดต Standings และปรับขนาดคอลัมน์
   updateStandings();
   smartResizeAllSheetsSilent();
 }
