@@ -34,13 +34,17 @@ function onOpen() {
   const rebirthMenu = ui.createMenu("🔄 Rebirth")
     .addItem("🔄 จุติ (Legend → Rookie II)", "performRebirth")
     .addItem("📊 ดูสถิติการจุติ", "showRebirthStats")
+    .addItem("📊 แสดงตาราง Rank Up", "showRankUpTable")
     .addItem("🎯 อัปเดต Rank (Multiplier)", "updateRanksWithMultiplier")
+    .addItem("🔧 ตรวจสอบและแก้ไขระบบ", "checkAndFixRebirthSystem")
+    .addItem("🔧 ตรวจสอบและแก้ไข Rank", "checkAndFixRanks")
     .addItem("🧪 ทดสอบระบบ", "testRebirthSystem");
 
   // 🛠️ เมนูระบบ
   const systemMenu = ui.createMenu("🛠️ ระบบ")
     .addItem("🎯 อัปเดต Rank (ปกติ)", "updateRanks")
     .addItem("🏆 อัปเดต Leaderboard", "updateLeaderboard")
+    .addItem("🔍 ตรวจสอบการซิงค์ข้อมูลฟอร์ม", "checkAndFixFormDataSync")
     .addItem("🗑️ ลบข้อมูลซ้ำ", "clearDuplicateEntriesDebug")
     .addItem("❌ ลบข้อมูลสมาชิก", "removeMember")
     .addItem("🔑 เพิ่มแอดมิน", "addAdminEmail")
@@ -293,22 +297,35 @@ function addExpToPhone(phone, amount) {
   }
 }
 
-// ✅ คำนวณ Rank จาก EXP แล้วอัปเดตให้สมาชิกทุกคน (ระบบเดิม)
+// ✅ คำนวณ Rank จาก EXP แล้วอัปเดตให้สมาชิกทุกคน (รองรับระบบ Rebirth)
 function updateRanks() {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Member Dashboard");
   const data = sheet.getDataRange().getValues();
+  
   for (let i = 1; i < data.length; i++) {
     const rawExp = data[i][4];
     const exp = Number(rawExp) || 0;
-
-    let rank = "Rookie";
-    if (exp >= 200) rank = "Legend";
-    else if (exp >= 120) rank = "Grandmaster";
-    else if (exp >= 75) rank = "Diamond";
-    else if (exp >= 50) rank = "Platinum";
-    else if (exp >= 30) rank = "Gold";
-    else if (exp >= 15) rank = "Silver";
-    else if (exp >= 5) rank = "Bronze";
+    
+    // ตรวจสอบว่ามีข้อมูล Rebirth หรือไม่
+    const rebirthCount = Number(data[i][6]) || 0; // Rebirth Count (คอลัมน์ 7)
+    const multiplier = Number(data[i][7]) || 1; // EXP Multiplier (คอลัมน์ 8)
+    
+    let rank;
+    
+    // ถ้ามีข้อมูล Rebirth ให้ใช้ระบบใหม่
+    if (rebirthCount > 0 || multiplier > 1) {
+      rank = calculateCorrectRank(exp, rebirthCount, multiplier);
+    } else {
+      // ระบบเดิมสำหรับผู้เล่นที่ยังไม่เคยจุติ
+      rank = "Rookie";
+      if (exp >= 200) rank = "Legend";
+      else if (exp >= 120) rank = "Grandmaster";
+      else if (exp >= 75) rank = "Diamond";
+      else if (exp >= 50) rank = "Platinum";
+      else if (exp >= 30) rank = "Gold";
+      else if (exp >= 15) rank = "Silver";
+      else if (exp >= 5) rank = "Bronze";
+    }
 
     sheet.getRange(i + 1, 4).setValue(rank);
   }
@@ -1350,6 +1367,9 @@ function doGet(e) {
   if (e.parameter.page === 'challenge') {
     return HtmlService.createHtmlOutputFromFile('challenge.html').setTitle("Challenge");
   }
+  if (e.parameter.page === 'sync-status') {
+    return HtmlService.createHtmlOutputFromFile('sync-status.html').setTitle("สถานะการซิงค์ข้อมูล");
+  }
 
   const func = e?.parameter?.func;
   if (func === "getLeaderboard") return getLeaderboardData();
@@ -1371,6 +1391,7 @@ function doGet(e) {
   if (func === "acceptPartyChallenge") return acceptPartyChallenge(e); // เพิ่มบรรทัดนี้
   if (func === "getMemberDashboardData") return getMemberDashboardData();
   if (func === "getGymStandingData") return getGymStandingData();
+  if (func === "getSyncStatusData") return getSyncStatusData();
   return HtmlService.createHtmlOutput("<p>✅ Up Level Guild System Web App</p>");
 }
 
@@ -1384,6 +1405,7 @@ function doPost(e) {
   if (func === "submitPartyChallenge") return submitPartyChallenge(e);
   if (func === "verifyPartyLeader") return verifyPartyLeader(e);
   if (func === "acceptPartyChallenge") return acceptPartyChallenge(e);
+  if (func === "addMissingEntries") return addMissingEntriesFromWeb(e);
   return ContentService.createTextOutput("❌ Invalid Request").setMimeType(ContentService.MimeType.TEXT);
 }
 
@@ -2022,9 +2044,9 @@ function updateChallengeStatus(request) {
   }
 }
 
-// ฟังก์ชันช่วยเหลือ - หาชื่อเต็มจากเบอร์โทร (ค้นจาก Member Database)
+// ฟังก์ชันช่วยเหลือ - หาชื่อเต็มจากเบอร์โทร (ค้นจาก member sheet)
 function getFullNameByPhone(phone) {
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Member Database");
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("member");
   const data = sheet.getDataRange().getValues();
   for (let i = 1; i < data.length; i++) {
     if (normalizePhone(data[i][3]) === normalizePhone(phone)) {
@@ -2047,7 +2069,7 @@ function handleFormSubmit(e) {
   }
 
   try {
-    const dbSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Member Database");
+    const dbSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("member");
     const newRowRange = e.range;
     const newRowIndex = newRowRange.getRow();
     
@@ -2703,7 +2725,7 @@ function verifyPartyLeader(e) {
   
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const trackerSheet = ss.getSheetByName("Party Tracker");
-  const dbSheet = ss.getSheetByName("Member Database");
+  const dbSheet = ss.getSheetByName("member");
   
   if (!trackerSheet || !dbSheet) {
     return ContentService.createTextOutput("error").setMimeType(ContentService.MimeType.TEXT);
@@ -2718,7 +2740,7 @@ function verifyPartyLeader(e) {
     return ContentService.createTextOutput("not_leader").setMimeType(ContentService.MimeType.TEXT);
   }
   
-  // เช็คชื่อ-สกุลจาก Member Database (คอลัมน์ 2)
+  // เช็คชื่อ-สกุลจาก member sheet (คอลัมน์ 2)
   const dbRow = dbData.find(row => normalizePhone(row[3]) === phone);
   if (!dbRow || (dbRow[1] || '').trim() !== fullname) {
     return ContentService.createTextOutput("name_mismatch").setMimeType(ContentService.MimeType.TEXT);
@@ -2937,9 +2959,14 @@ function recordPartyChallengeResult() {
     // หาสมาชิกทั้งหมดในปาร์ตี้
     const partyMembers = dashData.slice(1).filter(row => row[5] === partyName);
     
-    partyMembers.forEach(member => {
+    partyMembers.forEach((member, index) => {
       const phone = normalizePhone(member[1]);
       const codename = member[2];
+      
+      // อัปเดต EXP ใน Member Dashboard
+      const memberIndex = index + 2; // +2 เพราะ index เริ่มจาก 0 และข้าม header
+      const currentExp = Number(member[4]) || 0;
+      dashSheet.getRange(memberIndex, 5).setValue(currentExp + expAmount);
       
       // บันทึก EXP Log
       expLogSheet.appendRow([phone, codename, new Date(), note, expAmount]);
@@ -3017,15 +3044,134 @@ function getGymStandingData() {
     .setMimeType(ContentService.MimeType.JSON);
 }
 
-// 🔍 ตรวจสอบสมาชิกที่ตกหล่น (Member Database → Member Dashboard)
+// 🔧 ฟังก์ชันตรวจสอบและแก้ไขระบบ Rank
+function checkAndFixRanks() {
+  const ui = SpreadsheetApp.getUi();
+  const currentUserEmail = Session.getActiveUser().getEmail();
+
+  if (!isAdmin(currentUserEmail)) {
+    ui.alert("🔒 Access Denied", "คุณไม่มีสิทธิ์ในการใช้ฟังก์ชันนี้", ui.ButtonSet.OK);
+    return;
+  }
+
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const dashSheet = ss.getSheetByName("Member Dashboard");
+  
+  if (!dashSheet) {
+    ui.alert("❌ ไม่พบชีท Member Dashboard", "กรุณาสร้างชีท Member Dashboard", ui.ButtonSet.OK);
+    return;
+  }
+
+  let issues = [];
+  let fixes = [];
+  let rankIssues = [];
+
+  const dashData = dashSheet.getDataRange().getValues();
+  
+  for (let i = 1; i < dashData.length; i++) {
+    const nickname = dashData[i][0];
+    const codename = dashData[i][2];
+    const currentRank = dashData[i][3];
+    const exp = Number(dashData[i][4]) || 0;
+    const rebirthCount = Number(dashData[i][6]) || 0;
+    const multiplier = Number(dashData[i][7]) || 1;
+    
+    // คำนวณ Rank ที่ถูกต้อง
+    let correctRank;
+    if (rebirthCount > 0 || multiplier > 1) {
+      correctRank = calculateCorrectRank(exp, rebirthCount, multiplier);
+    } else {
+      // ระบบเดิมสำหรับผู้เล่นที่ยังไม่เคยจุติ
+      correctRank = "Rookie";
+      if (exp >= 200) correctRank = "Legend";
+      else if (exp >= 120) correctRank = "Grandmaster";
+      else if (exp >= 75) correctRank = "Diamond";
+      else if (exp >= 50) correctRank = "Platinum";
+      else if (exp >= 30) correctRank = "Gold";
+      else if (exp >= 15) correctRank = "Silver";
+      else if (exp >= 5) correctRank = "Bronze";
+    }
+    
+    // ตรวจสอบ Rank ที่ไม่ถูกต้อง
+    if (currentRank !== correctRank) {
+      rankIssues.push({
+        nickname,
+        codename,
+        currentRank,
+        correctRank,
+        exp,
+        rebirthCount,
+        multiplier,
+        row: i + 1
+      });
+      
+      issues.push(`⚠️ ${nickname} (${codename}): Rank ไม่ถูกต้อง (${currentRank} vs ${correctRank})`);
+      fixes.push(`🔧 แก้ไข Rank ของ ${nickname} เป็น ${correctRank}`);
+    }
+  }
+
+  // แสดงผลการตรวจสอบ
+  let report = `🔍 ผลการตรวจสอบระบบ Rank\n\n`;
+  
+  if (issues.length === 0) {
+    report += `✅ ไม่พบปัญหาในระบบ Rank\n`;
+    report += `📊 ตรวจสอบสมาชิกทั้งหมด: ${dashData.length - 1} คน\n`;
+  } else {
+    report += `📊 พบปัญหา ${issues.length} รายการ:\n\n`;
+    issues.forEach((issue, index) => {
+      report += `${index + 1}. ${issue}\n`;
+    });
+    
+    report += `\n🔧 การแก้ไขที่แนะนำ:\n`;
+    fixes.forEach((fix, index) => {
+      report += `${index + 1}. ${fix}\n`;
+    });
+    
+    report += `\nต้องการให้ระบบแก้ไขปัญหาอัตโนมัติหรือไม่?`;
+    
+    const response = ui.alert("ตรวจสอบระบบ Rank", report, ui.ButtonSet.YES_NO);
+    
+    if (response === ui.Button.YES) {
+      applyRankFixes(dashSheet, rankIssues);
+    }
+  }
+  
+  if (issues.length === 0) {
+    ui.alert("ตรวจสอบระบบ Rank", report, ui.ButtonSet.OK);
+  }
+}
+
+// 🔧 ฟังก์ชันแก้ไขปัญหาระบบ Rank อัตโนมัติ
+function applyRankFixes(dashSheet, rankIssues) {
+  const ui = SpreadsheetApp.getUi();
+  let fixedCount = 0;
+  
+  try {
+    rankIssues.forEach(issue => {
+      dashSheet.getRange(issue.row, 4).setValue(issue.correctRank);
+      fixedCount++;
+    });
+    
+    // อัปเดตระบบ
+    updateLeaderboard();
+    
+    ui.alert("✅ แก้ไขระบบ Rank สำเร็จ", `แก้ไข Rank จำนวน ${fixedCount} คน\n\nระบบได้อัปเดตข้อมูลและ Leaderboard แล้ว`, ui.ButtonSet.OK);
+    
+  } catch (error) {
+    console.error("Error applying rank fixes:", error);
+    ui.alert("❌ เกิดข้อผิดพลาด", `เกิดข้อผิดพลาดในการแก้ไข: ${error.toString()}`, ui.ButtonSet.OK);
+  }
+}
+
+// 🔍 ตรวจสอบสมาชิกที่ตกหล่น (member → Member Dashboard)
 function checkMissingMembers() {
   const ui = SpreadsheetApp.getUi();
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const formSheet = ss.getSheetByName("Member Database");
+  const formSheet = ss.getSheetByName("member");
   const dashSheet = ss.getSheetByName("Member Dashboard");
   
   if (!formSheet || !dashSheet) {
-    return ui.alert("❌ ไม่พบชีท Member Database หรือ Member Dashboard");
+    return ui.alert("❌ ไม่พบชีท member หรือ Member Dashboard");
   }
   
   const formData = formSheet.getDataRange().getValues();
@@ -3099,7 +3245,7 @@ function addMissingMembers(missingMembers) {
   const ui = SpreadsheetApp.getUi();
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const dashSheet = ss.getSheetByName("Member Dashboard");
-  const dbSheet = ss.getSheetByName("Member Database");
+  const dbSheet = ss.getSheetByName("member");
   
   let successCount = 0;
   let errorCount = 0;
@@ -3181,11 +3327,11 @@ function addMissingMembers(missingMembers) {
 // 🔔 แจ้งเตือนสมาชิกที่ตกหล่นผ่านอีเมล
 function notifyMissingMembers() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const formSheet = ss.getSheetByName("Member Database");
+  const formSheet = ss.getSheetByName("member");
   const dashSheet = ss.getSheetByName("Member Dashboard");
   
   if (!formSheet || !dashSheet) {
-    Logger.log("ไม่พบชีท Member Database หรือ Member Dashboard");
+    Logger.log("ไม่พบชีท member หรือ Member Dashboard");
     return;
   }
   
@@ -3737,7 +3883,7 @@ function createRoundRobinStanding() {
   ui.alert(`🏆 สร้างสรุปผล Round Robin สำเร็จ!\n\n📊 สถิติ:\n• จำนวนผู้เล่น: ${standings.length} คน\n• ผู้เล่นที่มีผลการแข่งขัน: ${standings.filter(p => p.wins + p.draws + p.losses > 0).length} คน`);
 }
 
-// 🔄 ระบบ Rebirth (จุติ) - ฟังก์ชันหลัก
+// 🔄 ระบบ Rebirth (จุติ) - ฟังก์ชันหลัก (แก้ไขแล้ว)
 function performRebirth() {
   const ui = SpreadsheetApp.getUi();
   const currentUserEmail = Session.getActiveUser().getEmail();
@@ -3762,6 +3908,17 @@ function performRebirth() {
   const rebirthSheet = ss.getSheetByName("Rebirth History");
   const rebirthLogSheet = ss.getSheetByName("Rebirth Log");
   
+  // ตรวจสอบว่ามีชีทที่จำเป็นหรือไม่
+  if (!dashSheet) {
+    ui.alert("❌ ไม่พบชีท Member Dashboard", "กรุณาสร้างชีท Member Dashboard", ui.ButtonSet.OK);
+    return;
+  }
+  
+  if (!rebirthSheet) {
+    ui.alert("❌ ไม่พบชีท Rebirth History", "กรุณาสร้างชีท Rebirth History", ui.ButtonSet.OK);
+    return;
+  }
+  
   // ค้นหาผู้เล่น
   const dashData = dashSheet.getDataRange().getValues();
   const memberIndex = dashData.findIndex(row => normalizePhone(row[1]) === phone);
@@ -3779,28 +3936,32 @@ function performRebirth() {
   const currentExp = Number(member[4]) || 0;
   const party = member[5] || "";
 
-  // ตรวจสอบว่าเป็น Legend ที่ถูกต้องหรือไม่
+  // ตรวจสอบว่าเป็น Legend ที่ถูกต้องหรือไม่ (แก้ไขแล้ว)
   const currentRebirthCount = getRebirthCount(phone);
   const expectedLegendRank = currentRebirthCount === 0 ? "Legend" : `Legend${getRebirthSuffix(currentRebirthCount)}`;
   
-  if (currentRank !== expectedLegendRank) {
-    logRebirthActivity("❌ ไม่สามารถจุติได้", `${nickname} (${codename}) - Rank: ${currentRank}, ต้องการ: ${expectedLegendRank}`, currentUserEmail, "ล้มเหลว");
-    ui.alert("❌ ไม่สามารถจุติได้", `ผู้เล่น ${nickname} (${codename}) มี Rank: ${currentRank}\n\nต้องเป็น ${expectedLegendRank} เท่านั้นจึงจะสามารถจุติได้`, ui.ButtonSet.OK);
+  // ตรวจสอบว่าเป็น Legend หรือ Legend II, III, IV, etc.
+  const isLegendRank = currentRank === "Legend" || currentRank.startsWith("Legend ");
+  
+  if (!isLegendRank) {
+    logRebirthActivity("❌ ไม่สามารถจุติได้", `${nickname} (${codename}) - Rank: ${currentRank}, ต้องการ: Legend หรือ Legend II+`, currentUserEmail, "ล้มเหลว");
+    ui.alert("❌ ไม่สามารถจุติได้", `ผู้เล่น ${nickname} (${codename}) มี Rank: ${currentRank}\n\nต้องเป็น Legend หรือ Legend II+ เท่านั้นจึงจะสามารถจุติได้`, ui.ButtonSet.OK);
     return;
   }
 
-  // ตรวจสอบว่า EXP ถึง 200 หรือไม่
-  if (currentExp < 200) {
-    logRebirthActivity("❌ ไม่สามารถจุติได้", `${nickname} (${codename}) - EXP: ${currentExp}`, currentUserEmail, "ล้มเหลว");
-    ui.alert("❌ ไม่สามารถจุติได้", `ผู้เล่น ${nickname} (${codename}) มี EXP: ${currentExp}\n\nต้องมี EXP อย่างน้อย 200 จึงจะสามารถจุติได้`, ui.ButtonSet.OK);
+  // ตรวจสอบว่า EXP ถึง 200 หรือไม่ (แก้ไขแล้ว)
+  const requiredExp = 200 * (currentRebirthCount + 1); // EXP ที่ต้องใช้ตามจำนวนครั้งที่จุติ
+  if (currentExp < requiredExp) {
+    logRebirthActivity("❌ ไม่สามารถจุติได้", `${nickname} (${codename}) - EXP: ${currentExp}, ต้องการ: ${requiredExp}`, currentUserEmail, "ล้มเหลว");
+    ui.alert("❌ ไม่สามารถจุติได้", `ผู้เล่น ${nickname} (${codename}) มี EXP: ${currentExp}\n\nต้องมี EXP อย่างน้อย ${requiredExp} จึงจะสามารถจุติได้`, ui.ButtonSet.OK);
     return;
   }
 
   // คำนวณจำนวนครั้งที่จุติใหม่
   const newRebirthCount = currentRebirthCount + 1;
 
-  // คำนวณ EXP multiplier สำหรับรอบใหม่
-  const expMultiplier = newRebirthCount;
+  // คำนวณ EXP multiplier สำหรับรอบใหม่ (แก้ไขแล้ว)
+  const expMultiplier = Math.min(newRebirthCount, 5); // จำกัด Multiplier ไม่เกิน 5
 
   // สร้าง Rank suffix
   const rankSuffix = getRebirthSuffix(newRebirthCount);
@@ -3816,14 +3977,16 @@ function performRebirth() {
   }
 
   try {
-    // 1. อัปเดตข้อมูลใน Member Dashboard
+    // 1. อัปเดตข้อมูลใน Member Dashboard (แก้ไขแล้ว)
     dashSheet.getRange(memberIndex + 1, 4).setValue(newRank); // Rank ใหม่
     dashSheet.getRange(memberIndex + 1, 5).setValue(0); // EXP กลับเป็น 0
     
-    // เพิ่มคอลัมน์ Rebirth Count และ EXP Multiplier ถ้ายังไม่มี
+    // เพิ่มคอลัมน์ Rebirth Count และ EXP Multiplier ถ้ายังไม่มี (แก้ไขแล้ว)
     const currentCols = dashSheet.getLastColumn();
     if (currentCols < 7) {
       dashSheet.getRange(1, 7).setValue("Rebirth Count");
+    }
+    if (currentCols < 8) {
       dashSheet.getRange(1, 8).setValue("EXP Multiplier");
     }
     
@@ -3929,20 +4092,8 @@ function updateRanksWithMultiplier() {
       // สร้าง Rank suffix
       const rankSuffix = getRebirthSuffix(rebirthCount);
       
-      // คำนวณ Rank ใหม่
-      let newRank = "Rookie";
-      if (exp >= requiredExp.legend) newRank = "Legend";
-      else if (exp >= requiredExp.grandmaster) newRank = "Grandmaster";
-      else if (exp >= requiredExp.diamond) newRank = "Diamond";
-      else if (exp >= requiredExp.platinum) newRank = "Platinum";
-      else if (exp >= requiredExp.gold) newRank = "Gold";
-      else if (exp >= requiredExp.silver) newRank = "Silver";
-      else if (exp >= requiredExp.bronze) newRank = "Bronze";
-      
-      // เพิ่ม suffix ถ้ามีการจุติ
-      if (rebirthCount > 0) {
-        newRank += rankSuffix;
-      }
+      // คำนวณ Rank ใหม่ (แก้ไขแล้ว)
+      let newRank = calculateCorrectRank(exp, rebirthCount, multiplier);
       
       // อัปเดต Rank ถ้าเปลี่ยน
       const currentRank = data[i][3];
@@ -4018,6 +4169,28 @@ function calculateRequiredExp(multiplier) {
   };
 }
 
+// 🆕 ฟังก์ชันคำนวณ Rank ที่ถูกต้องตามระบบ Rebirth
+function calculateCorrectRank(exp, rebirthCount, multiplier) {
+  // สร้าง Rank suffix ตามจำนวนครั้งที่จุติ
+  const rankSuffix = getRebirthSuffix(rebirthCount);
+  
+  // คำนวณ EXP ที่ต้องใช้ตาม multiplier
+  const requiredExp = calculateRequiredExp(multiplier);
+  
+  // คำนวณ Rank ตาม EXP และ multiplier
+  let baseRank = "Rookie";
+  if (exp >= requiredExp.legend) baseRank = "Legend";
+  else if (exp >= requiredExp.grandmaster) baseRank = "Grandmaster";
+  else if (exp >= requiredExp.diamond) baseRank = "Diamond";
+  else if (exp >= requiredExp.platinum) baseRank = "Platinum";
+  else if (exp >= requiredExp.gold) baseRank = "Gold";
+  else if (exp >= requiredExp.silver) baseRank = "Silver";
+  else if (exp >= requiredExp.bronze) baseRank = "Bronze";
+  
+  // รวม Rank กับ suffix
+  return baseRank + rankSuffix;
+}
+
 // บันทึก Log การจุติ
 function logRebirthActivity(action, details, adminEmail, result) {
   try {
@@ -4047,19 +4220,19 @@ function testRebirthSystem() {
   testMsg += `🔄 การจุติครั้งที่ 1:\n`;
   testMsg += `• ต้องเป็น: Legend (EXP ≥ 200)\n`;
   testMsg += `• หลังจากจุติ: Rookie II (EXP = 0, Multiplier = x1)\n`;
-  testMsg += `• EXP ที่ต้องใช้: Bronze II = 10, Silver II = 30, Gold II = 60, ฯลฯ\n\n`;
+  testMsg += `• EXP ที่ต้องใช้: Bronze II = 5, Silver II = 15, Gold II = 30, ฯลฯ\n\n`;
   
   // ทดสอบการจุติครั้งที่ 2
   testMsg += `🔄 การจุติครั้งที่ 2:\n`;
   testMsg += `• ต้องเป็น: Legend II (EXP ≥ 400)\n`;
   testMsg += `• หลังจากจุติ: Rookie III (EXP = 0, Multiplier = x2)\n`;
-  testMsg += `• EXP ที่ต้องใช้: Bronze III = 15, Silver III = 45, Gold III = 90, ฯลฯ\n\n`;
+  testMsg += `• EXP ที่ต้องใช้: Bronze III = 10, Silver III = 30, Gold III = 60, ฯลฯ\n\n`;
   
   // ทดสอบการจุติครั้งที่ 3
   testMsg += `🔄 การจุติครั้งที่ 3:\n`;
   testMsg += `• ต้องเป็น: Legend III (EXP ≥ 600)\n`;
   testMsg += `• หลังจากจุติ: Rookie IV (EXP = 0, Multiplier = x3)\n`;
-  testMsg += `• EXP ที่ต้องใช้: Bronze IV = 20, Silver IV = 60, Gold IV = 120, ฯลฯ\n\n`;
+  testMsg += `• EXP ที่ต้องใช้: Bronze IV = 15, Silver IV = 45, Gold IV = 90, ฯลฯ\n\n`;
   
   // ทดสอบ Leaderboard
   testMsg += `🏆 ตัวอย่างการเรียงลำดับใน Leaderboard (ระบบใหม่):\n\n`;
@@ -4083,7 +4256,626 @@ function testRebirthSystem() {
   testMsg += `💡 หลักการเรียงลำดับ:\n`;
   testMsg += `1. เรียงตาม EXP เทียบเท่า (EXP ÷ Multiplier) - มากไปน้อย\n`;
   testMsg += `2. ถ้าเท่ากัน เรียงตาม Multiplier (น้อยไปมาก)\n`;
-  testMsg += `3. ถ้าเท่ากัน เรียงตามชื่อ (A-Z)\n`;
+  testMsg += `3. ถ้าเท่ากัน เรียงตามชื่อ (A-Z)\n\n`;
+  
+  testMsg += `🔧 การแก้ไขที่ทำ:\n`;
+  testMsg += `• ตรวจสอบ Rank แบบ flexible (Legend หรือ Legend II+)\n`;
+  testMsg += `• จำกัด Multiplier ไม่เกิน 5\n`;
+  testMsg += `• เพิ่มการตรวจสอบชีทที่จำเป็น\n`;
+  testMsg += `• ปรับ EXP ที่ต้องใช้ตามจำนวนครั้งที่จุติ\n`;
   
   ui.alert("🧪 ทดสอบระบบ Rebirth", testMsg, ui.ButtonSet.OK);
+}
+
+// 🔧 ฟังก์ชันตรวจสอบและแก้ไขปัญหาระบบ Rebirth
+function checkAndFixRebirthSystem() {
+  const ui = SpreadsheetApp.getUi();
+  const currentUserEmail = Session.getActiveUser().getEmail();
+
+  if (!isAdmin(currentUserEmail)) {
+    ui.alert("🔒 Access Denied", "คุณไม่มีสิทธิ์ในการใช้ฟังก์ชันนี้", ui.ButtonSet.OK);
+    return;
+  }
+
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const dashSheet = ss.getSheetByName("Member Dashboard");
+  const rebirthSheet = ss.getSheetByName("Rebirth History");
+  
+  if (!dashSheet) {
+    ui.alert("❌ ไม่พบชีท Member Dashboard", "กรุณาสร้างชีท Member Dashboard", ui.ButtonSet.OK);
+    return;
+  }
+
+  let issues = [];
+  let fixes = [];
+
+  // 1. ตรวจสอบคอลัมน์ที่จำเป็น
+  const currentCols = dashSheet.getLastColumn();
+  if (currentCols < 7) {
+    issues.push("❌ ไม่มีคอลัมน์ Rebirth Count");
+    fixes.push("➕ เพิ่มคอลัมน์ Rebirth Count");
+  }
+  if (currentCols < 8) {
+    issues.push("❌ ไม่มีคอลัมน์ EXP Multiplier");
+    fixes.push("➕ เพิ่มคอลัมน์ EXP Multiplier");
+  }
+
+  // 2. ตรวจสอบข้อมูลที่ไม่สอดคล้องกัน
+  const dashData = dashSheet.getDataRange().getValues();
+  const rebirthData = rebirthSheet ? rebirthSheet.getDataRange().getValues() : [];
+  
+  for (let i = 1; i < dashData.length; i++) {
+    const phone = normalizePhone(dashData[i][1]);
+    const rebirthCount = Number(dashData[i][6]) || 0;
+    const multiplier = Number(dashData[i][7]) || 1;
+    const currentRank = dashData[i][3];
+    const exp = Number(dashData[i][4]) || 0;
+    
+    // ตรวจสอบ Rebirth Count กับประวัติ
+    if (rebirthSheet) {
+      const actualRebirths = rebirthData.filter((row, index) => {
+        if (index === 0) return false;
+        return normalizePhone(row[1]) === phone;
+      }).length;
+      
+      if (rebirthCount !== actualRebirths) {
+        issues.push(`⚠️ ${dashData[i][0]} (${dashData[i][2]}): Rebirth Count ไม่ตรงกับประวัติ (${rebirthCount} vs ${actualRebirths})`);
+        fixes.push(`🔧 แก้ไข Rebirth Count ของ ${dashData[i][0]} เป็น ${actualRebirths}`);
+      }
+    }
+    
+    // ตรวจสอบ Multiplier
+    if (multiplier > 5) {
+      issues.push(`⚠️ ${dashData[i][0]} (${dashData[i][2]}): Multiplier สูงเกินไป (${multiplier})`);
+      fixes.push(`🔧 แก้ไข Multiplier ของ ${dashData[i][0]} เป็น 5`);
+    }
+    
+    // ตรวจสอบ Rank ที่ไม่สอดคล้องกับระบบ Rebirth
+    if (rebirthCount > 0 || multiplier > 1) {
+      const correctRank = calculateCorrectRank(exp, rebirthCount, multiplier);
+      if (currentRank !== correctRank) {
+        issues.push(`⚠️ ${dashData[i][0]} (${dashData[i][2]}): Rank ไม่ถูกต้อง (${currentRank} vs ${correctRank})`);
+        fixes.push(`🔧 แก้ไข Rank ของ ${dashData[i][0]} เป็น ${correctRank}`);
+      }
+    }
+  }
+
+  // แสดงผลการตรวจสอบ
+  let report = `🔍 ผลการตรวจสอบระบบ Rebirth\n\n`;
+  
+  if (issues.length === 0) {
+    report += `✅ ไม่พบปัญหาในระบบ Rebirth\n`;
+  } else {
+    report += `📊 พบปัญหา ${issues.length} รายการ:\n\n`;
+    issues.forEach((issue, index) => {
+      report += `${index + 1}. ${issue}\n`;
+    });
+    
+    report += `\n🔧 การแก้ไขที่แนะนำ:\n`;
+    fixes.forEach((fix, index) => {
+      report += `${index + 1}. ${fix}\n`;
+    });
+    
+    report += `\nต้องการให้ระบบแก้ไขปัญหาอัตโนมัติหรือไม่?`;
+    
+    const response = ui.alert("ตรวจสอบระบบ Rebirth", report, ui.ButtonSet.YES_NO);
+    
+    if (response === ui.Button.YES) {
+      applyRebirthSystemFixes(dashSheet, rebirthSheet, dashData, rebirthData);
+    }
+  }
+  
+  if (issues.length === 0) {
+    ui.alert("ตรวจสอบระบบ Rebirth", report, ui.ButtonSet.OK);
+  }
+}
+
+// 🔧 ฟังก์ชันแก้ไขปัญหาระบบ Rebirth อัตโนมัติ
+function applyRebirthSystemFixes(dashSheet, rebirthSheet, dashData, rebirthData) {
+  const ui = SpreadsheetApp.getUi();
+  let fixedCount = 0;
+  
+  try {
+    // 1. เพิ่มคอลัมน์ที่จำเป็น
+    const currentCols = dashSheet.getLastColumn();
+    if (currentCols < 7) {
+      dashSheet.getRange(1, 7).setValue("Rebirth Count");
+      fixedCount++;
+    }
+    if (currentCols < 8) {
+      dashSheet.getRange(1, 8).setValue("EXP Multiplier");
+      fixedCount++;
+    }
+    
+    // 2. แก้ไขข้อมูลที่ไม่สอดคล้องกัน
+    for (let i = 1; i < dashData.length; i++) {
+      const phone = normalizePhone(dashData[i][1]);
+      const rebirthCount = Number(dashData[i][6]) || 0;
+      const multiplier = Number(dashData[i][7]) || 1;
+      const currentRank = dashData[i][3];
+      const exp = Number(dashData[i][4]) || 0;
+      
+      // แก้ไข Rebirth Count
+      if (rebirthSheet) {
+        const actualRebirths = rebirthData.filter((row, index) => {
+          if (index === 0) return false;
+          return normalizePhone(row[1]) === phone;
+        }).length;
+        
+        if (rebirthCount !== actualRebirths) {
+          dashSheet.getRange(i + 1, 7).setValue(actualRebirths);
+          fixedCount++;
+        }
+      }
+      
+      // แก้ไข Multiplier
+      if (multiplier > 5) {
+        dashSheet.getRange(i + 1, 8).setValue(5);
+        fixedCount++;
+      }
+      
+      // แก้ไข Rank ที่ไม่ถูกต้อง
+      if (rebirthCount > 0 || multiplier > 1) {
+        const correctRank = calculateCorrectRank(exp, rebirthCount, multiplier);
+        if (currentRank !== correctRank) {
+          dashSheet.getRange(i + 1, 4).setValue(correctRank);
+          fixedCount++;
+        }
+      }
+    }
+    
+    // 3. อัปเดตระบบ
+    updateLeaderboard();
+    
+    ui.alert("✅ แก้ไขระบบ Rebirth สำเร็จ", `แก้ไขปัญหา ${fixedCount} รายการ\n\nระบบได้อัปเดตข้อมูลและ Leaderboard แล้ว`, ui.ButtonSet.OK);
+    
+  } catch (error) {
+    console.error("Error applying rebirth fixes:", error);
+    ui.alert("❌ เกิดข้อผิดพลาด", `เกิดข้อผิดพลาดในการแก้ไข: ${error.toString()}`, ui.ButtonSet.OK);
+  }
+}
+
+// 🔍 ตรวจสอบและแก้ไขปัญหาการดึงข้อมูลจาก Google Form
+function checkAndFixFormDataSync() {
+  const ui = SpreadsheetApp.getUi();
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  
+  // ตรวจสอบว่ามีชีทที่จำเป็นหรือไม่
+  const formSheet = ss.getSheetByName("member");
+  const dbSheet = ss.getSheetByName("Member Database");
+  const dashSheet = ss.getSheetByName("Member Dashboard");
+  
+  if (!formSheet) {
+    return ui.alert("❌ ไม่พบชีท member (ข้อมูลจาก Google Form)");
+  }
+  
+  if (!dashSheet) {
+    return ui.alert("❌ ไม่พบชีท Member Dashboard");
+  }
+  
+  // ดึงข้อมูลจากทั้งสองชีท
+  const formData = formSheet.getDataRange().getValues();
+  const dashData = dashSheet.getDataRange().getValues();
+  
+  // สร้าง Map ของข้อมูลใน Member Dashboard
+  const dashPhones = new Map();
+  const dashCodenames = new Map();
+  
+  for (let i = 1; i < dashData.length; i++) {
+    const phone = normalizePhone(dashData[i][1]);
+    const codename = String(dashData[i][2]).toLowerCase().trim();
+    if (phone) dashPhones.set(phone, i + 1);
+    if (codename) dashCodenames.set(codename, i + 1);
+  }
+  
+  // ตรวจสอบข้อมูลจาก member sheet
+  const missingEntries = [];
+  const duplicateEntries = [];
+  const invalidEntries = [];
+  
+  for (let i = 1; i < formData.length; i++) {
+    const formRow = formData[i];
+    
+    // ดึงข้อมูลจากฟอร์ม (ปรับ index ตามโครงสร้างฟอร์มจริง)
+    const timestamp = formRow[0];
+    const fullName = formRow[1] || "";
+    const nickname = formRow[2] || "";
+    const rawPhone = formRow[3] || "";
+    const codename = String(formRow[4] || "").trim();
+    const memberType = formRow[5] || "";
+    const referrer = formRow[6] || "";
+    
+    const phone = normalizePhone(rawPhone);
+    
+    // ตรวจสอบความถูกต้องของข้อมูล
+    if (!phone || phone.length !== 10) {
+      invalidEntries.push({
+        row: i + 1,
+        reason: "เบอร์โทรไม่ถูกต้อง",
+        data: { fullName, nickname, phone: rawPhone, codename }
+      });
+      continue;
+    }
+    
+    if (!codename) {
+      invalidEntries.push({
+        row: i + 1,
+        reason: "ไม่มี Codename",
+        data: { fullName, nickname, phone, codename }
+      });
+      continue;
+    }
+    
+    // ตรวจสอบข้อมูลซ้ำ
+    const hasPhone = dashPhones.has(phone);
+    const hasCodename = dashCodenames.has(codename.toLowerCase());
+    
+    if (hasPhone || hasCodename) {
+      duplicateEntries.push({
+        row: i + 1,
+        reason: hasPhone ? "เบอร์โทรซ้ำ" : "Codename ซ้ำ",
+        data: { fullName, nickname, phone, codename },
+        existingRow: hasPhone ? dashPhones.get(phone) : dashCodenames.get(codename.toLowerCase())
+      });
+      continue;
+    }
+    
+    // ข้อมูลที่ยังไม่มีใน Member Dashboard
+    missingEntries.push({
+      row: i + 1,
+      data: { timestamp, fullName, nickname, phone, codename, memberType, referrer }
+    });
+  }
+  
+  // แสดงผลการตรวจสอบ
+  let report = `🔍 ผลการตรวจสอบการซิงค์ข้อมูล\n\n`;
+  report += `📊 สถิติ:\n`;
+  report += `• ข้อมูลจากฟอร์ม: ${formData.length - 1} รายการ\n`;
+  report += `• ข้อมูลใน Member Dashboard: ${dashData.length - 1} รายการ\n`;
+  report += `• ข้อมูลตกหล่น: ${missingEntries.length} รายการ\n`;
+  report += `• ข้อมูลซ้ำ: ${duplicateEntries.length} รายการ\n`;
+  report += `• ข้อมูลไม่ถูกต้อง: ${invalidEntries.length} รายการ\n\n`;
+  
+  if (missingEntries.length > 0) {
+    report += `📋 ข้อมูลตกหล่น (${missingEntries.length} รายการ):\n`;
+    missingEntries.forEach((entry, index) => {
+      report += `${index + 1}. ${entry.data.nickname} (${entry.data.codename}) - ${entry.data.phone}\n`;
+    });
+    report += `\n`;
+  }
+  
+  if (duplicateEntries.length > 0) {
+    report += `⚠️ ข้อมูลซ้ำ (${duplicateEntries.length} รายการ):\n`;
+    duplicateEntries.forEach((entry, index) => {
+      report += `${index + 1}. ${entry.data.nickname} (${entry.data.codename}) - ${entry.reason}\n`;
+    });
+    report += `\n`;
+  }
+  
+  if (invalidEntries.length > 0) {
+    report += `❌ ข้อมูลไม่ถูกต้อง (${invalidEntries.length} รายการ):\n`;
+    invalidEntries.forEach((entry, index) => {
+      report += `${index + 1}. ${entry.data.nickname} - ${entry.reason}\n`;
+    });
+    report += `\n`;
+  }
+  
+  // ถามว่าต้องการเพิ่มข้อมูลที่ตกหล่นหรือไม่
+  if (missingEntries.length > 0) {
+    report += `ต้องการเพิ่มข้อมูลที่ตกหล่นเข้า Member Dashboard หรือไม่?`;
+    const response = ui.alert("ตรวจสอบการซิงค์ข้อมูล", report, ui.ButtonSet.YES_NO);
+    
+    if (response === ui.Button.YES) {
+      addMissingFormEntries(missingEntries);
+    }
+  } else {
+    ui.alert("ตรวจสอบการซิงค์ข้อมูล", report, ui.ButtonSet.OK);
+  }
+}
+
+// ➕ เพิ่มข้อมูลที่ตกหล่นจากฟอร์ม
+function addMissingFormEntries(missingEntries) {
+  const ui = SpreadsheetApp.getUi();
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const dashSheet = ss.getSheetByName("Member Dashboard");
+  const dbSheet = ss.getSheetByName("member");
+  
+  let successCount = 0;
+  let errorCount = 0;
+  let errorMessages = [];
+  
+  // ดึงข้อมูลปัจจุบันใน Member Dashboard เพื่อตรวจสอบซ้ำ
+  const dashData = dashSheet.getDataRange().getValues();
+  const currentPhones = dashData.slice(1).map(row => normalizePhone(row[1]));
+  const currentCodenames = dashData.slice(1).map(row => String(row[2]).toLowerCase().trim());
+  
+  missingEntries.forEach(entry => {
+    try {
+      const { timestamp, fullName, nickname, phone, codename, memberType, referrer } = entry.data;
+      
+      // ตรวจสอบซ้ำอีกครั้ง
+      if (currentPhones.includes(phone)) {
+        errorMessages.push(`${nickname}: เบอร์ซ้ำ`);
+        errorCount++;
+        return;
+      }
+      
+      if (currentCodenames.includes(codename.toLowerCase())) {
+        errorMessages.push(`${nickname}: Codename ซ้ำ`);
+        errorCount++;
+        return;
+      }
+      
+      // คำนวณ EXP เริ่มต้น
+      let initialExp = 0;
+      if (memberType.includes("Premium")) {
+        initialExp = 3;
+        if (referrer && currentPhones.includes(normalizePhone(referrer))) {
+          initialExp += 1;
+          addExpToPhone(normalizePhone(referrer), 2);
+          logExp(normalizePhone(referrer), "แนะนำเพื่อนสมัคร Premium (+2 EXP)", 2);
+        }
+      }
+      
+      // เพิ่มเข้า Member Dashboard
+      const newRow = [nickname, phone, codename, "Rookie", initialExp, ""];
+      const newRowIndex = dashSheet.getLastRow() + 1;
+      dashSheet.getRange(newRowIndex, 1, 1, newRow.length).setValues([newRow]);
+      dashSheet.getRange(newRowIndex, 2).setNumberFormat("@");
+      
+      // เพิ่มเข้า Member Database (ถ้ามี)
+      if (dbSheet) {
+        const dbRow = [
+          timestamp,
+          fullName,
+          nickname,
+          phone,
+          codename,
+          memberType,
+          referrer || ""
+        ];
+        dbSheet.appendRow(dbRow);
+        dbSheet.getRange(dbSheet.getLastRow(), 4).setNumberFormat("@");
+      }
+      
+      // บันทึก EXP Log
+      logExp(phone, "สมัครสมาชิก (เพิ่มจากข้อมูลที่ตกหล่น)", initialExp);
+      
+      // อัปเดตข้อมูลปัจจุบัน
+      currentPhones.push(phone);
+      currentCodenames.push(codename.toLowerCase());
+      
+      successCount++;
+      
+    } catch (error) {
+      errorMessages.push(`${entry.data.nickname}: ${error.message}`);
+      errorCount++;
+    }
+  });
+  
+  // อัปเดตระบบ
+  updateRanks();
+  updateLeaderboard();
+  
+  // แสดงผลลัพธ์
+  let resultMessage = `✅ เพิ่มสำเร็จ: ${successCount} คน\n`;
+  if (errorCount > 0) {
+    resultMessage += `❌ ไม่สำเร็จ: ${errorCount} คน\n\n`;
+    resultMessage += "รายละเอียดข้อผิดพลาด:\n";
+    errorMessages.forEach(msg => {
+      resultMessage += `• ${msg}\n`;
+    });
+  }
+  
+  ui.alert("ผลการเพิ่มข้อมูลที่ตกหล่น", resultMessage);
+}
+
+// 🌐 ฟังก์ชันสำหรับ Web App - ตรวจสอบสถานะการซิงค์ข้อมูล
+function getSyncStatusData() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  
+  // ตรวจสอบว่ามีชีทที่จำเป็นหรือไม่
+  const formSheet = ss.getSheetByName("member");
+  const dashSheet = ss.getSheetByName("Member Dashboard");
+  
+  if (!formSheet || !dashSheet) {
+    return {
+      error: "ไม่พบชีทที่จำเป็น",
+      formCount: 0,
+      dashboardCount: 0,
+      missingCount: 0,
+      duplicateCount: 0,
+      invalidCount: 0
+    };
+  }
+  
+  // ดึงข้อมูลจากทั้งสองชีท
+  const formData = formSheet.getDataRange().getValues();
+  const dashData = dashSheet.getDataRange().getValues();
+  
+  // สร้าง Map ของข้อมูลใน Member Dashboard
+  const dashPhones = new Map();
+  const dashCodenames = new Map();
+  
+  for (let i = 1; i < dashData.length; i++) {
+    const phone = normalizePhone(dashData[i][1]);
+    const codename = String(dashData[i][2]).toLowerCase().trim();
+    if (phone) dashPhones.set(phone, i + 1);
+    if (codename) dashCodenames.set(codename, i + 1);
+  }
+  
+  // ตรวจสอบข้อมูลจาก member sheet
+  const missingEntries = [];
+  const duplicateEntries = [];
+  const invalidEntries = [];
+  
+  for (let i = 1; i < formData.length; i++) {
+    const formRow = formData[i];
+    
+    // ดึงข้อมูลจากฟอร์ม (ปรับ index ตามโครงสร้างฟอร์มจริง)
+    const timestamp = formRow[0];
+    const fullName = formRow[1] || "";
+    const nickname = formRow[2] || "";
+    const rawPhone = formRow[3] || "";
+    const codename = String(formRow[4] || "").trim();
+    const memberType = formRow[5] || "";
+    const referrer = formRow[6] || "";
+    
+    const phone = normalizePhone(rawPhone);
+    
+    // ตรวจสอบความถูกต้องของข้อมูล
+    if (!phone || phone.length !== 10) {
+      invalidEntries.push({
+        fullName,
+        nickname,
+        phone: rawPhone,
+        codename,
+        memberType,
+        timestamp
+      });
+      continue;
+    }
+    
+    if (!codename) {
+      invalidEntries.push({
+        fullName,
+        nickname,
+        phone,
+        codename,
+        memberType,
+        timestamp
+      });
+      continue;
+    }
+    
+    // ตรวจสอบข้อมูลซ้ำ
+    const hasPhone = dashPhones.has(phone);
+    const hasCodename = dashCodenames.has(codename.toLowerCase());
+    
+    if (hasPhone || hasCodename) {
+      duplicateEntries.push({
+        fullName,
+        nickname,
+        phone,
+        codename,
+        memberType,
+        timestamp,
+        reason: hasPhone ? "เบอร์โทรซ้ำ" : "Codename ซ้ำ"
+      });
+      continue;
+    }
+    
+    // ข้อมูลที่ยังไม่มีใน Member Dashboard
+    missingEntries.push({
+      fullName,
+      nickname,
+      phone,
+      codename,
+      memberType,
+      timestamp,
+      referrer
+    });
+  }
+  
+  return {
+    formCount: formData.length - 1,
+    dashboardCount: dashData.length - 1,
+    missingCount: missingEntries.length,
+    duplicateCount: duplicateEntries.length,
+    invalidCount: invalidEntries.length,
+    missingEntries: missingEntries,
+    duplicateEntries: duplicateEntries,
+    invalidEntries: invalidEntries
+  };
+}
+
+// 🌐 ฟังก์ชันสำหรับ Web App - เพิ่มข้อมูลที่ตกหล่น
+function addMissingEntriesFromWeb(missingEntries) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const dashSheet = ss.getSheetByName("Member Dashboard");
+  const dbSheet = ss.getSheetByName("member");
+  
+  let successCount = 0;
+  let errorCount = 0;
+  let errorMessages = [];
+  
+  // ดึงข้อมูลปัจจุบันใน Member Dashboard เพื่อตรวจสอบซ้ำ
+  const dashData = dashSheet.getDataRange().getValues();
+  const currentPhones = dashData.slice(1).map(row => normalizePhone(row[1]));
+  const currentCodenames = dashData.slice(1).map(row => String(row[2]).toLowerCase().trim());
+  
+  missingEntries.forEach(entry => {
+    try {
+      const { timestamp, fullName, nickname, phone, codename, memberType, referrer } = entry;
+      
+      // ตรวจสอบซ้ำอีกครั้ง
+      if (currentPhones.includes(phone)) {
+        errorMessages.push(`${nickname}: เบอร์ซ้ำ`);
+        errorCount++;
+        return;
+      }
+      
+      if (currentCodenames.includes(codename.toLowerCase())) {
+        errorMessages.push(`${nickname}: Codename ซ้ำ`);
+        errorCount++;
+        return;
+      }
+      
+      // คำนวณ EXP เริ่มต้น
+      let initialExp = 0;
+      if (memberType.includes("Premium")) {
+        initialExp = 3;
+        if (referrer && currentPhones.includes(normalizePhone(referrer))) {
+          initialExp += 1;
+          addExpToPhone(normalizePhone(referrer), 2);
+          logExp(normalizePhone(referrer), "แนะนำเพื่อนสมัคร Premium (+2 EXP)", 2);
+        }
+      }
+      
+      // เพิ่มเข้า Member Dashboard
+      const newRow = [nickname, phone, codename, "Rookie", initialExp, ""];
+      const newRowIndex = dashSheet.getLastRow() + 1;
+      dashSheet.getRange(newRowIndex, 1, 1, newRow.length).setValues([newRow]);
+      dashSheet.getRange(newRowIndex, 2).setNumberFormat("@");
+      
+      // เพิ่มเข้า Member Database (ถ้ามี)
+      if (dbSheet) {
+        const dbRow = [
+          timestamp,
+          fullName,
+          nickname,
+          phone,
+          codename,
+          memberType,
+          referrer || ""
+        ];
+        dbSheet.appendRow(dbRow);
+        dbSheet.getRange(dbSheet.getLastRow(), 4).setNumberFormat("@");
+      }
+      
+      // บันทึก EXP Log
+      logExp(phone, "สมัครสมาชิก (เพิ่มจากข้อมูลที่ตกหล่น)", initialExp);
+      
+      // อัปเดตข้อมูลปัจจุบัน
+      currentPhones.push(phone);
+      currentCodenames.push(codename.toLowerCase());
+      
+      successCount++;
+      
+    } catch (error) {
+      errorMessages.push(`${entry.nickname}: ${error.message}`);
+      errorCount++;
+    }
+  });
+  
+  // อัปเดตระบบ
+  updateRanks();
+  updateLeaderboard();
+  
+  return {
+    success: true,
+    successCount: successCount,
+    errorCount: errorCount,
+    errorMessages: errorMessages
+  };
 }
