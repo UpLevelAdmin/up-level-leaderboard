@@ -84,7 +84,7 @@ function onOpen() {
   // ลบ Hide Standing ที่ซ้ำกัน (ถ้ามี)
   removeDuplicateHideStandingSilent();
   
-  // ปรับขนาดคอลัมน์แบบ Smart (เงียบๆ)
+  // ปรับขนาดคอลัมน์แบบ Smart (เงียบๆ) - ทำครั้งเดียวเมื่อเริ่มต้น
   smartResizeAllSheetsSilent();
 }
 
@@ -203,10 +203,7 @@ function pairFirstRound() {
   // จัดรูปแบบการแสดงผลให้สวยงาม
   formatPairingData(pairingSheet, startRow, output.length);
   
-  // ปรับขนาดคอลัมน์ชื่อผู้เล่น
-  adjustPlayerNameColumns(pairingSheet);
-
-  // อัปเดต Standings และปรับขนาดคอลัมน์
+  // อัปเดต Standings และปรับขนาดคอลัมน์ (รวมชื่อผู้เล่น)
   updateStandings();
   smartResizeAllSheetsSilent();
 }
@@ -3058,9 +3055,6 @@ function setupPairingHideStandingControls() {
   // ปรับความสูงแถวที่ 2 ให้สูงขึ้น
   pairingSheet.setRowHeight(2, 40);
   
-  // ปรับขนาดคอลัมน์ D (PLAYER 1) และ J (PLAYER 2) ตามความยาวของชื่อ
-  adjustPlayerNameColumns(pairingSheet);
-  
   console.log('สร้าง Hide Standing checkbox ในชีท Pairing เรียบร้อยแล้ว');
   
   // ไม่ต้องตั้งค่า trigger เพราะ onEdit ทำงานได้โดยไม่ต้องมี trigger
@@ -3077,10 +3071,7 @@ function resetHideStandingControls() {
   const hideCheckbox = pairingSheet.getRange(1, 15); // O1
   hideCheckbox.check();
   
-  // ปรับขนาดคอลัมน์ชื่อผู้เล่น
-  adjustPlayerNameColumns(pairingSheet);
-  
-  // อัปเดต Standings และปรับขนาดคอลัมน์
+  // อัปเดต Standings และปรับขนาดคอลัมน์ (รวมชื่อผู้เล่น)
   updateStandings();
   smartResizeAllSheetsSilent();
   
@@ -3096,9 +3087,7 @@ function adjustPairingColumns() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const pairingSheet = ss.getSheetByName('Pairing');
   
-  adjustPlayerNameColumns(pairingSheet);
-  
-  // อัปเดต Standings และปรับขนาดคอลัมน์
+  // อัปเดต Standings และปรับขนาดคอลัมน์ (รวมชื่อผู้เล่น)
   updateStandings();
   smartResizeAllSheetsSilent();
   
@@ -3118,10 +3107,7 @@ function forceResetControls() {
   const hideCheckbox = pairingSheet.getRange(2, 15); // O2
   hideCheckbox.check();
   
-  // ปรับขนาดคอลัมน์ชื่อผู้เล่น
-  adjustPlayerNameColumns(pairingSheet);
-  
-  // อัปเดต Standings และปรับขนาดคอลัมน์
+  // อัปเดต Standings และปรับขนาดคอลัมน์ (รวมชื่อผู้เล่น)
   updateStandings();
   smartResizeAllSheetsSilent();
   
@@ -3182,9 +3168,6 @@ function removeDuplicateHideStanding() {
   pairingSheet.setColumnWidth(14, 120); // N - ข้อความ
   pairingSheet.setColumnWidth(15, 80);  // O - checkbox
   pairingSheet.setRowHeight(1, 40);
-  
-  // ปรับขนาดคอลัมน์ชื่อผู้เล่น
-  adjustPlayerNameColumns(pairingSheet);
   
   SpreadsheetApp.getUi().alert(
     '🧹 ลบซ้ำเรียบร้อยแล้ว',
@@ -3571,8 +3554,7 @@ function dropPlayerFromList() {
         // อัปเดต Standings ให้แสดงผู้เล่นที่ drop เป็น 'DROP'
         updateStandings();
         
-        // ปรับขนาดคอลัมน์
-        smartResizeAllSheetsSilent();
+        // ปรับขนาดคอลัมน์ (ทำในฟังก์ชัน drop แล้ว)
         
         SpreadsheetApp.getUi().alert(
           '✅ Drop ผู้เล่นสำเร็จ',
@@ -3636,8 +3618,7 @@ function cancelPlayerDrop() {
         // อัปเดต Standings
         updateStandings();
         
-        // ปรับขนาดคอลัมน์
-        smartResizeAllSheetsSilent();
+        // ปรับขนาดคอลัมน์ (ทำในฟังก์ชัน drop แล้ว)
         
         SpreadsheetApp.getUi().alert(
           '✅ ยกเลิก Drop สำเร็จ',
