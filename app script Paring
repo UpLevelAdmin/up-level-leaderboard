@@ -3209,6 +3209,60 @@ function removeDuplicateHideStandingSilent() {
   }
 }
 
+// 📏 ปรับขนาดคอลัมน์ชื่อผู้เล่นในชีท Pairing
+function adjustPlayerNameColumns(pairingSheet) {
+  try {
+    if (!pairingSheet) {
+      console.log('ไม่พบชีท Pairing');
+      return;
+    }
+    
+    const lastRow = pairingSheet.getLastRow();
+    if (lastRow <= 1) return; // ไม่มีข้อมูล
+    
+    // คอลัมน์ D (PLAYER 1) และ J (PLAYER 2)
+    const player1Col = 4; // คอลัมน์ D
+    const player2Col = 10; // คอลัมน์ J
+    
+    // หาความยาวชื่อผู้เล่นที่ยาวที่สุดในคอลัมน์ D
+    let maxPlayer1Length = 0;
+    const player1Range = pairingSheet.getRange(2, player1Col, lastRow - 1, 1);
+    const player1Values = player1Range.getValues();
+    
+    player1Values.forEach(row => {
+      const name = row[0] ? row[0].toString() : '';
+      if (name.length > maxPlayer1Length) {
+        maxPlayer1Length = name.length;
+      }
+    });
+    
+    // หาความยาวชื่อผู้เล่นที่ยาวที่สุดในคอลัมน์ J
+    let maxPlayer2Length = 0;
+    const player2Range = pairingSheet.getRange(2, player2Col, lastRow - 1, 1);
+    const player2Values = player2Range.getValues();
+    
+    player2Values.forEach(row => {
+      const name = row[0] ? row[0].toString() : '';
+      if (name.length > maxPlayer2Length) {
+        maxPlayer2Length = name.length;
+      }
+    });
+    
+    // คำนวณความกว้างที่เหมาะสม (ขั้นต่ำ 150px, สูงสุด 300px)
+    const player1Width = Math.max(150, Math.min(300, maxPlayer1Length * 8 + 20));
+    const player2Width = Math.max(150, Math.min(300, maxPlayer2Length * 8 + 20));
+    
+    // ตั้งค่าความกว้างคอลัมน์
+    pairingSheet.setColumnWidth(player1Col, player1Width);
+    pairingSheet.setColumnWidth(player2Col, player2Width);
+    
+    console.log(`ปรับขนาดคอลัมน์ชื่อผู้เล่น: D=${player1Width}px, J=${player2Width}px`);
+    
+  } catch (error) {
+    console.log('เกิดข้อผิดพลาดในการปรับขนาดคอลัมน์ชื่อผู้เล่น:', error);
+  }
+}
+
 // 📏 ปรับขนาดคอลัมน์ทุกชีทให้พอดีกับข้อมูล (แบบเงียบๆ)
 function smartResizeAllSheetsSilent() {
   try {
