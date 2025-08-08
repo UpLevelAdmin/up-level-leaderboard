@@ -204,9 +204,9 @@ function pairFirstRound() {
   // จัดรูปแบบการแสดงผลให้สวยงาม
   formatPairingData(pairingSheet, startRow, output.length);
   
-  // อัปเดต Standings และปรับขนาดคอลัมน์ (รวมชื่อผู้เล่น)
+  // อัปเดต Standings และจัดรูปแบบครบวงจร
   updateStandings();
-  smartResizeAllSheetsSilent();
+  completePairingFormat();
 }
 
 
@@ -598,9 +598,8 @@ function pairNextRound() {
   
   // จัดรูปแบบ, แยกรอบ, และอัปเดต (ครั้งเดียว)
   formatPairingData(pairingSheet, startRow, output.length);
-  separateRoundsVisually();
   updateStandings();
-  smartResizeAllSheetsSilent();
+  completePairingFormat();
 }
 
 
@@ -1177,9 +1176,9 @@ function formatPairingSheet() {
   playerNameRange.setWrap(true);
   player2NameRange.setWrap(true);
   
-  // อัปเดต Standings และปรับขนาดคอลัมน์
+  // อัปเดต Standings และจัดรูปแบบครบวงจร
   updateStandings();
-  smartResizeAllSheetsSilent();
+  completePairingFormat();
   
   SpreadsheetApp.getUi().alert('✅ จัดรูปแบบชีท Pairing เรียบร้อยแล้ว');
 }
@@ -1220,9 +1219,9 @@ function improveVisualFormatting() {
   idRange.setFontWeight('bold');
   id2Range.setFontWeight('bold');
   
-  // อัปเดต Standings และปรับขนาดคอลัมน์
+  // อัปเดต Standings และจัดรูปแบบครบวงจร
   updateStandings();
-  smartResizeAllSheetsSilent();
+  completePairingFormat();
   
   SpreadsheetApp.getUi().alert('✅ ปรับแต่งการแสดงผลเรียบร้อยแล้ว');
 }
@@ -1279,9 +1278,9 @@ function fixTextOverlap() {
   // ตั้งค่าความสูงแถวให้เหมาะสม
   sheet.setRowHeights(2, sheet.getLastRow(), 25);
   
-  // อัปเดต Standings และปรับขนาดคอลัมน์
+  // อัปเดต Standings และจัดรูปแบบครบวงจร
   updateStandings();
-  smartResizeAllSheetsSilent();
+  completePairingFormat();
   
   SpreadsheetApp.getUi().alert('✅ แก้ไขปัญหาการทับชื่อเรียบร้อยแล้ว');
 }
@@ -1355,9 +1354,9 @@ function undoLastPairing() {
 
   SpreadsheetApp.getUi().alert('เคลียร์ข้อมูลรอบที่ ' + lastRound + ' เรียบร้อยแล้ว');
   
-  // อัปเดต Standings และปรับขนาดคอลัมน์
+  // อัปเดต Standings และจัดรูปแบบครบวงจร
   updateStandings();
-  smartResizeAllSheetsSilent();
+  completePairingFormat();
 }
 
 function fixIncompletePairing() {
@@ -1473,9 +1472,9 @@ function fixMissingPlayerIDs() {
     return;
   }
   
-  // อัปเดต Standings และปรับขนาดคอลัมน์
+  // อัปเดต Standings และจัดรูปแบบครบวงจร
   updateStandings();
-  smartResizeAllSheetsSilent();
+  completePairingFormat();
   
   SpreadsheetApp.getUi().alert(
     'แก้ไข P2_ID จำนวน ' + fixedCount + ' รายการ:\n\n' +
@@ -3322,6 +3321,31 @@ function resizeStandingColumns(standingSheet) {
   }
 }
 
+// 🎯 จัดรูปแบบครบวงจร (รวมสี, ขนาดคอลัมน์, การแยกรอบ)
+function completePairingFormat() {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const pairingSheet = ss.getSheetByName('Pairing');
+    
+    if (!pairingSheet || pairingSheet.getLastRow() <= 1) {
+      console.log('ไม่มีข้อมูลในชีท Pairing');
+      return;
+    }
+    
+    console.log('เริ่มจัดรูปแบบครบวงจร...');
+    
+    // 1. แยกสีตามรอบ
+    separateRoundsVisually();
+    
+    // 2. ปรับขนาดคอลัมน์
+    smartResizeAllSheetsSilent();
+    
+    console.log('จัดรูปแบบครบวงจรเสร็จสิ้น');
+  } catch (error) {
+    console.log('Error in completePairingFormat:', error);
+  }
+}
+
 // 🎨 แยกรอบการแข่งขันด้วยสีที่ต่างกัน
 function separateRoundsVisually() {
   try {
@@ -3336,52 +3360,61 @@ function separateRoundsVisually() {
     const lastRow = pairingSheet.getLastRow();
     const data = pairingSheet.getRange(2, 1, lastRow - 1, pairingSheet.getLastColumn()).getValues();
     
-    // สีสำหรับแต่ละรอบ (สีอ่อนๆ ให้อ่านง่าย)
+    // สีสำหรับแต่ละรอบ (สีที่แตกต่างกันชัดเจน)
     const roundColors = [
-      '#f3f4f6', // สีเทาอ่อน - รอบ 1
-      '#fef3c7', // สีเหลืองอ่อน - รอบ 2
-      '#dbeafe', // สีฟ้าอ่อน - รอบ 3
-      '#dcfce7', // สีเขียวอ่อน - รอบ 4
-      '#fce7f3', // สีชมพูอ่อน - รอบ 5
-      '#f3e8ff', // สีม่วงอ่อน - รอบ 6
-      '#fed7d7', // สีแดงอ่อน - รอบ 7
-      '#fdf4ff', // สีม่วงอ่อนมาก - รอบ 8
-      '#f0fdfa', // สีเขียวมิ้นท์อ่อน - รอบ 9
-      '#fefce8'  // สีเหลืองอ่อนมาก - รอบ 10
+      '#e3f2fd', // ฟ้าอ่อน - รอบ 1
+      '#f3e5f5', // ม่วงอ่อน - รอบ 2  
+      '#e8f5e8', // เขียวอ่อน - รอบ 3
+      '#fff3e0', // ส้มอ่อน - รอบ 4
+      '#fce4ec', // ชมพูอ่อน - รอบ 5
+      '#e0f2f1', // เขียวมินต์ - รอบ 6
+      '#f1f8e9', // เขียวใบไผ่ - รอบ 7
+      '#fff8e1', // เหลืองอ่อน - รอบ 8
+      '#e8eaf6', // ม่วงเทา - รอบ 9
+      '#ffebee'  // แดงอ่อน - รอบ 10
     ];
+    
+    // ล้างสีเดิมก่อน
+    const allDataRange = pairingSheet.getRange(2, 1, lastRow - 1, pairingSheet.getLastColumn());
+    allDataRange.setBackground(null);
     
     let currentRound = null;
     let colorIndex = 0;
+    let roundStart = 0;
+    
+    console.log('เริ่มแยกสีตามรอบ...');
     
     // วนลูปผ่านข้อมูลแต่ละแถว
-    for (let i = 0; i < data.length; i++) {
-      const round = data[i][0]; // คอลัมน์ ROUND
+    for (let i = 0; i <= data.length; i++) {
+      const round = i < data.length ? data[i][0] : null; // คอลัมน์ ROUND
       
-      // ถ้าเป็นรอบใหม่ ให้เปลี่ยนสี
-      if (round !== currentRound && round !== '') {
-        currentRound = round;
-        colorIndex = (round - 1) % roundColors.length;
-      }
-      
-      // ถ้ามีข้อมูลรอบ ให้ทำสี
-      if (round !== '') {
-        const rowRange = pairingSheet.getRange(i + 2, 1, 1, pairingSheet.getLastColumn());
-        rowRange.setBackground(roundColors[colorIndex]);
+      // เมื่อเจอรอบใหม่หรือจบข้อมูล
+      if (round !== currentRound) {
+        // ใส่สีให้รอบที่ผ่านมา
+        if (currentRound !== null && i > roundStart) {
+          const rowCount = i - roundStart;
+          const roundRange = pairingSheet.getRange(roundStart + 2, 1, rowCount, pairingSheet.getLastColumn());
+          roundRange.setBackground(roundColors[colorIndex]);
+          
+          // เพิ่มเส้นบนของรอบใหม่ (ยกเว้นรอบแรก)
+          if (roundStart > 0) {
+            const borderRange = pairingSheet.getRange(roundStart + 2, 1, 1, pairingSheet.getLastColumn());
+            borderRange.setBorder(true, null, null, null, null, null, '#333333', SpreadsheetApp.BorderStyle.SOLID);
+          }
+          
+          console.log(`รอบ ${currentRound}: แถว ${roundStart + 2}-${roundStart + 1 + rowCount} ใช้สี ${roundColors[colorIndex]}`);
+        }
         
-        // ถ้าเป็นแถวแรกของรอบ ให้ทำเส้นขอบด้านบน
-        if (i === 0 || data[i-1][0] !== round) {
-          rowRange.setBorder(true, null, null, null, null, null, '#9ca3af', SpreadsheetApp.BorderStyle.SOLID);
+        // เตรียมสำหรับรอบใหม่
+        if (round !== null && round !== '') {
+          currentRound = round;
+          colorIndex = (round - 1) % roundColors.length;
+          roundStart = i;
         }
       }
     }
     
-    // ปรับสีสำหรับ header
-    const headerRange = pairingSheet.getRange(1, 1, 1, pairingSheet.getLastColumn());
-    headerRange.setBackground('#1f2937'); // สีเทาเข้ม
-    headerRange.setFontColor('#ffffff'); // ตัวอักษรสีขาว
-    headerRange.setFontWeight('bold');
-    
-    console.log(`แยกรอบการแข่งขันด้วยสีเรียบร้อยแล้ว (${colorIndex + 1} รอบ)`);
+    console.log('แยกรอบด้วยสีเรียบร้อยแล้ว');
     
   } catch (error) {
     console.log('เกิดข้อผิดพลาดในการแยกรอบด้วยสี:', error);
@@ -3894,9 +3927,9 @@ function rePairLastRound() {
   addCheckboxes(pairingSheet, output.length);
   formatPairingData(pairingSheet, startRow, output.length);
   
-  // อัปเดต Standings และปรับขนาดคอลัมน์
+  // อัปเดต Standings และจัดรูปแบบครบวงจร
   updateStandings();
-  smartResizeAllSheetsSilent();
+  completePairingFormat();
   
   SpreadsheetApp.getUi().alert(
     '✅ จับคู่รอบล่าสุดใหม่สำเร็จ',
