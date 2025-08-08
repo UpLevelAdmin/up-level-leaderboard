@@ -3506,6 +3506,158 @@ function onEdit(e) {
   }
 }
 
+// 🚫 Drop ผู้เล่นจากการแข่งขัน (เลือกจากรายชื่อ)
+function dropPlayerFromList() {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const pairingSheet = ss.getSheetByName('Pairing');
+    const playersSheet = ss.getSheetByName('Players');
+    
+    if (!playersSheet || playersSheet.getLastRow() <= 1) {
+      SpreadsheetApp.getUi().alert('ไม่พบข้อมูลผู้เล่น');
+      return;
+    }
+    
+    // ดึงรายชื่อผู้เล่นทั้งหมด
+    const playersData = playersSheet.getRange(2, 1, playersSheet.getLastRow() - 1, 4).getValues();
+    
+    // ดึงรายชื่อผู้เล่นที่ drop แล้ว
+    const currentDropList = pairingSheet.getRange('M2:M').getValues().flat().filter(name => name);
+    const dropSet = new Set(currentDropList.map(x => x.trim()));
+    
+    // สร้างรายชื่อผู้เล่นที่ยังไม่ drop
+    const activePlayersList = playersData
+      .filter(row => row[0] && row[1] && !dropSet.has(row[0]) && !dropSet.has(row[1]))
+      .map(row => `${row[0]} - ${row[1]}`) // ID - Name
+      .sort();
+    
+    if (activePlayersList.length === 0) {
+      SpreadsheetApp.getUi().alert('ไม่มีผู้เล่นที่สามารถ drop ได้');
+      return;
+    }
+    
+    // แสดง dialog ให้เลือกผู้เล่น
+    const ui = SpreadsheetApp.getUi();
+    const response = ui.prompt(
+      '🚫 Drop ผู้เล่น',
+      `เลือกผู้เล่นที่ต้องการ drop:\n\n${activePlayersList.map((player, index) => `${index + 1}. ${player}`).join('\n')}\n\nกรอกหมายเลข (1-${activePlayersList.length}):`,
+      ui.ButtonSet.OK_CANCEL
+    );
+    
+    if (response.getSelectedButton() === ui.Button.OK) {
+      const selectedIndex = parseInt(response.getResponseText().trim()) - 1;
+      
+      if (selectedIndex >= 0 && selectedIndex < activePlayersList.length) {
+        const selectedPlayer = activePlayersList[selectedIndex];
+        const playerId = selectedPlayer.split(' - ')[0];
+        const playerName = selectedPlayer.split(' - ')[1];
+        
+        // เพิ่มผู้เล่นลงใน drop list (คอลัมน์ M)
+        const dropColumn = pairingSheet.getRange('M:M');
+        const dropValues = dropColumn.getValues();
+        
+        // หาแถวว่างแรกในคอลัมน์ M
+        let emptyRow = 2; // เริ่มจากแถว 2
+        for (let i = 1; i < dropValues.length; i++) {
+          if (!dropValues[i][0] || dropValues[i][0] === '') {
+            emptyRow = i + 1;
+            break;
+          }
+        }
+        
+        // เพิ่มชื่อผู้เล่นลงในคอลัมน์ Drop
+        pairingSheet.getRange(emptyRow, 13).setValue(playerName); // คอลัมน์ M = 13
+        
+        // อัปเดต Standings ให้แสดงผู้เล่นที่ drop เป็น 'DROP'
+        updateStandings();
+        
+        // ปรับขนาดคอลัมน์
+        smartResizeAllSheetsSilent();
+        
+        SpreadsheetApp.getUi().alert(
+          '✅ Drop ผู้เล่นสำเร็จ',
+          `ผู้เล่น "${playerName}" ถูก drop จากการแข่งขันแล้ว\n\n` +
+          `• ผู้เล่นจะแสดงเป็น "DROP" ใน Standing\n` +
+          `• ผู้เล่นจะไม่ถูกจับคู่ในรอบต่อไป\n` +
+          `• สามารถยกเลิก drop ได้ด้วยฟังก์ชัน "ยกเลิก Drop ผู้เล่น"`,
+          SpreadsheetApp.getUi().ButtonSet.OK
+        );
+        
+      } else {
+        SpreadsheetApp.getUi().alert('หมายเลขที่เลือกไม่ถูกต้อง');
+      }
+    }
+    
+  } catch (error) {
+    console.log('Error in dropPlayerFromList:', error);
+    SpreadsheetApp.getUi().alert('เกิดข้อผิดพลาดในการ drop ผู้เล่น: ' + error.toString());
+  }
+}
+
+// ✅ ยกเลิก Drop ผู้เล่น
+function cancelPlayerDrop() {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const pairingSheet = ss.getSheetByName('Pairing');
+    
+    // ดึงรายชื่อผู้เล่นที่ drop แล้ว
+    const dropList = pairingSheet.getRange('M2:M').getValues().flat().filter(name => name);
+    
+    if (dropList.length === 0) {
+      SpreadsheetApp.getUi().alert('ไม่มีผู้เล่นที่ถูก drop');
+      return;
+    }
+    
+    // แสดง dialog ให้เลือกผู้เล่นที่จะยกเลิก drop
+    const ui = SpreadsheetApp.getUi();
+    const response = ui.prompt(
+      '✅ ยกเลิก Drop ผู้เล่น',
+      `เลือกผู้เล่นที่ต้องการยกเลิก drop:\n\n${dropList.map((player, index) => `${index + 1}. ${player}`).join('\n')}\n\nกรอกหมายเลข (1-${dropList.length}):`,
+      ui.ButtonSet.OK_CANCEL
+    );
+    
+    if (response.getSelectedButton() === ui.Button.OK) {
+      const selectedIndex = parseInt(response.getResponseText().trim()) - 1;
+      
+      if (selectedIndex >= 0 && selectedIndex < dropList.length) {
+        const playerToRestore = dropList[selectedIndex];
+        
+        // หาแถวที่มีชื่อผู้เล่นนี้ในคอลัมน์ M และลบออก
+        const dropColumn = pairingSheet.getRange('M:M');
+        const dropValues = dropColumn.getValues();
+        
+        for (let i = 1; i < dropValues.length; i++) {
+          if (dropValues[i][0] === playerToRestore) {
+            pairingSheet.getRange(i + 1, 13).clearContent(); // คอลัมน์ M = 13
+            break;
+          }
+        }
+        
+        // อัปเดต Standings
+        updateStandings();
+        
+        // ปรับขนาดคอลัมน์
+        smartResizeAllSheetsSilent();
+        
+        SpreadsheetApp.getUi().alert(
+          '✅ ยกเลิก Drop สำเร็จ',
+          `ผู้เล่น "${playerToRestore}" กลับเข้าสู่การแข่งขันแล้ว\n\n` +
+          `• ผู้เล่นจะแสดงในอันดับปกติใน Standing\n` +
+          `• ผู้เล่นจะถูกจับคู่ในรอบต่อไป`,
+          SpreadsheetApp.getUi().ButtonSet.OK
+        );
+        
+      } else {
+        SpreadsheetApp.getUi().alert('หมายเลขที่เลือกไม่ถูกต้อง');
+      }
+    }
+    
+  } catch (error) {
+    console.log('Error in cancelPlayerDrop:', error);
+    SpreadsheetApp.getUi().alert('เกิดข้อผิดพลาดในการยกเลิก drop ผู้เล่น: ' + error.toString());
+  }
+}
+
 // === ฟังก์ชันสุ่มจับคู่รอบล่าสุดใหม่ (Swiss, ไม่ซ้ำคู่เดิม) ===
 function rePairLastRound() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
