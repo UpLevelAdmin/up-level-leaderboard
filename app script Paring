@@ -201,9 +201,6 @@ function pairFirstRound() {
   pairingSheet.getRange(startRow, 1, output.length, output[0].length).setValues(output);
   addCheckboxes(pairingSheet, output.length);
   
-  // จัดรูปแบบการแสดงผลให้สวยงาม
-  formatPairingData(pairingSheet, startRow, output.length);
-  
   // อัปเดต Standings และจัดรูปแบบครบวงจร
   updateStandings();
   completePairingFormat();
@@ -596,8 +593,7 @@ function pairNextRound() {
   pairingSheet.getRange(startRow, 1, output.length, output[0].length).setValues(output);
   addCheckboxes(pairingSheet, output.length);
   
-  // จัดรูปแบบ, แยกรอบ, และอัปเดต (ครั้งเดียว)
-  formatPairingData(pairingSheet, startRow, output.length);
+  // อัปเดต Standings และจัดรูปแบบครบวงจร
   updateStandings();
   completePairingFormat();
 }
@@ -3334,7 +3330,7 @@ function completePairingFormat() {
     
     console.log('เริ่มจัดรูปแบบครบวงจร...');
     
-    // 1. แยกสีตามรอบ
+    // 1. แยกสีตามรอบและจัดรูปแบบ
     separateRoundsVisually();
     
     // 2. ปรับขนาดคอลัมน์
@@ -3374,9 +3370,17 @@ function separateRoundsVisually() {
       '#ffebee'  // แดงอ่อน - รอบ 10
     ];
     
-    // ล้างสีเดิมก่อน
+    // ล้างสีเดิมก่อน (ไม่รวมหัวตาราง)
     const allDataRange = pairingSheet.getRange(2, 1, lastRow - 1, pairingSheet.getLastColumn());
     allDataRange.setBackground(null);
+    
+    // จัดรูปแบบหัวตารางให้สวยงาม
+    const headerRange = pairingSheet.getRange(1, 1, 1, pairingSheet.getLastColumn());
+    headerRange.setBackground('#1f2937'); // สีเทาเข้ม
+    headerRange.setFontColor('#ffffff'); // ตัวอักษรสีขาว
+    headerRange.setFontWeight('bold');
+    headerRange.setHorizontalAlignment('center');
+    headerRange.setBorder(true, true, true, true, true, true, '#374151', SpreadsheetApp.BorderStyle.SOLID);
     
     let currentRound = null;
     let colorIndex = 0;
@@ -3390,17 +3394,30 @@ function separateRoundsVisually() {
       
       // เมื่อเจอรอบใหม่หรือจบข้อมูล
       if (round !== currentRound) {
-        // ใส่สีให้รอบที่ผ่านมา
+        // ใส่สีและจัดรูปแบบให้รอบที่ผ่านมา
         if (currentRound !== null && i > roundStart) {
           const rowCount = i - roundStart;
           const roundRange = pairingSheet.getRange(roundStart + 2, 1, rowCount, pairingSheet.getLastColumn());
+          
+          // ใส่สีพื้นหลัง
           roundRange.setBackground(roundColors[colorIndex]);
           
-          // เพิ่มเส้นบนของรอบใหม่ (ยกเว้นรอบแรก)
+          // จัดรูปแบบข้อความให้อ่านง่าย
+          roundRange.setFontWeight('normal');
+          roundRange.setHorizontalAlignment('center');
+          roundRange.setBorder(true, true, true, true, true, true, '#d1d5db', SpreadsheetApp.BorderStyle.SOLID);
+          
+          // เพิ่มเส้นบนของรอับใหม่ (ยกเว้นรอบแรก)
           if (roundStart > 0) {
             const borderRange = pairingSheet.getRange(roundStart + 2, 1, 1, pairingSheet.getLastColumn());
-            borderRange.setBorder(true, null, null, null, null, null, '#333333', SpreadsheetApp.BorderStyle.SOLID);
+            borderRange.setBorder(true, null, null, null, null, null, '#374151', SpreadsheetApp.BorderStyle.SOLID_THICK);
           }
+          
+          // จัดรูปแบบคอลัมน์ชื่อผู้เล่นให้ชิดซ้าย
+          const p1NameRange = pairingSheet.getRange(roundStart + 2, 4, rowCount, 1); // คอลัมน์ D (PLAYER 1)
+          const p2NameRange = pairingSheet.getRange(roundStart + 2, 10, rowCount, 1); // คอลัมน์ J (PLAYER 2)
+          p1NameRange.setHorizontalAlignment('left');
+          p2NameRange.setHorizontalAlignment('left');
           
           console.log(`รอบ ${currentRound}: แถว ${roundStart + 2}-${roundStart + 1 + rowCount} ใช้สี ${roundColors[colorIndex]}`);
         }
@@ -3925,8 +3942,6 @@ function rePairLastRound() {
   const startRow = pairingSheet.getLastRow() + 1;
   pairingSheet.getRange(startRow, 1, output.length, output[0].length).setValues(output);
   addCheckboxes(pairingSheet, output.length);
-  formatPairingData(pairingSheet, startRow, output.length);
-  
   // อัปเดต Standings และจัดรูปแบบครบวงจร
   updateStandings();
   completePairingFormat();
