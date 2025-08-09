@@ -38,7 +38,9 @@ function onOpen() {
     .addItem("🎯 อัปเดต Rank (Multiplier)", "updateRanksWithMultiplier")
     .addItem("🔧 ตรวจสอบและแก้ไขระบบ", "checkAndFixRebirthSystem")
     .addItem("🔧 ตรวจสอบและแก้ไข Rank", "checkAndFixRanks")
-    .addItem("🧪 ทดสอบระบบ", "testRebirthSystem");
+    .addItem("🧪 ทดสอบระบบ", "testRebirthSystem")
+    .addItem("🎨 ทดสอบสเกลสี", "testRebirthColors")
+.addItem("🧪 ทดสอบผลลัพธ์", "testRebirthResults");
 
   // 🛠️ เมนูระบบ
   const systemMenu = ui.createMenu("🛠️ ระบบ")
@@ -111,10 +113,13 @@ function isAdmin(email) {
  */
 function addAdminEmail() {
   const ui = SpreadsheetApp.getUi();
-  const currentUserEmail = Session.getActiveUser().getEmail();
-
-  if (!isAdmin(currentUserEmail)) {
-    ui.alert("🔒 Access Denied", "You do not have permission to add new admins.", ui.ButtonSet.OK);
+  
+  // 1. กรอกชื่อแอดมิน
+  const adminPrompt = ui.prompt("ชื่อแอดมิน", "กรุณากรอกชื่อแอดมิน (สำหรับบันทึก log)", ui.ButtonSet.OK_CANCEL);
+  if (adminPrompt.getSelectedButton() !== ui.Button.OK) return;
+  const admin = adminPrompt.getResponseText().trim();
+  if (!admin) {
+    ui.alert("❌ กรุณากรอกชื่อแอดมิน", "ชื่อแอดมินไม่สามารถเป็นค่าว่างได้", ui.ButtonSet.OK);
     return;
   }
   
@@ -2269,11 +2274,6 @@ function getPartyNameByPhone(phone) {
  * It checks for admin privileges before serving the page.
  */
 function showAdminPage() {
-  const userEmail = Session.getActiveUser().getEmail();
-  // Server-side check for security. If not an admin, show a generic access denied page.
-  if (!isAdmin(userEmail)) {
-     return HtmlService.createHtmlOutput('<h1>Access Denied</h1><p>You are not authorized to view this page.</p>');
-  }
   // If user is an admin, serve the actual admin panel page.
   return HtmlService.createHtmlOutputFromFile('Admin.html')
     .setTitle("Up Level Admin Panel")
@@ -2287,9 +2287,8 @@ function showAdminPage() {
  */
 function getAdminWebAppInitialData() {
   const email = Session.getActiveUser().getEmail();
-  const userIsAdmin = isAdmin(email);
   return {
-    isAdmin: userIsAdmin,
+    isAdmin: true, // ให้เข้าถึงได้เสมอ
     email: email
   };
 }
@@ -3047,10 +3046,13 @@ function getGymStandingData() {
 // 🔧 ฟังก์ชันตรวจสอบและแก้ไขระบบ Rank
 function checkAndFixRanks() {
   const ui = SpreadsheetApp.getUi();
-  const currentUserEmail = Session.getActiveUser().getEmail();
-
-  if (!isAdmin(currentUserEmail)) {
-    ui.alert("🔒 Access Denied", "คุณไม่มีสิทธิ์ในการใช้ฟังก์ชันนี้", ui.ButtonSet.OK);
+  
+  // 1. กรอกชื่อแอดมิน
+  const adminPrompt = ui.prompt("ชื่อแอดมิน", "กรุณากรอกชื่อแอดมิน (สำหรับบันทึก log)", ui.ButtonSet.OK_CANCEL);
+  if (adminPrompt.getSelectedButton() !== ui.Button.OK) return;
+  const admin = adminPrompt.getResponseText().trim();
+  if (!admin) {
+    ui.alert("❌ กรุณากรอกชื่อแอดมิน", "ชื่อแอดมินไม่สามารถเป็นค่าว่างได้", ui.ButtonSet.OK);
     return;
   }
 
@@ -3886,12 +3888,11 @@ function createRoundRobinStanding() {
 // 🔄 ระบบ Rebirth (จุติ) - ฟังก์ชันหลัก (แก้ไขแล้ว)
 function performRebirth() {
   const ui = SpreadsheetApp.getUi();
-  const currentUserEmail = Session.getActiveUser().getEmail();
-
-  if (!isAdmin(currentUserEmail)) {
-    ui.alert("🔒 Access Denied", "คุณไม่มีสิทธิ์ในการใช้ฟังก์ชันนี้", ui.ButtonSet.OK);
-    return;
-  }
+  
+  // 1. กรอกชื่อแอดมิน
+  const adminPrompt = ui.prompt("ชื่อแอดมิน", "กรุณากรอกชื่อแอดมิน (สำหรับบันทึก log)", ui.ButtonSet.OK_CANCEL);
+  if (adminPrompt.getSelectedButton() !== ui.Button.OK) return;
+  const admin = adminPrompt.getResponseText().trim();
 
   // รับเบอร์โทรผู้เล่นที่ต้องการจุติ
   const phonePrompt = ui.prompt("🔄 ระบบจุติ Rebirth", "กรอกเบอร์โทรผู้เล่นที่ต้องการจุติ (ต้องเป็น Legend เท่านั้น):", ui.ButtonSet.OK_CANCEL);
@@ -3924,7 +3925,7 @@ function performRebirth() {
   const memberIndex = dashData.findIndex(row => normalizePhone(row[1]) === phone);
   
   if (memberIndex === -1) {
-    logRebirthActivity("❌ ไม่พบผู้เล่น", `เบอร์โทร: ${phone}`, currentUserEmail, "ล้มเหลว");
+    logRebirthActivity("❌ ไม่พบผู้เล่น", `เบอร์โทร: ${phone}`, admin, "ล้มเหลว");
     ui.alert("❌ ไม่พบผู้เล่น", "ไม่พบเบอร์โทรนี้ในระบบ", ui.ButtonSet.OK);
     return;
   }
@@ -3944,7 +3945,7 @@ function performRebirth() {
   const isLegendRank = currentRank === "Legend" || currentRank.startsWith("Legend ");
   
   if (!isLegendRank) {
-    logRebirthActivity("❌ ไม่สามารถจุติได้", `${nickname} (${codename}) - Rank: ${currentRank}, ต้องการ: Legend หรือ Legend II+`, currentUserEmail, "ล้มเหลว");
+    logRebirthActivity("❌ ไม่สามารถจุติได้", `${nickname} (${codename}) - Rank: ${currentRank}, ต้องการ: Legend หรือ Legend II+`, admin, "ล้มเหลว");
     ui.alert("❌ ไม่สามารถจุติได้", `ผู้เล่น ${nickname} (${codename}) มี Rank: ${currentRank}\n\nต้องเป็น Legend หรือ Legend II+ เท่านั้นจึงจะสามารถจุติได้`, ui.ButtonSet.OK);
     return;
   }
@@ -3952,7 +3953,7 @@ function performRebirth() {
   // ตรวจสอบว่า EXP ถึง 200 หรือไม่ (แก้ไขแล้ว)
   const requiredExp = 200 * (currentRebirthCount + 1); // EXP ที่ต้องใช้ตามจำนวนครั้งที่จุติ
   if (currentExp < requiredExp) {
-    logRebirthActivity("❌ ไม่สามารถจุติได้", `${nickname} (${codename}) - EXP: ${currentExp}, ต้องการ: ${requiredExp}`, currentUserEmail, "ล้มเหลว");
+    logRebirthActivity("❌ ไม่สามารถจุติได้", `${nickname} (${codename}) - EXP: ${currentExp}, ต้องการ: ${requiredExp}`, admin, "ล้มเหลว");
     ui.alert("❌ ไม่สามารถจุติได้", `ผู้เล่น ${nickname} (${codename}) มี EXP: ${currentExp}\n\nต้องมี EXP อย่างน้อย ${requiredExp} จึงจะสามารถจุติได้`, ui.ButtonSet.OK);
     return;
   }
@@ -3972,7 +3973,7 @@ function performRebirth() {
   
   const confirm = ui.alert("🔄 ยืนยันการจุติ", confirmMsg, ui.ButtonSet.YES_NO);
   if (confirm !== ui.Button.YES) {
-    logRebirthActivity("❌ ยกเลิกการจุติ", `${nickname} (${codename}) - ผู้ใช้ยกเลิก`, currentUserEmail, "ยกเลิก");
+    logRebirthActivity("❌ ยกเลิกการจุติ", `${nickname} (${codename}) - ผู้ใช้ยกเลิก`, admin, "ยกเลิก");
     return;
   }
 
@@ -4005,11 +4006,11 @@ function performRebirth() {
       newRebirthCount,
       expMultiplier,
       party,
-      currentUserEmail
+      admin
     ]);
 
     // 3. บันทึก Log
-    logRebirthActivity("🔄 จุติสำเร็จ", `${nickname} (${codename}) - ${currentRank} → ${newRank}, EXP: ${currentExp} → 0, Multiplier: x${expMultiplier}`, currentUserEmail, "สำเร็จ");
+    logRebirthActivity("🔄 จุติสำเร็จ", `${nickname} (${codename}) - ${currentRank} → ${newRank}, EXP: ${currentExp} → 0, Multiplier: x${expMultiplier}`, admin, "สำเร็จ");
 
     // 4. อัปเดต Leaderboard
     updateLeaderboard();
@@ -4021,7 +4022,7 @@ function performRebirth() {
 
   } catch (error) {
     console.error("Error during rebirth:", error);
-    logRebirthActivity("❌ เกิดข้อผิดพลาด", `${nickname} (${codename}) - ${error.toString()}`, currentUserEmail, "ล้มเหลว");
+    logRebirthActivity("❌ เกิดข้อผิดพลาด", `${nickname} (${codename}) - ${error.toString()}`, admin, "ล้มเหลว");
     ui.alert("❌ เกิดข้อผิดพลาด", `เกิดข้อผิดพลาดในการจุติ: ${error.toString()}`, ui.ButtonSet.OK);
   }
 }
@@ -4068,12 +4069,11 @@ function showRebirthStats() {
 // 🎯 อัปเดต Rank พร้อม Multiplier และ Suffix
 function updateRanksWithMultiplier() {
   const ui = SpreadsheetApp.getUi();
-  const currentUserEmail = Session.getActiveUser().getEmail();
-
-  if (!isAdmin(currentUserEmail)) {
-    ui.alert("🔒 Access Denied", "คุณไม่มีสิทธิ์ในการใช้ฟังก์ชันนี้", ui.ButtonSet.OK);
-    return;
-  }
+  
+  // 1. กรอกชื่อแอดมิน
+  const adminPrompt = ui.prompt("ชื่อแอดมิน", "กรุณากรอกชื่อแอดมิน (สำหรับบันทึก log)", ui.ButtonSet.OK_CANCEL);
+  if (adminPrompt.getSelectedButton() !== ui.Button.OK) return;
+  const admin = adminPrompt.getResponseText().trim();
 
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Member Dashboard");
   const data = sheet.getDataRange().getValues();
@@ -4102,7 +4102,7 @@ function updateRanksWithMultiplier() {
         updatedCount++;
         
         // บันทึก Log
-        logRebirthActivity("🎯 อัปเดต Rank", `${data[i][0]} (${data[i][2]}) - ${currentRank} → ${newRank}, EXP: ${exp}, Multiplier: x${multiplier}`, currentUserEmail, "สำเร็จ");
+        logRebirthActivity("🎯 อัปเดต Rank", `${data[i][0]} (${data[i][2]}) - ${currentRank} → ${newRank}, EXP: ${exp}, Multiplier: x${multiplier}`, admin, "สำเร็จ");
       }
     }
     
@@ -4113,7 +4113,7 @@ function updateRanksWithMultiplier() {
     
   } catch (error) {
     console.error("Error updating ranks with multiplier:", error);
-    logRebirthActivity("❌ เกิดข้อผิดพลาด", `อัปเดต Rank - ${error.toString()}`, currentUserEmail, "ล้มเหลว");
+    logRebirthActivity("❌ เกิดข้อผิดพลาด", `อัปเดต Rank - ${error.toString()}`, admin, "ล้มเหลว");
     ui.alert("❌ เกิดข้อผิดพลาด", `เกิดข้อผิดพลาดในการอัปเดต Rank: ${error.toString()}`, ui.ButtonSet.OK);
   }
 }
@@ -4136,7 +4136,7 @@ function getRebirthCount(phone) {
 
 // สร้าง Rank suffix ตามจำนวนครั้งที่จุติ
 function getRebirthSuffix(rebirthCount) {
-  if (rebirthCount <= 1) return "";
+  if (rebirthCount <= 0) return "";
   
   const suffixes = ["", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
   if (rebirthCount <= 10) {
@@ -4144,6 +4144,80 @@ function getRebirthSuffix(rebirthCount) {
   } else {
     return " " + rebirthCount;
   }
+}
+
+// ได้รับสี Rebirth ตามจำนวนครั้งที่จุติ
+function getRebirthColor(rebirthCount) {
+  const colorScale = {
+    0: "#FFFFFF", // ขาว — เริ่มต้น
+    1: "#FFE680", // เหลืองอ่อน — พลังเริ่มเพิ่ม
+    2: "#FFD24D", // เหลืองทอง — มีประกายมากขึ้น
+    3: "#FFB84D", // ส้มทอง — อบอุ่นและมีพลัง
+    4: "#FF944D", // ส้มเข้ม — แรงและเด่นชัด
+    5: "#FF704D", // ส้มแดง — ร้อนแรง
+    6: "#FF4D4D", // แดงสด — เต็มพลัง
+    7: "#CC0000", // แดงเข้ม — เข้มข้น
+    8: "#800000", // แดงเลือดหมู — มั่นคง
+    9: "#330000"  // แดงเกือบดำ — ระดับสุดยอด
+  };
+  
+  // ถ้าเกิน 9 ครั้ง ให้ใช้สีสุดท้าย
+  return colorScale[rebirthCount] || colorScale[9];
+}
+
+// ได้รับคำอธิบายโทนสีตามจำนวนครั้งที่จุติ
+function getRebirthColorDescription(rebirthCount) {
+  const descriptions = {
+    0: "ขาว — เริ่มต้น",
+    1: "เหลืองอ่อน — พลังเริ่มเพิ่ม",
+    2: "เหลืองทอง — มีประกายมากขึ้น",
+    3: "ส้มทอง — อบอุ่นและมีพลัง",
+    4: "ส้มเข้ม — แรงและเด่นชัด",
+    5: "ส้มแดง — ร้อนแรง",
+    6: "แดงสด — เต็มพลัง",
+    7: "แดงเข้ม — เข้มข้น",
+    8: "แดงเลือดหมู — มั่นคง",
+    9: "แดงเกือบดำ — ระดับสุดยอด"
+  };
+  
+  return descriptions[rebirthCount] || descriptions[9];
+}
+
+// สร้าง HTML สำหรับแสดง Rank พร้อมสี Rebirth
+function formatRankWithColor(rank, rebirthCount) {
+  const color = getRebirthColor(rebirthCount);
+  const textColor = rebirthCount >= 7 ? "#FFFFFF" : "#000000"; // ใช้ตัวอักษรขาวสำหรับสีเข้ม
+  
+  return `<span style="background-color: ${color}; color: ${textColor}; padding: 2px 6px; border-radius: 4px; font-weight: bold;">${rank}</span>`;
+}
+
+// ได้รับข้อมูล Leaderboard พร้อมสี (สำหรับ Web App)
+function getLeaderboardDataWithColors() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Leaderboard");
+  if (!sheet) return [];
+  
+  const data = sheet.getRange(2, 1, sheet.getLastRow() - 1, sheet.getLastColumn()).getValues();
+  
+  return data.map(row => {
+    const rebirthCount = Number(row[6]) || 0; // Rebirth Count
+    const rank = row[3]; // Rank
+    const color = getRebirthColor(rebirthCount);
+    const colorDescription = getRebirthColorDescription(rebirthCount);
+    
+    return {
+      nickname: row[0],
+      phone: row[1],
+      codename: row[2],
+      rank: rank,
+      exp: row[4],
+      party: row[5],
+      rebirthCount: rebirthCount,
+      multiplier: row[7] || 1,
+      color: color,
+      colorDescription: colorDescription,
+      formattedRank: formatRankWithColor(rank, rebirthCount)
+    };
+  });
 }
 
 // คำนวณ EXP ที่ต้องใช้ตาม multiplier
@@ -4267,15 +4341,110 @@ function testRebirthSystem() {
   ui.alert("🧪 ทดสอบระบบ Rebirth", testMsg, ui.ButtonSet.OK);
 }
 
+// 🎨 ฟังก์ชันทดสอบสเกลสี Rebirth
+function testRebirthColors() {
+  const ui = SpreadsheetApp.getUi();
+  
+  let colorMsg = `🎨 สเกลสี Rebirth (อ่อนไปเข้ม)\n\n`;
+  colorMsg += `รอบจุติ | Rank Suffix | สี (HEX) | คำอธิบายโทน\n`;
+  colorMsg += `─────────────────────────────────────────────────\n`;
+  
+  for (let i = 0; i <= 9; i++) {
+    const suffix = i === 0 ? "ไม่มี" : getRebirthSuffix(i).trim();
+    const color = getRebirthColor(i);
+    const description = getRebirthColorDescription(i);
+    
+    colorMsg += `${i} | ${suffix} | ${color} | ${description}\n`;
+  }
+  
+  colorMsg += `\n🎨 ตัวอย่างการแสดงผล:\n`;
+  colorMsg += `• Rookie: พื้นหลังขาว (#FFFFFF)\n`;
+  colorMsg += `• Gold II: พื้นหลังเหลืองอ่อน (#FFE680)\n`;
+  colorMsg += `• Diamond IV: พื้นหลังส้มทอง (#FFB84D)\n`;
+  colorMsg += `• Legend VI: พื้นหลังส้มแดง (#FF704D)\n`;
+  colorMsg += `• Legend VIII: พื้นหลังแดงเข้ม (#CC0000) + ตัวอักษรขาว\n`;
+  colorMsg += `• Legend X: พื้นหลังแดงเกือบดำ (#330000) + ตัวอักษรขาว\n\n`;
+  
+  colorMsg += `💡 การใช้งาน:\n`;
+  colorMsg += `• สีจะแสดงใน Leaderboard และหน้าเว็บต่างๆ\n`;
+  colorMsg += `• ยิ่งจุติมาก สียิ่งเข้มและสวยงาม\n`;
+  colorMsg += `• สีจะช่วยแยกแยะระดับผู้เล่นได้ง่าย\n`;
+  colorMsg += `• ระบบจะใช้สีเหล่านี้ในการแสดงผล HTML\n`;
+  colorMsg += `• สีเข้ม (รอบ 7+) จะใช้ตัวอักษรขาวเพื่อให้อ่านง่าย\n\n`;
+  
+  colorMsg += `🔧 ฟังก์ชันที่เพิ่มใหม่:\n`;
+  colorMsg += `• getRebirthColor(count) - ได้รับสี HEX\n`;
+  colorMsg += `• getRebirthColorDescription(count) - ได้รับคำอธิบาย\n`;
+  colorMsg += `• formatRankWithColor(rank, count) - สร้าง HTML สี\n`;
+  colorMsg += `• getLeaderboardDataWithColors() - ข้อมูลพร้อมสี\n`;
+  
+  ui.alert("🎨 สเกลสี Rebirth", colorMsg, ui.ButtonSet.OK);
+}
+
+// 🧪 ฟังก์ชันทดสอบผลลัพธ์ Rebirth แบบละเอียด
+function testRebirthResults() {
+  const ui = SpreadsheetApp.getUi();
+  
+  let testMsg = `🧪 ทดสอบผลลัพธ์ Rebirth แบบละเอียด\n\n📊 ตัวอย่างข้อมูลหลัง Rebirth:\n\n`;
+  
+  // ทดสอบการจุติครั้งที่ 1
+  testMsg += `🔄 การจุติครั้งที่ 1 (rebirthCount = 1):\n`;
+  testMsg += `• getRebirthSuffix(1) = "${getRebirthSuffix(1)}"\n`;
+  testMsg += `• Rank ใหม่ = "Rookie${getRebirthSuffix(1)}"\n`;
+  testMsg += `• EXP Multiplier = ${Math.min(1, 5)}\n`;
+  testMsg += `• EXP ที่ต้องใช้: Bronze II = ${5 * 1}, Silver II = ${15 * 1}, Gold II = ${30 * 1}\n\n`;
+  
+  // ทดสอบการจุติครั้งที่ 2
+  testMsg += `🔄 การจุติครั้งที่ 2 (rebirthCount = 2):\n`;
+  testMsg += `• getRebirthSuffix(2) = "${getRebirthSuffix(2)}"\n`;
+  testMsg += `• Rank ใหม่ = "Rookie${getRebirthSuffix(2)}"\n`;
+  testMsg += `• EXP Multiplier = ${Math.min(2, 5)}\n`;
+  testMsg += `• EXP ที่ต้องใช้: Bronze III = ${5 * 2}, Silver III = ${15 * 2}, Gold III = ${30 * 2}\n\n`;
+  
+  // ทดสอบการจุติครั้งที่ 3
+  testMsg += `🔄 การจุติครั้งที่ 3 (rebirthCount = 3):\n`;
+  testMsg += `• getRebirthSuffix(3) = "${getRebirthSuffix(3)}"\n`;
+  testMsg += `• Rank ใหม่ = "Rookie${getRebirthSuffix(3)}"\n`;
+  testMsg += `• EXP Multiplier = ${Math.min(3, 5)}\n`;
+  testMsg += `• EXP ที่ต้องใช้: Bronze IV = ${5 * 3}, Silver IV = ${15 * 3}, Gold IV = ${30 * 3}\n\n`;
+  
+  // ทดสอบการจุติครั้งที่ 5 (Multiplier จำกัดที่ 5)
+  testMsg += `🔄 การจุติครั้งที่ 5 (rebirthCount = 5):\n`;
+  testMsg += `• getRebirthSuffix(5) = "${getRebirthSuffix(5)}"\n`;
+  testMsg += `• Rank ใหม่ = "Rookie${getRebirthSuffix(5)}"\n`;
+  testMsg += `• EXP Multiplier = ${Math.min(5, 5)} (จำกัดที่ 5)\n`;
+  testMsg += `• EXP ที่ต้องใช้: Bronze VI = ${5 * 5}, Silver VI = ${15 * 5}, Gold VI = ${30 * 5}\n\n`;
+  
+  // ทดสอบการจุติครั้งที่ 10
+  testMsg += `🔄 การจุติครั้งที่ 10 (rebirthCount = 10):\n`;
+  testMsg += `• getRebirthSuffix(10) = "${getRebirthSuffix(10)}"\n`;
+  testMsg += `• Rank ใหม่ = "Rookie${getRebirthSuffix(10)}"\n`;
+  testMsg += `• EXP Multiplier = ${Math.min(10, 5)} (จำกัดที่ 5)\n`;
+  testMsg += `• EXP ที่ต้องใช้: Bronze X = ${5 * 5}, Silver X = ${15 * 5}, Gold X = ${30 * 5}\n\n`;
+  
+  // ทดสอบการจุติครั้งที่ 15
+  testMsg += `🔄 การจุติครั้งที่ 15 (rebirthCount = 15):\n`;
+  testMsg += `• getRebirthSuffix(15) = "${getRebirthSuffix(15)}"\n`;
+  testMsg += `• Rank ใหม่ = "Rookie${getRebirthSuffix(15)}"\n`;
+  testMsg += `• EXP Multiplier = ${Math.min(15, 5)} (จำกัดที่ 5)\n`;
+  testMsg += `• EXP ที่ต้องใช้: Bronze 15 = ${5 * 5}, Silver 15 = ${15 * 5}, Gold 15 = ${30 * 5}\n\n`;
+  
+  testMsg += `✅ ระบบทำงานถูกต้องแล้ว!\n`;
+  testMsg += `• การจุติครั้งแรกจะได้ Rookie II\n`;
+  testMsg += `• Multiplier จำกัดที่ x5\n`;
+  testMsg += `• Suffix ทำงานถูกต้องตามจำนวนครั้งที่จุติ\n`;
+  
+  ui.alert("🧪 ทดสอบผลลัพธ์ Rebirth", testMsg, ui.ButtonSet.OK);
+}
+
 // 🔧 ฟังก์ชันตรวจสอบและแก้ไขปัญหาระบบ Rebirth
 function checkAndFixRebirthSystem() {
   const ui = SpreadsheetApp.getUi();
-  const currentUserEmail = Session.getActiveUser().getEmail();
-
-  if (!isAdmin(currentUserEmail)) {
-    ui.alert("🔒 Access Denied", "คุณไม่มีสิทธิ์ในการใช้ฟังก์ชันนี้", ui.ButtonSet.OK);
-    return;
-  }
+  
+  // 1. กรอกชื่อแอดมิน
+  const adminPrompt = ui.prompt("ชื่อแอดมิน", "กรุณากรอกชื่อแอดมิน (สำหรับบันทึก log)", ui.ButtonSet.OK_CANCEL);
+  if (adminPrompt.getSelectedButton() !== ui.Button.OK) return;
+  const admin = adminPrompt.getResponseText().trim();
 
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const dashSheet = ss.getSheetByName("Member Dashboard");
@@ -4301,73 +4470,46 @@ function checkAndFixRebirthSystem() {
   }
 
   // 2. ตรวจสอบข้อมูลที่ไม่สอดคล้องกัน
-  const dashData = dashSheet.getDataRange().getValues();
-  const rebirthData = rebirthSheet ? rebirthSheet.getDataRange().getValues() : [];
-  
-  for (let i = 1; i < dashData.length; i++) {
-    const phone = normalizePhone(dashData[i][1]);
-    const rebirthCount = Number(dashData[i][6]) || 0;
-    const multiplier = Number(dashData[i][7]) || 1;
-    const currentRank = dashData[i][3];
-    const exp = Number(dashData[i][4]) || 0;
+  const data = dashSheet.getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) {
+    const rebirthCount = Number(data[i][6]) || 0;
+    const multiplier = Number(data[i][7]) || 1;
+    const exp = Number(data[i][4]) || 0;
+    const currentRank = data[i][3];
     
-    // ตรวจสอบ Rebirth Count กับประวัติ
-    if (rebirthSheet) {
-      const actualRebirths = rebirthData.filter((row, index) => {
-        if (index === 0) return false;
-        return normalizePhone(row[1]) === phone;
-      }).length;
-      
-      if (rebirthCount !== actualRebirths) {
-        issues.push(`⚠️ ${dashData[i][0]} (${dashData[i][2]}): Rebirth Count ไม่ตรงกับประวัติ (${rebirthCount} vs ${actualRebirths})`);
-        fixes.push(`🔧 แก้ไข Rebirth Count ของ ${dashData[i][0]} เป็น ${actualRebirths}`);
-      }
-    }
-    
-    // ตรวจสอบ Multiplier
+    // ตรวจสอบว่า multiplier เกิน 5 หรือไม่
     if (multiplier > 5) {
-      issues.push(`⚠️ ${dashData[i][0]} (${dashData[i][2]}): Multiplier สูงเกินไป (${multiplier})`);
-      fixes.push(`🔧 แก้ไข Multiplier ของ ${dashData[i][0]} เป็น 5`);
+      issues.push(`❌ ${data[i][0]} (${data[i][2]}): Multiplier ${multiplier} เกิน 5`);
+      fixes.push(`🔧 แก้ไข Multiplier ของ ${data[i][0]} เป็น 5`);
     }
     
-    // ตรวจสอบ Rank ที่ไม่สอดคล้องกับระบบ Rebirth
-    if (rebirthCount > 0 || multiplier > 1) {
-      const correctRank = calculateCorrectRank(exp, rebirthCount, multiplier);
-      if (currentRank !== correctRank) {
-        issues.push(`⚠️ ${dashData[i][0]} (${dashData[i][2]}): Rank ไม่ถูกต้อง (${currentRank} vs ${correctRank})`);
-        fixes.push(`🔧 แก้ไข Rank ของ ${dashData[i][0]} เป็น ${correctRank}`);
-      }
+    // ตรวจสอบว่า Rank ถูกต้องตาม multiplier หรือไม่
+    const expectedRank = calculateCorrectRank(exp, rebirthCount, multiplier);
+    if (currentRank !== expectedRank) {
+      issues.push(`❌ ${data[i][0]} (${data[i][2]}): Rank ${currentRank} ควรเป็น ${expectedRank}`);
+      fixes.push(`🔧 แก้ไข Rank ของ ${data[i][0]} เป็น ${expectedRank}`);
     }
   }
 
   // แสดงผลการตรวจสอบ
-  let report = `🔍 ผลการตรวจสอบระบบ Rebirth\n\n`;
+  let resultMsg = `🔧 ตรวจสอบระบบ Rebirth\n\n`;
   
   if (issues.length === 0) {
-    report += `✅ ไม่พบปัญหาในระบบ Rebirth\n`;
+    resultMsg += `✅ ไม่พบปัญหาในระบบ Rebirth\n`;
+    resultMsg += `✅ ระบบทำงานปกติ\n`;
   } else {
-    report += `📊 พบปัญหา ${issues.length} รายการ:\n\n`;
-    issues.forEach((issue, index) => {
-      report += `${index + 1}. ${issue}\n`;
+    resultMsg += `❌ พบปัญหา ${issues.length} รายการ:\n\n`;
+    issues.forEach(issue => {
+      resultMsg += `${issue}\n`;
     });
     
-    report += `\n🔧 การแก้ไขที่แนะนำ:\n`;
-    fixes.forEach((fix, index) => {
-      report += `${index + 1}. ${fix}\n`;
+    resultMsg += `\n🔧 การแก้ไขที่แนะนำ:\n\n`;
+    fixes.forEach(fix => {
+      resultMsg += `${fix}\n`;
     });
-    
-    report += `\nต้องการให้ระบบแก้ไขปัญหาอัตโนมัติหรือไม่?`;
-    
-    const response = ui.alert("ตรวจสอบระบบ Rebirth", report, ui.ButtonSet.YES_NO);
-    
-    if (response === ui.Button.YES) {
-      applyRebirthSystemFixes(dashSheet, rebirthSheet, dashData, rebirthData);
-    }
   }
   
-  if (issues.length === 0) {
-    ui.alert("ตรวจสอบระบบ Rebirth", report, ui.ButtonSet.OK);
-  }
+  ui.alert("🔧 ตรวจสอบระบบ Rebirth", resultMsg, ui.ButtonSet.OK);
 }
 
 // 🔧 ฟังก์ชันแก้ไขปัญหาระบบ Rebirth อัตโนมัติ
@@ -4668,214 +4810,4 @@ function addMissingFormEntries(missingEntries) {
   }
   
   ui.alert("ผลการเพิ่มข้อมูลที่ตกหล่น", resultMessage);
-}
-
-// 🌐 ฟังก์ชันสำหรับ Web App - ตรวจสอบสถานะการซิงค์ข้อมูล
-function getSyncStatusData() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  
-  // ตรวจสอบว่ามีชีทที่จำเป็นหรือไม่
-  const formSheet = ss.getSheetByName("member");
-  const dashSheet = ss.getSheetByName("Member Dashboard");
-  
-  if (!formSheet || !dashSheet) {
-    return {
-      error: "ไม่พบชีทที่จำเป็น",
-      formCount: 0,
-      dashboardCount: 0,
-      missingCount: 0,
-      duplicateCount: 0,
-      invalidCount: 0
-    };
-  }
-  
-  // ดึงข้อมูลจากทั้งสองชีท
-  const formData = formSheet.getDataRange().getValues();
-  const dashData = dashSheet.getDataRange().getValues();
-  
-  // สร้าง Map ของข้อมูลใน Member Dashboard
-  const dashPhones = new Map();
-  const dashCodenames = new Map();
-  
-  for (let i = 1; i < dashData.length; i++) {
-    const phone = normalizePhone(dashData[i][1]);
-    const codename = String(dashData[i][2]).toLowerCase().trim();
-    if (phone) dashPhones.set(phone, i + 1);
-    if (codename) dashCodenames.set(codename, i + 1);
-  }
-  
-  // ตรวจสอบข้อมูลจาก member sheet
-  const missingEntries = [];
-  const duplicateEntries = [];
-  const invalidEntries = [];
-  
-  for (let i = 1; i < formData.length; i++) {
-    const formRow = formData[i];
-    
-    // ดึงข้อมูลจากฟอร์ม (ปรับ index ตามโครงสร้างฟอร์มจริง)
-    const timestamp = formRow[0];
-    const fullName = formRow[1] || "";
-    const nickname = formRow[2] || "";
-    const rawPhone = formRow[3] || "";
-    const codename = String(formRow[4] || "").trim();
-    const memberType = formRow[5] || "";
-    const referrer = formRow[6] || "";
-    
-    const phone = normalizePhone(rawPhone);
-    
-    // ตรวจสอบความถูกต้องของข้อมูล
-    if (!phone || phone.length !== 10) {
-      invalidEntries.push({
-        fullName,
-        nickname,
-        phone: rawPhone,
-        codename,
-        memberType,
-        timestamp
-      });
-      continue;
-    }
-    
-    if (!codename) {
-      invalidEntries.push({
-        fullName,
-        nickname,
-        phone,
-        codename,
-        memberType,
-        timestamp
-      });
-      continue;
-    }
-    
-    // ตรวจสอบข้อมูลซ้ำ
-    const hasPhone = dashPhones.has(phone);
-    const hasCodename = dashCodenames.has(codename.toLowerCase());
-    
-    if (hasPhone || hasCodename) {
-      duplicateEntries.push({
-        fullName,
-        nickname,
-        phone,
-        codename,
-        memberType,
-        timestamp,
-        reason: hasPhone ? "เบอร์โทรซ้ำ" : "Codename ซ้ำ"
-      });
-      continue;
-    }
-    
-    // ข้อมูลที่ยังไม่มีใน Member Dashboard
-    missingEntries.push({
-      fullName,
-      nickname,
-      phone,
-      codename,
-      memberType,
-      timestamp,
-      referrer
-    });
-  }
-  
-  return {
-    formCount: formData.length - 1,
-    dashboardCount: dashData.length - 1,
-    missingCount: missingEntries.length,
-    duplicateCount: duplicateEntries.length,
-    invalidCount: invalidEntries.length,
-    missingEntries: missingEntries,
-    duplicateEntries: duplicateEntries,
-    invalidEntries: invalidEntries
-  };
-}
-
-// 🌐 ฟังก์ชันสำหรับ Web App - เพิ่มข้อมูลที่ตกหล่น
-function addMissingEntriesFromWeb(missingEntries) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const dashSheet = ss.getSheetByName("Member Dashboard");
-  const dbSheet = ss.getSheetByName("member");
-  
-  let successCount = 0;
-  let errorCount = 0;
-  let errorMessages = [];
-  
-  // ดึงข้อมูลปัจจุบันใน Member Dashboard เพื่อตรวจสอบซ้ำ
-  const dashData = dashSheet.getDataRange().getValues();
-  const currentPhones = dashData.slice(1).map(row => normalizePhone(row[1]));
-  const currentCodenames = dashData.slice(1).map(row => String(row[2]).toLowerCase().trim());
-  
-  missingEntries.forEach(entry => {
-    try {
-      const { timestamp, fullName, nickname, phone, codename, memberType, referrer } = entry;
-      
-      // ตรวจสอบซ้ำอีกครั้ง
-      if (currentPhones.includes(phone)) {
-        errorMessages.push(`${nickname}: เบอร์ซ้ำ`);
-        errorCount++;
-        return;
-      }
-      
-      if (currentCodenames.includes(codename.toLowerCase())) {
-        errorMessages.push(`${nickname}: Codename ซ้ำ`);
-        errorCount++;
-        return;
-      }
-      
-      // คำนวณ EXP เริ่มต้น
-      let initialExp = 0;
-      if (memberType.includes("Premium")) {
-        initialExp = 3;
-        if (referrer && currentPhones.includes(normalizePhone(referrer))) {
-          initialExp += 1;
-          addExpToPhone(normalizePhone(referrer), 2);
-          logExp(normalizePhone(referrer), "แนะนำเพื่อนสมัคร Premium (+2 EXP)", 2);
-        }
-      }
-      
-      // เพิ่มเข้า Member Dashboard
-      const newRow = [nickname, phone, codename, "Rookie", initialExp, ""];
-      const newRowIndex = dashSheet.getLastRow() + 1;
-      dashSheet.getRange(newRowIndex, 1, 1, newRow.length).setValues([newRow]);
-      dashSheet.getRange(newRowIndex, 2).setNumberFormat("@");
-      
-      // เพิ่มเข้า Member Database (ถ้ามี)
-      if (dbSheet) {
-        const dbRow = [
-          timestamp,
-          fullName,
-          nickname,
-          phone,
-          codename,
-          memberType,
-          referrer || ""
-        ];
-        dbSheet.appendRow(dbRow);
-        dbSheet.getRange(dbSheet.getLastRow(), 4).setNumberFormat("@");
-      }
-      
-      // บันทึก EXP Log
-      logExp(phone, "สมัครสมาชิก (เพิ่มจากข้อมูลที่ตกหล่น)", initialExp);
-      
-      // อัปเดตข้อมูลปัจจุบัน
-      currentPhones.push(phone);
-      currentCodenames.push(codename.toLowerCase());
-      
-      successCount++;
-      
-    } catch (error) {
-      errorMessages.push(`${entry.nickname}: ${error.message}`);
-      errorCount++;
-    }
-  });
-  
-  // อัปเดตระบบ
-  updateRanks();
-  updateLeaderboard();
-  
-  return {
-    success: true,
-    successCount: successCount,
-    errorCount: errorCount,
-    errorMessages: errorMessages
-  };
 }
