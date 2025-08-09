@@ -4032,8 +4032,8 @@ function performRebirth() {
   // คำนวณจำนวนครั้งที่จุติใหม่
   const newRebirthCount = currentRebirthCount + 1;
 
-  // คำนวณ EXP multiplier สำหรับรอบใหม่ (แก้ไขแล้ว)
-  const expMultiplier = Math.min(newRebirthCount, 5); // จำกัด Multiplier ไม่เกิน 5
+  // คำนวณ EXP multiplier สำหรับรอบใหม่ (แก้ไข Bug)
+  const expMultiplier = Math.min(newRebirthCount + 1, 5); // จำกัด Multiplier ไม่เกิน 5
 
   // สร้าง Rank suffix
   const rankSuffix = getRebirthSuffix(newRebirthCount);
@@ -4462,22 +4462,22 @@ function testRebirthResults() {
   testMsg += `🔄 การจุติครั้งที่ 1 (rebirthCount = 1):\n`;
   testMsg += `• getRebirthSuffix(1) = "${getRebirthSuffix(1)}"\n`;
   testMsg += `• Rank ใหม่ = "Rookie${getRebirthSuffix(1)}"\n`;
-  testMsg += `• EXP Multiplier = ${Math.min(1, 5)}\n`;
-  testMsg += `• EXP ที่ต้องใช้: Bronze II = ${5 * 1}, Silver II = ${15 * 1}, Gold II = ${30 * 1}\n\n`;
+  testMsg += `• EXP Multiplier = ${Math.min(1 + 1, 5)} (แก้ไขแล้ว)\n`;
+  testMsg += `• EXP ที่ต้องใช้: Bronze II = ${5 * 2}, Silver II = ${15 * 2}, Gold II = ${30 * 2}\n\n`;
   
   // ทดสอบการจุติครั้งที่ 2
   testMsg += `🔄 การจุติครั้งที่ 2 (rebirthCount = 2):\n`;
   testMsg += `• getRebirthSuffix(2) = "${getRebirthSuffix(2)}"\n`;
   testMsg += `• Rank ใหม่ = "Rookie${getRebirthSuffix(2)}"\n`;
-  testMsg += `• EXP Multiplier = ${Math.min(2, 5)}\n`;
-  testMsg += `• EXP ที่ต้องใช้: Bronze III = ${5 * 2}, Silver III = ${15 * 2}, Gold III = ${30 * 2}\n\n`;
+  testMsg += `• EXP Multiplier = ${Math.min(2 + 1, 5)} (แก้ไขแล้ว)\n`;
+  testMsg += `• EXP ที่ต้องใช้: Bronze III = ${5 * 3}, Silver III = ${15 * 3}, Gold III = ${30 * 3}\n\n`;
   
   // ทดสอบการจุติครั้งที่ 3
   testMsg += `🔄 การจุติครั้งที่ 3 (rebirthCount = 3):\n`;
   testMsg += `• getRebirthSuffix(3) = "${getRebirthSuffix(3)}"\n`;
   testMsg += `• Rank ใหม่ = "Rookie${getRebirthSuffix(3)}"\n`;
-  testMsg += `• EXP Multiplier = ${Math.min(3, 5)}\n`;
-  testMsg += `• EXP ที่ต้องใช้: Bronze IV = ${5 * 3}, Silver IV = ${15 * 3}, Gold IV = ${30 * 3}\n\n`;
+  testMsg += `• EXP Multiplier = ${Math.min(3 + 1, 5)} (แก้ไขแล้ว)\n`;
+  testMsg += `• EXP ที่ต้องใช้: Bronze IV = ${5 * 4}, Silver IV = ${15 * 4}, Gold IV = ${30 * 4}\n\n`;
   
   // ทดสอบการจุติครั้งที่ 5 (Multiplier จำกัดที่ 5)
   testMsg += `🔄 การจุติครั้งที่ 5 (rebirthCount = 5):\n`;
