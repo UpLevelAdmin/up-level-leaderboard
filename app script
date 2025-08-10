@@ -40,7 +40,12 @@ function onOpen() {
     .addItem("🔧 ตรวจสอบและแก้ไข Rank", "checkAndFixRanks")
     .addItem("🧪 ทดสอบระบบ", "testRebirthSystem")
     .addItem("🎨 ทดสอบสเกลสี", "testRebirthColors")
-.addItem("🧪 ทดสอบผลลัพธ์", "testRebirthResults");
+    .addItem("🧪 ทดสอบผลลัพธ์", "testRebirthResults")
+    .addItem("🧮 ทดสอบการคำนวณแรงค์", "testRankCalculation")
+    .addItem("🧮 ทดสอบการคำนวณจริง", "testActualRankCalculation")
+    .addItem("🔧 แก้ไขแรงค์ที่ผิด", "fixIncorrectRanks")
+    .addItem("🔍 ตรวจสอบข้อมูลจริง", "checkActualData")
+    .addItem("🔧 อัปเดต Multiplier", "updateCorrectMultipliers");
 
   // 🛠️ เมนูระบบ
   const systemMenu = ui.createMenu("🛠️ ระบบ")
@@ -1997,8 +2002,6 @@ function recordChallengeResult() {
   ui.alert(`✅ บันทึกผลสำเร็จ: ${winnerCodename} ชนะ\n+1 EXP/Party ทั้งคู่${expAmount ? `\nเดิมพัน EXP: ${expAmount}` : ""}${partyWager ? `\nเดิมพัน Party Point: ${partyWager}` : ""}`);
 }
 
-// ⚠️ ลบฟังก์ชันซ้ำ - ใช้ฟังก์ชันที่บรรทัด 171 แทน
-
 function getPhoneByCodename(codename) {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Member Dashboard");
   const data = sheet.getDataRange().getValues();
@@ -2073,7 +2076,7 @@ function getPartyByPhone(phone) {
 
 // เพิ่มฟังก์ชันเหล่านี้ต่อท้ายไฟล์ app script ของคุณ (หลังบรรทัดสุดท้าย)
 
-// ฟังก์ชันอัพเดทสถานะคำท้า (สำหรับปุ่มแอดมินใน HTML)
+// ฟังก์ชันอัพเดตสถานะคำท้า (สำหรับปุ่มแอดมินใน HTML)
 function updateChallengeStatus(request) {
   try {
     const data = JSON.parse(request.postData.contents);
@@ -4303,14 +4306,19 @@ function calculateRequiredExp(multiplier) {
     legend: 200
   };
 
+  // จำกัด multiplier ไม่เกิน 5 (ตามระบบ Rebirth)
+  const cappedMultiplier = Math.min(multiplier, 5);
+
+  // ใช้ EXP เดิมสำหรับผู้เล่นที่ยังไม่เคยจุติ (multiplier = 1)
+  // สำหรับผู้เล่นที่จุติแล้ว ใช้ EXP มากขึ้น (คูณด้วย multiplier)
   return {
-    bronze: baseExp.bronze * multiplier,
-    silver: baseExp.silver * multiplier,
-    gold: baseExp.gold * multiplier,
-    platinum: baseExp.platinum * multiplier,
-    diamond: baseExp.diamond * multiplier,
-    grandmaster: baseExp.grandmaster * multiplier,
-    legend: baseExp.legend * multiplier
+    bronze: baseExp.bronze * cappedMultiplier,
+    silver: baseExp.silver * cappedMultiplier,
+    gold: baseExp.gold * cappedMultiplier,
+    platinum: baseExp.platinum * cappedMultiplier,
+    diamond: baseExp.diamond * cappedMultiplier,
+    grandmaster: baseExp.grandmaster * cappedMultiplier,
+    legend: baseExp.legend * cappedMultiplier
   };
 }
 
@@ -4319,10 +4327,19 @@ function calculateCorrectRank(exp, rebirthCount, multiplier) {
   // สร้าง Rank suffix ตามจำนวนครั้งที่จุติ
   const rankSuffix = getRebirthSuffix(rebirthCount);
   
-  // คำนวณ EXP ที่ต้องใช้ตาม multiplier
-  const requiredExp = calculateRequiredExp(multiplier);
+  // คำนวณ Multiplier ที่ถูกต้องตามจำนวนครั้งที่จุติ
+  let correctMultiplier = 1;
+  if (rebirthCount >= 1) {
+    correctMultiplier = Math.min(rebirthCount + 1, 5); // จำกัดไม่เกิน 5
+  }
   
-  // คำนวณ Rank ตาม EXP และ multiplier
+  // ใช้ Multiplier ที่ถูกต้องแทนที่จะใช้จากชีท
+  const actualMultiplier = correctMultiplier;
+  
+  // คำนวณ EXP ที่ต้องใช้ตาม multiplier ที่ถูกต้อง
+  const requiredExp = calculateRequiredExp(actualMultiplier);
+  
+  // คำนวณ Rank ตาม EXP และ multiplier ที่ถูกต้อง
   let baseRank = "Rookie";
   if (exp >= requiredExp.legend) baseRank = "Legend";
   else if (exp >= requiredExp.grandmaster) baseRank = "Grandmaster";
@@ -4364,20 +4381,20 @@ function testRebirthSystem() {
   // ทดสอบการจุติครั้งที่ 1
   testMsg += `🔄 การจุติครั้งที่ 1:\n`;
   testMsg += `• ต้องเป็น: Legend (EXP ≥ 200)\n`;
-  testMsg += `• หลังจากจุติ: Rookie II (EXP = 0, Multiplier = x1)\n`;
-  testMsg += `• EXP ที่ต้องใช้: Bronze II = 5, Silver II = 15, Gold II = 30, ฯลฯ\n\n`;
+  testMsg += `• หลังจากจุติ: Rookie II (EXP = 0, Multiplier = x2)\n`;
+  testMsg += `• EXP ที่ต้องใช้: Bronze II = 10, Silver II = 30, Gold II = 60, ฯลฯ\n\n`;
   
   // ทดสอบการจุติครั้งที่ 2
   testMsg += `🔄 การจุติครั้งที่ 2:\n`;
   testMsg += `• ต้องเป็น: Legend II (EXP ≥ 400)\n`;
-  testMsg += `• หลังจากจุติ: Rookie III (EXP = 0, Multiplier = x2)\n`;
-  testMsg += `• EXP ที่ต้องใช้: Bronze III = 10, Silver III = 30, Gold III = 60, ฯลฯ\n\n`;
+  testMsg += `• หลังจากจุติ: Rookie III (EXP = 0, Multiplier = x3)\n`;
+  testMsg += `• EXP ที่ต้องใช้: Bronze III = 15, Silver III = 45, Gold III = 90, ฯลฯ\n\n`;
   
   // ทดสอบการจุติครั้งที่ 3
   testMsg += `🔄 การจุติครั้งที่ 3:\n`;
   testMsg += `• ต้องเป็น: Legend III (EXP ≥ 600)\n`;
-  testMsg += `• หลังจากจุติ: Rookie IV (EXP = 0, Multiplier = x3)\n`;
-  testMsg += `• EXP ที่ต้องใช้: Bronze IV = 15, Silver IV = 45, Gold IV = 90, ฯลฯ\n\n`;
+  testMsg += `• หลังจากจุติ: Rookie IV (EXP = 0, Multiplier = x4)\n`;
+  testMsg += `• EXP ที่ต้องใช้: Bronze IV = 20, Silver IV = 60, Gold IV = 120, ฯลฯ\n\n`;
   
   // ทดสอบ Leaderboard
   testMsg += `🏆 ตัวอย่างการเรียงลำดับใน Leaderboard (ระบบใหม่):\n\n`;
@@ -4881,4 +4898,250 @@ function addMissingFormEntries(missingEntries) {
   }
   
   ui.alert("ผลการเพิ่มข้อมูลที่ตกหล่น", resultMessage);
+}
+
+// 🧮 ฟังก์ชันทดสอบการคำนวณแรงค์
+function testRankCalculation() {
+  const ui = SpreadsheetApp.getUi();
+  
+  let testMsg = `🧮 ทดสอบการคำนวณแรงค์ (หลังแก้ไข)\n\n📊 ตัวอย่างการคำนวณ:\n\n`;
+  
+  // ทดสอบผู้เล่นที่ยังไม่เคยจุติ (multiplier = 1)
+  testMsg += `👤 ผู้เล่นที่ยังไม่เคยจุติ (Multiplier = x1):\n`;
+  testMsg += `• EXP 5 = Bronze\n`;
+  testMsg += `• EXP 15 = Silver\n`;
+  testMsg += `• EXP 30 = Gold\n`;
+  testMsg += `• EXP 50 = Platinum\n`;
+  testMsg += `• EXP 75 = Diamond\n`;
+  testMsg += `• EXP 120 = Grandmaster\n`;
+  testMsg += `• EXP 200 = Legend\n\n`;
+  
+  // ทดสอบผู้เล่นที่จุติครั้งที่ 1 (multiplier = 2)
+  testMsg += `👤 ผู้เล่นที่จุติครั้งที่ 1 (Multiplier = x2):\n`;
+  testMsg += `• EXP 10 = Bronze II (5×2 = 10)\n`;
+  testMsg += `• EXP 30 = Silver II (15×2 = 30)\n`;
+  testMsg += `• EXP 60 = Gold II (30×2 = 60)\n`;
+  testMsg += `• EXP 100 = Platinum II (50×2 = 100)\n`;
+  testMsg += `• EXP 150 = Diamond II (75×2 = 150)\n`;
+  testMsg += `• EXP 240 = Grandmaster II (120×2 = 240)\n`;
+  testMsg += `• EXP 400 = Legend II (200×2 = 400)\n\n`;
+  
+  // ทดสอบผู้เล่นที่จุติครั้งที่ 2 (multiplier = 3)
+  testMsg += `👤 ผู้เล่นที่จุติครั้งที่ 2 (Multiplier = x3):\n`;
+  testMsg += `• EXP 15 = Bronze III (5×3 = 15)\n`;
+  testMsg += `• EXP 45 = Silver III (15×3 = 45)\n`;
+  testMsg += `• EXP 90 = Gold III (30×3 = 90)\n`;
+  testMsg += `• EXP 150 = Platinum III (50×3 = 150)\n`;
+  testMsg += `• EXP 225 = Diamond III (75×3 = 225)\n`;
+  testMsg += `• EXP 360 = Grandmaster III (120×3 = 360)\n`;
+  testMsg += `• EXP 600 = Legend III (200×3 = 600)\n\n`;
+  
+  // ทดสอบผู้เล่นที่จุติครั้งที่ 3 (multiplier = 4)
+  testMsg += `👤 ผู้เล่นที่จุติครั้งที่ 3 (Multiplier = x4):\n`;
+  testMsg += `• EXP 20 = Bronze IV (5×4 = 20)\n`;
+  testMsg += `• EXP 60 = Silver IV (15×4 = 60)\n`;
+  testMsg += `• EXP 120 = Gold IV (30×4 = 120)\n`;
+  testMsg += `• EXP 200 = Platinum IV (50×4 = 200)\n`;
+  testMsg += `• EXP 300 = Diamond IV (75×4 = 300)\n`;
+  testMsg += `• EXP 480 = Grandmaster IV (120×4 = 480)\n`;
+  testMsg += `• EXP 800 = Legend IV (200×4 = 800)\n\n`;
+  
+  testMsg += `💡 หลักการใหม่:\n`;
+  testMsg += `• ผู้เล่นที่จุติแล้วจะใช้ EXP มากขึ้นเพื่อเลื่อนแรงค์\n`;
+  testMsg += `• ยิ่งจุติมาก ยิ่งใช้ EXP มากขึ้น (คูณด้วย multiplier)\n`;
+  testMsg += `• ระบบนี้จะทำให้การเลื่อนแรงค์ยากขึ้นตามจำนวนครั้งที่จุติ\n`;
+  testMsg += `• ผู้เล่นที่จุติแล้วจะได้ suffix (II, III, IV...) เพื่อแสดงความเก่งกาจ\n\n`;
+  
+  testMsg += `🔧 การแก้ไขที่ทำ:\n`;
+  testMsg += `• ใช้การคูณ (×) ในฟังก์ชัน calculateRequiredExp()\n`;
+  testMsg += `• อัปเดตตัวอย่างการทดสอบให้สอดคล้อง\n`;
+  
+  ui.alert("🧮 ทดสอบการคำนวณแรงค์", testMsg, ui.ButtonSet.OK);
+}
+
+// 🧮 ฟังก์ชันทดสอบการคำนวณแรงค์จริง
+function testActualRankCalculation() {
+  const ui = SpreadsheetApp.getUi();
+  
+  let testMsg = `🧮 ทดสอบการคำนวณแรงค์จริง\n\n📊 ผลการคำนวณ:\n\n`;
+  
+  // ทดสอบการคำนวณจริง
+  const testCases = [
+    { exp: 5, rebirthCount: 0, multiplier: 1, expected: "Bronze" },
+    { exp: 15, rebirthCount: 0, multiplier: 1, expected: "Silver" },
+    { exp: 30, rebirthCount: 0, multiplier: 1, expected: "Gold" },
+    { exp: 10, rebirthCount: 1, multiplier: 2, expected: "Bronze II" },
+    { exp: 30, rebirthCount: 1, multiplier: 2, expected: "Silver II" },
+    { exp: 15, rebirthCount: 2, multiplier: 3, expected: "Bronze III" },
+    { exp: 45, rebirthCount: 2, multiplier: 3, expected: "Silver III" },
+    { exp: 20, rebirthCount: 3, multiplier: 4, expected: "Bronze IV" },
+    { exp: 60, rebirthCount: 3, multiplier: 4, expected: "Silver IV" }
+  ];
+  
+  testCases.forEach((testCase, index) => {
+    const actual = calculateCorrectRank(testCase.exp, testCase.rebirthCount, testCase.multiplier);
+    const status = actual === testCase.expected ? "✅" : "❌";
+    testMsg += `${status} EXP: ${testCase.exp}, Rebirth: ${testCase.rebirthCount}, Multiplier: x${testCase.multiplier}\n`;
+    testMsg += `   คาดหวัง: ${testCase.expected}\n`;
+    testMsg += `   ได้รับ: ${actual}\n\n`;
+  });
+  
+  ui.alert("🧮 ทดสอบการคำนวณแรงค์จริง", testMsg, ui.ButtonSet.OK);
+}
+
+// 🔧 ฟังก์ชันแก้ไขแรงค์ที่ผิด
+function fixIncorrectRanks() {
+  const ui = SpreadsheetApp.getUi();
+  
+  // 1. กรอกชื่อแอดมิน
+  const adminPrompt = ui.prompt("ชื่อแอดมิน", "กรุณากรอกชื่อแอดมิน (สำหรับบันทึก log)", ui.ButtonSet.OK_CANCEL);
+  if (adminPrompt.getSelectedButton() !== ui.Button.OK) return;
+  const admin = adminPrompt.getResponseText().trim();
+
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Member Dashboard");
+  const data = sheet.getDataRange().getValues();
+  let fixedCount = 0;
+  let report = "🔧 รายงานการแก้ไขแรงค์ที่ผิด:\n\n";
+  
+  try {
+    for (let i = 1; i < data.length; i++) {
+      const nickname = data[i][0];
+      const codename = data[i][2];
+      const currentRank = data[i][3];
+      const rawExp = data[i][4];
+      const exp = Number(rawExp) || 0;
+      const rebirthCount = Number(data[i][6]) || 0; // Rebirth Count (คอลัมน์ 7)
+      const multiplier = Number(data[i][7]) || 1; // EXP Multiplier (คอลัมน์ 8)
+      
+      // คำนวณแรงค์ที่ถูกต้อง
+      const correctRank = calculateCorrectRank(exp, rebirthCount, multiplier);
+      
+      // ตรวจสอบว่าแรงค์ปัจจุบันถูกต้องหรือไม่
+      if (currentRank !== correctRank) {
+        // แก้ไขแรงค์
+        sheet.getRange(i + 1, 4).setValue(correctRank);
+        fixedCount++;
+        
+        // เพิ่มในรายงาน
+        report += `✅ ${nickname} (${codename})\n`;
+        report += `   ${currentRank} → ${correctRank}\n`;
+        report += `   EXP: ${exp}, Rebirth: ${rebirthCount}, Multiplier: x${multiplier}\n\n`;
+        
+        // บันทึก Log
+        logRebirthActivity("🔧 แก้ไขแรงค์ที่ผิด", `${nickname} (${codename}) - ${currentRank} → ${correctRank}, EXP: ${exp}, Multiplier: x${multiplier}`, admin, "สำเร็จ");
+      }
+    }
+    
+    // อัปเดต Leaderboard
+    updateLeaderboard();
+    
+    if (fixedCount > 0) {
+      report += `\n🎉 แก้ไขแรงค์ที่ผิดสำเร็จ ${fixedCount} คน\n✅ อัปเดต Leaderboard แล้ว`;
+      ui.alert("🔧 แก้ไขแรงค์ที่ผิดสำเร็จ", report, ui.ButtonSet.OK);
+    } else {
+      ui.alert("✅ ไม่มีแรงค์ที่ผิด", "แรงค์ทั้งหมดถูกต้องแล้ว!", ui.ButtonSet.OK);
+    }
+    
+  } catch (error) {
+    console.error("Error fixing incorrect ranks:", error);
+    logRebirthActivity("❌ เกิดข้อผิดพลาด", `แก้ไขแรงค์ที่ผิด - ${error.toString()}`, admin, "ล้มเหลว");
+    ui.alert("❌ เกิดข้อผิดพลาด", `เกิดข้อผิดพลาดในการแก้ไขแรงค์: ${error.toString()}`, ui.ButtonSet.OK);
+  }
+}
+
+// 🔍 ฟังก์ชันตรวจสอบข้อมูลจริงในชีท
+function checkActualData() {
+  const ui = SpreadsheetApp.getUi();
+  
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Member Dashboard");
+  const data = sheet.getDataRange().getValues();
+  let report = "🔍 ตรวจสอบข้อมูลจริงในชีท:\n\n";
+  
+  // ตรวจสอบ 10 คนแรก
+  const maxRows = Math.min(10, data.length - 1);
+  
+  for (let i = 1; i <= maxRows; i++) {
+    const nickname = data[i][0];
+    const codename = data[i][2];
+    const currentRank = data[i][3];
+    const exp = Number(data[i][4]) || 0;
+    const rebirthCount = Number(data[i][6]) || 0;
+    const multiplier = Number(data[i][7]) || 1;
+    
+    report += `👤 ${nickname} (${codename})\n`;
+    report += `   แรงค์ปัจจุบัน: ${currentRank}\n`;
+    report += `   EXP: ${exp}\n`;
+    report += `   Rebirth Count: ${rebirthCount}\n`;
+    report += `   Multiplier: x${multiplier}\n`;
+    
+    // คำนวณแรงค์ที่ควรจะเป็น
+    const correctRank = calculateCorrectRank(exp, rebirthCount, multiplier);
+    report += `   แรงค์ที่ควรเป็น: ${correctRank}\n`;
+    report += `   ถูกต้อง: ${currentRank === correctRank ? "✅" : "❌"}\n\n`;
+  }
+  
+  report += `📊 สรุป:\n`;
+  report += `• ตรวจสอบ ${maxRows} คนแรก\n`;
+  report += `• คอลัมน์ EXP: ${data[0][4]}\n`;
+  report += `• คอลัมน์ Rebirth Count: ${data[0][6]}\n`;
+  report += `• คอลัมน์ Multiplier: ${data[0][7]}\n`;
+  
+  ui.alert("🔍 ตรวจสอบข้อมูลจริง", report, ui.ButtonSet.OK);
+}
+
+// 🔧 ฟังก์ชันอัปเดต Multiplier ที่ถูกต้อง
+function updateCorrectMultipliers() {
+  const ui = SpreadsheetApp.getUi();
+  
+  // 1. กรอกชื่อแอดมิน
+  const adminPrompt = ui.prompt("ชื่อแอดมิน", "กรุณากรอกชื่อแอดมิน (สำหรับบันทึก log)", ui.ButtonSet.OK_CANCEL);
+  if (adminPrompt.getSelectedButton() !== ui.Button.OK) return;
+  const admin = adminPrompt.getResponseText().trim();
+
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Member Dashboard");
+  const data = sheet.getDataRange().getValues();
+  let updatedCount = 0;
+  let report = "🔧 รายงานการอัปเดต Multiplier:\n\n";
+  
+  try {
+    for (let i = 1; i < data.length; i++) {
+      const nickname = data[i][0];
+      const codename = data[i][2];
+      const rebirthCount = Number(data[i][6]) || 0; // Rebirth Count (คอลัมน์ 7)
+      const currentMultiplier = Number(data[i][7]) || 1; // Multiplier ปัจจุบัน (คอลัมน์ 8)
+      
+      // คำนวณ Multiplier ที่ถูกต้อง
+      let correctMultiplier = 1;
+      if (rebirthCount >= 1) {
+        correctMultiplier = Math.min(rebirthCount + 1, 5); // จำกัดไม่เกิน 5
+      }
+      
+      // อัปเดต Multiplier ถ้าไม่ถูกต้อง
+      if (currentMultiplier !== correctMultiplier) {
+        sheet.getRange(i + 1, 8).setValue(correctMultiplier); // คอลัมน์ 8 = Multiplier
+        updatedCount++;
+        
+        // เพิ่มในรายงาน
+        report += `✅ ${nickname} (${codename})\n`;
+        report += `   Rebirth Count: ${rebirthCount}\n`;
+        report += `   Multiplier: x${currentMultiplier} → x${correctMultiplier}\n\n`;
+        
+        // บันทึก Log
+        logRebirthActivity("🔧 อัปเดต Multiplier", `${nickname} (${codename}) - Multiplier: x${currentMultiplier} → x${correctMultiplier}, Rebirth: ${rebirthCount}`, admin, "สำเร็จ");
+      }
+    }
+    
+    if (updatedCount > 0) {
+      report += `\n🎉 อัปเดต Multiplier สำเร็จ ${updatedCount} คน\n`;
+      report += `💡 ขั้นตอนต่อไป: ใช้ "🔧 แก้ไขแรงค์ที่ผิด" เพื่ออัปเดตแรงค์`;
+      ui.alert("🔧 อัปเดต Multiplier สำเร็จ", report, ui.ButtonSet.OK);
+    } else {
+      ui.alert("✅ ไม่มี Multiplier ที่ต้องแก้ไข", "Multiplier ทั้งหมดถูกต้องแล้ว!", ui.ButtonSet.OK);
+    }
+    
+  } catch (error) {
+    console.error("Error updating multipliers:", error);
+    logRebirthActivity("❌ เกิดข้อผิดพลาด", `อัปเดต Multiplier - ${error.toString()}`, admin, "ล้มเหลว");
+    ui.alert("❌ เกิดข้อผิดพลาด", `เกิดข้อผิดพลาดในการอัปเดต Multiplier: ${error.toString()}`, ui.ButtonSet.OK);
+  }
 }

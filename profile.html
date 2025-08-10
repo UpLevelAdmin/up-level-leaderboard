@@ -95,14 +95,69 @@
       const GAS_URL = "https://script.google.com/macros/s/AKfycbxtjsDwHI6nJU4OIHExUxMaZwUn3qwakvdkzwbQO7C8Trzz5Gh84SX6F1gqb4BOFQcn/exec";
       const rankEmojis = {
         "Rookie": "🐣",
+        "Rookie II": "🐣",
+        "Rookie III": "🐣",
+        "Rookie IV": "🐣",
+        "Rookie V": "🐣",
         "Bronze": "🛡️",
+        "Bronze II": "🛡️",
+        "Bronze III": "🛡️",
+        "Bronze IV": "🛡️",
+        "Bronze V": "🛡️",
         "Silver": "⚔️",
+        "Silver II": "⚔️",
+        "Silver III": "⚔️",
+        "Silver IV": "⚔️",
+        "Silver V": "⚔️",
         "Gold": "🥇",
+        "Gold II": "🥇",
+        "Gold III": "🥇",
+        "Gold IV": "🥇",
+        "Gold V": "🥇",
         "Platinum": "✨",
+        "Platinum II": "✨",
+        "Platinum III": "✨",
+        "Platinum IV": "✨",
+        "Platinum V": "✨",
         "Diamond": "💎",
+        "Diamond II": "💎",
+        "Diamond III": "💎",
+        "Diamond IV": "💎",
+        "Diamond V": "💎",
         "Grandmaster": "👑",
-        "Legend": "🐉"
+        "Grandmaster II": "👑",
+        "Grandmaster III": "👑",
+        "Grandmaster IV": "👑",
+        "Grandmaster V": "👑",
+        "Legend": "🐉",
+        "Legend II": "🐉",
+        "Legend III": "🐉",
+        "Legend IV": "🐉",
+        "Legend V": "🐉"
       };
+
+      // ฟังก์ชันสำหรับดึง base rank จาก rank ที่มี suffix
+      function getBaseRank(rank) {
+        if (!rank) return "Rookie";
+        
+        // ลบ suffix เช่น II, III, IV, V, VI, VII, VIII, IX, X หรือตัวเลข
+        const baseRank = rank.replace(/\s+(II|III|IV|V|VI|VII|VIII|IX|X|\d+)$/, '');
+        return baseRank || "Rookie";
+      }
+
+      // ฟังก์ชันสำหรับดึง emoji จาก rank (รองรับ rank ที่มี suffix)
+      function getRankEmoji(rank) {
+        if (!rank) return rankEmojis["Rookie"] || "🐣";
+        
+        // ลองหาจาก rankEmojis ก่อน
+        if (rankEmojis[rank]) {
+          return rankEmojis[rank];
+        }
+        
+        // ถ้าไม่มี ให้ดึง base rank แล้วหาอิโมจิ
+        const baseRank = getBaseRank(rank);
+        return rankEmojis[baseRank] || rankEmojis["Rookie"] || "🐣";
+      }
       document.getElementById("search-btn").addEventListener("click", searchMember);
       document.getElementById("phone-input").addEventListener("keypress", function(event) {
         if (event.key === "Enter") {
@@ -155,7 +210,7 @@
         document.getElementById("profile-codename").textContent = data.codename;
         document.getElementById("profile-nickname").textContent = data.nickname;
         // Rank + emoji
-        document.getElementById("profile-rank").innerHTML = `<span class='profile-rank-emoji'>${rankEmojis[data.rank] || ''}</span>${data.rank}`;
+        document.getElementById("profile-rank").innerHTML = `<span class='profile-rank-emoji'>${getRankEmoji(data.rank)}</span>${data.rank}`;
         document.getElementById("profile-exp").textContent = data.exp;
 
         // Party name: clickable if not 'ไม่มีปาร์ตี้'
@@ -193,7 +248,7 @@
             }
             list.innerHTML = '';
             members.forEach(m => {
-              list.innerHTML += `<li><span class='party-member-rank'>${rankEmojis[m.rank] || ''}</span><span class='party-member-codename'>${m.codename}</span><span class='party-member-nickname'>(${m.nickname})</span> <span style='color:#888;font-size:0.95em;'>${m.rank}</span></li>`;
+              list.innerHTML += `<li><span class='party-member-rank'>${getRankEmoji(m.rank)}</span><span class='party-member-codename'>${m.codename}</span><span class='party-member-nickname'>(${m.nickname})</span> <span style='color:#888;font-size:0.95em;'>${m.rank}</span></li>`;
             });
           })
           .catch(() => {

@@ -593,14 +593,60 @@
   <script>
     const rankEmojis = {
       "Rookie": "🐣",
+      "Rookie II": "🐣",
+      "Rookie III": "🐣",
+      "Rookie IV": "🐣",
+      "Rookie V": "🐣",
       "Bronze": "🛡️",
+      "Bronze II": "🛡️",
+      "Bronze III": "🛡️",
+      "Bronze IV": "🛡️",
+      "Bronze V": "🛡️",
       "Silver": "⚔️",
+      "Silver II": "⚔️",
+      "Silver III": "⚔️",
+      "Silver IV": "⚔️",
+      "Silver V": "⚔️",
       "Gold": "🥇",
+      "Gold II": "🥇",
+      "Gold III": "🥇",
+      "Gold IV": "🥇",
+      "Gold V": "🥇",
       "Platinum": "✨",
+      "Platinum II": "✨",
+      "Platinum III": "✨",
+      "Platinum IV": "✨",
+      "Platinum V": "✨",
       "Diamond": "💎",
+      "Diamond II": "💎",
+      "Diamond III": "💎",
+      "Diamond IV": "💎",
+      "Diamond V": "💎",
       "Grandmaster": "👑",
-      "Legend": "🐉"
+      "Grandmaster II": "👑",
+      "Grandmaster III": "👑",
+      "Grandmaster IV": "👑",
+      "Grandmaster V": "👑",
+      "Legend": "🐉",
+      "Legend II": "🐉",
+      "Legend III": "🐉",
+      "Legend IV": "🐉",
+      "Legend V": "🐉"
     };
+
+    // ฟังก์ชันสำหรับดึง emoji จาก rank (รองรับ rank ที่มี suffix)
+    function getRankEmoji(rank) {
+      if (!rank) return rankEmojis["Rookie"] || "🐣";
+      
+      // ลองหาจาก rankEmojis ก่อน
+      if (rankEmojis[rank]) {
+        return rankEmojis[rank];
+      }
+      
+      // ถ้าไม่มี ให้ดึง base rank แล้วหาอิโมจิ
+      const baseRank = getBaseRank(rank);
+      return rankEmojis[baseRank] || rankEmojis["Rookie"] || "🐣";
+    }
 
     // ฟังก์ชันตรวจสอบว่าเป็น Rebirth rank หรือไม่
     function isRebirthRank(rank) {
@@ -656,8 +702,8 @@
           const baseRank = getBaseRank(rank);
           const isRebirth = isRebirthRank(rank);
           
-          // ใช้อิโมจิเดิมสำหรับทุก rank
-          const emoji = rankEmojis[baseRank] || "";
+          // ใช้อิโมจิที่รองรับ rank ที่มี suffix
+          const emoji = getRankEmoji(rank);
           
           const position = index + 1;
           let positionDisplay = position;
