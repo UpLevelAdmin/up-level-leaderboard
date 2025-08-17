@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>รายชื่อผู้สมัคร Up Level Grand Tournament 3</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .gt3-container {
+      max-width: 900px;
+      margin: 32px auto;
+      padding: 0 8px 32px 8px;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    }
+    .logo {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 16px;
+      width: 100%;
+    }
+    .logo img {
+      max-width: 120px;
+      display: block;
+      margin: 0 auto;
+    }
+    h2 {
+      color: #388e3c;
+      text-align: center;
+    }
+    .register-btn {
+      display: block;
+      width: 100%;
+      margin: 24px auto 0 auto;
+      padding: 12px 0;
+      background: #1976d2;
+      color: #fff;
+      font-size: 1.1em;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      text-decoration: none;
+      text-align: center;
+      transition: background 0.2s, transform 0.18s, box-shadow 0.18s;
+      max-width: 350px;
+    }
+    .register-btn:hover {
+      background: #42A5F5;
+      color: #fff;
+      transform: scale(1.07);
+      box-shadow: 0 0 16px #42A5F5, 0 0 32px #42A5F5;
+    }
+    .spinner {
+      margin: 24px auto 8px auto;
+      border: 6px solid #e0e0e0;
+      border-top: 6px solid #42A5F5;
+      border-radius: 50%;
+      width: 48px;
+      height: 48px;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg);}
+      100% { transform: rotate(360deg);}
+    }
+  </style>
+</head>
+<body>
+  <a href="index.html" class="home-button" title="กลับหน้าหลัก"></a>
+  <div class="gt3-container">
+    <div class="logo">
+      <img src="https://i.postimg.cc/wjzpnxjB/Up-Level-01-1.png" alt="Up Level Logo">
+    </div>
+    <h2 style="text-align:center; margin-bottom: 24px;">รายชื่อผู้สมัคร Up Level Grand Tournament 3</h2>
+    <div style="display: flex; justify-content: center; margin-bottom: 24px;">
+      <a class="register-btn" href="https://forms.gle/wtiV3aJjfbh9PPDS7" target="_blank" style="text-align: center;">สมัครแข่งขัน Grand Tournament 3</a>
+    </div>
+    <div id="gt3-list" style="text-align:center;">
+      <div class="spinner"></div>
+      <div>กำลังโหลด...</div>
+    </div>
+  </div>
+  <script>
+    const apiUrl = "https://script.google.com/macros/s/AKfycbw76ubPzV8u4LbAbMx1fnxRaIhqV3f476CHSV46QAEg0Bp4JD2zGVMe0jaXqHYyPb2YLA/exec";
+    // Codename effect rendering (copy from gymbattle.html)
+    function renderCodenameEffect(codename, rank) {
+      const chars = ['[', ...codename.split(''), ']'];
+      const waveRanks = ['Gold', 'Platinum', 'Diamond', 'Grandmaster', 'Legend'];
+      if (waveRanks.includes(rank)) {
+        return `<span class="codename wave ${rank.toLowerCase()}">${chars.map((ch,i)=>`<span>${ch}</span>`).join('')}</span>`;
+      } else {
+        return `<span class="codename">[${codename}]</span>`;
+      }
+    }
+    // Rank emoji map (copy from gymbattle.html)
+    const rankEmojis = {
+      "Rookie": "🐣", "Rookie II": "🐣", "Rookie III": "🐣", "Rookie IV": "🐣", "Rookie V": "🐣",
+      "Bronze": "🛡️", "Bronze II": "🛡️", "Bronze III": "🛡️", "Bronze IV": "🛡️", "Bronze V": "🛡️",
+      "Silver": "⚔️", "Silver II": "⚔️", "Silver III": "⚔️", "Silver IV": "⚔️", "Silver V": "⚔️",
+      "Gold": "🥇", "Gold II": "🥇", "Gold III": "🥇", "Gold IV": "🥇", "Gold V": "🥇",
+      "Platinum": "✨", "Platinum II": "✨", "Platinum III": "✨", "Platinum IV": "✨", "Platinum V": "✨",
+      "Diamond": "💎", "Diamond II": "💎", "Diamond III": "💎", "Diamond IV": "💎", "Diamond V": "💎",
+      "Grandmaster": "👑", "Grandmaster II": "👑", "Grandmaster III": "👑", "Grandmaster IV": "👑", "Grandmaster V": "👑",
+      "Legend": "🐉", "Legend II": "🐉", "Legend III": "🐉", "Legend IV": "🐉", "Legend V": "🐉"
+    };
+    function getBaseRank(rank) {
+      if (!rank) return "Rookie";
+      const baseRank = rank.replace(/\s+(II|III|IV|V|VI|VII|VIII|IX|X|\d+)$/, '');
+      return baseRank || "Rookie";
+    }
+    function getRankEmoji(rank) {
+      if (!rank) return rankEmojis["Rookie"] || "🐣";
+      if (rankEmojis[rank]) return rankEmojis[rank];
+      const baseRank = getBaseRank(rank);
+      return rankEmojis[baseRank] || rankEmojis["Rookie"] || "🐣";
+    }
+    // Load participant data
+    fetch(apiUrl)
+      .then(res => res.json())
+      .then(data => {
+        let html = '';
+        if (data && data.participants && data.participants.length > 0) {
+          html += `<table><thead><tr><th>ลำดับ</th><th>ชื่อเล่น</th><th>Codename</th><th>Rank</th></tr></thead><tbody>`;
+          data.participants.forEach((p, idx) => {
+            const emoji = getRankEmoji(p.rank);
+            const codenameHtml = renderCodenameEffect(p.codename, p.rank);
+            html += `<tr><td>${idx+1}</td><td>${p.nickname}</td><td><span class="codename-rank" data-rank="${p.rank}">${emoji} ${codenameHtml} ${emoji}</span></td><td>${p.rank}</td></tr>`;
+          });
+          html += `</tbody></table>`;
+        } else {
+          html = '<div>ยังไม่มีผู้สมัคร</div>';
+        }
+        document.getElementById('gt3-list').innerHTML = html;
+      })
+      .catch(err => {
+        document.getElementById('gt3-list').innerHTML = '<div>เกิดข้อผิดพลาดในการโหลดข้อมูล</div>';
+      });
+  </script>
+</body>
+</html>
