@@ -118,15 +118,17 @@
     }
     // Load participant data
     fetch(apiUrl)
-      .then(res => res.json())
+      .then(res => {
+        console.log('API Response status:', res.status);
+        return res.json();
+      })
       .then(data => {
+        console.log('API Data:', data);
         let html = '';
         if (data && data.participants && data.participants.length > 0) {
-          html += `<table><thead><tr><th>ลำดับ</th><th>ชื่อเล่น</th><th>Codename</th><th>Rank</th></tr></thead><tbody>`;
+          html += `<table><thead><tr><th>ลำดับ</th><th>ชื่อเล่น</th><th>เบอร์โทร</th><th>ระดับการเล่น</th></tr></thead><tbody>`;
           data.participants.forEach((p, idx) => {
-            const emoji = getRankEmoji(p.rank);
-            const codenameHtml = renderCodenameEffect(p.codename, p.rank);
-            html += `<tr><td>${idx+1}</td><td>${p.nickname}</td><td><span class="codename-rank" data-rank="${p.rank}">${emoji} ${codenameHtml} ${emoji}</span></td><td>${p.rank}</td></tr>`;
+            html += `<tr><td>${idx+1}</td><td>${p.nickname}</td><td>${p.phone}</td><td>${p.level}</td></tr>`;
           });
           html += `</tbody></table>`;
         } else {
@@ -135,6 +137,7 @@
         document.getElementById('gt3-list').innerHTML = html;
       })
       .catch(err => {
+        console.error('Fetch error:', err);
         document.getElementById('gt3-list').innerHTML = '<div>เกิดข้อผิดพลาดในการโหลดข้อมูล</div>';
       });
   </script>
