@@ -141,10 +141,6 @@
           if (phoneMap[phone]) {
             codename = phoneMap[phone].codename || '';
             rank = phoneMap[phone].rank || '';
-          } else {
-            // MOCK: โชว์ตัวอย่าง codename/rank/เอฟเฟกต์
-            codename = 'DemoCodename';
-            rank = ['Gold','Platinum','Diamond','Grandmaster','Legend'][idx%5];
           }
           let codenameHtml = codename ? `<span class="codename-rank" data-rank="${rank}">${getRankEmoji(rank)} ${renderCodenameEffect(codename, rank)} ${getRankEmoji(rank)}</span>` : '-';
           html += `<tr><td>${idx+1}</td><td>${fullname}<br>${codenameHtml}</td><td>${level || '-'}</td></tr>`;
