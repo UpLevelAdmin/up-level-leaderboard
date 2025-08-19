@@ -84,62 +84,41 @@
   </div>
   <script>
     const apiUrl = "https://script.google.com/macros/s/AKfycbw76ubPzV8u4LbAbMx1fnxRaIhqV3f476CHSV46QAEg0Bp4JD2zGVMe0jaXqHYyPb2YLA/exec";
-    // Codename effect rendering (copy from gymbattle.html)
-    function renderCodenameEffect(codename, rank) {
-      const chars = ['[', ...codename.split(''), ']'];
-      const waveRanks = ['Gold', 'Platinum', 'Diamond', 'Grandmaster', 'Legend'];
-      if (waveRanks.includes(rank)) {
-        return `<span class="codename wave ${rank.toLowerCase()}">${chars.map((ch,i)=>`<span>${ch}</span>`).join('')}</span>`;
-      } else {
-        return `<span class="codename">[${codename}]</span>`;
+    const memberDashboardApi = "https://script.google.com/macros/s/AKfycbxtjsDwHI6nJU4OIHExUxMaZwUn3qwakvdkzwbQO7C8Trzz5Gh84SX6F1gqb4BOFQcn/exec?func=getMemberDashboardData";
+    Promise.all([
+      fetch(apiUrl).then(res => res.json()),
+      fetch(memberDashboardApi).then(res => res.json())
+    ]).then(([data, members]) => {
+      // สร้าง map เบอร์โทร -> { codename, rank }
+      const phoneMap = {};
+      if (members && Array.isArray(members)) {
+        members.forEach(m => {
+          const phone = String(m.phone).replace(/[^\d]/g, "");
+          phoneMap[phone] = { codename: m.codename, rank: m.rank };
+        });
       }
-    }
-    // Rank emoji map (copy from gymbattle.html)
-    const rankEmojis = {
-      "Rookie": "🐣", "Rookie II": "🐣", "Rookie III": "🐣", "Rookie IV": "🐣", "Rookie V": "🐣",
-      "Bronze": "🛡️", "Bronze II": "🛡️", "Bronze III": "🛡️", "Bronze IV": "🛡️", "Bronze V": "🛡️",
-      "Silver": "⚔️", "Silver II": "⚔️", "Silver III": "⚔️", "Silver IV": "⚔️", "Silver V": "⚔️",
-      "Gold": "🥇", "Gold II": "🥇", "Gold III": "🥇", "Gold IV": "🥇", "Gold V": "🥇",
-      "Platinum": "✨", "Platinum II": "✨", "Platinum III": "✨", "Platinum IV": "✨", "Platinum V": "✨",
-      "Diamond": "💎", "Diamond II": "💎", "Diamond III": "💎", "Diamond IV": "💎", "Diamond V": "💎",
-      "Grandmaster": "👑", "Grandmaster II": "👑", "Grandmaster III": "👑", "Grandmaster IV": "👑", "Grandmaster V": "👑",
-      "Legend": "🐉", "Legend II": "🐉", "Legend III": "🐉", "Legend IV": "🐉", "Legend V": "🐉"
-    };
-    function getBaseRank(rank) {
-      if (!rank) return "Rookie";
-      const baseRank = rank.replace(/\s+(II|III|IV|V|VI|VII|VIII|IX|X|\d+)$/, '');
-      return baseRank || "Rookie";
-    }
-    function getRankEmoji(rank) {
-      if (!rank) return rankEmojis["Rookie"] || "🐣";
-      if (rankEmojis[rank]) return rankEmojis[rank];
-      const baseRank = getBaseRank(rank);
-      return rankEmojis[baseRank] || rankEmojis["Rookie"] || "🐣";
-    }
-    // Load participant data
-    fetch(apiUrl)
-      .then(res => {
-        console.log('API Response status:', res.status);
-        return res.json();
-      })
-      .then(data => {
-        console.log('API Data:', data);
-        let html = '';
-        if (data && data.participants && data.participants.length > 0) {
-          html += `<table><thead><tr><th>ลำดับ</th><th>ชื่อเล่น</th><th>เบอร์โทร</th><th>ระดับการเล่น</th></tr></thead><tbody>`;
-          data.participants.forEach((p, idx) => {
-            html += `<tr><td>${idx+1}</td><td>${p.nickname}</td><td>${p.phone}</td><td>${p.level}</td></tr>`;
-          });
-          html += `</tbody></table>`;
-        } else {
-          html = '<div>ยังไม่มีผู้สมัคร</div>';
-        }
-        document.getElementById('gt3-list').innerHTML = html;
-      })
-      .catch(err => {
-        console.error('Fetch error:', err);
-        document.getElementById('gt3-list').innerHTML = '<div>เกิดข้อผิดพลาดในการโหลดข้อมูล</div>';
-      });
+      let html = '';
+      if (data && data.participants && data.participants.length > 0) {
+        html += `<table><thead><tr><th>ลำดับ</th><th>ชื่อเล่น</th><th>Codename</th></tr></thead><tbody>`;
+        data.participants.forEach((p, idx) => {
+          let phone = String(p.phone || '').replace(/[^\d]/g, "");
+          let codename = '';
+          let rank = '';
+          if (phoneMap[phone]) {
+            codename = phoneMap[phone].codename || '';
+            rank = phoneMap[phone].rank || '';
+          }
+          html += `<tr><td>${idx+1}</td><td>${p.nickname}</td><td>${codename ? codename : '-'}</td></tr>`;
+        });
+        html += `</tbody></table>`;
+      } else {
+        html = '<div>ยังไม่มีผู้สมัคร</div>';
+      }
+      document.getElementById('gt3-list').innerHTML = html;
+    }).catch(err => {
+      console.error('Fetch error:', err);
+      document.getElementById('gt3-list').innerHTML = '<div>เกิดข้อผิดพลาดในการโหลดข้อมูล</div>';
+    });
   </script>
 </body>
 </html>
