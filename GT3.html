@@ -85,11 +85,43 @@
   <script>
     const apiUrl = "https://script.google.com/macros/s/AKfycbw76ubPzV8u4LbAbMx1fnxRaIhqV3f476CHSV46QAEg0Bp4JD2zGVMe0jaXqHYyPb2YLA/exec";
     const memberDashboardApi = "https://script.google.com/macros/s/AKfycbxtjsDwHI6nJU4OIHExUxMaZwUn3qwakvdkzwbQO7C8Trzz5Gh84SX6F1gqb4BOFQcn/exec?func=getMemberDashboardData";
+    // Codename effect rendering (copy from gymbattle.html)
+    function renderCodenameEffect(codename, rank) {
+      const chars = ['[', ...codename.split(''), ']'];
+      const waveRanks = ['Gold', 'Platinum', 'Diamond', 'Grandmaster', 'Legend'];
+      if (waveRanks.includes(rank)) {
+        return `<span class="codename wave ${rank.toLowerCase()}">${chars.map((ch,i)=>`<span>${ch}</span>`).join('')}</span>`;
+      } else {
+        return `<span class="codename">[${codename}]</span>`;
+      }
+    }
+    // Rank emoji map (copy from gymbattle.html)
+    const rankEmojis = {
+      "Rookie": "🐣", "Rookie II": "🐣", "Rookie III": "🐣", "Rookie IV": "🐣", "Rookie V": "🐣",
+      "Bronze": "🛡️", "Bronze II": "🛡️", "Bronze III": "🛡️", "Bronze IV": "🛡️", "Bronze V": "🛡️",
+      "Silver": "⚔️", "Silver II": "⚔️", "Silver III": "⚔️", "Silver IV": "⚔️", "Silver V": "⚔️",
+      "Gold": "🥇", "Gold II": "🥇", "Gold III": "🥇", "Gold IV": "🥇", "Gold V": "🥇",
+      "Platinum": "✨", "Platinum II": "✨", "Platinum III": "✨", "Platinum IV": "✨", "Platinum V": "✨",
+      "Diamond": "💎", "Diamond II": "💎", "Diamond III": "💎", "Diamond IV": "💎", "Diamond V": "💎",
+      "Grandmaster": "👑", "Grandmaster II": "👑", "Grandmaster III": "👑", "Grandmaster IV": "👑", "Grandmaster V": "👑",
+      "Legend": "🐉", "Legend II": "🐉", "Legend III": "🐉", "Legend IV": "🐉", "Legend V": "🐉"
+    };
+    function getBaseRank(rank) {
+      if (!rank) return "Rookie";
+      const baseRank = rank.replace(/\s+(II|III|IV|V|VI|VII|VIII|IX|X|\d+)$/, '');
+      return baseRank || "Rookie";
+    }
+    function getRankEmoji(rank) {
+      if (!rank) return rankEmojis["Rookie"] || "🐣";
+      if (rankEmojis[rank]) return rankEmojis[rank];
+      const baseRank = getBaseRank(rank);
+      return rankEmojis[baseRank] || rankEmojis["Rookie"] || "🐣";
+    }
     Promise.all([
       fetch(apiUrl).then(res => res.json()),
       fetch(memberDashboardApi).then(res => res.json())
     ]).then(([data, members]) => {
-      // สร้าง map เบอร์โทร -> { codename, rank }
+      // สร้าง map เบอร์โทร -> { codename, rank, level }
       const phoneMap = {};
       if (members && Array.isArray(members)) {
         members.forEach(m => {
@@ -99,14 +131,17 @@
       }
       let html = '';
       if (data && data.participants && data.participants.length > 0) {
-        html += `<table><thead><tr><th>ลำดับ</th><th>ชื่อจริง</th><th>Codename</th></tr></thead><tbody>`;
+        html += `<table><thead><tr><th>ลำดับ</th><th>ชื่อ-สกุล / Codename</th><th>ระดับการเล่น</th></tr></thead><tbody>`;
         data.participants.forEach((p, idx) => {
           let phone = String(p.phone || '').replace(/[^\d]/g, "");
           let codename = '';
+          let rank = '';
           if (phoneMap[phone]) {
             codename = phoneMap[phone].codename || '';
+            rank = phoneMap[phone].rank || '';
           }
-          html += `<tr><td>${idx+1}</td><td>${p.fullname}</td><td>${codename ? codename : '-'}</td></tr>`;
+          let codenameHtml = codename ? `<span class="codename-rank" data-rank="${rank}">${getRankEmoji(rank)} ${renderCodenameEffect(codename, rank)} ${getRankEmoji(rank)}</span>` : '-';
+          html += `<tr><td>${idx+1}</td><td>${p.fullname}<br>${codenameHtml}</td><td>${p.level || '-'}</td></tr>`;
         });
         html += `</tbody></table>`;
       } else {
