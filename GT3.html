@@ -133,9 +133,10 @@
       if (data && data.participants && data.participants.length > 0) {
         html += `<table><thead><tr><th>ลำดับ</th><th>ชื่อ-สกุล / Codename</th><th>ระดับการเล่น</th></tr></thead><tbody>`;
         data.participants.forEach((p, idx) => {
-          let fullname = p["ชื่อ - นามสกุล (ภาษาอังกฤษ)"] || '';
-          let phone = String(p["เบอร์โทรศัพท์สำหรับติดต่อ"] || '').replace(/[^\d]/g, "");
-          let level = p["ระดับการเล่นของคุณ"] || '';
+          // col B: ชื่อ - นามสกุล (ภาษาอังกฤษ), col E: เบอร์โทรศัพท์สำหรับติดต่อ, col F: ระดับการเล่นของคุณ
+          let fullname = p[Object.keys(p)[1]] || '';
+          let phone = String(p[Object.keys(p)[4]] || '').replace(/[^\d]/g, "");
+          let level = p[Object.keys(p)[5]] || '';
           let codename = '';
           let rank = '';
           if (phoneMap[phone]) {
