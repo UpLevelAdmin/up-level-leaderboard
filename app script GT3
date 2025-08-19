@@ -4,9 +4,11 @@ function doGet() {
   var participants = [];
   for (var i = 1; i < data.length; i++) {
     var row = data[i];
-    var fullname = row[1]; // col B
-    var phone = row[4];    // col E
-    participants.push({ fullname: fullname || '', phone: phone || '' });
+    var fullname = row[1]; // B2 เป็นต้นไป
+    var phone = row[4];    // E2 เป็นต้นไป
+    if (fullname || phone) {
+      participants.push({ fullname: fullname || '', phone: phone || '' });
+    }
   }
   return ContentService.createTextOutput(JSON.stringify({ participants: participants }))
     .setMimeType(ContentService.MimeType.JSON);
