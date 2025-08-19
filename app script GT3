@@ -1,14 +1,15 @@
 function doGet() {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Form Responses 1');
   var data = sheet.getDataRange().getValues();
+  var headers = data[0];
   var participants = [];
   for (var i = 1; i < data.length; i++) {
     var row = data[i];
-    var fullname = row[1]; // B2 เป็นต้นไป
-    var phone = row[4];    // E2 เป็นต้นไป
-    if (fullname || phone) {
-      participants.push({ fullname: fullname || '', phone: phone || '' });
+    var obj = {};
+    for (var j = 0; j < headers.length; j++) {
+      obj[headers[j]] = row[j];
     }
+    participants.push(obj);
   }
   return ContentService.createTextOutput(JSON.stringify({ participants: participants }))
     .setMimeType(ContentService.MimeType.JSON);

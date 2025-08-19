@@ -121,7 +121,7 @@
       fetch(apiUrl).then(res => res.json()),
       fetch(memberDashboardApi).then(res => res.json())
     ]).then(([data, members]) => {
-      // สร้าง map เบอร์โทร -> { codename, rank, level }
+      // สร้าง map เบอร์โทร -> { codename, rank }
       const phoneMap = {};
       if (members && Array.isArray(members)) {
         members.forEach(m => {
@@ -133,7 +133,9 @@
       if (data && data.participants && data.participants.length > 0) {
         html += `<table><thead><tr><th>ลำดับ</th><th>ชื่อ-สกุล / Codename</th><th>ระดับการเล่น</th></tr></thead><tbody>`;
         data.participants.forEach((p, idx) => {
-          let phone = String(p.phone || '').replace(/[^\d]/g, "");
+          let fullname = p["ชื่อ - นามสกุล (ภาษาอังกฤษ)"] || p.fullname || '';
+          let phone = String(p["เบอร์โทรศัพท์สำหรับติดต่อ"] || p.phone || '').replace(/[^\d]/g, "");
+          let level = p["ระดับการเล่นของคุณ"] || p.level || '';
           let codename = '';
           let rank = '';
           if (phoneMap[phone]) {
@@ -141,7 +143,7 @@
             rank = phoneMap[phone].rank || '';
           }
           let codenameHtml = codename ? `<span class="codename-rank" data-rank="${rank}">${getRankEmoji(rank)} ${renderCodenameEffect(codename, rank)} ${getRankEmoji(rank)}</span>` : '-';
-          html += `<tr><td>${idx+1}</td><td>${p.fullname}<br>${codenameHtml}</td><td>${p.level || '-'}</td></tr>`;
+          html += `<tr><td>${idx+1}</td><td>${fullname}<br>${codenameHtml}</td><td>${level || '-'}</td></tr>`;
         });
         html += `</tbody></table>`;
       } else {
