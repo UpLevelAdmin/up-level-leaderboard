@@ -1,24 +1,12 @@
 function doGet() {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Form Responses 1');
   var data = sheet.getDataRange().getValues();
-  var headers = data[0];
-  Logger.log('Headers: ' + JSON.stringify(headers));
-  var fullnameIdx = headers.findIndex(h => h.toString().trim() === 'ชื่อ - นามสกุล (ภาษาอังกฤษ)');
-  var nicknameIdx = headers.findIndex(h => h.toString().trim() === 'ชื่อเล่น');
-  var phoneIdx = headers.findIndex(h => h.toString().trim() === 'เบอร์โทรศัพท์สำหรับติดต่อ');
-  var levelIdx = headers.findIndex(h => h.toString().trim() === 'ระดับการเล่นของคุณ');
-  if (fullnameIdx === -1 || nicknameIdx === -1 || phoneIdx === -1 || levelIdx === -1) {
-    Logger.log('Header not found! fullnameIdx=' + fullnameIdx + ', nicknameIdx=' + nicknameIdx + ', phoneIdx=' + phoneIdx + ', levelIdx=' + levelIdx);
-  }
   var participants = [];
   for (var i = 1; i < data.length; i++) {
     var row = data[i];
-    Logger.log('Row: ' + JSON.stringify(row));
-    var fullname = row[fullnameIdx];
-    var nickname = row[nicknameIdx];
-    var phone = row[phoneIdx];
-    var level = row[levelIdx];
-    participants.push({ fullname: fullname || '', nickname: nickname || '', phone: phone || '', level: level || '' });
+    var fullname = row[1]; // col B
+    var phone = row[4];    // col E
+    participants.push({ fullname: fullname || '', phone: phone || '' });
   }
   return ContentService.createTextOutput(JSON.stringify({ participants: participants }))
     .setMimeType(ContentService.MimeType.JSON);
