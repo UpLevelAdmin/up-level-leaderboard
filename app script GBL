@@ -1,0 +1,16 @@
+function doGet() {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Form Responses 1');
+  var data = sheet.getDataRange().getValues();
+  var headers = data[0];
+  var participants = [];
+  for (var i = 1; i < data.length; i++) {
+    var row = data[i];
+    var obj = {};
+    for (var j = 0; j < headers.length; j++) {
+      obj[headers[j]] = row[j];
+    }
+    participants.push(obj);
+  }
+  return ContentService.createTextOutput(JSON.stringify({ participants: participants }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
