@@ -178,17 +178,20 @@
     }
     
     .modal-content {
-      margin: auto;
-      display: block;
-      width: 85%;
-      max-width: 400px;
-      max-height: 80vh;
-      object-fit: contain;
-      border-radius: 12px;
-      box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+      margin: 0;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 100%;
+      height: 100vh;
+      max-width: none;
+      max-height: none;
+      object-fit: cover;
+      border-radius: 0;
+      box-shadow: none;
       cursor: grab;
       user-select: none;
-      transition: transform 0.3s ease;
     }
     
     .modal-content:active {
@@ -246,7 +249,7 @@
     }
     
     .prize-item img:hover {
-      transform: scale(1.08);
+      transform: scale(1.15);
       box-shadow: 0 8px 25px rgba(0,0,0,0.4);
     }
     
@@ -401,7 +404,7 @@
       // Reset transform
       translateX = 0;
       translateY = 0;
-      modalImg.style.transform = 'translate(0, 0) scale(1)';
+      modalImg.style.transform = 'translate(-50%, -50%) scale(1)';
       
       // Add drag event listeners
       modalImg.addEventListener('mousedown', startDragging);
@@ -427,7 +430,7 @@
       translateY = touch.clientY - startY;
       
       const modalImg = document.getElementById('modalImage');
-      modalImg.style.transform = `translate(${translateX}px, ${translateY}px) scale(1)`;
+      modalImg.style.transform = `translate(calc(-50% + ${translateX}px), calc(-50% + ${translateY}px)) scale(1)`;
       e.preventDefault();
     }
     
