@@ -174,6 +174,9 @@
       background: linear-gradient(135deg, rgba(30, 58, 138, 0.8) 0%, rgba(59, 130, 246, 0.8) 50%, rgba(30, 64, 175, 0.8) 100%);
       backdrop-filter: blur(15px);
       -webkit-backdrop-filter: blur(15px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     
     .modal-content {
@@ -191,7 +194,14 @@
     }
     
     .modal-content.expanded {
-      transform: scale(1.5);
+      width: 100%;
+      height: 100vh;
+      max-width: none;
+      max-height: none;
+      object-fit: cover;
+      border-radius: 0;
+      box-shadow: none;
+      transform: none;
     }
     
     .modal-content:active {
@@ -246,7 +256,7 @@
     }
     
     .prize-item img:hover {
-      transform: scale(1.1);
+      transform: scale(1.2);
     }
     
     .prize-item h4 {
