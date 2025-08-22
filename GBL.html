@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="th">
-<head>
-  <meta charset="UTF-8">
-  <title>รายชื่อผู้สมัคร Up Level Great Ball League</title>
-  <link rel="stylesheet" href="style.css">
+  <head>
+    <meta charset="UTF-8">
+    <title>รายชื่อผู้สมัคร Up Level Great Ball League</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Mitr:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
     .gbl-container {
       max-width: 900px;
@@ -13,6 +14,7 @@
       border-radius: 16px;
       box-shadow: 0 8px 25px rgba(30, 58, 138, 0.3);
       color: white;
+      font-family: 'Mitr', sans-serif;
     }
     .logo {
       display: flex;
@@ -27,9 +29,11 @@
       margin: 0 auto;
     }
     h2 {
-      color: #fbbf24;
+      color: #ffffff;
       text-align: center;
-      text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+      font-weight: 600;
+      font-size: 1.8em;
     }
     .register-btn {
       display: block;
@@ -69,14 +73,14 @@
       100% { transform: rotate(360deg);}
     }
     /* ... (คัดลอก CSS codename-rank, wave, blink, สี, ขนาด ฯลฯ จาก gymbattle.html) ... */
-    .codename-rank[data-rank="Rookie"]      .codename { color: #fbbf24; font-size: 1.05em; }
-    .codename-rank[data-rank="Bronze"]      .codename { color: #fbbf24; font-size: 1.08em; }
-    .codename-rank[data-rank="Silver"]      .codename { color: #fbbf24; font-size: 1.12em; }
-    .codename-rank[data-rank="Gold"]        .codename { color: #fbbf24; font-size: 1.18em; font-weight: bold; }
-    .codename-rank[data-rank="Platinum"]    .codename { color: #fbbf24; font-size: 1.22em; font-weight: bold; }
-    .codename-rank[data-rank="Diamond"]     .codename { color: #fbbf24; font-size: 1.28em; font-weight: bold; }
-    .codename-rank[data-rank="Grandmaster"] .codename { color: #fbbf24; font-size: 1.35em; font-weight: bold; }
-    .codename-rank[data-rank="Legend"]      .codename { color: #fbbf24; font-size: 1.45em; font-weight: bold; }
+    .codename-rank[data-rank="Rookie"]      .codename { color: #ffffff; font-size: 1.05em; font-weight: 500; }
+    .codename-rank[data-rank="Bronze"]      .codename { color: #ffffff; font-size: 1.08em; font-weight: 500; }
+    .codename-rank[data-rank="Silver"]      .codename { color: #ffffff; font-size: 1.12em; font-weight: 500; }
+    .codename-rank[data-rank="Gold"]        .codename { color: #ffffff; font-size: 1.18em; font-weight: 600; }
+    .codename-rank[data-rank="Platinum"]    .codename { color: #ffffff; font-size: 1.22em; font-weight: 600; }
+    .codename-rank[data-rank="Diamond"]     .codename { color: #ffffff; font-size: 1.28em; font-weight: 600; }
+    .codename-rank[data-rank="Grandmaster"] .codename { color: #ffffff; font-size: 1.35em; font-weight: 600; }
+    .codename-rank[data-rank="Legend"]      .codename { color: #ffffff; font-size: 1.45em; font-weight: 600; }
     .codename-rank[data-rank="Gold"]        .codename,
     .codename-rank[data-rank="Platinum"]    .codename,
     .codename-rank[data-rank="Diamond"]     .codename,
@@ -138,45 +142,53 @@
     }
     
     .prizes-title {
-      color: #fbbf24;
+      color: #ffffff;
       text-align: center;
-      font-size: 1.4em;
-      font-weight: bold;
+      font-size: 1.6em;
+      font-weight: 600;
       margin-bottom: 20px;
-      text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
     }
     
     .prizes-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 30px;
       margin-top: 20px;
     }
     
     .prize-item {
       text-align: center;
-      padding: 16px;
+      padding: 24px;
       background: rgba(255, 255, 255, 0.05);
-      border-radius: 8px;
-      border: 1px solid rgba(251, 191, 36, 0.2);
+      border-radius: 12px;
+      border: 2px solid rgba(251, 191, 36, 0.3);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     }
     
     .prize-item img {
-      max-width: 80px;
+      max-width: 200px;
+      width: 100%;
       height: auto;
-      margin-bottom: 12px;
+      margin-bottom: 16px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     }
     
     .prize-item h4 {
-      color: #fbbf24;
-      margin: 8px 0;
-      font-size: 1.1em;
+      color: #ffffff;
+      margin: 12px 0 8px 0;
+      font-size: 1.4em;
+      font-weight: 600;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
     }
     
     .prize-item p {
-      color: white;
-      font-size: 0.9em;
+      color: #f0f0f0;
+      font-size: 1.05em;
       margin: 0;
+      line-height: 1.5;
+      font-weight: 400;
     }
     
     table {
@@ -187,14 +199,18 @@
     }
     
     th {
-      background: rgba(251, 191, 36, 0.2);
-      color: #fbbf24;
-      font-weight: bold;
+      background: rgba(255, 255, 255, 0.15);
+      color: #ffffff;
+      font-weight: 600;
+      font-size: 1.1em;
+      padding: 12px 8px;
     }
     
     td {
       color: white;
       border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 10px 8px;
+      font-weight: 400;
     }
   </style>
 </head>
