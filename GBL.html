@@ -156,10 +156,11 @@
     }
     
     .prizes-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-      gap: 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 30px;
       margin-top: 20px;
+      align-items: center;
     }
     
     /* Modal for image zoom */
@@ -224,20 +225,22 @@
     
     .prize-item {
       text-align: center;
-      padding: 20px;
+      padding: 0;
       background: transparent;
-      border-radius: 8px;
+      border-radius: 0;
       border: none;
       box-shadow: none;
+      max-width: 300px;
+      width: 100%;
     }
     
     .prize-item img {
-      max-width: 45vw;
+      max-width: 280px;
       width: 100%;
       height: auto;
-      margin-bottom: 20px;
-      border-radius: 12px;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+      margin-bottom: 15px;
+      border-radius: 8px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
       cursor: pointer;
       transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
@@ -249,23 +252,22 @@
     
     .prize-item h4 {
       color: #000000;
-      margin: 12px 0 8px 0;
-      font-size: 1.6em;
-      font-weight: 700;
+      margin: 8px 0 4px 0;
+      font-size: 1.4em;
+      font-weight: 600;
       text-shadow: 
         -1px -1px 0 #ffffff,
         1px -1px 0 #ffffff,
         -1px 1px 0 #ffffff,
-        1px 1px 0 #ffffff,
-        1px 1px 2px rgba(0,0,0,0.3);
+        1px 1px 0 #ffffff;
     }
     
     .prize-item p {
       color: #000000;
-      font-size: 1.1em;
+      font-size: 1em;
       margin: 0;
-      line-height: 1.6;
-      font-weight: 500;
+      line-height: 1.4;
+      font-weight: 400;
       text-shadow: 
         -1px -1px 0 #ffffff,
         1px -1px 0 #ffffff,
