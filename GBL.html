@@ -177,15 +177,21 @@
     }
     
     .modal-content {
-      margin: 0;
+      margin: auto;
       display: block;
-      width: 100%;
-      height: 100vh;
-      max-width: none;
-      max-height: none;
-      object-fit: cover;
-      border-radius: 0;
-      box-shadow: none;
+      width: 90%;
+      max-width: 1200px;
+      max-height: 90vh;
+      object-fit: contain;
+      border-radius: 12px;
+      box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+      cursor: grab;
+      user-select: none;
+      transition: transform 0.3s ease;
+    }
+    
+    .modal-content:active {
+      cursor: grabbing;
     }
     
     .close {
@@ -226,7 +232,7 @@
     }
     
     .prize-item img {
-      max-width: 50vw;
+      max-width: 60vw;
       width: 100%;
       height: auto;
       margin-bottom: 20px;
@@ -237,7 +243,7 @@
     }
     
     .prize-item img:hover {
-      transform: scale(1.05);
+      transform: scale(1.08);
       box-shadow: 0 8px 25px rgba(0,0,0,0.4);
     }
     
@@ -380,16 +386,64 @@
       document.getElementById('gbl-list').innerHTML = '<div>เกิดข้อผิดพลาดในการโหลดข้อมูล</div>';
     });
     
-    // Modal functions for image zoom
+    // Modal functions for image zoom with drag functionality
+    let isDragging = false;
+    let startX, startY, translateX = 0, translateY = 0;
+    
     function openModal(imgSrc) {
       const modal = document.getElementById('imageModal');
       const modalImg = document.getElementById('modalImage');
       modal.style.display = 'block';
       modalImg.src = imgSrc;
+      
+      // Reset transform
+      translateX = 0;
+      translateY = 0;
+      modalImg.style.transform = 'translate(0, 0) scale(1)';
+      
+      // Add drag event listeners
+      modalImg.addEventListener('mousedown', startDragging);
+      modalImg.addEventListener('touchstart', startDragging);
+      document.addEventListener('mousemove', drag);
+      document.addEventListener('touchmove', drag);
+      document.addEventListener('mouseup', stopDragging);
+      document.addEventListener('touchend', stopDragging);
+    }
+    
+    function startDragging(e) {
+      isDragging = true;
+      const touch = e.touches ? e.touches[0] : e;
+      startX = touch.clientX - translateX;
+      startY = touch.clientY - translateY;
+      e.preventDefault();
+    }
+    
+    function drag(e) {
+      if (!isDragging) return;
+      const touch = e.touches ? e.touches[0] : e;
+      translateX = touch.clientX - startX;
+      translateY = touch.clientY - startY;
+      
+      const modalImg = document.getElementById('modalImage');
+      modalImg.style.transform = `translate(${translateX}px, ${translateY}px) scale(1)`;
+      e.preventDefault();
+    }
+    
+    function stopDragging() {
+      isDragging = false;
     }
     
     function closeModal() {
       document.getElementById('imageModal').style.display = 'none';
+      
+      // Remove event listeners
+      const modalImg = document.getElementById('modalImage');
+      modalImg.removeEventListener('mousedown', startDragging);
+      modalImg.removeEventListener('touchstart', startDragging);
+      document.removeEventListener('mousemove', drag);
+      document.removeEventListener('touchmove', drag);
+      document.removeEventListener('mouseup', stopDragging);
+      document.removeEventListener('touchend', stopDragging);
     }
     
     // Close modal when clicking outside the image
