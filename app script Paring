@@ -16,6 +16,7 @@ function onOpen() {
     .addSeparator()
     .addItem('🔄 สร้าง Round Robin', 'createRoundRobinTournament')
     .addItem('📊 อัปเดตผล Round Robin', 'updateRoundRobinResults')
+    .addItem('🔄 อัปเดตผลและ Standings อัตโนมัติ', 'autoUpdateRoundRobinResults')
     .addItem('🏆 สร้างสรุปผล Round Robin', 'createRoundRobinStanding')
     .addToUi();
   
@@ -2664,6 +2665,65 @@ function updateRoundRobinResults() {
   }
   
   SpreadsheetApp.getUi().alert(`✅ อัปเดตผลการแข่งขันสำเร็จ\n\n📊 สถิติ:\n• แมตช์ที่มีผล: ${updatedCount} แมตช์\n• แมตช์ที่ยังไม่มีผล: ${data.length - 1 - updatedCount} แมตช์`);
+  
+  // อัปเดต standings หลังจากอัปเดตผลการแข่งขัน
+  if (updatedCount > 0) {
+    try {
+      createRoundRobinStanding();
+      console.log('✅ อัปเดต Round Robin Standing สำเร็จ');
+    } catch (error) {
+      console.error('❌ เกิดข้อผิดพลาดในการอัปเดต Standing:', error);
+    }
+  }
+}
+
+// 🔄 อัปเดตผลการแข่งขัน Round Robin แบบอัตโนมัติ
+function autoUpdateRoundRobinResults() {
+  const ui = SpreadsheetApp.getUi();
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const roundRobinSheet = ss.getSheetByName("Round Robin");
+  
+  if (!roundRobinSheet) {
+    return SpreadsheetApp.getUi().alert("❌ ไม่พบชีท Round Robin");
+  }
+  
+  // อัปเดตผลการแข่งขัน
+  updateRoundRobinResults();
+  
+  // อัปเดต standings
+  try {
+    createRoundRobinStanding();
+    SpreadsheetApp.getUi().alert("✅ อัปเดตผลการแข่งขันและ Standings สำเร็จ!");
+  } catch (error) {
+    console.error('❌ เกิดข้อผิดพลาดในการอัปเดต Standing:', error);
+    SpreadsheetApp.getUi().alert("⚠️ อัปเดตผลการแข่งขันสำเร็จ แต่เกิดข้อผิดพลาดในการอัปเดต Standings");
+  }
+}
+
+// 🔄 ฟังก์ชันที่เรียกเมื่อมีการเปลี่ยนแปลงในชีท Round Robin
+function onEdit(e) {
+  const sheet = e.source.getActiveSheet();
+  
+  // ตรวจสอบว่าเป็นการเปลี่ยนแปลงในชีท Round Robin หรือไม่
+  if (sheet.getName() === "Round Robin") {
+    const range = e.range;
+    const column = range.getColumn();
+    
+    // ตรวจสอบว่าการเปลี่ยนแปลงอยู่ในคอลัมน์ checkboxes หรือไม่
+    if (column >= 7 && column <= 10) { // WIN_P1, DRAW, WIN_P2, Double Loss
+      // รอสักครู่แล้วอัปเดตผลการแข่งขัน
+      SpreadsheetApp.flush();
+      setTimeout(() => {
+        try {
+          updateRoundRobinResults();
+          createRoundRobinStanding();
+          console.log('✅ อัปเดตอัตโนมัติสำเร็จ');
+        } catch (error) {
+          console.error('❌ เกิดข้อผิดพลาดในการอัปเดตอัตโนมัติ:', error);
+        }
+      }, 1000);
+    }
+  }
 }
 
 // 🔍 ตรวจสอบและแก้ไขปัญหาการดึงข้อมูล Player

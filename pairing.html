@@ -2038,13 +2038,34 @@
         if (typeof winRate === 'number') {
           winRate = Math.round(winRate * 100) + '%';
         } else if (typeof winRate === 'string' && !winRate.includes('%')) {
-          winRate = parseFloat(winRate) + '%';
+          // ตรวจสอบว่าคือตัวเลขหรือไม่
+          const winRateNum = parseFloat(winRate);
+          if (!isNaN(winRateNum)) {
+            if (winRateNum <= 1) {
+              // ถ้าเป็นทศนิยม (0-1) ให้แปลงเป็นเปอร์เซ็นต์
+              winRate = Math.round(winRateNum * 100) + '%';
+            } else {
+              // ถ้าเป็นตัวเลขมากกว่า 1 ให้เพิ่ม % ต่อท้าย
+              winRate = winRateNum + '%';
+            }
+          } else {
+            winRate = '0%';
+          }
         }
         
         if (typeof ow === 'number') {
           ow = Math.round(ow * 100) + '%';
         } else if (typeof ow === 'string' && !ow.includes('%')) {
-          ow = parseFloat(ow) + '%';
+          const owNum = parseFloat(ow);
+          if (!isNaN(owNum)) {
+            if (owNum <= 1) {
+              ow = Math.round(owNum * 100) + '%';
+            } else {
+              ow = owNum + '%';
+            }
+          } else {
+            ow = '0%';
+          }
         }
         
         // หาโค้ดเนมจาก players data
