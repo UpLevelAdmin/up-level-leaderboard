@@ -21,6 +21,8 @@ function onOpen() {
     .addSeparator()
     .addItem('🔧 ตั้งค่า Trigger อัตโนมัติ', 'setupRoundRobinTriggers')
     .addItem('🔍 ตรวจสอบ Trigger ที่มีอยู่', 'checkRoundRobinTriggers')
+    .addSeparator()
+    .addItem('🔧 แก้ไขข้อมูล Standings (OW% & H2H)', 'fixRoundRobinStandingsData')
     .addToUi();
   
   // 📊 Analysis & Stats
@@ -2747,6 +2749,180 @@ function updateRoundRobinStandingsDelayed() {
     console.log('✅ อัปเดต Standings อัตโนมัติสำเร็จ');
   } catch (error) {
     console.error('❌ เกิดข้อผิดพลาดในการอัปเดต Standings:', error);
+  }
+}
+
+// 🔧 ฟังก์ชันสำหรับแก้ไขปัญหา OW% และ H2H
+function fixRoundRobinStandingsData() {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const standingsSheet = ss.getSheetByName("Round Robin Standing");
+    
+    if (!standingsSheet) {
+      SpreadsheetApp.getUi().alert('❌ ไม่พบชีท "Round Robin Standing"');
+      return;
+    }
+    
+    const data = standingsSheet.getDataRange().getValues();
+    if (data.length <= 1) {
+      SpreadsheetApp.getUi().alert('❌ ไม่มีข้อมูลในชีท "Round Robin Standing"');
+      return;
+    }
+    
+    // คำนวณ OW% และ H2H ใหม่
+    const updatedData = [];
+    updatedData.push(data[0]); // header row
+    
+    for (let i = 1; i < data.length; i++) {
+      const row = data[i];
+      const playerId = row[1];
+      const wins = parseInt(row[4]) || 0;
+      const draws = parseInt(row[5]) || 0;
+      const losses = parseInt(row[6]) || 0;
+      const points = parseInt(row[7]) || 0;
+      
+      // คำนวณ Win Rate
+      const totalGames = wins + draws + losses;
+      const winRate = totalGames > 0 ? (wins / totalGames * 100).toFixed(0) + '%' : '0%';
+      
+      // คำนวณ OW% (Opponent Win Percentage)
+      const owPercentage = calculateOpponentWinPercentage(playerId, data);
+      
+      // คำนวณ H2H (Head to Head)
+      const h2hScore = calculateHeadToHeadScore(playerId, data);
+      
+      // สร้างแถวใหม่
+      const newRow = [
+        row[0], // RANK
+        row[1], // PLAYER ID
+        row[2], // PLAYER NAME
+        row[3], // TR_ID
+        wins,
+        draws,
+        losses,
+        points,
+        winRate,
+        owPercentage + '%',
+        h2hScore
+      ];
+      
+      updatedData.push(newRow);
+    }
+    
+    // เขียนข้อมูลกลับไปยังชีท
+    standingsSheet.getRange(1, 1, updatedData.length, updatedData[0].length).setValues(updatedData);
+    
+    SpreadsheetApp.getUi().alert('✅ แก้ไขข้อมูล Standings สำเร็จ!\n\n- อัปเดต Win Rate\n- คำนวณ OW% ใหม่\n- คำนวณ H2H ใหม่');
+    
+  } catch (error) {
+    console.error('❌ เกิดข้อผิดพลาดในการแก้ไขข้อมูล Standings:', error);
+    SpreadsheetApp.getUi().alert('❌ เกิดข้อผิดพลาดในการแก้ไขข้อมูล Standings: ' + error.message);
+  }
+}
+
+// 🔢 ฟังก์ชันสำหรับคำนวณ OW% (Opponent Win Percentage)
+function calculateOpponentWinPercentage(playerId, standingsData) {
+  try {
+    const roundRobinSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Round Robin");
+    if (!roundRobinSheet) return 0;
+    
+    const roundRobinData = roundRobinSheet.getDataRange().getValues();
+    const opponents = new Set();
+    
+    // หาคู่แข่งทั้งหมดของผู้เล่นคนนี้
+    for (let i = 1; i < roundRobinData.length; i++) {
+      const row = roundRobinData[i];
+      const p1Id = row[2];
+      const p2Id = row[8];
+      
+      if (p1Id === playerId && p2Id !== 'BYE') {
+        opponents.add(p2Id);
+      } else if (p2Id === playerId && p1Id !== 'BYE') {
+        opponents.add(p1Id);
+      }
+    }
+    
+    if (opponents.size === 0) return 0;
+    
+    // คำนวณ win rate ของคู่แข่งทั้งหมด
+    let totalOpponentWins = 0;
+    let totalOpponentGames = 0;
+    
+    opponents.forEach(opponentId => {
+      const opponentRow = standingsData.find(row => row[1] === opponentId);
+      if (opponentRow) {
+        const opponentWins = parseInt(opponentRow[4]) || 0;
+        const opponentDraws = parseInt(opponentRow[5]) || 0;
+        const opponentLosses = parseInt(opponentRow[6]) || 0;
+        const opponentGames = opponentWins + opponentDraws + opponentLosses;
+        
+        totalOpponentWins += opponentWins;
+        totalOpponentGames += opponentGames;
+      }
+    });
+    
+    return totalOpponentGames > 0 ? Math.round((totalOpponentWins / totalOpponentGames) * 100) : 0;
+    
+  } catch (error) {
+    console.error('❌ เกิดข้อผิดพลาดในการคำนวณ OW%:', error);
+    return 0;
+  }
+}
+
+// 🔢 ฟังก์ชันสำหรับคำนวณ H2H (Head to Head)
+function calculateHeadToHeadScore(playerId, standingsData) {
+  try {
+    const roundRobinSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Round Robin");
+    if (!roundRobinSheet) return 0;
+    
+    const roundRobinData = roundRobinSheet.getDataRange().getValues();
+    let h2hScore = 0;
+    
+    // หาผลการแข่งขันกับคู่แข่งที่มีคะแนนเท่ากัน
+    const currentPlayerRow = standingsData.find(row => row[1] === playerId);
+    if (!currentPlayerRow) return 0;
+    
+    const currentPlayerPoints = parseInt(currentPlayerRow[7]) || 0;
+    
+    // หาคู่แข่งที่มีคะแนนเท่ากัน
+    const tiedPlayers = standingsData.filter(row => {
+      const rowPoints = parseInt(row[7]) || 0;
+      return row[1] !== playerId && rowPoints === currentPlayerPoints;
+    });
+    
+    if (tiedPlayers.length === 0) return 0;
+    
+    // คำนวณ H2H score
+    tiedPlayers.forEach(opponent => {
+      const opponentId = opponent[1];
+      
+      // หาผลการแข่งขันระหว่างผู้เล่นทั้งสอง
+      for (let i = 1; i < roundRobinData.length; i++) {
+        const row = roundRobinData[i];
+        const p1Id = row[2];
+        const p2Id = row[8];
+        const result = row[14]; // RESULT column
+        
+        if ((p1Id === playerId && p2Id === opponentId) || 
+            (p1Id === opponentId && p2Id === playerId)) {
+          
+          if (result === '1:0') {
+            if (p1Id === playerId) h2hScore += 1;
+          } else if (result === '0:1') {
+            if (p2Id === playerId) h2hScore += 1;
+          } else if (result === '1:1') {
+            h2hScore += 0.5;
+          }
+          break;
+        }
+      }
+    });
+    
+    return h2hScore;
+    
+  } catch (error) {
+    console.error('❌ เกิดข้อผิดพลาดในการคำนวณ H2H:', error);
+    return 0;
   }
 }
 
