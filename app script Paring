@@ -24,10 +24,6 @@ function onOpen() {
     .addSeparator()
     .addItem('🔧 แก้ไขข้อมูล Standings (OW% & H2H)', 'fixRoundRobinStandingsData')
     .addItem('🔧 แก้ไขข้อมูลทั้งหมดในครั้งเดียว', 'fixAllRoundRobinData')
-    .addItem('🔍 ตรวจสอบและแก้ไขข้อมูลทั้งหมด', 'checkAndFixAllRoundRobinData')
-    .addItem('🧪 ทดสอบการคำนวณ OW%', 'testOpponentWinPercentage')
-    .addItem('🔍 ตรวจสอบข้อมูล Round Robin', 'debugRoundRobinData')
-    .addItem('🔍 ตรวจสอบโครงสร้างข้อมูล Round Robin', 'debugRoundRobinStructure')
     .addToUi();
   
   // 📊 Analysis & Stats
@@ -2917,7 +2913,7 @@ function calculateOpponentWinPercentage(playerId, standingsData) {
   }
 }
 
-// 🔢 ฟังก์ชันสำหรับคำนวณ H2H (Head to Head)
+// 🔢 ฟังก์ชันสำหรับคำนวณ H2H (Head to Head) - ใช้เมื่อ OW% เท่ากัน
 function calculateHeadToHeadScore(playerId, standingsData) {
   try {
     const roundRobinSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Round Robin");
@@ -2926,16 +2922,18 @@ function calculateHeadToHeadScore(playerId, standingsData) {
     const roundRobinData = roundRobinSheet.getDataRange().getValues();
     let h2hScore = 0;
     
-    // หาผลการแข่งขันกับคู่แข่งที่มีคะแนนเท่ากัน
+    // หาผลการแข่งขันกับคู่แข่งที่มี OW% เท่ากัน
     const currentPlayerRow = standingsData.find(row => row[1] === playerId);
     if (!currentPlayerRow) return 0;
     
-    const currentPlayerPoints = parseInt(currentPlayerRow[7]) || 0;
+    // คำนวณ OW% ของผู้เล่นปัจจุบัน
+    const currentPlayerOw = calculateOpponentWinPercentage(playerId, standingsData);
     
-    // หาคู่แข่งที่มีคะแนนเท่ากัน
+    // หาคู่แข่งที่มี OW% เท่ากัน
     const tiedPlayers = standingsData.filter(row => {
-      const rowPoints = parseInt(row[7]) || 0;
-      return row[1] !== playerId && rowPoints === currentPlayerPoints;
+      if (row[1] === playerId) return false; // ไม่รวมตัวเอง
+      const opponentOw = calculateOpponentWinPercentage(row[1], standingsData);
+      return opponentOw === currentPlayerOw;
     });
     
     if (tiedPlayers.length === 0) return 0;
@@ -2944,12 +2942,12 @@ function calculateHeadToHeadScore(playerId, standingsData) {
     tiedPlayers.forEach(opponent => {
       const opponentId = opponent[1];
       
-              // หาผลการแข่งขันระหว่างผู้เล่นทั้งสอง
-        for (let i = 1; i < roundRobinData.length; i++) {
-          const row = roundRobinData[i];
-          const p1Id = row[2]; // P1_ID (คอลัมน์ C)
-          const p2Id = row[10]; // P2_ID (คอลัมน์ K) - แก้ไขจาก row[8] เป็น row[10]
-          const result = row[14]; // RESULT column
+      // หาผลการแข่งขันระหว่างผู้เล่นทั้งสอง
+      for (let i = 1; i < roundRobinData.length; i++) {
+        const row = roundRobinData[i];
+        const p1Id = row[2]; // P1_ID (คอลัมน์ C)
+        const p2Id = row[10]; // P2_ID (คอลัมน์ K)
+        const result = row[14]; // RESULT column
         
         if ((p1Id === playerId && p2Id === opponentId) || 
             (p1Id === opponentId && p2Id === playerId)) {
@@ -3029,98 +3027,7 @@ function fixAllRoundRobinData() {
   }
 }
 
-// 🔧 ฟังก์ชันสำหรับทดสอบการคำนวณ OW%
-function testOpponentWinPercentage() {
-  try {
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
-    const standingsSheet = ss.getSheetByName("Round Robin Standing");
-    
-    if (!standingsSheet) {
-      SpreadsheetApp.getUi().alert('❌ ไม่พบชีท "Round Robin Standing"');
-      return;
-    }
-    
-    const data = standingsSheet.getDataRange().getValues();
-    if (data.length <= 1) {
-      SpreadsheetApp.getUi().alert('❌ ไม่มีข้อมูลในชีท "Round Robin Standing"');
-      return;
-    }
-    
-    let testResults = '🔍 ผลการทดสอบการคำนวณ OW%:\n\n';
-    
-    // ทดสอบการคำนวณ OW% สำหรับผู้เล่นแต่ละคน
-    for (let i = 1; i < data.length; i++) {
-      const row = data[i];
-      const playerId = row[1];
-      const playerName = row[2];
-      const wins = parseInt(row[4]) || 0;
-      const losses = parseInt(row[6]) || 0;
-      
-      const owPercentage = calculateOpponentWinPercentage(playerId, data);
-      
-      testResults += `${i}. ${playerName} (${playerId})\n`;
-      testResults += `   ชนะ: ${wins}, แพ้: ${losses}\n`;
-      testResults += `   OW%: ${owPercentage}%\n\n`;
-    }
-    
-    SpreadsheetApp.getUi().alert(testResults);
-    
-  } catch (error) {
-    console.error('❌ เกิดข้อผิดพลาดในการทดสอบ OW%:', error);
-    SpreadsheetApp.getUi().alert('❌ เกิดข้อผิดพลาดในการทดสอบ OW%: ' + error.message);
-  }
-}
 
-// 🔍 ฟังก์ชันสำหรับตรวจสอบข้อมูล Round Robin
-function debugRoundRobinData() {
-  try {
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
-    const roundRobinSheet = ss.getSheetByName("Round Robin");
-    
-    if (!roundRobinSheet) {
-      SpreadsheetApp.getUi().alert('❌ ไม่พบชีท "Round Robin"');
-      return;
-    }
-    
-    const data = roundRobinSheet.getDataRange().getValues();
-    if (data.length <= 1) {
-      SpreadsheetApp.getUi().alert('❌ ไม่มีข้อมูลในชีท "Round Robin"');
-      return;
-    }
-    
-    let debugInfo = '🔍 ข้อมูล Round Robin:\n\n';
-    debugInfo += `จำนวนแถวทั้งหมด: ${data.length}\n\n`;
-    
-    // แสดงข้อมูล 5 แถวแรก
-    for (let i = 0; i < Math.min(6, data.length); i++) {
-      const row = data[i];
-      debugInfo += `แถว ${i + 1}:\n`;
-      debugInfo += `  ROUND: ${row[0]}\n`;
-      debugInfo += `  TABLE: ${row[1]}\n`;
-      debugInfo += `  P1_ID: ${row[2]}\n`;
-      debugInfo += `  P1_NAME: ${row[3]}\n`;
-      debugInfo += `  P2_ID: ${row[10]}\n`; // แก้ไขจาก row[8] เป็น row[10]
-      debugInfo += `  P2_NAME: ${row[11]}\n`;
-      debugInfo += `  RESULT: ${row[14]}\n`;
-      debugInfo += '\n';
-    }
-    
-    // ตรวจสอบคอลัมน์ที่ใช้
-    debugInfo += '📊 คอลัมน์ที่ใช้:\n';
-    debugInfo += '  P1_ID: คอลัมน์ C (index 2)\n';
-    debugInfo += '  P2_ID: คอลัมน์ K (index 10)\n'; // แก้ไขจาก index 8 เป็น index 10
-    debugInfo += '  RESULT: คอลัมน์ O (index 14)\n\n';
-    
-    SpreadsheetApp.getUi().alert(debugInfo);
-    
-  } catch (error) {
-    console.error('❌ เกิดข้อผิดพลาดในการตรวจสอบข้อมูล Round Robin:', error);
-    SpreadsheetApp.getUi().alert('❌ เกิดข้อผิดพลาดในการตรวจสอบข้อมูล Round Robin: ' + error.message);
-  }
-}
-
-// 🔍 ฟังก์ชันสำหรับตรวจสอบโครงสร้างข้อมูล Round Robin โดยละเอียด
-function debugRoundRobinStructure() {
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const roundRobinSheet = ss.getSheetByName("Round Robin");
@@ -3163,89 +3070,7 @@ function debugRoundRobinStructure() {
   }
 }
 
-// 🔧 ฟังก์ชันสำหรับตรวจสอบและแก้ไขข้อมูลทั้งหมด
-function checkAndFixAllRoundRobinData() {
-  try {
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
-    
-    // ตรวจสอบชีทที่จำเป็น
-    const roundRobinSheet = ss.getSheetByName("Round Robin");
-    const standingsSheet = ss.getSheetByName("Round Robin Standing");
-    
-    if (!roundRobinSheet) {
-      SpreadsheetApp.getUi().alert('❌ ไม่พบชีท "Round Robin"');
-      return;
-    }
-    
-    if (!standingsSheet) {
-      SpreadsheetApp.getUi().alert('❌ ไม่พบชีท "Round Robin Standing"');
-      return;
-    }
-    
-    // ตรวจสอบข้อมูลในชีท Round Robin
-    const roundRobinData = roundRobinSheet.getDataRange().getValues();
-    if (roundRobinData.length <= 1) {
-      SpreadsheetApp.getUi().alert('❌ ไม่มีข้อมูลในชีท "Round Robin"');
-      return;
-    }
-    
-    // ตรวจสอบข้อมูลในชีท Round Robin Standing
-    const standingsData = standingsSheet.getDataRange().getValues();
-    if (standingsData.length <= 1) {
-      SpreadsheetApp.getUi().alert('❌ ไม่มีข้อมูลในชีท "Round Robin Standing"');
-      return;
-    }
-    
-    // ตรวจสอบปัญหาที่พบ
-    let issues = [];
-    
-    // ตรวจสอบ Win Rate และ OW%
-    for (let i = 1; i < standingsData.length; i++) {
-      const row = standingsData[i];
-      const winRate = row[8];
-      const ow = row[9];
-      
-      if (typeof winRate === 'string' && !winRate.includes('%') && !isNaN(parseFloat(winRate))) {
-        issues.push(`แถว ${i + 1}: Win Rate ไม่มีเครื่องหมาย %`);
-      }
-      
-      if (typeof ow === 'string' && !ow.includes('%') && !isNaN(parseFloat(ow))) {
-        issues.push(`แถว ${i + 1}: OW% ไม่มีเครื่องหมาย %`);
-      }
-    }
-    
-    if (issues.length > 0) {
-      const issueMessage = 'พบปัญหาดังนี้:\n\n' + issues.join('\n') + '\n\nต้องการแก้ไขหรือไม่?';
-      const response = SpreadsheetApp.getUi().alert('🔍 ตรวจสอบข้อมูล Round Robin', issueMessage, SpreadsheetApp.getUi().ButtonSet.YES_NO);
-      
-      if (response === SpreadsheetApp.getUi().Button.YES) {
-        fixRoundRobinStandingsData();
-      }
-    } else {
-      // ตรวจสอบว่า OW% เป็น 0% ทั้งหมดหรือไม่
-      const allOwZero = standingsData.slice(1).every(row => {
-        const ow = row[9];
-        return ow === '0%' || ow === 0;
-      });
-      
-      if (allOwZero) {
-        const response = SpreadsheetApp.getUi().alert('🔍 ตรวจสอบข้อมูล Round Robin', 
-          'พบว่า OW% เป็น 0% ทั้งหมด\n\nต้องการคำนวณ OW% ใหม่หรือไม่?', 
-          SpreadsheetApp.getUi().ButtonSet.YES_NO);
-        
-        if (response === SpreadsheetApp.getUi().Button.YES) {
-          fixRoundRobinStandingsData();
-        }
-      } else {
-        SpreadsheetApp.getUi().alert('✅ ไม่พบปัญหาในข้อมูล Round Robin\n\nข้อมูลทั้งหมดถูกต้องแล้ว!');
-      }
-    }
-    
-  } catch (error) {
-    console.error('❌ เกิดข้อผิดพลาดในการตรวจสอบข้อมูล:', error);
-    SpreadsheetApp.getUi().alert('❌ เกิดข้อผิดพลาดในการตรวจสอบข้อมูล: ' + error.message);
-  }
-}
+
 
 
 // 🔧 ฟังก์ชันสำหรับตั้งค่า trigger
