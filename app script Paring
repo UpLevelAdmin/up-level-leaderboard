@@ -3166,14 +3166,29 @@ function checkAndFixAllRoundRobinData() {
         fixRoundRobinStandingsData();
       }
     } else {
-      SpreadsheetApp.getUi().alert('✅ ไม่พบปัญหาในข้อมูล Round Robin\n\nข้อมูลทั้งหมดถูกต้องแล้ว!');
+      // ตรวจสอบว่า OW% เป็น 0% ทั้งหมดหรือไม่
+      const allOwZero = standingsData.slice(1).every(row => {
+        const ow = row[9];
+        return ow === '0%' || ow === 0;
+      });
+      
+      if (allOwZero) {
+        const response = SpreadsheetApp.getUi().alert('🔍 ตรวจสอบข้อมูล Round Robin', 
+          'พบว่า OW% เป็น 0% ทั้งหมด\n\nต้องการคำนวณ OW% ใหม่หรือไม่?', 
+          SpreadsheetApp.getUi().ButtonSet.YES_NO);
+        
+        if (response === SpreadsheetApp.getUi().Button.YES) {
+          fixRoundRobinStandingsData();
+        }
+      } else {
+        SpreadsheetApp.getUi().alert('✅ ไม่พบปัญหาในข้อมูล Round Robin\n\nข้อมูลทั้งหมดถูกต้องแล้ว!');
+      }
     }
     
   } catch (error) {
     console.error('❌ เกิดข้อผิดพลาดในการตรวจสอบข้อมูล:', error);
     SpreadsheetApp.getUi().alert('❌ เกิดข้อผิดพลาดในการตรวจสอบข้อมูล: ' + error.message);
-  }
-}
+
 
 // 🔧 ฟังก์ชันสำหรับตั้งค่า trigger
 function setupRoundRobinTriggers() {
