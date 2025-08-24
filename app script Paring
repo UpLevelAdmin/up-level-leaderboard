@@ -18,6 +18,9 @@ function onOpen() {
     .addItem('📊 อัปเดตผล Round Robin', 'updateRoundRobinResults')
     .addItem('🔄 อัปเดตผลและ Standings อัตโนมัติ', 'autoUpdateRoundRobinResults')
     .addItem('🏆 สร้างสรุปผล Round Robin', 'createRoundRobinStanding')
+    .addSeparator()
+    .addItem('🔧 ตั้งค่า Trigger อัตโนมัติ', 'setupRoundRobinTriggers')
+    .addItem('🔍 ตรวจสอบ Trigger ที่มีอยู่', 'checkRoundRobinTriggers')
     .addToUi();
   
   // 📊 Analysis & Stats
@@ -2711,18 +2714,85 @@ function onEdit(e) {
     
     // ตรวจสอบว่าการเปลี่ยนแปลงอยู่ในคอลัมน์ checkboxes หรือไม่
     if (column >= 7 && column <= 10) { // WIN_P1, DRAW, WIN_P2, Double Loss
-      // รอสักครู่แล้วอัปเดตผลการแข่งขัน
-      SpreadsheetApp.flush();
-      setTimeout(() => {
-        try {
-          updateRoundRobinResults();
-          createRoundRobinStanding();
-          console.log('✅ อัปเดตอัตโนมัติสำเร็จ');
-        } catch (error) {
-          console.error('❌ เกิดข้อผิดพลาดในการอัปเดตอัตโนมัติ:', error);
-        }
-      }, 1000);
+      try {
+        // อัปเดตผลการแข่งขันทันที
+        updateRoundRobinResults();
+        console.log('✅ อัปเดตผลการแข่งขันอัตโนมัติสำเร็จ');
+        
+        // สร้าง trigger สำหรับอัปเดต standings หลังจาก 2 วินาที
+        ScriptApp.newTrigger('updateRoundRobinStandingsDelayed')
+          .timeBased()
+          .after(2000)
+          .create();
+      } catch (error) {
+        console.error('❌ เกิดข้อผิดพลาดในการอัปเดตผลการแข่งขัน:', error);
+      }
     }
+  }
+}
+
+// 🔄 ฟังก์ชันสำหรับอัปเดต standings หลังจาก delay
+function updateRoundRobinStandingsDelayed() {
+  try {
+    // ลบ trigger เก่าทั้งหมด
+    const triggers = ScriptApp.getProjectTriggers();
+    triggers.forEach(trigger => {
+      if (trigger.getHandlerFunction() === 'updateRoundRobinStandingsDelayed') {
+        ScriptApp.deleteTrigger(trigger);
+      }
+    });
+    
+    // อัปเดต standings
+    createRoundRobinStanding();
+    console.log('✅ อัปเดต Standings อัตโนมัติสำเร็จ');
+  } catch (error) {
+    console.error('❌ เกิดข้อผิดพลาดในการอัปเดต Standings:', error);
+  }
+}
+
+// 🔧 ฟังก์ชันสำหรับตั้งค่า trigger
+function setupRoundRobinTriggers() {
+  try {
+    // ลบ trigger เก่าทั้งหมด
+    const triggers = ScriptApp.getProjectTriggers();
+    triggers.forEach(trigger => {
+      if (trigger.getHandlerFunction() === 'onEdit') {
+        ScriptApp.deleteTrigger(trigger);
+      }
+    });
+    
+    // สร้าง trigger ใหม่
+    ScriptApp.newTrigger('onEdit')
+      .onEdit()
+      .create();
+    
+    SpreadsheetApp.getUi().alert('✅ ตั้งค่า trigger สำหรับ Round Robin สำเร็จ!');
+  } catch (error) {
+    console.error('❌ เกิดข้อผิดพลาดในการตั้งค่า trigger:', error);
+    SpreadsheetApp.getUi().alert('❌ เกิดข้อผิดพลาดในการตั้งค่า trigger');
+  }
+}
+
+// 🔍 ฟังก์ชันสำหรับตรวจสอบ trigger ที่มีอยู่
+function checkRoundRobinTriggers() {
+  try {
+    const triggers = ScriptApp.getProjectTriggers();
+    let triggerInfo = '🔍 Trigger ที่มีอยู่:\n\n';
+    
+    if (triggers.length === 0) {
+      triggerInfo += '❌ ไม่มี trigger ที่ตั้งค่าไว้\n';
+    } else {
+      triggers.forEach((trigger, index) => {
+        triggerInfo += `${index + 1}. Function: ${trigger.getHandlerFunction()}\n`;
+        triggerInfo += `   Event: ${trigger.getEventType()}\n`;
+        triggerInfo += `   Source: ${trigger.getSource()}\n\n`;
+      });
+    }
+    
+    SpreadsheetApp.getUi().alert(triggerInfo);
+  } catch (error) {
+    console.error('❌ เกิดข้อผิดพลาดในการตรวจสอบ trigger:', error);
+    SpreadsheetApp.getUi().alert('❌ เกิดข้อผิดพลาดในการตรวจสอบ trigger');
   }
 }
 
