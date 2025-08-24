@@ -26,6 +26,7 @@ function onOpen() {
     .addItem('🔍 ตรวจสอบและแก้ไขข้อมูลทั้งหมด', 'checkAndFixAllRoundRobinData')
     .addItem('🧪 ทดสอบการคำนวณ OW%', 'testOpponentWinPercentage')
     .addItem('🔍 ตรวจสอบข้อมูล Round Robin', 'debugRoundRobinData')
+    .addItem('🔍 ตรวจสอบโครงสร้างข้อมูล Round Robin', 'debugRoundRobinStructure')
     .addToUi();
   
   // 📊 Analysis & Stats
@@ -2841,8 +2842,8 @@ function calculateOpponentWinPercentage(playerId, standingsData) {
     // หาคู่แข่งทั้งหมดของผู้เล่นคนนี้
     for (let i = 1; i < roundRobinData.length; i++) {
       const row = roundRobinData[i];
-      const p1Id = row[2];
-      const p2Id = row[8];
+      const p1Id = row[2]; // P1_ID (คอลัมน์ C)
+      const p2Id = row[10]; // P2_ID (คอลัมน์ K) - แก้ไขจาก row[8] เป็น row[10]
       
       console.log(`  - แถว ${i}: P1=${p1Id}, P2=${p2Id}`);
       
@@ -2942,12 +2943,12 @@ function calculateHeadToHeadScore(playerId, standingsData) {
     tiedPlayers.forEach(opponent => {
       const opponentId = opponent[1];
       
-      // หาผลการแข่งขันระหว่างผู้เล่นทั้งสอง
-      for (let i = 1; i < roundRobinData.length; i++) {
-        const row = roundRobinData[i];
-        const p1Id = row[2];
-        const p2Id = row[8];
-        const result = row[14]; // RESULT column
+              // หาผลการแข่งขันระหว่างผู้เล่นทั้งสอง
+        for (let i = 1; i < roundRobinData.length; i++) {
+          const row = roundRobinData[i];
+          const p1Id = row[2]; // P1_ID (คอลัมน์ C)
+          const p2Id = row[10]; // P2_ID (คอลัมน์ K) - แก้ไขจาก row[8] เป็น row[10]
+          const result = row[14]; // RESULT column
         
         if ((p1Id === playerId && p2Id === opponentId) || 
             (p1Id === opponentId && p2Id === playerId)) {
@@ -3042,7 +3043,7 @@ function debugRoundRobinData() {
       debugInfo += `  TABLE: ${row[1]}\n`;
       debugInfo += `  P1_ID: ${row[2]}\n`;
       debugInfo += `  P1_NAME: ${row[3]}\n`;
-      debugInfo += `  P2_ID: ${row[8]}\n`;
+      debugInfo += `  P2_ID: ${row[10]}\n`; // แก้ไขจาก row[8] เป็น row[10]
       debugInfo += `  P2_NAME: ${row[11]}\n`;
       debugInfo += `  RESULT: ${row[14]}\n`;
       debugInfo += '\n';
@@ -3051,7 +3052,7 @@ function debugRoundRobinData() {
     // ตรวจสอบคอลัมน์ที่ใช้
     debugInfo += '📊 คอลัมน์ที่ใช้:\n';
     debugInfo += '  P1_ID: คอลัมน์ C (index 2)\n';
-    debugInfo += '  P2_ID: คอลัมน์ I (index 8)\n';
+    debugInfo += '  P2_ID: คอลัมน์ K (index 10)\n'; // แก้ไขจาก index 8 เป็น index 10
     debugInfo += '  RESULT: คอลัมน์ O (index 14)\n\n';
     
     SpreadsheetApp.getUi().alert(debugInfo);
@@ -3059,6 +3060,50 @@ function debugRoundRobinData() {
   } catch (error) {
     console.error('❌ เกิดข้อผิดพลาดในการตรวจสอบข้อมูล Round Robin:', error);
     SpreadsheetApp.getUi().alert('❌ เกิดข้อผิดพลาดในการตรวจสอบข้อมูล Round Robin: ' + error.message);
+  }
+}
+
+// 🔍 ฟังก์ชันสำหรับตรวจสอบโครงสร้างข้อมูล Round Robin โดยละเอียด
+function debugRoundRobinStructure() {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const roundRobinSheet = ss.getSheetByName("Round Robin");
+    
+    if (!roundRobinSheet) {
+      SpreadsheetApp.getUi().alert('❌ ไม่พบชีท "Round Robin"');
+      return;
+    }
+    
+    const data = roundRobinSheet.getDataRange().getValues();
+    if (data.length <= 1) {
+      SpreadsheetApp.getUi().alert('❌ ไม่มีข้อมูลในชีท "Round Robin"');
+      return;
+    }
+    
+    let debugInfo = '🔍 โครงสร้างข้อมูล Round Robin:\n\n';
+    debugInfo += `จำนวนแถวทั้งหมด: ${data.length}\n`;
+    debugInfo += `จำนวนคอลัมน์: ${data[0].length}\n\n`;
+    
+    // แสดงข้อมูล header
+    debugInfo += '📋 Header (แถวที่ 1):\n';
+    for (let i = 0; i < data[0].length; i++) {
+      debugInfo += `  คอลัมน์ ${i}: ${data[0][i]}\n`;
+    }
+    debugInfo += '\n';
+    
+    // แสดงข้อมูลแถวที่ 2 (ข้อมูลจริง)
+    if (data.length > 1) {
+      debugInfo += '📊 ข้อมูลแถวที่ 2:\n';
+      for (let i = 0; i < data[1].length; i++) {
+        debugInfo += `  คอลัมน์ ${i}: ${data[1][i]} (${typeof data[1][i]})\n`;
+      }
+    }
+    
+    SpreadsheetApp.getUi().alert(debugInfo);
+    
+  } catch (error) {
+    console.error('❌ เกิดข้อผิดพลาดในการตรวจสอบโครงสร้างข้อมูล:', error);
+    SpreadsheetApp.getUi().alert('❌ เกิดข้อผิดพลาดในการตรวจสอบโครงสร้างข้อมูล: ' + error.message);
   }
 }
 
