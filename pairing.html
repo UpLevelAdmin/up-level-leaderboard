@@ -1853,7 +1853,8 @@
         
         rounds[r].forEach((row, idx) => {
           console.log('Round Robin Row', idx, ':', row);
-          console.log('Row indices - P1_ID:', row[2], 'P1_NAME:', row[3], 'P2_ID:', row[8], 'P2_NAME:', row[9], 'P2_NAME_ALT:', row[10], 'P2_NAME_ALT2:', row[11]);
+          console.log('Row indices - P1_ID:', row[2], 'P1_NAME:', row[3], 'P2_ID:', row[8], 'P2_NAME:', row[9], 'RESULT:', row[14]);
+          console.log('Row length:', row.length, 'All columns:', row.map((val, i) => `${i}:${val}`).join(', '));
           const round = row[0];
           const tableNo = row[1];
           
@@ -1889,10 +1890,12 @@
           
           let p1Class = 'player-name';
           let p2Class = 'player-name';
-          let result = row[12]; // RESULT column
+          let result = row[14]; // RESULT column (index 14 = column O)
           let resultDisplay = '';
           let statusClass = 'pending';
           let statusText = '⏳ รอผล';
+          
+          console.log('Round Robin - Result from row[14]:', result);
           
           if (result === '1:0') {
             p1Class += ' winner';
@@ -1900,26 +1903,31 @@
             resultDisplay = '1 : 0';
             statusClass = 'completed';
             statusText = '✅ เสร็จสิ้น';
+            console.log('Round Robin - Player 1 wins, classes:', p1Class, p2Class);
           } else if (result === '0:1') {
             p1Class += ' loser';
             p2Class += ' winner';
             resultDisplay = '0 : 1';
             statusClass = 'completed';
             statusText = '✅ เสร็จสิ้น';
+            console.log('Round Robin - Player 2 wins, classes:', p1Class, p2Class);
           } else if (result === '1:1') {
             p1Class += ' draw';
             p2Class += ' draw';
             resultDisplay = '1 : 1';
             statusClass = 'completed';
             statusText = '✅ เสร็จสิ้น';
+            console.log('Round Robin - Draw, classes:', p1Class, p2Class);
           } else if (result === '0:0') {
             p1Class += ' loser';
             p2Class += ' loser';
             resultDisplay = '0 : 0';
             statusClass = 'completed';
             statusText = '✅ เสร็จสิ้น';
+            console.log('Round Robin - Double loss, classes:', p1Class, p2Class);
           } else {
             resultDisplay = '- : -';
+            console.log('Round Robin - No result yet, classes:', p1Class, p2Class);
           }
           
           const p1NameFromPlayers = getPlayerNameById(players, p1Id);
@@ -1929,7 +1937,7 @@
           
           // ใช้ชื่อจากคอลัมน์ที่ถูกต้อง
           const p1NameFromColumn = row[3]; // PLAYER 1 (คอลัมน์ D)
-          const p2NameFromColumn = row[11]; // PLAYER 2 (คอลัมน์ L)
+          const p2NameFromColumn = row[9]; // PLAYER 2 (คอลัมน์ J)
           console.log('P1 Name from Column:', p1NameFromColumn, 'P2 Name from Column:', p2NameFromColumn);
           
           const p1DisplayName = p1Codename || extractRealName(p1NameFromPlayers) || extractRealName(p1NameFromColumn) || `Player ${p1Id}`;
@@ -1946,9 +1954,9 @@
           
           html += `<div class="pairing-card ${statusClass}" style="border-left: 4px solid ${roundColor} !important;">
             <div class="round-label" style="background-color: ${roundColor}; color: white;">รอบ ${round}</div>
-            <span class="player-name ${p1Class}" title="${p1DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p1DisplayName}')">${getRankEmoji(p1Rank)}${p1ShortName}${getRankEmoji(p1Rank)}</span>
+            <span class="${p1Class}" title="${p1DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p1DisplayName}')">${getRankEmoji(p1Rank)}${p1ShortName}${getRankEmoji(p1Rank)}</span>
             <div class="score">${resultDisplay}</div>
-            <span class="player-name ${p2Class}" title="${p2DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p2DisplayName}')">${getRankEmoji(p2Rank)}${p2ShortName}${getRankEmoji(p2Rank)}</span>
+            <span class="${p2Class}" title="${p2DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p2DisplayName}')">${getRankEmoji(p2Rank)}${p2ShortName}${getRankEmoji(p2Rank)}</span>
             <div class="status-badge status-${statusClass}">${statusText}</div>
           </div>`;
         });
@@ -1964,8 +1972,11 @@
       console.log('renderRoundRobinStandings - standings.length:', standings ? standings.length : 'null');
       
       if (!standings || standings.length <= 1) {
+        console.log('⚠️ ไม่มีข้อมูล Round Robin Standings');
         return '<div style="color:#888;">ยังไม่มีข้อมูลคะแนน Round Robin</div>';
       }
+      
+      console.log('RoundRobin Standings - All data:', standings);
       
       let html = `<div class="standings-container">
         <div class="standings-header" onclick="toggleStandings(this)">
@@ -2002,6 +2013,9 @@
         let winRate = row[9] || '0%'; // Win Rate (index 9)
         let ow = row[10] || '0%'; // OW% (index 10)
         const h2h = row[11] || '-'; // H2H (index 11)
+        
+        console.log('RoundRobin Standing - Row data:', row);
+        console.log('RoundRobin Standing - Parsed data:', {played, win, draw, loss, points, winRate, ow, h2h});
         
         console.log('RoundRobin - Row data:', row);
         console.log('RoundRobin - Points:', points, 'WinRate:', winRate, 'OW:', ow, 'H2H:', h2h);
@@ -2049,7 +2063,7 @@
         
         console.log('RoundRobin - Final displayName:', displayName);
         
-        html += `<tr>
+        const rowHtml = `<tr>
           <td>${row[0] || (i+1)}</td>
           <td data-full-text="${displayName}" onclick="showTooltip(this, '${displayName}')">
             <span class="codename-rank" data-rank="${playerRank}"><span style="font-size:0.8rem;">${getRankEmoji(playerRank)}</span> ${renderCodenameEffect(displayName, playerRank)} <span style="font-size:0.8rem;">${getRankEmoji(playerRank)}</span></span>
@@ -2062,6 +2076,9 @@
           <td data-full-text="${ow}" onclick="showTooltip(this, '${ow}')">${ow}</td>
           <td data-full-text="${h2h}" onclick="showTooltip(this, '${h2h}')">${h2h}</td>
         </tr>`;
+        
+        console.log('RoundRobin Standing - Generated HTML:', rowHtml);
+        html += rowHtml;
       });
       
       html += '</tbody></table></div></div></div>';
@@ -2083,7 +2100,7 @@
       // นับการแข่งขันที่เสร็จสิ้นจาก RESULT column
       let completedMatches = 0;
       for (let i = 1; i < roundRobin.length; i++) {
-        const result = roundRobin[i][12]; // RESULT column
+        const result = roundRobin[i][14]; // RESULT column (index 14 = column O)
         if (result && result !== '' && (result === '1:0' || result === '0:1' || result === '1:1' || result === '0:0')) {
           completedMatches++;
         }
@@ -2114,6 +2131,8 @@
       try {
         console.log('Fetching data from:', API_URL);
         console.log('Fetching member data from:', MEMBER_API);
+        
+        console.log('=== DEBUG: LOADING DATA ===');
         
         const [pairingRes, memberRes] = await Promise.all([
           fetch(API_URL).catch(e => {
@@ -2147,6 +2166,13 @@
         console.log('phoneMap:', phoneMap);
         console.log('playersData:', pairingData.players);
         console.log('Standings data:', pairingData.standings);
+        console.log('Round Robin data:', pairingData.roundRobin);
+        console.log('Round Robin data length:', pairingData.roundRobin ? pairingData.roundRobin.length : 'null');
+        if (pairingData.roundRobin && pairingData.roundRobin.length > 1) {
+          console.log('Round Robin first row:', pairingData.roundRobin[0]);
+          console.log('Round Robin second row:', pairingData.roundRobin[1]);
+        }
+        console.log('Round Robin Standings data:', pairingData.roundRobinStandings);
         console.log('Hide Standing Status:', pairingData.hideStanding);
         console.log('Hide Standing raw value:', pairingData.hideStanding);
         
@@ -2183,7 +2209,31 @@
         document.getElementById('swiss-summary').innerHTML = renderSwissSummary(pairingData.pairing, pairingData.standings);
         
         // Render Round Robin Tournament
-        document.getElementById('roundrobin-pairing').innerHTML = renderRoundRobinPairing(pairingData.roundRobin, pairingData.players, phoneMap);
+        console.log('=== RENDERING ROUND ROBIN PAIRING ===');
+        const roundRobinHtml = renderRoundRobinPairing(pairingData.roundRobin, pairingData.players, phoneMap);
+        console.log('Round Robin HTML generated:', roundRobinHtml.substring(0, 500) + '...');
+        document.getElementById('roundrobin-pairing').innerHTML = roundRobinHtml;
+        
+        // เพิ่มคำแนะนำสำหรับการแก้ไขปัญหา
+        if (pairingData.roundRobin && pairingData.roundRobin.length > 1) {
+          const hasResults = pairingData.roundRobin.some(row => row[14] && row[14] !== '');
+          if (!hasResults) {
+            console.log('⚠️ ไม่พบผลการแข่งขันในข้อมูล Round Robin');
+            console.log('💡 คำแนะนำ: ไปที่ Google Sheet และใช้ฟังก์ชัน "📊 อัปเดตผล Round Robin"');
+            
+            // แสดงข้อความแจ้งเตือนในหน้าเว็บ
+            const warningDiv = document.createElement('div');
+            warningDiv.style.cssText = 'background:#fef3c7;border:1px solid #fcd34d;border-radius:12px;padding:16px;margin:16px 0;text-align:center;';
+            warningDiv.innerHTML = `
+              <h4 style="margin:0 0 8px 0;color:#92400e;">⚠️ ไม่พบผลการแข่งขัน</h4>
+              <p style="margin:0;color:#92400e;font-size:14px;">
+                ข้อมูล Round Robin ยังไม่มีการอัปเดตผลการแข่งขัน<br>
+                กรุณาไปที่ Google Sheet และใช้ฟังก์ชัน "📊 อัปเดตผล Round Robin"
+              </p>
+            `;
+            document.getElementById('roundrobin-pairing').insertBefore(warningDiv, document.getElementById('roundrobin-pairing').firstChild);
+          }
+        }
         
         // Render Round Robin Standings ตามสถานะ Hide Standing
         if (shouldHideStanding) {
@@ -2198,6 +2248,11 @@
         }
         
         console.log('Round Robin Standings data:', pairingData.roundRobinStandings);
+        console.log('Round Robin Standings data length:', pairingData.roundRobinStandings ? pairingData.roundRobinStandings.length : 'null');
+        if (pairingData.roundRobinStandings && pairingData.roundRobinStandings.length > 1) {
+          console.log('Round Robin Standings first row:', pairingData.roundRobinStandings[0]);
+          console.log('Round Robin Standings second row:', pairingData.roundRobinStandings[1]);
+        }
         document.getElementById('roundrobin-summary').innerHTML = renderRoundRobinSummary(pairingData.roundRobin, pairingData.roundRobinStandings);
         
       } catch (e) {
