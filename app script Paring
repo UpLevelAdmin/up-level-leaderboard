@@ -3028,47 +3028,7 @@ function fixAllRoundRobinData() {
 }
 
 
-  try {
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
-    const roundRobinSheet = ss.getSheetByName("Round Robin");
-    
-    if (!roundRobinSheet) {
-      SpreadsheetApp.getUi().alert('❌ ไม่พบชีท "Round Robin"');
-      return;
-    }
-    
-    const data = roundRobinSheet.getDataRange().getValues();
-    if (data.length <= 1) {
-      SpreadsheetApp.getUi().alert('❌ ไม่มีข้อมูลในชีท "Round Robin"');
-      return;
-    }
-    
-    let debugInfo = '🔍 โครงสร้างข้อมูล Round Robin:\n\n';
-    debugInfo += `จำนวนแถวทั้งหมด: ${data.length}\n`;
-    debugInfo += `จำนวนคอลัมน์: ${data[0].length}\n\n`;
-    
-    // แสดงข้อมูล header
-    debugInfo += '📋 Header (แถวที่ 1):\n';
-    for (let i = 0; i < data[0].length; i++) {
-      debugInfo += `  คอลัมน์ ${i}: ${data[0][i]}\n`;
-    }
-    debugInfo += '\n';
-    
-    // แสดงข้อมูลแถวที่ 2 (ข้อมูลจริง)
-    if (data.length > 1) {
-      debugInfo += '📊 ข้อมูลแถวที่ 2:\n';
-      for (let i = 0; i < data[1].length; i++) {
-        debugInfo += `  คอลัมน์ ${i}: ${data[1][i]} (${typeof data[1][i]})\n`;
-      }
-    }
-    
-    SpreadsheetApp.getUi().alert(debugInfo);
-    
-  } catch (error) {
-    console.error('❌ เกิดข้อผิดพลาดในการตรวจสอบโครงสร้างข้อมูล:', error);
-    SpreadsheetApp.getUi().alert('❌ เกิดข้อผิดพลาดในการตรวจสอบโครงสร้างข้อมูล: ' + error.message);
-  }
-}
+
 
 
 
