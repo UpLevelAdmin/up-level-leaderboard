@@ -2343,12 +2343,15 @@
             // ตรวจสอบว่า OW% ไม่มีเครื่องหมาย % และเป็นตัวเลข
             const hasOwIssue = typeof ow === 'string' && !ow.includes('%') && !isNaN(parseFloat(ow)) && parseFloat(ow) > 0;
             
+            // ตรวจสอบว่า H2H ไม่มีเครื่องหมาย % และเป็นตัวเลข
+            const hasH2hIssue = typeof h2h === 'string' && !h2h.includes('%') && !isNaN(parseFloat(h2h)) && parseFloat(h2h) > 0;
+            
             // ตรวจสอบความขัดแย้งอื่นๆ
             const hasOtherIssues = (wins === 0 && losses > 0 && winRate === '100%') || 
                                  (wins > 0 && losses === 0 && winRate === '0%') ||
                                  (played === 0 && (winRate !== '0%' || ow !== '0%'));
             
-            return hasWinRateIssue || hasOwIssue || hasOtherIssues;
+            return hasWinRateIssue || hasOwIssue || hasH2hIssue || hasOtherIssues;
           });
           
           if (hasInconsistentData) {
