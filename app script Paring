@@ -24,6 +24,7 @@ function onOpen() {
     .addSeparator()
     .addItem('🔧 แก้ไขข้อมูล Standings (OW% & H2H)', 'fixRoundRobinStandingsData')
     .addItem('🔍 ตรวจสอบและแก้ไขข้อมูลทั้งหมด', 'checkAndFixAllRoundRobinData')
+    .addItem('🧪 ทดสอบการคำนวณ OW%', 'testOpponentWinPercentage')
     .addToUi();
   
   // 📊 Analysis & Stats
@@ -2830,6 +2831,8 @@ function calculateOpponentWinPercentage(playerId, standingsData) {
     const roundRobinData = roundRobinSheet.getDataRange().getValues();
     const opponents = new Set();
     
+    console.log('🔍 คำนวณ OW% สำหรับผู้เล่น:', playerId);
+    
     // หาคู่แข่งทั้งหมดของผู้เล่นคนนี้
     for (let i = 1; i < roundRobinData.length; i++) {
       const row = roundRobinData[i];
@@ -2838,31 +2841,53 @@ function calculateOpponentWinPercentage(playerId, standingsData) {
       
       if (p1Id === playerId && p2Id !== 'BYE') {
         opponents.add(p2Id);
+        console.log('  - คู่แข่ง (P2):', p2Id);
       } else if (p2Id === playerId && p1Id !== 'BYE') {
         opponents.add(p1Id);
+        console.log('  - คู่แข่ง (P1):', p1Id);
       }
     }
     
-    if (opponents.size === 0) return 0;
+    console.log('  - จำนวนคู่แข่งทั้งหมด:', opponents.size);
+    
+    if (opponents.size === 0) {
+      console.log('  - ไม่มีคู่แข่ง');
+      return 0;
+    }
     
     // คำนวณ win rate ของคู่แข่งทั้งหมด
     let totalOpponentWins = 0;
     let totalOpponentGames = 0;
     
     opponents.forEach(opponentId => {
-      const opponentRow = standingsData.find(row => row[1] === opponentId);
+      // หาข้อมูลคู่แข่งจาก standingsData
+      let opponentRow = null;
+      for (let j = 1; j < standingsData.length; j++) {
+        if (standingsData[j][1] === opponentId) {
+          opponentRow = standingsData[j];
+          break;
+        }
+      }
+      
       if (opponentRow) {
         const opponentWins = parseInt(opponentRow[4]) || 0;
         const opponentDraws = parseInt(opponentRow[5]) || 0;
         const opponentLosses = parseInt(opponentRow[6]) || 0;
         const opponentGames = opponentWins + opponentDraws + opponentLosses;
         
+        console.log('  - คู่แข่ง', opponentId, ':', opponentWins, 'W,', opponentDraws, 'D,', opponentLosses, 'L,', opponentGames, 'เกม');
+        
         totalOpponentWins += opponentWins;
         totalOpponentGames += opponentGames;
+      } else {
+        console.log('  - ไม่พบข้อมูลคู่แข่ง:', opponentId);
       }
     });
     
-    return totalOpponentGames > 0 ? Math.round((totalOpponentWins / totalOpponentGames) * 100) : 0;
+    const owPercentage = totalOpponentGames > 0 ? Math.round((totalOpponentWins / totalOpponentGames) * 100) : 0;
+    console.log('  - OW% ที่คำนวณได้:', owPercentage + '%');
+    
+    return owPercentage;
     
   } catch (error) {
     console.error('❌ เกิดข้อผิดพลาดในการคำนวณ OW%:', error);
@@ -2924,6 +2949,48 @@ function calculateHeadToHeadScore(playerId, standingsData) {
   } catch (error) {
     console.error('❌ เกิดข้อผิดพลาดในการคำนวณ H2H:', error);
     return 0;
+  }
+}
+
+// 🔧 ฟังก์ชันสำหรับทดสอบการคำนวณ OW%
+function testOpponentWinPercentage() {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const standingsSheet = ss.getSheetByName("Round Robin Standing");
+    
+    if (!standingsSheet) {
+      SpreadsheetApp.getUi().alert('❌ ไม่พบชีท "Round Robin Standing"');
+      return;
+    }
+    
+    const data = standingsSheet.getDataRange().getValues();
+    if (data.length <= 1) {
+      SpreadsheetApp.getUi().alert('❌ ไม่มีข้อมูลในชีท "Round Robin Standing"');
+      return;
+    }
+    
+    let testResults = '🔍 ผลการทดสอบการคำนวณ OW%:\n\n';
+    
+    // ทดสอบการคำนวณ OW% สำหรับผู้เล่นแต่ละคน
+    for (let i = 1; i < data.length; i++) {
+      const row = data[i];
+      const playerId = row[1];
+      const playerName = row[2];
+      const wins = parseInt(row[4]) || 0;
+      const losses = parseInt(row[6]) || 0;
+      
+      const owPercentage = calculateOpponentWinPercentage(playerId, data);
+      
+      testResults += `${i}. ${playerName} (${playerId})\n`;
+      testResults += `   ชนะ: ${wins}, แพ้: ${losses}\n`;
+      testResults += `   OW%: ${owPercentage}%\n\n`;
+    }
+    
+    SpreadsheetApp.getUi().alert(testResults);
+    
+  } catch (error) {
+    console.error('❌ เกิดข้อผิดพลาดในการทดสอบ OW%:', error);
+    SpreadsheetApp.getUi().alert('❌ เกิดข้อผิดพลาดในการทดสอบ OW%: ' + error.message);
   }
 }
 

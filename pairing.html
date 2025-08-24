@@ -2325,10 +2325,14 @@
             const hasWinRateIssue = typeof winRate === 'string' && !winRate.includes('%') && !isNaN(parseFloat(winRate));
             const hasOwIssue = typeof ow === 'string' && !ow.includes('%') && !isNaN(parseFloat(ow));
             
+            // ตรวจสอบว่า OW% เป็น 0% แต่ผู้เล่นมีคู่แข่งหรือไม่
+            const hasOwZeroIssue = ow === '0%' && played > 0;
+            
             return hasWinRateIssue || hasOwIssue || 
                    (wins === 0 && losses > 0 && winRate === '100%') || 
                    (wins > 0 && losses === 0 && winRate === '0%') ||
-                   (played === 0 && (winRate !== '0%' || ow !== '0%'));
+                   (played === 0 && (winRate !== '0%' || ow !== '0%')) ||
+                   hasOwZeroIssue;
           });
           
           if (hasInconsistentData) {
