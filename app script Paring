@@ -23,6 +23,7 @@ function onOpen() {
     .addItem('🔍 ตรวจสอบ Trigger ที่มีอยู่', 'checkRoundRobinTriggers')
     .addSeparator()
     .addItem('🔧 แก้ไขข้อมูล Standings (OW% & H2H)', 'fixRoundRobinStandingsData')
+    .addItem('🔍 ตรวจสอบและแก้ไขข้อมูลทั้งหมด', 'checkAndFixAllRoundRobinData')
     .addToUi();
   
   // 📊 Analysis & Stats
@@ -2781,9 +2782,9 @@ function fixRoundRobinStandingsData() {
       const losses = parseInt(row[6]) || 0;
       const points = parseInt(row[7]) || 0;
       
-      // คำนวณ Win Rate
-      const totalGames = wins + draws + losses;
-      const winRate = totalGames > 0 ? (wins / totalGames * 100).toFixed(0) + '%' : '0%';
+             // คำนวณ Win Rate
+       const totalGames = wins + draws + losses;
+       const winRate = totalGames > 0 ? Math.round(wins / totalGames * 100) + '%' : '0%';
       
       // คำนวณ OW% (Opponent Win Percentage)
       const owPercentage = calculateOpponentWinPercentage(playerId, data);
@@ -2812,7 +2813,7 @@ function fixRoundRobinStandingsData() {
     // เขียนข้อมูลกลับไปยังชีท
     standingsSheet.getRange(1, 1, updatedData.length, updatedData[0].length).setValues(updatedData);
     
-    SpreadsheetApp.getUi().alert('✅ แก้ไขข้อมูล Standings สำเร็จ!\n\n- อัปเดต Win Rate\n- คำนวณ OW% ใหม่\n- คำนวณ H2H ใหม่');
+    SpreadsheetApp.getUi().alert('✅ แก้ไขข้อมูล Standings สำเร็จ!\n\n- อัปเดต Win Rate\n- คำนวณ OW% ใหม่\n- คำนวณ H2H ใหม่\n\nกรุณารีเฟรชหน้าเว็บเพื่อดูผลลัพธ์');
     
   } catch (error) {
     console.error('❌ เกิดข้อผิดพลาดในการแก้ไขข้อมูล Standings:', error);
@@ -2923,6 +2924,74 @@ function calculateHeadToHeadScore(playerId, standingsData) {
   } catch (error) {
     console.error('❌ เกิดข้อผิดพลาดในการคำนวณ H2H:', error);
     return 0;
+  }
+}
+
+// 🔧 ฟังก์ชันสำหรับตรวจสอบและแก้ไขข้อมูลทั้งหมด
+function checkAndFixAllRoundRobinData() {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    
+    // ตรวจสอบชีทที่จำเป็น
+    const roundRobinSheet = ss.getSheetByName("Round Robin");
+    const standingsSheet = ss.getSheetByName("Round Robin Standing");
+    
+    if (!roundRobinSheet) {
+      SpreadsheetApp.getUi().alert('❌ ไม่พบชีท "Round Robin"');
+      return;
+    }
+    
+    if (!standingsSheet) {
+      SpreadsheetApp.getUi().alert('❌ ไม่พบชีท "Round Robin Standing"');
+      return;
+    }
+    
+    // ตรวจสอบข้อมูลในชีท Round Robin
+    const roundRobinData = roundRobinSheet.getDataRange().getValues();
+    if (roundRobinData.length <= 1) {
+      SpreadsheetApp.getUi().alert('❌ ไม่มีข้อมูลในชีท "Round Robin"');
+      return;
+    }
+    
+    // ตรวจสอบข้อมูลในชีท Round Robin Standing
+    const standingsData = standingsSheet.getDataRange().getValues();
+    if (standingsData.length <= 1) {
+      SpreadsheetApp.getUi().alert('❌ ไม่มีข้อมูลในชีท "Round Robin Standing"');
+      return;
+    }
+    
+    // ตรวจสอบปัญหาที่พบ
+    let issues = [];
+    
+    // ตรวจสอบ Win Rate และ OW%
+    for (let i = 1; i < standingsData.length; i++) {
+      const row = standingsData[i];
+      const winRate = row[8];
+      const ow = row[9];
+      
+      if (typeof winRate === 'string' && !winRate.includes('%') && !isNaN(parseFloat(winRate))) {
+        issues.push(`แถว ${i + 1}: Win Rate ไม่มีเครื่องหมาย %`);
+      }
+      
+      if (typeof ow === 'string' && !ow.includes('%') && !isNaN(parseFloat(ow))) {
+        issues.push(`แถว ${i + 1}: OW% ไม่มีเครื่องหมาย %`);
+      }
+    }
+    
+    if (issues.length > 0) {
+      const issueMessage = 'พบปัญหาดังนี้:\n\n' + issues.join('\n') + '\n\nต้องการแก้ไขหรือไม่?';
+      const response = SpreadsheetApp.getUi().alert('🔍 ตรวจสอบข้อมูล Round Robin', issueMessage, SpreadsheetApp.getUi().ButtonSet.YES_NO);
+      
+      if (response === SpreadsheetApp.getUi().Button.YES) {
+        fixRoundRobinStandingsData();
+      }
+    } else {
+      SpreadsheetApp.getUi().alert('✅ ไม่พบปัญหาในข้อมูล Round Robin\n\nข้อมูลทั้งหมดถูกต้องแล้ว!');
+    }
+    
+  } catch (error) {
+    console.error('❌ เกิดข้อผิดพลาดในการตรวจสอบข้อมูล:', error);
+    SpreadsheetApp.getUi().alert('❌ เกิดข้อผิดพลาดในการตรวจสอบข้อมูล: ' + error.message);
   }
 }
 
