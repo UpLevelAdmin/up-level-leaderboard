@@ -23,6 +23,7 @@ function onOpen() {
     .addItem('🔍 ตรวจสอบ Trigger ที่มีอยู่', 'checkRoundRobinTriggers')
     .addSeparator()
     .addItem('🔧 แก้ไขข้อมูล Standings (OW% & H2H)', 'fixRoundRobinStandingsData')
+    .addItem('🔧 แก้ไขข้อมูลทั้งหมดในครั้งเดียว', 'fixAllRoundRobinData')
     .addItem('🔍 ตรวจสอบและแก้ไขข้อมูลทั้งหมด', 'checkAndFixAllRoundRobinData')
     .addItem('🧪 ทดสอบการคำนวณ OW%', 'testOpponentWinPercentage')
     .addItem('🔍 ตรวจสอบข้อมูล Round Robin', 'debugRoundRobinData')
@@ -2785,9 +2786,9 @@ function fixRoundRobinStandingsData() {
       const losses = parseInt(row[6]) || 0;
       const points = parseInt(row[7]) || 0;
       
-             // คำนวณ Win Rate
-       const totalGames = wins + draws + losses;
-       const winRate = totalGames > 0 ? Math.round(wins / totalGames * 100) + '%' : '0%';
+      // คำนวณ Win Rate
+      const totalGames = wins + draws + losses;
+      const winRate = totalGames > 0 ? Math.round((wins / totalGames) * 100) + '%' : '0%';
       
       // คำนวณ OW% (Opponent Win Percentage)
       const owPercentage = calculateOpponentWinPercentage(playerId, data);
@@ -2970,6 +2971,61 @@ function calculateHeadToHeadScore(playerId, standingsData) {
   } catch (error) {
     console.error('❌ เกิดข้อผิดพลาดในการคำนวณ H2H:', error);
     return 0;
+  }
+}
+
+// 🔧 ฟังก์ชันสำหรับแก้ไขข้อมูลทั้งหมดในครั้งเดียว
+function fixAllRoundRobinData() {
+  try {
+    SpreadsheetApp.getUi().alert('🔧 เริ่มแก้ไขข้อมูล Round Robin ทั้งหมด...\n\nกรุณารอสักครู่...');
+    
+    // 1. แก้ไขข้อมูล Standings
+    fixRoundRobinStandingsData();
+    
+    // 2. รอสักครู่แล้วตรวจสอบผลลัพธ์
+    Utilities.sleep(2000);
+    
+    // 3. ตรวจสอบข้อมูลอีกครั้ง
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const standingsSheet = ss.getSheetByName("Round Robin Standing");
+    
+    if (standingsSheet) {
+      const data = standingsSheet.getDataRange().getValues();
+      let hasIssues = false;
+      let issueDetails = '';
+      
+      for (let i = 1; i < data.length; i++) {
+        const row = data[i];
+        const winRate = row[8];
+        const ow = row[9];
+        const h2h = row[10];
+        
+        if (typeof winRate === 'string' && !winRate.includes('%')) {
+          hasIssues = true;
+          issueDetails += `- แถว ${i}: Win Rate ไม่มีเครื่องหมาย % (${winRate})\n`;
+        }
+        
+        if (typeof ow === 'string' && !ow.includes('%')) {
+          hasIssues = true;
+          issueDetails += `- แถว ${i}: OW% ไม่มีเครื่องหมาย % (${ow})\n`;
+        }
+        
+        if (typeof h2h === 'string' && !h2h.includes('%') && h2h !== '-') {
+          hasIssues = true;
+          issueDetails += `- แถว ${i}: H2H ไม่มีเครื่องหมาย % (${h2h})\n`;
+        }
+      }
+      
+      if (hasIssues) {
+        SpreadsheetApp.getUi().alert('⚠️ ยังพบปัญหาในข้อมูล:\n\n' + issueDetails + '\nกรุณาลองใช้ฟังก์ชัน "🔧 แก้ไขข้อมูล Standings (OW% & H2H)" อีกครั้ง');
+      } else {
+        SpreadsheetApp.getUi().alert('✅ แก้ไขข้อมูลสำเร็จ!\n\nข้อมูลทั้งหมดถูกต้องแล้ว:\n- Win Rate แสดงเป็นเปอร์เซ็นต์\n- OW% แสดงเป็นเปอร์เซ็นต์\n- H2H แสดงเป็นเปอร์เซ็นต์\n\nกรุณารีเฟรชหน้าเว็บเพื่อดูผลลัพธ์');
+      }
+    }
+    
+  } catch (error) {
+    console.error('❌ เกิดข้อผิดพลาดในการแก้ไขข้อมูลทั้งหมด:', error);
+    SpreadsheetApp.getUi().alert('❌ เกิดข้อผิดพลาดในการแก้ไขข้อมูลทั้งหมด: ' + error.message);
   }
 }
 
