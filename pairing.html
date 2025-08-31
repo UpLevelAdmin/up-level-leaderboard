@@ -1773,7 +1773,7 @@
         const rowHtml = `<tr class="${rowClass}">
           <td>${rankDisplay}</td>
           <td data-full-text="${displayName}" onclick="showTooltip(this, '${displayName}')">
-            <span class="codename-rank" data-rank="${playerRank}"><span style="font-size:0.8rem;">${getRankEmoji(playerRank)}</span> ${parseInt(playerId.toString().replace(/[^0-9]/g, '')).toString()}.${renderCodenameEffect(displayName, playerRank)} <span style="font-size:0.8rem;">${getRankEmoji(playerRank)}</span></span>
+            <span class="codename-rank" data-rank="${playerRank}">${parseInt(playerId.toString().replace(/[^0-9]/g, '')).toString()}.<span style="font-size:0.8rem;">${getRankEmoji(playerRank)}</span> ${renderCodenameEffect(displayName, playerRank)} <span style="font-size:0.8rem;">${getRankEmoji(playerRank)}</span></span>
           </td>
           <td>${played}</td>
           <td>${win}</td>
@@ -2135,7 +2135,7 @@
         const rowHtml = `<tr>
           <td>${row[0] || (i+1)}</td>
           <td data-full-text="${displayName}" onclick="showTooltip(this, '${displayName}')">
-            <span class="codename-rank" data-rank="${playerRank}"><span style="font-size:0.8rem;">${getRankEmoji(playerRank)}</span> ${parseInt(playerId.toString().replace(/[^0-9]/g, '')).toString()}.${renderCodenameEffect(displayName, playerRank)} <span style="font-size:0.8rem;">${getRankEmoji(playerRank)}</span></span>
+            <span class="codename-rank" data-rank="${playerRank}">${parseInt(playerId.toString().replace(/[^0-9]/g, '')).toString()}.<span style="font-size:0.8rem;">${getRankEmoji(playerRank)}</span> ${renderCodenameEffect(displayName, playerRank)} <span style="font-size:0.8rem;">${getRankEmoji(playerRank)}</span></span>
           </td>
           <td>${played}</td>
           <td>${win}</td>
