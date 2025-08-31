@@ -1566,7 +1566,7 @@
             resultDisplay = '<span style="color:#059669;font-weight:600;">BYE</span>';
             const p1DisplayName = p1Codename || extractRealName(getPlayerNameById(players, row[2])) || extractRealName(row[3]) || `Player ${row[2]}`;
             const p1Number = row[2]; // Player ID
-            const p1DisplayNumber = p1Number.toString().replace(/[^0-9]/g, '');
+            const p1DisplayNumber = parseInt(p1Number.toString().replace(/[^0-9]/g, '')).toString();
             html += `<div class="pairing-card">
               <span class="pairing-table-no">โต๊ะ ${tableNo}</span>
               <span class="${p1Class}" title="${p1DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p1DisplayName}')">${p1DisplayNumber}.${getRankEmoji(p1Rank)} ${renderCodenameEffect(p1DisplayName, p1Rank)} ${getRankEmoji(p1Rank)}</span>
@@ -1601,9 +1601,9 @@
           const p1Number = row[2]; // Player ID
           const p2Number = row[8]; // Player ID
           
-          // แปลงหมายเลขให้เป็นรูปแบบที่ต้องการ (เอาเฉพาะตัวเลข)
-          const p1DisplayNumber = p1Number.toString().replace(/[^0-9]/g, '');
-          const p2DisplayNumber = p2Number.toString().replace(/[^0-9]/g, '');
+          // แปลงหมายเลขให้เป็นรูปแบบที่ต้องการ (เอาเฉพาะตัวเลขและเอา 0 นำหน้าออก)
+          const p1DisplayNumber = parseInt(p1Number.toString().replace(/[^0-9]/g, '')).toString();
+          const p2DisplayNumber = parseInt(p2Number.toString().replace(/[^0-9]/g, '')).toString();
             
             // ย่อชื่อถ้ายาวเกินไป
             const truncateName = (name) => {
@@ -1773,7 +1773,7 @@
         const rowHtml = `<tr class="${rowClass}">
           <td>${rankDisplay}</td>
           <td data-full-text="${displayName}" onclick="showTooltip(this, '${displayName}')">
-            <span class="codename-rank" data-rank="${playerRank}"><span style="font-size:0.8rem;">${getRankEmoji(playerRank)}</span> ${playerId.toString().replace(/[^0-9]/g, '')}.${renderCodenameEffect(displayName, playerRank)} <span style="font-size:0.8rem;">${getRankEmoji(playerRank)}</span></span>
+            <span class="codename-rank" data-rank="${playerRank}"><span style="font-size:0.8rem;">${getRankEmoji(playerRank)}</span> ${parseInt(playerId.toString().replace(/[^0-9]/g, '')).toString()}.${renderCodenameEffect(displayName, playerRank)} <span style="font-size:0.8rem;">${getRankEmoji(playerRank)}</span></span>
           </td>
           <td>${played}</td>
           <td>${win}</td>
@@ -1958,9 +1958,9 @@
           const p1Number = p1Id; // Player ID
           const p2Number = p2Id; // Player ID
           
-          // แปลงหมายเลขให้เป็นรูปแบบที่ต้องการ (เอาเฉพาะตัวเลข)
-          const p1DisplayNumber = p1Number.toString().replace(/[^0-9]/g, '');
-          const p2DisplayNumber = p2Number.toString().replace(/[^0-9]/g, '');
+          // แปลงหมายเลขให้เป็นรูปแบบที่ต้องการ (เอาเฉพาะตัวเลขและเอา 0 นำหน้าออก)
+          const p1DisplayNumber = parseInt(p1Number.toString().replace(/[^0-9]/g, '')).toString();
+          const p2DisplayNumber = parseInt(p2Number.toString().replace(/[^0-9]/g, '')).toString();
           console.log('Final P1 Display Name:', p1DisplayName, 'Final P2 Display Name:', p2DisplayName);
           console.log('P1 Codename:', p1Codename, 'P2 Codename:', p2Codename);
           console.log('P1 Name from Players:', p1NameFromPlayers, 'P2 Name from Players:', p2NameFromPlayers);
@@ -2135,7 +2135,7 @@
         const rowHtml = `<tr>
           <td>${row[0] || (i+1)}</td>
           <td data-full-text="${displayName}" onclick="showTooltip(this, '${displayName}')">
-            <span class="codename-rank" data-rank="${playerRank}"><span style="font-size:0.8rem;">${getRankEmoji(playerRank)}</span> ${playerId.toString().replace(/[^0-9]/g, '')}.${renderCodenameEffect(displayName, playerRank)} <span style="font-size:0.8rem;">${getRankEmoji(playerRank)}</span></span>
+            <span class="codename-rank" data-rank="${playerRank}"><span style="font-size:0.8rem;">${getRankEmoji(playerRank)}</span> ${parseInt(playerId.toString().replace(/[^0-9]/g, '')).toString()}.${renderCodenameEffect(displayName, playerRank)} <span style="font-size:0.8rem;">${getRankEmoji(playerRank)}</span></span>
           </td>
           <td>${played}</td>
           <td>${win}</td>
