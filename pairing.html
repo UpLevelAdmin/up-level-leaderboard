@@ -1565,9 +1565,10 @@
             p1Class += ' player-bg-win';
             resultDisplay = '<span style="color:#059669;font-weight:600;">BYE</span>';
             const p1DisplayName = p1Codename || extractRealName(getPlayerNameById(players, row[2])) || extractRealName(row[3]) || `Player ${row[2]}`;
+            const p1Number = row[2]; // Player ID
             html += `<div class="pairing-card">
               <span class="pairing-table-no">โต๊ะ ${tableNo}</span>
-              <span class="${p1Class}" title="${p1DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p1DisplayName}')">${getRankEmoji(p1Rank)} ${renderCodenameEffect(p1DisplayName, p1Rank)} ${getRankEmoji(p1Rank)}</span>
+              <span class="${p1Class}" title="${p1DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p1DisplayName}')">${getRankEmoji(p1Rank)} ${p1Number}.${renderCodenameEffect(p1DisplayName, p1Rank)} ${getRankEmoji(p1Rank)}</span>
               <span class="pairing-result">${resultDisplay}</span>
               <span class="player-block" title="BYE">🎯 BYE</span>
             </div>`;
@@ -1592,8 +1593,12 @@
               resultDisplay = '- : -';
             }
             
-            const p1DisplayName = p1Codename || extractRealName(getPlayerNameById(players, row[2])) || extractRealName(row[3]) || `Player ${row[2]}`;
-            const p2DisplayName = p2Codename || extractRealName(getPlayerNameById(players, row[8])) || extractRealName(row[9]) || `Player ${row[8]}`;
+                      const p1DisplayName = p1Codename || extractRealName(getPlayerNameById(players, row[2])) || extractRealName(row[3]) || `Player ${row[2]}`;
+          const p2DisplayName = p2Codename || extractRealName(getPlayerNameById(players, row[8])) || extractRealName(row[9]) || `Player ${row[8]}`;
+          
+          // เพิ่มหมายเลขให้กับชื่อผู้เล่น
+          const p1Number = row[2]; // Player ID
+          const p2Number = row[8]; // Player ID
             
             // ย่อชื่อถ้ายาวเกินไป
             const truncateName = (name) => {
@@ -1608,9 +1613,9 @@
             
             html += `<div class="pairing-card ${statusClass}">
               <div class="round-label" style="background-color: #3B82F6; color: white;">โต๊ะ ${tableNo}</div>
-              <span class="player-name ${p1Class}" title="${p1DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p1DisplayName}')">${getRankEmoji(p1Rank)} ${p1ShortName} ${getRankEmoji(p1Rank)}</span>
+              <span class="player-name ${p1Class}" title="${p1DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p1DisplayName}')">${getRankEmoji(p1Rank)} ${p1Number}.${p1ShortName} ${getRankEmoji(p1Rank)}</span>
               <div class="score">${resultDisplay}</div>
-              <span class="player-name ${p2Class}" title="${p2DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p2DisplayName}')">${getRankEmoji(p2Rank)} ${p2ShortName} ${getRankEmoji(p2Rank)}</span>
+              <span class="player-name ${p2Class}" title="${p2DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p2DisplayName}')">${getRankEmoji(p2Rank)} ${p2Number}.${p2ShortName} ${getRankEmoji(p2Rank)}</span>
               <div class="status-badge status-${statusClass}">${statusText}</div>
             </div>`;
           }
@@ -1763,7 +1768,7 @@
         const rowHtml = `<tr class="${rowClass}">
           <td>${rankDisplay}</td>
           <td data-full-text="${displayName}" onclick="showTooltip(this, '${displayName}')">
-            <span class="codename-rank" data-rank="${playerRank}"><span style="font-size:0.8rem;">${getRankEmoji(playerRank)}</span> ${renderCodenameEffect(displayName, playerRank)} <span style="font-size:0.8rem;">${getRankEmoji(playerRank)}</span></span>
+            <span class="codename-rank" data-rank="${playerRank}"><span style="font-size:0.8rem;">${getRankEmoji(playerRank)}</span> ${playerId}.${renderCodenameEffect(displayName, playerRank)} <span style="font-size:0.8rem;">${getRankEmoji(playerRank)}</span></span>
           </td>
           <td>${played}</td>
           <td>${win}</td>
@@ -1943,6 +1948,10 @@
           
           const p1DisplayName = p1Codename || extractRealName(p1NameFromPlayers) || extractRealName(p1NameFromColumn) || `Player ${p1Id}`;
           const p2DisplayName = p2Codename || extractRealName(p2NameFromPlayers) || extractRealName(p2NameFromColumn) || `Player ${p2Id}`;
+          
+          // เพิ่มหมายเลขให้กับชื่อผู้เล่น
+          const p1Number = p1Id; // Player ID
+          const p2Number = p2Id; // Player ID
           console.log('Final P1 Display Name:', p1DisplayName, 'Final P2 Display Name:', p2DisplayName);
           console.log('P1 Codename:', p1Codename, 'P2 Codename:', p2Codename);
           console.log('P1 Name from Players:', p1NameFromPlayers, 'P2 Name from Players:', p2NameFromPlayers);
@@ -1958,9 +1967,9 @@
           
           html += `<div class="pairing-card ${statusClass}" style="border-left: 4px solid ${roundColor} !important;">
             <div class="round-label" style="background-color: ${roundColor}; color: white;">รอบ ${round}</div>
-            <span class="${p1Class}" title="${p1DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p1DisplayName}')">${getRankEmoji(p1Rank)}${p1ShortName}${getRankEmoji(p1Rank)}</span>
+            <span class="${p1Class}" title="${p1DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p1DisplayName}')">${getRankEmoji(p1Rank)}${p1Number}.${p1ShortName}${getRankEmoji(p1Rank)}</span>
             <div class="score">${resultDisplay}</div>
-            <span class="${p2Class}" title="${p2DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p2DisplayName}')">${getRankEmoji(p2Rank)}${p2ShortName}${getRankEmoji(p2Rank)}</span>
+            <span class="${p2Class}" title="${p2DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p2DisplayName}')">${getRankEmoji(p2Rank)}${p2Number}.${p2ShortName}${getRankEmoji(p2Rank)}</span>
             <div class="status-badge status-${statusClass}">${statusText}</div>
           </div>`;
         });
@@ -2117,7 +2126,7 @@
         const rowHtml = `<tr>
           <td>${row[0] || (i+1)}</td>
           <td data-full-text="${displayName}" onclick="showTooltip(this, '${displayName}')">
-            <span class="codename-rank" data-rank="${playerRank}"><span style="font-size:0.8rem;">${getRankEmoji(playerRank)}</span> ${renderCodenameEffect(displayName, playerRank)} <span style="font-size:0.8rem;">${getRankEmoji(playerRank)}</span></span>
+            <span class="codename-rank" data-rank="${playerRank}"><span style="font-size:0.8rem;">${getRankEmoji(playerRank)}</span> ${playerId}.${renderCodenameEffect(displayName, playerRank)} <span style="font-size:0.8rem;">${getRankEmoji(playerRank)}</span></span>
           </td>
           <td>${played}</td>
           <td>${win}</td>
