@@ -44,8 +44,12 @@ function doGet(e) {
     var nickname = data[i][3];
     var level = data[i][6];
     var phone = data[i][5];
-    if (groupedData[date]) {
-      groupedData[date].push({ nickname: nickname, level: level, phone: phone });
+    
+    // แก้ไขการค้นหาให้รองรับวันที่ที่มี "*ไม่ได้รับ PROMO GYM*" ต่อท้าย
+    var cleanDate = date.replace(/\s*\*ไม่ได้รับ PROMO GYM\*$/, '');
+    
+    if (groupedData[cleanDate]) {
+      groupedData[cleanDate].push({ nickname: nickname, level: level, phone: phone });
     }
   }
 

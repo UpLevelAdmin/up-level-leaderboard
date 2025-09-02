@@ -406,7 +406,20 @@
       
       datesToUse.forEach((date, idx) => {
         // หาข้อมูลผู้สมัครสำหรับวันที่นี้ (ถ้ามี)
-        const players = data && data.groupedData && data.groupedData[date] ? data.groupedData[date] : [];
+        // รองรับการค้นหาด้วยวันที่ที่มี "*ไม่ได้รับ PROMO GYM*" ต่อท้าย
+        let players = [];
+        if (data && data.groupedData) {
+          // ลองค้นหาด้วยวันที่ปกติก่อน
+          if (data.groupedData[date]) {
+            players = data.groupedData[date];
+          } else {
+            // ถ้าไม่เจอ ลองค้นหาด้วยวันที่ที่มี "*ไม่ได้รับ PROMO GYM*" ต่อท้าย
+            const dateWithPromo = date + " *ไม่ได้รับ PROMO GYM*";
+            if (data.groupedData[dateWithPromo]) {
+              players = data.groupedData[dateWithPromo];
+            }
+          }
+        }
         const color = pastelColors[idx % pastelColors.length];
         const dateObj = parseThaiDate(date);
         let isPast = false, isToday = false, isFuture = false;
