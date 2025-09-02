@@ -420,6 +420,11 @@
             }
           }
         }
+        
+        // Debug: แสดงข้อมูลที่หาเจอ
+        console.log(`Date: ${date}`);
+        console.log(`Players found:`, players);
+        console.log(`Available keys in groupedData:`, Object.keys(data.groupedData || {}));
         const color = pastelColors[idx % pastelColors.length];
         const dateObj = parseThaiDate(date);
         let isPast = false, isToday = false, isFuture = false;
@@ -436,6 +441,9 @@
         const tableStyle = isPast ? 'style="display:none;"' : '';
         html += `<div class="date-header" style="background:${color.bg};border-left:6px solid ${color.border};display:flex;justify-content:space-between;align-items:center;">` +
           `<span>วันที่: ${date} (จำนวน ${players.length} คน)</span> ${toggleBtn}</div>`;
+        
+        // Debug: แสดงข้อมูลใน HTML
+        html += `<!-- Debug: Date: ${date}, Players: ${JSON.stringify(players)} -->`;
         html += `<table id="${groupId}" ${tableStyle}><thead><tr>\n            <th style="background:${color.border};color:#fff;">ลำดับ</th><th style="background:${color.border};color:#fff;">ชื่อเล่น</th><th style="background:${color.border};color:#fff;">ระดับการเล่น</th></tr></thead><tbody>`;
         if (players.length === 0) {
           html += `<tr><td colspan="3">ยังไม่มีผู้สมัคร</td></tr>`;
