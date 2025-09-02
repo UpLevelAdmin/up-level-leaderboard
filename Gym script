@@ -37,7 +37,18 @@ function doGet(e) {
 
   var data = sheet.getDataRange().getValues();
   var groupedData = {};
-  dates.forEach(date => groupedData[date] = []);
+  
+  // สร้าง groupedData สำหรับทั้งวันที่ปกติและวันที่ที่มี "*ไม่ได้รับ PROMO GYM*" ต่อท้าย
+  dates.forEach(date => {
+    groupedData[date] = [];
+    // เพิ่มวันที่ที่มี "*ไม่ได้รับ PROMO GYM*" ต่อท้ายสำหรับ 4 วันแรก
+    if (date === "วันอังคารที่ 2 กันยายน 2568" || 
+        date === "วันศุกร์ที่ 5 กันยายน 2568" || 
+        date === "วันเสาร์ที่ 6 กันยายน 2568" || 
+        date === "วันอังคารที่ 9 กันยายน 2568") {
+      groupedData[date + " *ไม่ได้รับ PROMO GYM*"] = [];
+    }
+  });
 
   for (var i = 1; i < data.length; i++) {
     var date = data[i][1];
@@ -45,11 +56,15 @@ function doGet(e) {
     var level = data[i][6];
     var phone = data[i][5];
     
-    // แก้ไขการค้นหาให้รองรับวันที่ที่มี "*ไม่ได้รับ PROMO GYM*" ต่อท้าย
-    var cleanDate = date.replace(/\s*\*ไม่ได้รับ PROMO GYM\*$/, '');
-    
-    if (groupedData[cleanDate]) {
-      groupedData[cleanDate].push({ nickname: nickname, level: level, phone: phone });
+    // ตรวจสอบว่าวันที่นี้ตรงกับวันที่ใดใน groupedData
+    if (groupedData[date]) {
+      groupedData[date].push({ nickname: nickname, level: level, phone: phone });
+    } else {
+      // ถ้าไม่เจอ ลองลบ "*ไม่ได้รับ PROMO GYM*" ออกแล้วค้นหา
+      var cleanDate = date.replace(/\s*\*ไม่ได้รับ PROMO GYM\*$/, '');
+      if (groupedData[cleanDate]) {
+        groupedData[cleanDate].push({ nickname: nickname, level: level, phone: phone });
+      }
     }
   }
 
