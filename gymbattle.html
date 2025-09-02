@@ -262,7 +262,7 @@
     <div class="logo">
       <img src="https://i.postimg.cc/wjzpnxjB/Up-Level-01-1.png" alt="Up Level Logo">
     </div>
-    <h2 style="text-align:center; margin-bottom: 24px;">รายชื่อผู้สมัคร Gym Battle เดือนสิงหาคม 2568</h2>
+    <h2 style="text-align:center; margin-bottom: 24px;">รายชื่อผู้สมัคร Gym Battle เดือนกันยายน 2568</h2>
     <div style="display: flex; justify-content: center; margin-bottom: 24px;">
       <a class="register-btn" href="https://forms.gle/khFUt7VzPR5qNp2P7" target="_blank" style="text-align: center;">สมัครแข่งขัน Gym Battle</a>
     </div>
@@ -273,7 +273,7 @@
   </div>
   <script>
     console.log('DEBUG: version 2');
-    const apiUrl = "https://script.google.com/macros/s/AKfycbyNx-6Tkp1Ee6qAuQ5Y_HpUnsxzVwV7cc8Qysw0MORinX4C6TxATaADBmL_D1wZ3ifezQ/exec?type=json";
+    const apiUrl = "https://script.google.com/macros/s/AKfycbzS4XdB83QGZ8K5ZZvmSuzrTAKIOHe_svyQiKuoz3qKqpR0omm81ccBsGHkfzmYkUV3/exec?type=json";
     // พาสเทล 7 สี
     const pastelColors = [
       { bg: "#E3F2FD", border: "#42A5F5", th: "#42A5F5" },
@@ -285,22 +285,21 @@
       { bg: "#E0F2F1", border: "#26A69A", th: "#26A69A" }
     ];
 
-    // วันที่แข่งขันเดือนสิงหาคม 2568
-    const augustDates = [
-      "วันศุกร์ที่ 1 สิงหาคม 2568",
-      "วันเสาร์ที่ 2 สิงหาคม 2568",
-      "วันอังคารที่ 5 สิงหาคม 2568",
-      "วันศุกร์ที่ 8 สิงหาคม 2568",
-      "วันเสาร์ที่ 9 สิงหาคม 2568",
-      "วันอังคารที่ 12 สิงหาคม 2568",
-      "วันศุกร์ที่ 15 สิงหาคม 2568",
-      "วันเสาร์ที่ 16 สิงหาคม 2568",
-      "วันอังคารที่ 19 สิงหาคม 2568",
-      "วันศุกร์ที่ 22 สิงหาคม 2568",
-      "วันเสาร์ที่ 23 สิงหาคม 2568",
-      "วันอังคารที่ 26 สิงหาคม 2568",
-      "วันศุกร์ที่ 29 สิงหาคม 2568",
-      "วันเสาร์ที่ 30 สิงหาคม 2568"
+    // วันที่แข่งขันเดือนกันยายน 2568
+    const septemberDates = [
+      "วันอังคารที่ 2 กันยายน 2568",
+      "วันศุกร์ที่ 5 กันยายน 2568",
+      "วันเสาร์ที่ 6 กันยายน 2568",
+      "วันอังคารที่ 9 กันยายน 2568",
+      "วันศุกร์ที่ 12 กันยายน 2568",
+      "วันเสาร์ที่ 13 กันยายน 2568",
+      "วันอังคารที่ 16 กันยายน 2568",
+      "วันศุกร์ที่ 19 กันยายน 2568",
+      "วันเสาร์ที่ 20 กันยายน 2568",
+      "วันอังคารที่ 23 กันยายน 2568",
+      "วันศุกร์ที่ 26 กันยายน 2568",
+      "วันเสาร์ที่ 27 กันยายน 2568",
+      "วันอังคารที่ 30 กันยายน 2568"
     ];
 
     // ดึงข้อมูลสมาชิกจาก Member Dashboard (API ใหม่)
@@ -403,7 +402,7 @@
       today.setHours(0,0,0,0);
       
       // ใช้ข้อมูลวันที่จาก API หรือ fallback ไปใช้ข้อมูลที่กำหนดไว้
-      const datesToUse = data && data.dates ? data.dates : augustDates;
+      const datesToUse = data && data.dates ? data.dates : septemberDates;
       
       datesToUse.forEach((date, idx) => {
         // หาข้อมูลผู้สมัครสำหรับวันที่นี้ (ถ้ามี)
@@ -464,7 +463,7 @@
       const today = new Date();
       today.setHours(0,0,0,0);
       
-      augustDates.forEach((date, idx) => {
+      septemberDates.forEach((date, idx) => {
         const color = pastelColors[idx % pastelColors.length];
         const dateObj = parseThaiDate(date);
         let isPast = false;
