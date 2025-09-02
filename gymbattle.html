@@ -409,15 +409,13 @@
         // รองรับการค้นหาด้วยวันที่ที่มี "*ไม่ได้รับ PROMO GYM*" ต่อท้าย
         let players = [];
         if (data && data.groupedData) {
-          // ลองค้นหาด้วยวันที่ปกติก่อน
-          if (data.groupedData[date]) {
+          // ลองค้นหาด้วยวันที่ที่มี "*ไม่ได้รับ PROMO GYM*" ต่อท้ายก่อน (สำหรับ 4 วันแรก)
+          const dateWithPromo = date + " *ไม่ได้รับ PROMO GYM*";
+          if (data.groupedData[dateWithPromo]) {
+            players = data.groupedData[dateWithPromo];
+          } else if (data.groupedData[date]) {
+            // ถ้าไม่เจอ ลองค้นหาด้วยวันที่ปกติ
             players = data.groupedData[date];
-          } else {
-            // ถ้าไม่เจอ ลองค้นหาด้วยวันที่ที่มี "*ไม่ได้รับ PROMO GYM*" ต่อท้าย
-            const dateWithPromo = date + " *ไม่ได้รับ PROMO GYM*";
-            if (data.groupedData[dateWithPromo]) {
-              players = data.groupedData[dateWithPromo];
-            }
           }
         }
         
