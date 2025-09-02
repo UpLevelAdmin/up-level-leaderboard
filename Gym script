@@ -67,6 +67,11 @@ function doGet(e) {
       }
     }
   }
+  
+  // Debug: แสดงข้อมูลที่สร้างขึ้น
+  console.log("Debug - groupedData keys:", Object.keys(groupedData));
+  console.log("Debug - Sample data:", groupedData["วันอังคารที่ 2 กันยายน 2568"]);
+  console.log("Debug - Sample data with PROMO:", groupedData["วันอังคารที่ 2 กันยายน 2568 *ไม่ได้รับ PROMO GYM*"]);
 
   if (e && e.parameter && e.parameter.type === "json") {
     return ContentService.createTextOutput(JSON.stringify({dates: dates, groupedData: groupedData})).setMimeType(ContentService.MimeType.JSON);
