@@ -489,6 +489,105 @@
       box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
     }
 
+    .cta-top {
+      text-align: center;
+      margin: 2rem 0;
+    }
+
+    .cta-button-top {
+      display: inline-block;
+      background: linear-gradient(45deg, #ff6b6b, #ffd93d);
+      color: #1a1a2e;
+      padding: 1rem 2.5rem;
+      border-radius: 50px;
+      text-decoration: none;
+      font-size: 1.1rem;
+      font-weight: 700;
+      box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4);
+      transition: all 0.3s ease;
+      border: none;
+      cursor: pointer;
+    }
+
+    .cta-button-top:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 30px rgba(255, 107, 107, 0.6);
+      background: linear-gradient(45deg, #ffd93d, #ff6b6b);
+    }
+
+    .info-section {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%);
+      border-radius: 20px;
+      padding: 1.5rem;
+      margin: 2rem 0;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .info-title {
+      font-size: 1.6rem;
+      color: #ffd93d;
+      margin-bottom: 1.5rem;
+      font-weight: 700;
+      text-align: center;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .info-card {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 15px;
+      padding: 1.2rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.3s ease;
+    }
+
+    .info-card:hover {
+      transform: translateY(-3px);
+      background: rgba(255, 255, 255, 0.08);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .info-card.bonus {
+      border-color: rgba(107, 207, 127, 0.3);
+    }
+
+    .info-card.notes {
+      border-color: rgba(255, 217, 61, 0.3);
+    }
+
+    .info-card h4 {
+      color: #ffd93d;
+      font-size: 1.3rem;
+      margin-bottom: 1rem;
+      font-weight: 700;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    }
+
+    .info-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .info-list li {
+      background: rgba(255, 255, 255, 0.05);
+      margin-bottom: 0.8rem;
+      padding: 0.8rem;
+      border-radius: 10px;
+      color: #e0e0e0;
+      font-size: 1rem;
+      border-left: 4px solid #6bcf7f;
+    }
+
+    .info-card.notes .info-list li {
+      border-left-color: #ffd93d;
+    }
+
     .footer {
       margin-top: 3rem;
       padding: 2rem;
@@ -576,27 +675,18 @@
         เปิดตัวโปเกมอนวิวัฒนาการเมก้าex ที่ทรงพลัง พร้อมการ์ดซัพพอร์ตและไอเท็มพิเศษ
       </div>
       
+      <div class="cta-top">
+        <a href="https://forms.gle/C9p6aJQy7UxWnajw9" target="_blank" class="cta-button-top">
+          🎯 ลงชื่อจองเลย!
+        </a>
+      </div>
+      
       <div class="pokemon-cards">
         <div class="card-item">
           <div class="card-image">
             <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/08/th_news_MA1_077.png" alt="เมก้าลูคาริโอex" class="pokemon-card-img">
           </div>
           <div class="card-name">เมก้าลูคาริโอex</div>
-          <div class="card-stats">
-            <span class="hp">HP 340</span>
-            <span class="type">⚔️ Fighting</span>
-          </div>
-          <div class="card-description">โปเกมอนวิวัฒนาการเมก้าex ทรงพลังที่สามารถปล่อยแดเมจแรงได้ตั้งแต่ต้นเกม!</div>
-          <div class="card-attacks">
-            <div class="attack">
-              <span class="attack-name">คลื่นพลังพุ่งชน</span>
-              <span class="attack-damage">130</span>
-            </div>
-            <div class="attack">
-              <span class="attack-name">เมก้าเบรฟ</span>
-              <span class="attack-damage">270</span>
-            </div>
-          </div>
         </div>
         
         <div class="card-item">
@@ -604,21 +694,6 @@
             <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/08/th_news_MA1_060.png" alt="เมก้าเซอไนท์ex" class="pokemon-card-img">
           </div>
           <div class="card-name">เมก้าเซอไนท์ex</div>
-          <div class="card-stats">
-            <span class="hp">HP 360</span>
-            <span class="type">🔮 Psychic</span>
-          </div>
-          <div class="card-description">โปเกมอนวิวัฒนาการเมก้าex ที่ช่วยเพิ่มพลังงานได้ในคราวเดียวเพื่อเล็งโจมตีด้วยแดเมจอันหนักหน่วง!</div>
-          <div class="card-attacks">
-            <div class="attack">
-              <span class="attack-name">คำอธิษฐานเปี่ยมล้น</span>
-              <span class="attack-damage">-</span>
-            </div>
-            <div class="attack">
-              <span class="attack-name">เมก้าซิมโฟนี</span>
-              <span class="attack-damage">50×</span>
-            </div>
-          </div>
         </div>
         
         <div class="card-item">
@@ -626,17 +701,6 @@
             <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/08/th_news_MA1_003.png" alt="เมก้าฟุชิกิบานะex" class="pokemon-card-img">
           </div>
           <div class="card-name">เมก้าฟุชิกิบานะex</div>
-          <div class="card-stats">
-            <span class="hp">HP 380</span>
-            <span class="type">🌿 Grass</span>
-          </div>
-          <div class="card-description">โปเกมอนวิวัฒนาการเมก้าex ที่ต่อสู้ได้อย่างทรหดอดทนเพราะมี HP สูงมากแถมยังมีท่าต่อสู้ที่สามารถฟื้นฟู HP ให้กับตัวเองได้อีกด้วย!</div>
-          <div class="card-attacks">
-            <div class="attack">
-              <span class="attack-name">จังเกิลดัมป์</span>
-              <span class="attack-damage">240</span>
-            </div>
-          </div>
         </div>
         
         <div class="card-item">
@@ -644,17 +708,6 @@
             <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/08/th_news_MA1_100.png" alt="เมก้าลาทิอาสex" class="pokemon-card-img">
           </div>
           <div class="card-name">เมก้าลาทิอาสex</div>
-          <div class="card-stats">
-            <span class="hp">HP ???</span>
-            <span class="type">🌊 Water</span>
-          </div>
-          <div class="card-description">โปเกมอนวิวัฒนาการเมก้าex ที่ต่อสู้ไปพลางเคลื่อนไหวไปมาบนตำแหน่งต่อสู้และเบนช์ได้อย่างคล่องแคล่ว</div>
-          <div class="card-attacks">
-            <div class="attack">
-              <span class="attack-name">ความสามารถพิเศษ</span>
-              <span class="attack-damage">-</span>
-            </div>
-          </div>
         </div>
       </div>
       
@@ -733,27 +786,31 @@
       </div>
     </div>
 
-    <div class="bonus-section">
-      <h3 class="bonus-title">🎉 โบนัสพิเศษเฉพาะในงาน</h3>
-      <ul class="bonus-list">
-        <li>✅ มาร่วมงาน : +2 EXP | +2 Party Point</li>
-        <li>✅ มาครบทั้งปาร์ตี้ : +5 Party Point</li>
-        <li>✅ BUY BOX +5 EXP</li>
-        <li>✅ JOINING +2 EXP | +2 PP</li>
-        <li>✅ FULL PARTY JOINING +5 PARTY POINTS</li>
-      </ul>
-    </div>
-
-    <div class="important-notes">
-      <h3 class="notes-title">📝 ข้อกำหนดสำคัญ</h3>
-      <ul class="notes-list">
-        <li>📌 จองล่วงหน้า = ต้องชำระเงินทันที</li>
-        <li>📌 แนบสลิป = การจองสมบูรณ์</li>
-        <li>📌 หาก Spot ไม่ครบ 3 → คืนเงินเต็มจำนวนหลังงาน หรือเลือกเปลี่ยนสินค้าในร้าน (ยังได้ EXP)</li>
-        <li>📌 ไม่มีไลฟ์สด — เปิดกล่องกันเฉพาะในงานเท่านั้น</li>
-        <li>📌 เริ่มลงทะเบียน 23:30 น.</li>
-        <li>📌 ที่ร้าน Up Level Academy</li>
-      </ul>
+    <div class="info-section">
+      <h3 class="info-title">📋 ข้อมูลสำคัญ</h3>
+      <div class="info-grid">
+        <div class="info-card bonus">
+          <h4>🎉 โบนัสพิเศษเฉพาะในงาน</h4>
+          <ul class="info-list">
+            <li>✅ มาร่วมงาน : +2 EXP | +2 Party Point</li>
+            <li>✅ มาครบทั้งปาร์ตี้ : +5 Party Point</li>
+            <li>✅ BUY BOX +5 EXP</li>
+            <li>✅ JOINING +2 EXP | +2 PP</li>
+            <li>✅ FULL PARTY JOINING +5 PARTY POINTS</li>
+          </ul>
+        </div>
+        <div class="info-card notes">
+          <h4>📝 ข้อกำหนดสำคัญ</h4>
+          <ul class="info-list">
+            <li>📌 จองล่วงหน้า = ต้องชำระเงินทันที</li>
+            <li>📌 แนบสลิป = การจองสมบูรณ์</li>
+            <li>📌 หาก Spot ไม่ครบ 3 → คืนเงินเต็มจำนวนหลังงาน หรือเลือกเปลี่ยนสินค้าในร้าน (ยังได้ EXP)</li>
+            <li>📌 ไม่มีไลฟ์สด — เปิดกล่องกันเฉพาะในงานเท่านั้น</li>
+            <li>📌 เริ่มลงทะเบียน 23:30 น.</li>
+            <li>📌 ที่ร้าน Up Level Academy</li>
+          </ul>
+        </div>
+      </div>
     </div>
 
     <div class="cta-section">
