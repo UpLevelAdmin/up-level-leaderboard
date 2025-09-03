@@ -26,7 +26,7 @@ function doGet(e) {
   ];
 
   var logoUrl = "https://i.postimg.cc/wjzpnxjB/Up-Level-01-1.png";
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Form_Responses");
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Form Responses 1");
   if (!sheet) {
     if (e && e.parameter && e.parameter.type === "json") {
       return ContentService.createTextOutput(JSON.stringify({error: "❌ ไม่พบชีทข้อมูล"})).setMimeType(ContentService.MimeType.JSON);

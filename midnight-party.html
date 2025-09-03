@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Midnight Party - Up Level Academy</title>
+  
+  <!-- Add Google Font 'Kanit' -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    body {
+      font-family: 'Kanit', 'Segoe UI', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      margin: 0;
+      padding: 1rem;
+      text-align: center;
+      min-height: 100vh;
+      color: #fff;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 25px;
+      padding: 2rem;
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .home-button {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border: none;
+      border-radius: 50%;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+    }
+
+    .home-button:hover {
+      transform: translateY(-3px) scale(1.05);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+      background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+    }
+
+    .home-button::before {
+      content: "🏠";
+      font-size: 24px;
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .logo {
+      width: 120px;
+      margin-bottom: 1rem;
+      filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+    }
+
+    .event-title {
+      font-size: 3rem;
+      font-weight: 700;
+      background: linear-gradient(45deg, #ff6b6b, #ffd93d, #6bcf7f);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+      margin-bottom: 0.5rem;
+      animation: glow 2s ease-in-out infinite alternate;
+    }
+
+    @keyframes glow {
+      from { filter: drop-shadow(0 0 10px rgba(255, 107, 107, 0.5)); }
+      to { filter: drop-shadow(0 0 20px rgba(255, 217, 61, 0.8)); }
+    }
+
+    .event-subtitle {
+      font-size: 1.3rem;
+      color: #ffd93d;
+      margin-bottom: 1rem;
+      font-weight: 600;
+    }
+
+    .event-date {
+      font-size: 1.5rem;
+      color: #6bcf7f;
+      margin-bottom: 2rem;
+      font-weight: 700;
+    }
+
+    .product-showcase {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+      border-radius: 20px;
+      padding: 2rem;
+      margin: 2rem 0;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .product-title {
+      font-size: 1.8rem;
+      color: #ffd93d;
+      margin-bottom: 1rem;
+      font-weight: 700;
+    }
+
+    .product-description {
+      font-size: 1.1rem;
+      color: #e0e0e0;
+      margin-bottom: 1.5rem;
+      line-height: 1.6;
+    }
+
+    .pricing-section {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+      margin: 2rem 0;
+    }
+
+    .pricing-card {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+      border-radius: 20px;
+      padding: 1.5rem;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      transition: all 0.3s ease;
+    }
+
+    .pricing-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+      border-color: rgba(255, 217, 61, 0.5);
+    }
+
+    .pricing-title {
+      font-size: 1.4rem;
+      color: #ffd93d;
+      margin-bottom: 1rem;
+      font-weight: 700;
+    }
+
+    .price {
+      font-size: 2rem;
+      color: #6bcf7f;
+      margin-bottom: 1rem;
+      font-weight: 700;
+    }
+
+    .price-note {
+      font-size: 0.9rem;
+      color: #b0b0b0;
+      margin-bottom: 1rem;
+    }
+
+    .benefits {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .benefits li {
+      background: rgba(255, 255, 255, 0.05);
+      margin-bottom: 0.5rem;
+      padding: 0.5rem;
+      border-radius: 8px;
+      color: #e0e0e0;
+      font-size: 0.9rem;
+    }
+
+    .spot-info {
+      background: linear-gradient(135deg, rgba(255, 107, 107, 0.1) 0%, rgba(255, 107, 107, 0.05) 100%);
+      border-radius: 20px;
+      padding: 1.5rem;
+      margin: 2rem 0;
+      border: 1px solid rgba(255, 107, 107, 0.3);
+    }
+
+    .spot-title {
+      font-size: 1.6rem;
+      color: #ff6b6b;
+      margin-bottom: 1rem;
+      font-weight: 700;
+    }
+
+    .spot-description {
+      font-size: 1.1rem;
+      color: #e0e0e0;
+      margin-bottom: 1rem;
+      line-height: 1.6;
+    }
+
+    .bonus-section {
+      background: linear-gradient(135deg, rgba(107, 207, 127, 0.1) 0%, rgba(107, 207, 127, 0.05) 100%);
+      border-radius: 20px;
+      padding: 1.5rem;
+      margin: 2rem 0;
+      border: 1px solid rgba(107, 207, 127, 0.3);
+    }
+
+    .bonus-title {
+      font-size: 1.6rem;
+      color: #6bcf7f;
+      margin-bottom: 1rem;
+      font-weight: 700;
+    }
+
+    .bonus-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .bonus-list li {
+      background: rgba(255, 255, 255, 0.05);
+      margin-bottom: 0.8rem;
+      padding: 0.8rem;
+      border-radius: 10px;
+      color: #e0e0e0;
+      font-size: 1rem;
+      border-left: 4px solid #6bcf7f;
+    }
+
+    .important-notes {
+      background: linear-gradient(135deg, rgba(255, 217, 61, 0.1) 0%, rgba(255, 217, 61, 0.05) 100%);
+      border-radius: 20px;
+      padding: 1.5rem;
+      margin: 2rem 0;
+      border: 1px solid rgba(255, 217, 61, 0.3);
+    }
+
+    .notes-title {
+      font-size: 1.6rem;
+      color: #ffd93d;
+      margin-bottom: 1rem;
+      font-weight: 700;
+    }
+
+    .notes-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .notes-list li {
+      background: rgba(255, 255, 255, 0.05);
+      margin-bottom: 0.8rem;
+      padding: 0.8rem;
+      border-radius: 10px;
+      color: #e0e0e0;
+      font-size: 1rem;
+      border-left: 4px solid #ffd93d;
+    }
+
+    .cta-section {
+      text-align: center;
+      margin: 3rem 0;
+    }
+
+    .cta-button {
+      display: inline-block;
+      background: linear-gradient(45deg, #ff6b6b, #ffd93d);
+      color: #1a1a2e;
+      padding: 1.5rem 3rem;
+      border-radius: 50px;
+      text-decoration: none;
+      font-size: 1.3rem;
+      font-weight: 700;
+      box-shadow: 0 10px 30px rgba(255, 107, 107, 0.4);
+      transition: all 0.3s ease;
+      border: none;
+      cursor: pointer;
+    }
+
+    .cta-button:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 40px rgba(255, 107, 107, 0.6);
+      background: linear-gradient(45deg, #ffd93d, #ff6b6b);
+    }
+
+    .pokemon-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin: 2rem 0;
+    }
+
+    .card-item {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+      border-radius: 20px;
+      padding: 1.5rem;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card-item:hover {
+      transform: translateY(-5px);
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.1) 100%);
+      border-color: rgba(255, 217, 61, 0.5);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .card-image {
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+
+    .pokemon-card-img {
+      width: 100%;
+      max-width: 200px;
+      height: auto;
+      border-radius: 15px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+      transition: all 0.3s ease;
+      filter: brightness(0.9) contrast(1.1);
+    }
+
+    .card-item:hover .pokemon-card-img {
+      transform: scale(1.05);
+      filter: brightness(1) contrast(1.2);
+      box-shadow: 0 12px 25px rgba(0, 0, 0, 0.4);
+    }
+
+    .card-name {
+      font-size: 1.3rem;
+      color: #ffd93d;
+      margin-bottom: 0.8rem;
+      font-weight: 700;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .card-stats {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      padding: 0.5rem;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .hp {
+      color: #ff6b6b;
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+
+    .type {
+      color: #6bcf7f;
+      font-weight: 600;
+      font-size: 1rem;
+    }
+
+    .card-description {
+      font-size: 0.95rem;
+      color: #e0e0e0;
+      line-height: 1.5;
+      margin-bottom: 1rem;
+      text-align: left;
+    }
+
+    .card-attacks {
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 10px;
+      padding: 0.8rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .attack {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .attack:last-child {
+      border-bottom: none;
+    }
+
+    .attack-name {
+      color: #ffd93d;
+      font-weight: 600;
+      font-size: 0.9rem;
+      flex: 1;
+      text-align: left;
+    }
+
+    .attack-damage {
+      color: #ff6b6b;
+      font-weight: 700;
+      font-size: 1.1rem;
+      background: rgba(255, 107, 107, 0.1);
+      padding: 0.2rem 0.5rem;
+      border-radius: 5px;
+      border: 1px solid rgba(255, 107, 107, 0.3);
+    }
+
+    .support-cards, .item-cards {
+      margin-top: 2rem;
+      padding: 1.5rem;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%);
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .support-title, .item-title {
+      font-size: 1.5rem;
+      color: #ffd93d;
+      margin-bottom: 1.5rem;
+      font-weight: 700;
+      text-align: center;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .support-grid, .item-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .support-item, .item-item {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 15px;
+      padding: 1.2rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.3s ease;
+    }
+
+    .support-item:hover, .item-item:hover {
+      transform: translateY(-3px);
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 217, 61, 0.3);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .support-item h4, .item-item h4 {
+      color: #6bcf7f;
+      font-size: 1.2rem;
+      margin-bottom: 0.8rem;
+      font-weight: 700;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    }
+
+    .support-item p, .item-item p {
+      color: #e0e0e0;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      margin: 0;
+      text-align: left;
+    }
+
+    .footer {
+      margin-top: 3rem;
+      padding: 2rem;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .footer-title {
+      font-size: 1.4rem;
+      color: #ffd93d;
+      margin-bottom: 1rem;
+      font-weight: 700;
+    }
+
+    .contact-info {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      flex-wrap: wrap;
+      margin-top: 1rem;
+    }
+
+    .contact-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #e0e0e0;
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+
+    .contact-item:hover {
+      color: #ffd93d;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .container {
+        padding: 1rem;
+        margin: 0.5rem;
+      }
+      
+      .event-title {
+        font-size: 2rem;
+      }
+      
+      .pricing-section {
+        grid-template-columns: 1fr;
+      }
+      
+      .contact-info {
+        flex-direction: column;
+        gap: 1rem;
+      }
+      
+      .home-button {
+        top: 15px;
+        left: 15px;
+        width: 50px;
+        height: 50px;
+      }
+      
+      .home-button::before {
+        font-size: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a href="index.html" class="home-button" title="กลับหน้าหลัก"></a>
+
+  <div class="container">
+    <div class="header">
+      <img src="https://i.postimg.cc/wjzpnxjB/Up-Level-01-1.png" alt="Up Level Academy Logo" class="logo">
+      <h1 class="event-title">🔥 MIDNIGHT PARTY 🔥</h1>
+      <div class="event-subtitle">เปิดบ็อกซ์ใหม่ก่อนใคร! พร้อมกันตั้งแต่เที่ยงคืน</div>
+      <div class="event-date">🌙 คืนวันที่ 11 กันยายน 2568</div>
+    </div>
+
+    <div class="product-showcase">
+      <h2 class="product-title">🎁 Pokémon TCG : MA1 "วิวัฒนาการเมก้า"</h2>
+      <div class="product-description">
+        เตรียมพบกับซีรีส์ใหม่ที่ก้าวข้ามขีดจำกัด! การแบตเทิลจะทวีความดุเดือดขึ้นไปอีก! 
+        เปิดตัวโปเกมอนวิวัฒนาการเมก้าex ที่ทรงพลัง พร้อมการ์ดซัพพอร์ตและไอเท็มพิเศษ
+      </div>
+      
+      <div class="pokemon-cards">
+        <div class="card-item">
+          <div class="card-image">
+            <img src="https://asia.pokemon-card.com/th/archives/6052/" alt="เมก้าลูคาริโอex" class="pokemon-card-img">
+          </div>
+          <div class="card-name">เมก้าลูคาริโอex</div>
+          <div class="card-stats">
+            <span class="hp">HP 340</span>
+            <span class="type">⚔️ Fighting</span>
+          </div>
+          <div class="card-description">โปเกมอนวิวัฒนาการเมก้าex ทรงพลังที่สามารถปล่อยแดเมจแรงได้ตั้งแต่ต้นเกม!</div>
+          <div class="card-attacks">
+            <div class="attack">
+              <span class="attack-name">คลื่นพลังพุ่งชน</span>
+              <span class="attack-damage">130</span>
+            </div>
+            <div class="attack">
+              <span class="attack-name">เมก้าเบรฟ</span>
+              <span class="attack-damage">270</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card-item">
+          <div class="card-image">
+            <img src="https://asia.pokemon-card.com/th/archives/6052/" alt="เมก้าเซอไนท์ex" class="pokemon-card-img">
+          </div>
+          <div class="card-name">เมก้าเซอไนท์ex</div>
+          <div class="card-stats">
+            <span class="hp">HP 360</span>
+            <span class="type">🔮 Psychic</span>
+          </div>
+          <div class="card-description">โปเกมอนวิวัฒนาการเมก้าex ที่ช่วยเพิ่มพลังงานได้ในคราวเดียวเพื่อเล็งโจมตีด้วยแดเมจอันหนักหน่วง!</div>
+          <div class="card-attacks">
+            <div class="attack">
+              <span class="attack-name">คำอธิษฐานเปี่ยมล้น</span>
+              <span class="attack-damage">-</span>
+            </div>
+            <div class="attack">
+              <span class="attack-name">เมก้าซิมโฟนี</span>
+              <span class="attack-damage">50×</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card-item">
+          <div class="card-image">
+            <img src="https://asia.pokemon-card.com/th/archives/6052/" alt="เมก้าฟุชิกิบานะex" class="pokemon-card-img">
+          </div>
+          <div class="card-name">เมก้าฟุชิกิบานะex</div>
+          <div class="card-stats">
+            <span class="hp">HP 380</span>
+            <span class="type">🌿 Grass</span>
+          </div>
+          <div class="card-description">โปเกมอนวิวัฒนาการเมก้าex ที่ต่อสู้ได้อย่างทรหดอดทนเพราะมี HP สูงมากแถมยังมีท่าต่อสู้ที่สามารถฟื้นฟู HP ให้กับตัวเองได้อีกด้วย!</div>
+          <div class="card-attacks">
+            <div class="attack">
+              <span class="attack-name">จังเกิลดัมป์</span>
+              <span class="attack-damage">240</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card-item">
+          <div class="card-image">
+            <img src="https://asia.pokemon-card.com/th/archives/6052/" alt="เมก้าลาทิอาสex" class="pokemon-card-img">
+          </div>
+          <div class="card-name">เมก้าลาทิอาสex</div>
+          <div class="card-stats">
+            <span class="hp">HP ???</span>
+            <span class="type">🌊 Water</span>
+          </div>
+          <div class="card-description">โปเกมอนวิวัฒนาการเมก้าex ที่ต่อสู้ไปพลางเคลื่อนไหวไปมาบนตำแหน่งต่อสู้และเบนช์ได้อย่างคล่องแคล่ว</div>
+          <div class="card-attacks">
+            <div class="attack">
+              <span class="attack-name">ความสามารถพิเศษ</span>
+              <span class="attack-damage">-</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="support-cards">
+        <h3 class="support-title">🃏 การ์ดซัพพอร์ต</h3>
+        <div class="support-grid">
+          <div class="support-item">
+            <h4>ปณิธานของลิเลีย</h4>
+            <p>สามารถนำการ์ดบนมือของฝ่ายตัวเองใส่กลับไปในสำรับการ์ดและจั่วการ์ดได้สูงสุดถึง 8 ใบ เป็นการ์ดซัพพอร์ตที่ช่วยสนับสนุนการเล่นในช่วงต้นเกม</p>
+          </div>
+          <div class="support-item">
+            <h4>ความอาทรของมิตสึรุ</h4>
+            <p>สามารถฟื้นฟู HP ทั้งหมดของ [โปเกมอนวิวัฒนาการเมก้าex] ของฝ่ายตัวเอง 1 ตัวได้ เป็นการ์ดที่ขาดไม่ได้เลยในเด็คที่ใช้ [โปเกมอนวิวัฒนาการเมก้าex]</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="item-cards">
+        <h3 class="item-title">🎒 การ์ดไอเท็ม SR (Super Rare)</h3>
+        <div class="item-grid">
+          <div class="item-item">
+            <h4>เปลหามยามราตรี</h4>
+            <p>เป็นการ์ดไอเท็มที่ใช้งานได้ในทุกเด็ค ซึ่งจะให้เลือกการ์ดโปเกมอนหรือการ์ดพลังงานพื้นฐาน 1 ใบจากตำแหน่งทิ้งการ์ดของฝ่ายตัวเองและนำขึ้นมือได้</p>
+          </div>
+          <div class="item-item">
+            <h4>ลูกอมประหลาด</h4>
+            <p>สามารถเลือกการ์ดโปเกมอนร่าง 2 ได้ 1 ใบจากการ์ดบนมือ และทำให้วิวัฒนาการโดยข้ามร่าง 1 ได้เลย เป็นการ์ดใบหนึ่งที่ต้องมีไว้เลยในเด็คที่ใช้โปเกมอนร่าง 2</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pricing-section">
+      <div class="pricing-card">
+        <h3 class="pricing-title">📦 Box</h3>
+        <div class="price">💸 1,350 บาท</div>
+        <div class="price-note">(เฉพาะ Pre-Order)</div>
+        <div class="price">💸 1,400 บาท</div>
+        <div class="price-note">(ซื้อหน้างาน)</div>
+        <ul class="benefits">
+          <li>✅ ได้รับ +5 EXP ต่อ Box</li>
+          <li>✅ การ์ด 5 ใบ คละแบบ</li>
+          <li>✅ รวม 126 แบบ + การ์ดพิเศษ</li>
+        </ul>
+      </div>
+
+      <div class="pricing-card">
+        <h3 class="pricing-title">🎯 Spot 10 ซอง</h3>
+        <div class="price">💰 500 บาท / Spot</div>
+        <ul class="benefits">
+          <li>✅ ครบ 3 Spot → เปิดกล่องได้ทันที!</li>
+          <li>✅ +1 EXP ต่อ Spot</li>
+          <li>✅ สิทธิ์ร่วมเปิดกล่องแบบหาร ลุ้นพร้อมกัน</li>
+          <li>✅ ไม่มีใครเลือกเปิดก่อน!</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="spot-info">
+      <h3 class="spot-title">🎯 เกี่ยวกับ Spot</h3>
+      <div class="spot-description">
+        Spot = สิทธิ์ร่วมเปิดกล่องแบบหาร ลุ้นพร้อมกัน ไม่มีใครเลือกเปิดก่อน! 
+        เมื่อครบ 3 Spot จะสามารถเปิดกล่องใหม่ได้ทันที
+      </div>
+    </div>
+
+    <div class="bonus-section">
+      <h3 class="bonus-title">🎉 โบนัสพิเศษเฉพาะในงาน</h3>
+      <ul class="bonus-list">
+        <li>✅ มาร่วมงาน : +2 EXP | +2 Party Point</li>
+        <li>✅ มาครบทั้งปาร์ตี้ : +5 Party Point</li>
+        <li>✅ BUY BOX +5 EXP</li>
+        <li>✅ JOINING +2 EXP | +2 PP</li>
+        <li>✅ FULL PARTY JOINING +5 PARTY POINTS</li>
+      </ul>
+    </div>
+
+    <div class="important-notes">
+      <h3 class="notes-title">📝 ข้อกำหนดสำคัญ</h3>
+      <ul class="notes-list">
+        <li>📌 จองล่วงหน้า = ต้องชำระเงินทันที</li>
+        <li>📌 แนบสลิป = การจองสมบูรณ์</li>
+        <li>📌 หาก Spot ไม่ครบ 3 → คืนเงินเต็มจำนวนหลังงาน หรือเลือกเปลี่ยนสินค้าในร้าน (ยังได้ EXP)</li>
+        <li>📌 ไม่มีไลฟ์สด — เปิดกล่องกันเฉพาะในงานเท่านั้น</li>
+        <li>📌 เริ่มลงทะเบียน 23:30 น.</li>
+        <li>📌 ที่ร้าน Up Level Academy</li>
+      </ul>
+    </div>
+
+    <div class="cta-section">
+      <a href="https://forms.gle/C9p6aJQy7UxWnajw9" target="_blank" class="cta-button">
+        🎯 ลงชื่อจองเลย!
+      </a>
+    </div>
+
+    <div class="footer">
+      <h3 class="footer-title">📞 ติดต่อสอบถาม</h3>
+      <div class="contact-info">
+        <a href="tel:097-115-6555" class="contact-item">
+          📞 097-115-6555
+        </a>
+        <a href="https://line.me/ti/p/@uplevelacademy" target="_blank" class="contact-item">
+          💬 @uplevelacademy
+        </a>
+        <a href="https://www.facebook.com/uplevel.acad" target="_blank" class="contact-item">
+          👍 Up Level Academy
+        </a>
+        <a href="https://www.instagram.com/uplevel.acad" target="_blank" class="contact-item">
+          📸 uplevel.acad
+        </a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

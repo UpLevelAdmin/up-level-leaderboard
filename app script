@@ -55,7 +55,18 @@ function onOpen() {
     .addItem("🗑️ ลบข้อมูลซ้ำ", "clearDuplicateEntriesDebug")
     .addItem("❌ ลบข้อมูลสมาชิก", "removeMember")
     .addItem("🔑 เพิ่มแอดมิน", "addAdminEmail")
-    .addItem("🔄 เปลี่ยนเบอร์สมาชิก", "changeMemberPhoneNumber");
+    .addItem("🔄 เปลี่ยนเบอร์สมาชิก", "changeMemberPhoneNumber")
+    .addSeparator()
+    .addItem("🔧 ตั้งค่า Trigger อัตโนมัติ", "setupSheetSelectionTrigger");
+
+  // 🎨 เมนูไฮไลท์แรงค์
+  const highlightMenu = ui.createMenu("🎨 ไฮไลท์แรงค์")
+    .addItem("🎨 ไฮไลท์แรงค์ปัจจุบัน", "highlightCurrentRanks")
+    .addItem("🔄 รีเฟรชการไฮไลท์", "refreshRankHighlighting")
+    .addItem("📊 แสดงสถิติแรงค์", "showCurrentRankStats")
+    .addSeparator()
+    .addItem("🚨 ไฮไลท์คนที่ต้องทำโพสต์", "highlightMembersNeedingPosts")
+    .addItem("🔄 รีเซ็ตการไฮไลท์", "resetMemberHighlighting");
 
   // สร้างเมนูหลัก
   ui.createMenu("⬆️ Up Level Guild")
@@ -64,6 +75,7 @@ function onOpen() {
     .addSubMenu(challengeMenu)
     .addSubMenu(rebirthMenu)
     .addSubMenu(systemMenu)
+    .addSubMenu(highlightMenu)
     .addToUi();
 }
 
@@ -4429,175 +4441,607 @@ function testRebirthSystem() {
   ui.alert("🧪 ทดสอบระบบ Rebirth", testMsg, ui.ButtonSet.OK);
 }
 
-// 🎨 ฟังก์ชันทดสอบสเกลสี Rebirth
-function testRebirthColors() {
+// 🎨 ไฮไลท์แรงค์ปัจจุบันในชีท member เพื่อให้เช็คง่ายว่าทำโพสให้ลูกค้าแล้วหรือยัง
+// ฟังก์ชันนี้จะไฮไลท์คอลัมน์ "Current Rank" ของแต่ละคนด้วยสีที่แตกต่างกัน
+function highlightCurrentRanks() {
   const ui = SpreadsheetApp.getUi();
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const memberSheet = ss.getSheetByName("member");
   
-  let colorMsg = `🎨 สเกลสี Rebirth (อ่อนไปเข้ม)\n\n`;
-  colorMsg += `รอบจุติ | Rank Suffix | สี (HEX) | คำอธิบายโทน\n`;
-  colorMsg += `─────────────────────────────────────────────────\n`;
-  
-  for (let i = 0; i <= 9; i++) {
-    const suffix = i === 0 ? "ไม่มี" : getRebirthSuffix(i).trim();
-    const color = getRebirthColor(i);
-    const description = getRebirthColorDescription(i);
-    
-    colorMsg += `${i} | ${suffix} | ${color} | ${description}\n`;
+  if (!memberSheet) {
+    ui.alert("❌ ไม่พบชีท 'member'", "กรุณาตรวจสอบว่าชีทชื่อ 'member' มีอยู่จริง", ui.ButtonSet.OK);
+    return;
   }
-  
-  colorMsg += `\n🎨 ตัวอย่างการแสดงผล:\n`;
-  colorMsg += `• Rookie: พื้นหลังขาว (#FFFFFF)\n`;
-  colorMsg += `• Gold II: พื้นหลังเหลืองอ่อน (#FFE680)\n`;
-  colorMsg += `• Diamond IV: พื้นหลังส้มทอง (#FFB84D)\n`;
-  colorMsg += `• Legend VI: พื้นหลังส้มแดง (#FF704D)\n`;
-  colorMsg += `• Legend VIII: พื้นหลังแดงเข้ม (#CC0000) + ตัวอักษรขาว\n`;
-  colorMsg += `• Legend X: พื้นหลังแดงเกือบดำ (#330000) + ตัวอักษรขาว\n\n`;
-  
-  colorMsg += `💡 การใช้งาน:\n`;
-  colorMsg += `• สีจะแสดงใน Leaderboard และหน้าเว็บต่างๆ\n`;
-  colorMsg += `• ยิ่งจุติมาก สียิ่งเข้มและสวยงาม\n`;
-  colorMsg += `• สีจะช่วยแยกแยะระดับผู้เล่นได้ง่าย\n`;
-  colorMsg += `• ระบบจะใช้สีเหล่านี้ในการแสดงผล HTML\n`;
-  colorMsg += `• สีเข้ม (รอบ 7+) จะใช้ตัวอักษรขาวเพื่อให้อ่านง่าย\n\n`;
-  
-  colorMsg += `🔧 ฟังก์ชันที่เพิ่มใหม่:\n`;
-  colorMsg += `• getRebirthColor(count) - ได้รับสี HEX\n`;
-  colorMsg += `• getRebirthColorDescription(count) - ได้รับคำอธิบาย\n`;
-  colorMsg += `• formatRankWithColor(rank, count) - สร้าง HTML สี\n`;
-  colorMsg += `• getLeaderboardDataWithColors() - ข้อมูลพร้อมสี\n`;
-  
-  ui.alert("🎨 สเกลสี Rebirth", colorMsg, ui.ButtonSet.OK);
-}
 
-// 🧪 ฟังก์ชันทดสอบผลลัพธ์ Rebirth แบบละเอียด
-function testRebirthResults() {
-  const ui = SpreadsheetApp.getUi();
-  
-  let testMsg = `🧪 ทดสอบผลลัพธ์ Rebirth แบบละเอียด\n\n📊 ตัวอย่างข้อมูลหลัง Rebirth:\n\n`;
-  
-  // ทดสอบการจุติครั้งที่ 1
-  testMsg += `🔄 การจุติครั้งที่ 1 (rebirthCount = 1):\n`;
-  testMsg += `• getRebirthSuffix(1) = "${getRebirthSuffix(1)}"\n`;
-  testMsg += `• Rank ใหม่ = "Rookie${getRebirthSuffix(1)}"\n`;
-  testMsg += `• EXP Multiplier = ${Math.min(1 + 1, 5)} (แก้ไขแล้ว)\n`;
-  testMsg += `• EXP ที่ต้องใช้: Bronze II = ${5 * 2}, Silver II = ${15 * 2}, Gold II = ${30 * 2}\n\n`;
-  
-  // ทดสอบการจุติครั้งที่ 2
-  testMsg += `🔄 การจุติครั้งที่ 2 (rebirthCount = 2):\n`;
-  testMsg += `• getRebirthSuffix(2) = "${getRebirthSuffix(2)}"\n`;
-  testMsg += `• Rank ใหม่ = "Rookie${getRebirthSuffix(2)}"\n`;
-  testMsg += `• EXP Multiplier = ${Math.min(2 + 1, 5)} (แก้ไขแล้ว)\n`;
-  testMsg += `• EXP ที่ต้องใช้: Bronze III = ${5 * 3}, Silver III = ${15 * 3}, Gold III = ${30 * 3}\n\n`;
-  
-  // ทดสอบการจุติครั้งที่ 3
-  testMsg += `🔄 การจุติครั้งที่ 3 (rebirthCount = 3):\n`;
-  testMsg += `• getRebirthSuffix(3) = "${getRebirthSuffix(3)}"\n`;
-  testMsg += `• Rank ใหม่ = "Rookie${getRebirthSuffix(3)}"\n`;
-  testMsg += `• EXP Multiplier = ${Math.min(3 + 1, 5)} (แก้ไขแล้ว)\n`;
-  testMsg += `• EXP ที่ต้องใช้: Bronze IV = ${5 * 4}, Silver IV = ${15 * 4}, Gold IV = ${30 * 4}\n\n`;
-  
-  // ทดสอบการจุติครั้งที่ 5 (Multiplier จำกัดที่ 5)
-  testMsg += `🔄 การจุติครั้งที่ 5 (rebirthCount = 5):\n`;
-  testMsg += `• getRebirthSuffix(5) = "${getRebirthSuffix(5)}"\n`;
-  testMsg += `• Rank ใหม่ = "Rookie${getRebirthSuffix(5)}"\n`;
-  testMsg += `• EXP Multiplier = ${Math.min(5, 5)} (จำกัดที่ 5)\n`;
-  testMsg += `• EXP ที่ต้องใช้: Bronze VI = ${5 * 5}, Silver VI = ${15 * 5}, Gold VI = ${30 * 5}\n\n`;
-  
-  // ทดสอบการจุติครั้งที่ 10
-  testMsg += `🔄 การจุติครั้งที่ 10 (rebirthCount = 10):\n`;
-  testMsg += `• getRebirthSuffix(10) = "${getRebirthSuffix(10)}"\n`;
-  testMsg += `• Rank ใหม่ = "Rookie${getRebirthSuffix(10)}"\n`;
-  testMsg += `• EXP Multiplier = ${Math.min(10, 5)} (จำกัดที่ 5)\n`;
-  testMsg += `• EXP ที่ต้องใช้: Bronze X = ${5 * 5}, Silver X = ${15 * 5}, Gold X = ${30 * 5}\n\n`;
-  
-  // ทดสอบการจุติครั้งที่ 15
-  testMsg += `🔄 การจุติครั้งที่ 15 (rebirthCount = 15):\n`;
-  testMsg += `• getRebirthSuffix(15) = "${getRebirthSuffix(15)}"\n`;
-  testMsg += `• Rank ใหม่ = "Rookie${getRebirthSuffix(15)}"\n`;
-  testMsg += `• EXP Multiplier = ${Math.min(15, 5)} (จำกัดที่ 5)\n`;
-  testMsg += `• EXP ที่ต้องใช้: Bronze 15 = ${5 * 5}, Silver 15 = ${15 * 5}, Gold 15 = ${30 * 5}\n\n`;
-  
-  testMsg += `✅ ระบบทำงานถูกต้องแล้ว!\n`;
-  testMsg += `• การจุติครั้งแรกจะได้ Rookie II\n`;
-  testMsg += `• Multiplier จำกัดที่ x5\n`;
-  testMsg += `• Suffix ทำงานถูกต้องตามจำนวนครั้งที่จุติ\n`;
-  
-  ui.alert("🧪 ทดสอบผลลัพธ์ Rebirth", testMsg, ui.ButtonSet.OK);
-}
-
-// 🔧 ฟังก์ชันตรวจสอบและแก้ไขปัญหาระบบ Rebirth
-function checkAndFixRebirthSystem() {
-  const ui = SpreadsheetApp.getUi();
-  
-  // 1. กรอกชื่อแอดมิน
   const adminPrompt = ui.prompt("ชื่อแอดมิน", "กรุณากรอกชื่อแอดมิน (สำหรับบันทึก log)", ui.ButtonSet.OK_CANCEL);
   if (adminPrompt.getSelectedButton() !== ui.Button.OK) return;
   const admin = adminPrompt.getResponseText().trim();
 
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const dashSheet = ss.getSheetByName("Member Dashboard");
-  const rebirthSheet = ss.getSheetByName("Rebirth History");
+  try {
+    // รับข้อมูลจากชีท member
+    const data = memberSheet.getDataRange().getValues();
+    if (data.length <= 1) {
+      ui.alert("❌ ไม่มีข้อมูลในชีท member", "ชีทต้องมีข้อมูลอย่างน้อย 1 แถว", ui.ButtonSet.OK);
+      return;
+    }
+
+    // หาคอลัมน์ "Current Rank" (คอลัมน์ C)
+    const currentRankCol = 2; // คอลัมน์ C = index 2
+    const codenameCol = 1;    // คอลัมน์ B = index 1
+    
+    // กำหนดสีสำหรับแต่ละแรงค์
+    const rankColors = {
+      "Bronze": "#CD7F32",      // สีบรอนซ์
+      "Silver": "#C0C0C0",     // สีเงิน
+      "Gold": "#FFD700",       // สีทอง
+      "Platinum": "#E5E4E2",   // สีแพลทินัม
+      "Diamond": "#B9F2FF",    // สีฟ้าเพชร
+      "Grandmaster": "#FF6B6B", // สีแดงแกรนด์มาสเตอร์
+      "Legend": "#9B59B6",     // สีม่วงเลเจนด์
+      "REBIRTH": "#FF1493",    // สีชมพูรีเบิร์ธ
+      "Bronze II": "#8B4513",  // สีน้ำตาลเข้ม
+      "Silver II": "#708090",  // สีเทาเข้ม
+      "Gold II": "#DAA520",    // สีทองเข้ม
+      "Platinum II": "#B8860B", // สีทองเก่า
+      "Diamond II": "#4682B4", // สีน้ำเงินสตีล
+      "Grandmaster II": "#DC143C", // สีแดงเข้ม
+      "Legend II": "#4B0082"   // สีม่วงเข้ม
+    };
+
+    // ล้างสีเดิมทั้งหมด
+    memberSheet.getRange(2, 1, data.length - 1, memberSheet.getLastColumn()).setBackground(null);
+
+    let highlightedCount = 0;
+    let rankStats = {};
+
+    // วนลูปผ่านข้อมูลสมาชิก (เริ่มจากแถวที่ 2)
+    for (let i = 1; i < data.length; i++) {
+      const currentRank = String(data[i][currentRankCol] || "").trim();
+      const codename = String(data[i][codenameCol] || "").trim();
+      
+      if (currentRank && codename) {
+        // หาสีสำหรับแรงค์นี้
+        let color = "#FFFFFF"; // สีขาวเป็นค่าเริ่มต้น
+        
+        // หาสีที่ตรงกับแรงค์
+        for (const [rankName, rankColor] of Object.entries(rankColors)) {
+          if (currentRank.toLowerCase().includes(rankName.toLowerCase())) {
+            color = rankColor;
+            break;
+          }
+        }
+
+        // ไฮไลท์แถวทั้งหมดของสมาชิกคนนี้
+        memberSheet.getRange(i + 1, 1, 1, memberSheet.getLastColumn()).setBackground(color);
+        
+        // นับสถิติ
+        if (!rankStats[currentRank]) {
+          rankStats[currentRank] = 0;
+        }
+        rankStats[currentRank]++;
+        highlightedCount++;
+      }
+    }
+
+    // แสดงผลลัพธ์
+    let message = `✅ ไฮไลท์แรงค์ปัจจุบันเรียบร้อยแล้ว!\n\n`;
+    message += `📊 สรุปสถิติ:\n`;
+    message += `- จำนวนสมาชิกที่ไฮไลท์: ${highlightedCount} คน\n`;
+    message += `- แรงค์ที่พบ:\n`;
+    
+    // เรียงลำดับแรงค์ตามลำดับความสำคัญ
+    const rankOrder = [
+      "REBIRTH", "Legend II", "Grandmaster II", "Diamond II", "Platinum II", "Gold II", "Silver II", "Bronze II",
+      "Legend", "Grandmaster", "Diamond", "Platinum", "Gold", "Silver", "Bronze"
+    ];
+    
+    for (const rank of rankOrder) {
+      if (rankStats[rank]) {
+        message += `  • ${rank}: ${rankStats[rank]} คน\n`;
+      }
+    }
+
+    // แสดงแรงค์อื่นๆ ที่ไม่ใช่มาตรฐาน
+    for (const [rank, count] of Object.entries(rankStats)) {
+      if (!rankOrder.includes(rank)) {
+        message += `  • ${rank}: ${count} คน\n`;
+      }
+    }
+
+    message += `\n💡 วิธีใช้งาน:\n`;
+    message += `- สีที่ไฮไลท์แสดงแรงค์ปัจจุบันของสมาชิกแต่ละคน\n`;
+    message += `- ใช้เช็คง่ายว่าทำโพสให้ลูกค้าแล้วหรือยัง\n`;
+    message += `- รันฟังก์ชันนี้อีกครั้งเพื่อรีเฟรชสี`;
+
+    ui.alert("🎨 ไฮไลท์แรงค์ปัจจุบัน", message, ui.ButtonSet.OK);
+    
+    // บันทึก log
+    logAdminAction("ไฮไลท์แรงค์ปัจจุบัน", `ไฮไลท์ ${highlightedCount} คน ในชีท member`, admin);
+
+  } catch (error) {
+    ui.alert("❌ เกิดข้อผิดพลาด", `ไม่สามารถไฮไลท์แรงค์ได้: ${error.message}`, ui.ButtonSet.OK);
+    console.error("highlightCurrentRanks Error: " + error.toString());
+  }
+}
+
+/**
+ * 🔄 รีเฟรชการไฮไลท์แรงค์ปัจจุบัน (ล้างสีเดิมและไฮไลท์ใหม่)
+ */
+function refreshRankHighlighting() {
+  const ui = SpreadsheetApp.getUi();
   
-  if (!dashSheet) {
-    ui.alert("❌ ไม่พบชีท Member Dashboard", "กรุณาสร้างชีท Member Dashboard", ui.ButtonSet.OK);
+  const confirm = ui.alert("🔄 รีเฟรชการไฮไลท์", 
+    "คุณต้องการรีเฟรชการไฮไลท์แรงค์ปัจจุบันหรือไม่?\n\nการดำเนินการนี้จะล้างสีเดิมทั้งหมดและไฮไลท์ใหม่", 
+    ui.ButtonSet.YES_NO);
+  
+  if (confirm === ui.Button.YES) {
+    highlightCurrentRanks();
+  }
+}
+
+/**
+ * 📊 แสดงสถิติแรงค์ปัจจุบันในชีท member
+ */
+function showCurrentRankStats() {
+  const ui = SpreadsheetApp.getUi();
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const memberSheet = ss.getSheetByName("member");
+  
+  if (!memberSheet) {
+    ui.alert("❌ ไม่พบชีท 'member'", "กรุณาตรวจสอบว่าชีทชื่อ 'member' มีอยู่จริง", ui.ButtonSet.OK);
     return;
   }
 
-  let issues = [];
-  let fixes = [];
+  try {
+    const data = memberSheet.getDataRange().getValues();
+    if (data.length <= 1) {
+      ui.alert("❌ ไม่มีข้อมูลในชีท member", "ชีทต้องมีข้อมูลอย่างน้อย 1 แถว", ui.ButtonSet.OK);
+      return;
+    }
 
-  // 1. ตรวจสอบคอลัมน์ที่จำเป็น
-  const currentCols = dashSheet.getLastColumn();
-  if (currentCols < 7) {
-    issues.push("❌ ไม่มีคอลัมน์ Rebirth Count");
-    fixes.push("➕ เพิ่มคอลัมน์ Rebirth Count");
-  }
-  if (currentCols < 8) {
-    issues.push("❌ ไม่มีคอลัมน์ EXP Multiplier");
-    fixes.push("➕ เพิ่มคอลัมน์ EXP Multiplier");
-  }
-
-  // 2. ตรวจสอบข้อมูลที่ไม่สอดคล้องกัน
-  const data = dashSheet.getDataRange().getValues();
-  for (let i = 1; i < data.length; i++) {
-    const rebirthCount = Number(data[i][6]) || 0;
-    const multiplier = Number(data[i][7]) || 1;
-    const exp = Number(data[i][4]) || 0;
-    const currentRank = data[i][3];
+    const currentRankCol = 2; // คอลัมน์ C = index 2
+    const codenameCol = 1;    // คอลัมน์ B = index 1
     
-    // ตรวจสอบว่า multiplier เกิน 5 หรือไม่
-    if (multiplier > 5) {
-      issues.push(`❌ ${data[i][0]} (${data[i][2]}): Multiplier ${multiplier} เกิน 5`);
-      fixes.push(`🔧 แก้ไข Multiplier ของ ${data[i][0]} เป็น 5`);
+    // นับสถิติ
+    const rankStats = {};
+    let totalMembers = 0;
+    
+    for (let i = 1; i < data.length; i++) {
+      const currentRank = String(data[i][currentRankCol] || "").trim();
+      const codename = String(data[i][codenameCol] || "").trim();
+      
+      if (currentRank && codename) {
+        if (!rankStats[currentRank]) {
+          rankStats[currentRank] = 0;
+        }
+        rankStats[currentRank]++;
+        totalMembers++;
+      }
+    }
+
+    // เรียงลำดับแรงค์ตามลำดับความสำคัญ
+    const rankOrder = [
+      "REBIRTH", "Legend II", "Grandmaster II", "Diamond II", "Platinum II", "Gold II", "Silver II", "Bronze II",
+      "Legend", "Grandmaster", "Diamond", "Platinum", "Gold", "Silver", "Bronze"
+    ];
+
+    let message = `📊 สถิติแรงค์ปัจจุบันในชีท member\n\n`;
+    message += `👥 จำนวนสมาชิกทั้งหมด: ${totalMembers} คน\n\n`;
+    message += `🏆 แรงค์ตามลำดับความสำคัญ:\n`;
+    
+    // แสดงแรงค์มาตรฐาน
+    for (const rank of rankOrder) {
+      if (rankStats[rank]) {
+        const percentage = ((rankStats[rank] / totalMembers) * 100).toFixed(1);
+        message += `  • ${rank}: ${rankStats[rank]} คน (${percentage}%)\n`;
+      }
+    }
+
+    // แสดงแรงค์อื่นๆ ที่ไม่ใช่มาตรฐาน
+    const otherRanks = Object.keys(rankStats).filter(rank => !rankOrder.includes(rank));
+    if (otherRanks.length > 0) {
+      message += `\n🔍 แรงค์อื่นๆ:\n`;
+      for (const rank of otherRanks) {
+        const percentage = ((rankStats[rank] / totalMembers) * 100).toFixed(1);
+        message += `  • ${rank}: ${rankStats[rank]} คน (${percentage}%)\n`;
+      }
+    }
+
+    message += `\n💡 หมายเหตุ:\n`;
+    message += `- ใช้ฟังก์ชัน 'ไฮไลท์แรงค์ปัจจุบัน' เพื่อไฮไลท์สี\n`;
+    message += `- ใช้ฟังก์ชัน 'รีเฟรชการไฮไลท์' เพื่ออัปเดตสี`;
+
+    ui.alert("📊 สถิติแรงค์ปัจจุบัน", message, ui.ButtonSet.OK);
+
+  } catch (error) {
+    ui.alert("❌ เกิดข้อผิดพลาด", `ไม่สามารถแสดงสถิติได้: ${error.message}`, ui.ButtonSet.OK);
+    console.error("showCurrentRankStats Error: " + error.toString());
+  }
+}
+
+/**
+ * 📝 อัปเดตชีท "โพสต์ Rank Up" ให้ตรงกับข้อมูลปัจจุบัน
+ * ฟังก์ชันนี้จะตรวจสอบและอัปเดตข้อมูลในชีท "โพสต์ Rank Up" ให้ถูกต้อง
+ */
+function updatePostRankUpSheet() {
+  const ui = SpreadsheetApp.getUi();
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const postRankUpSheet = ss.getSheetByName("โพสต์ Rank Up");
+  
+  if (!postRankUpSheet) {
+    ui.alert("❌ ไม่พบชีท 'โพสต์ Rank Up'", "กรุณาตรวจสอบว่าชีทชื่อ 'โพสต์ Rank Up' มีอยู่จริง", ui.ButtonSet.OK);
+    return;
+  }
+
+  try {
+    // รับข้อมูลจากชีท "โพสต์ Rank Up"
+    const data = postRankUpSheet.getDataRange().getValues();
+    if (data.length <= 1) {
+      ui.alert("❌ ไม่มีข้อมูลในชีท 'โพสต์ Rank Up'", "ชีทต้องมีข้อมูลอย่างน้อย 1 แถว", ui.ButtonSet.OK);
+      return;
+    }
+
+    // หาคอลัมน์ที่สำคัญ
+    const headers = data[0];
+    const codenameCol = headers.findIndex(h => String(h).toLowerCase().includes("code") || String(h).toLowerCase().includes("codename"));
+    const rankCol = headers.findIndex(h => String(h).toLowerCase().includes("rank") || String(h).toLowerCase().includes("แรงค์"));
+    
+    if (codenameCol === -1 || rankCol === -1) {
+      ui.alert("❌ ไม่พบคอลัมน์ที่จำเป็น", 
+        "กรุณาตรวจสอบว่าชีท 'โพสต์ Rank Up' มีคอลัมน์:\n" +
+        "- Code name/Codename\n" +
+        "- Rank/แรงค์", ui.ButtonSet.OK);
+      return;
+    }
+
+    // ตรวจสอบข้อมูล
+    let validData = 0;
+    let invalidData = 0;
+    let issues = [];
+
+    for (let i = 1; i < data.length; i++) {
+      const codename = String(data[i][codenameCol] || "").trim();
+      const rank = String(data[i][rankCol] || "").trim();
+      
+      if (codename && rank) {
+        validData++;
+      } else {
+        invalidData++;
+        if (!codename) issues.push(`แถว ${i + 1}: ไม่มี Code name`);
+        if (!rank) issues.push(`แถว ${i + 1}: ไม่มี Rank`);
+      }
+    }
+
+    // แสดงผลลัพธ์
+    let message = `📝 ตรวจสอบชีท "โพสต์ Rank Up" เรียบร้อยแล้ว!\n\n`;
+    message += `📊 สรุปข้อมูล:\n`;
+    message += `- ข้อมูลถูกต้อง: ${validData} คน\n`;
+    message += `- ข้อมูลไม่ครบ: ${invalidData} คน\n`;
+    message += `- รวม: ${validData + invalidData} คน\n\n`;
+    
+    if (invalidData > 0) {
+      message += `⚠️ ปัญหาที่พบ:\n`;
+      issues.forEach(issue => {
+        message += `• ${issue}\n`;
+      });
+      message += `\n💡 แนะนำ: กรุณาตรวจสอบและกรอกข้อมูลให้ครบถ้วน`;
+    } else {
+      message += `✅ ข้อมูลครบถ้วนและถูกต้อง\n`;
+      message += `- ทุกคนมี Code name และ Rank แล้ว\n`;
+      message += `- ใช้ฟังก์ชัน 'ไฮไลท์คนที่ต้องทำโพสต์' เพื่อไฮไลท์สี`;
+    }
+
+    ui.alert("📝 ตรวจสอบชีทโพสต์ Rank Up", message, ui.ButtonSet.OK);
+
+  } catch (error) {
+    ui.alert("❌ เกิดข้อผิดพลาด", `ไม่สามารถตรวจสอบชีทได้: ${error.message}`, ui.ButtonSet.OK);
+    console.error("updatePostRankUpSheet Error: " + error.toString());
+  }
+}
+
+// ฟังก์ชันนี้ถูกลบออกแล้วเพราะไม่จำเป็น
+
+// ฟังก์ชันนี้ถูกลบออกแล้วเพราะไม่จำเป็น
+
+/**
+ * 🚀 ฟังก์ชันที่ทำงานอัตโนมัติเมื่อเปิดชีท "โพสต์ Rank Up"
+ * ฟังก์ชันนี้จะถูกเรียกเมื่อมีการเปิดชีทหรือเปลี่ยนชีท
+ */
+function onSheetSelection(e) {
+  try {
+    const sheetName = e.source.getActiveSheet().getName();
+    
+    // ถ้าเปิดชีท "โพสต์ Rank Up" ให้ไฮไลท์คนที่ต้องทำโพสต์อัตโนมัติ
+    if (sheetName === "โพสต์ Rank Up") {
+      // รอสักครู่ให้ชีทโหลดเสร็จก่อน
+      Utilities.sleep(500);
+      
+      // ไฮไลท์คนที่ต้องทำโพสต์
+      highlightMembersNeedingPosts();
+      
+      console.log("✅ ไฮไลท์คนที่ต้องทำโพสต์ในชีท 'โพสต์ Rank Up' อัตโนมัติเรียบร้อยแล้ว");
     }
     
-    // ตรวจสอบว่า Rank ถูกต้องตาม multiplier หรือไม่
-    const expectedRank = calculateCorrectRank(exp, rebirthCount, multiplier);
-    if (currentRank !== expectedRank) {
-      issues.push(`❌ ${data[i][0]} (${data[i][2]}): Rank ${currentRank} ควรเป็น ${expectedRank}`);
-      fixes.push(`🔧 แก้ไข Rank ของ ${data[i][0]} เป็น ${expectedRank}`);
-    }
+  } catch (error) {
+    console.error("onSheetSelection Error: " + error.toString());
   }
+}
 
-  // แสดงผลการตรวจสอบ
-  let resultMsg = `🔧 ตรวจสอบระบบ Rebirth\n\n`;
-  
-  if (issues.length === 0) {
-    resultMsg += `✅ ไม่พบปัญหาในระบบ Rebirth\n`;
-    resultMsg += `✅ ระบบทำงานปกติ\n`;
-  } else {
-    resultMsg += `❌ พบปัญหา ${issues.length} รายการ:\n\n`;
-    issues.forEach(issue => {
-      resultMsg += `${issue}\n`;
+/**
+ * 🔧 ตั้งค่า Trigger สำหรับฟังก์ชัน onSheetSelection
+ * ฟังก์ชันนี้จะถูกเรียกเมื่อมีการเปิดชีทหรือเปลี่ยนชีท
+ */
+function setupSheetSelectionTrigger() {
+  try {
+    // ลบ trigger เดิม (ถ้ามี)
+    const triggers = ScriptApp.getProjectTriggers();
+    triggers.forEach(trigger => {
+      if (trigger.getHandlerFunction() === 'onSheetSelection') {
+        ScriptApp.deleteTrigger(trigger);
+      }
     });
     
-    resultMsg += `\n🔧 การแก้ไขที่แนะนำ:\n\n`;
-    fixes.forEach(fix => {
-      resultMsg += `${fix}\n`;
-    });
+    // สร้าง trigger ใหม่
+    ScriptApp.newTrigger('onSheetSelection')
+      .onSelection()
+      .create();
+    
+    console.log("✅ ตั้งค่า Trigger สำหรับ onSheetSelection เรียบร้อยแล้ว");
+    
+  } catch (error) {
+    console.error("setupSheetSelectionTrigger Error: " + error.toString());
   }
+}
+
+/**
+ * 🚨 ไฮไลท์คนที่ถึงแรงค์แล้วแต่ยังไม่มีติ๊กถูก
+ * ฟังก์ชันนี้จะไฮไลท์เฉพาะคนที่ต้องทำโพสต์ให้ในชีท "โพสต์ Rank Up"
+ */
+function highlightMembersNeedingPosts() {
+  const ui = SpreadsheetApp.getUi();
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const postRankUpSheet = ss.getSheetByName("โพสต์ Rank Up");
   
-  ui.alert("🔧 ตรวจสอบระบบ Rebirth", resultMsg, ui.ButtonSet.OK);
+  if (!postRankUpSheet) {
+    ui.alert("❌ ไม่พบชีท 'โพสต์ Rank Up'", "กรุณาตรวจสอบว่าชีทชื่อ 'โพสต์ Rank Up' มีอยู่จริง", ui.ButtonSet.OK);
+    return;
+  }
+
+  try {
+    // รับข้อมูลจากชีท "โพสต์ Rank Up"
+    const data = postRankUpSheet.getDataRange().getValues();
+    if (data.length <= 1) {
+      ui.alert("❌ ไม่มีข้อมูลในชีท 'โพสต์ Rank Up'", "ชีทต้องมีข้อมูลอย่างน้อย 1 แถว", ui.ButtonSet.OK);
+      return;
+    }
+
+    // หาคอลัมน์ที่สำคัญ
+    const headers = data[0];
+    const codenameCol = headers.findIndex(h => String(h).toLowerCase().includes("code") || String(h).toLowerCase().includes("codename"));
+    const rankCol = headers.findIndex(h => String(h).toLowerCase().includes("rank") || String(h).toLowerCase().includes("แรงค์"));
+    
+    if (codenameCol === -1 || rankCol === -1) {
+      ui.alert("❌ ไม่พบคอลัมน์ที่จำเป็น", 
+        "กรุณาตรวจสอบว่าชีท 'โพสต์ Rank Up' มีคอลัมน์:\n" +
+        "- Code name/Codename\n" +
+        "- Rank/แรงค์", ui.ButtonSet.OK);
+      return;
+    }
+
+    // หาคอลัมน์แรงค์ต่างๆ (คอลัมน์ที่มี checkbox)
+    const rankColumns = [];
+    for (let col = 0; col < headers.length; col++) {
+      const header = String(headers[col] || "").trim();
+      if (header && 
+          !String(header).toLowerCase().includes("code") && 
+          !String(header).toLowerCase().includes("codename") && 
+          !String(header).toLowerCase().includes("rank") && 
+          !String(header).toLowerCase().includes("แรงค์")) {
+        rankColumns.push({
+          col: col,
+          name: header
+        });
+      }
+    }
+
+    if (rankColumns.length === 0) {
+      ui.alert("❌ ไม่พบคอลัมน์แรงค์", "กรุณาตรวจสอบว่าชีทมีคอลัมน์แรงค์ต่างๆ", ui.ButtonSet.OK);
+      return;
+    }
+
+    // ล้างสีเดิมทั้งหมด
+    postRankUpSheet.getRange(2, 1, data.length - 1, postRankUpSheet.getLastColumn()).setBackground(null);
+
+    let highlightedCount = 0;
+    let rankStats = {};
+
+    // วนลูปผ่านข้อมูลสมาชิก (เริ่มจากแถวที่ 2)
+    for (let i = 1; i < data.length; i++) {
+      const codename = String(data[i][codenameCol] || "").trim();
+      const currentRank = String(data[i][rankCol] || "").trim();
+      
+      if (codename && currentRank) {
+        let needsHighlight = false;
+        let highlightReason = "";
+
+        // ตรวจสอบแต่ละแรงค์
+        for (const rankCol of rankColumns) {
+          const rankName = rankCol.name;
+          const hasCheckmark = data[i][rankCol.col] === true; // เช็คว่ามีติ๊กถูกหรือไม่
+          
+          // ถ้าคนนี้ถึงแรงค์นี้แล้ว แต่ยังไม่มีติ๊กถูก
+          if (currentRank === rankName && !hasCheckmark) {
+            needsHighlight = true;
+            highlightReason = `ถึง ${rankName} แล้วแต่ยังไม่มีติ๊กถูก`;
+            break;
+          }
+          
+          // เช็คแรงค์ที่สูงกว่า
+          if (isHigherRank(currentRank, rankName) && !hasCheckmark) {
+            needsHighlight = true;
+            highlightReason = `ถึง ${currentRank} แล้วแต่ยังไม่มีติ๊กถูกใน ${rankName}`;
+            break;
+          }
+        }
+
+        // ไฮไลท์ถ้าต้องการ
+        if (needsHighlight) {
+          // ไฮไลท์เฉพาะชื่อ (คอลัมน์ Code name) ด้วยสีแดง
+          postRankUpSheet.getRange(i + 1, codenameCol + 1).setBackground("#FF6B6B");
+          
+          // ไฮไลท์เฉพาะแรงค์ปัจจุบัน (คอลัมน์ Current Rank) ด้วยสีแดง
+          postRankUpSheet.getRange(i + 1, rankCol + 1).setBackground("#FF6B6B");
+          
+          // ไฮไลท์เฉพาะ cell ที่ต้องติ๊กด้วยสีส้ม
+          for (const rankCol of rankColumns) {
+            const rankName = rankCol.name;
+            const hasCheckmark = data[i][rankCol.col] === true;
+            
+            // ถ้าถึงแรงค์นี้แล้วแต่ยังไม่มีติ๊กถูก
+            if (currentRank === rankName && !hasCheckmark) {
+              postRankUpSheet.getRange(i + 1, rankCol.col + 1).setBackground("#FFA500");
+              break;
+            }
+            
+            // เช็คแรงค์ที่สูงกว่า
+            if (isHigherRank(currentRank, rankName) && !hasCheckmark) {
+              postRankUpSheet.getRange(i + 1, rankCol.col + 1).setBackground("#FFA500");
+              break;
+            }
+          }
+          
+          // เพิ่มหมายเหตุในคอลัมน์สุดท้าย (ไม่ใช่คอลัมน์ N)
+          const lastCol = postRankUpSheet.getLastColumn();
+          postRankUpSheet.getRange(i + 1, lastCol).setValue(`🚨 ${highlightReason}`);
+          
+          highlightedCount++;
+          
+          // นับสถิติ
+          if (!rankStats[currentRank]) {
+            rankStats[currentRank] = 0;
+          }
+          rankStats[currentRank]++;
+        }
+      }
+    }
+
+    // ไม่แสดงแจ้งเตือน ทำงานเงียบๆ
+    console.log(`✅ ไฮไลท์คนที่ต้องทำโพสต์เรียบร้อยแล้ว: ${highlightedCount} คน`);
+    
+    // อัปเดตชื่อคอลัมน์สุดท้ายให้เป็น "หมายเหตุ" หรือ "Note"
+    const lastCol = postRankUpSheet.getLastColumn();
+    if (lastCol > 0) {
+      postRankUpSheet.getRange(1, lastCol).setValue("หมายเหตุ");
+    }
+
+  } catch (error) {
+    ui.alert("❌ เกิดข้อผิดพลาด", `ไม่สามารถไฮไลท์ได้: ${error.message}`, ui.ButtonSet.OK);
+    console.error("highlightMembersNeedingPosts Error: " + error.toString());
+  }
+}
+
+/**
+ * 🔄 รีเซ็ตการไฮไลท์ทั้งหมดในชีท "โพสต์ Rank Up"
+ */
+function resetMemberHighlighting() {
+  const ui = SpreadsheetApp.getUi();
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const postRankUpSheet = ss.getSheetByName("โพสต์ Rank Up");
+  
+  if (!postRankUpSheet) {
+    ui.alert("❌ ไม่พบชีท 'โพสต์ Rank Up'", "กรุณาตรวจสอบว่าชีทชื่อ 'โพสต์ Rank Up' มีอยู่จริง", ui.ButtonSet.OK);
+    return;
+  }
+
+  try {
+    const data = postRankUpSheet.getDataRange().getValues();
+    if (data.length <= 1) {
+      ui.alert("❌ ไม่มีข้อมูลในชีท 'โพสต์ Rank Up'", "ชีทต้องมีข้อมูลอย่างน้อย 1 แถว", ui.ButtonSet.OK);
+      return;
+    }
+
+    // ล้างสีเฉพาะที่ไฮไลท์ (ไม่ล้างทั้งแถบ)
+    const headers = data[0];
+    const codenameCol = headers.findIndex(h => String(h).toLowerCase().includes("code") || String(h).toLowerCase().includes("codename"));
+    const rankCol = headers.findIndex(h => String(h).toLowerCase().includes("rank") || String(h).toLowerCase().includes("แรงค์"));
+    
+    if (codenameCol !== -1) {
+      // ล้างสีในคอลัมน์ Code name
+      postRankUpSheet.getRange(2, codenameCol + 1, data.length - 1).setBackground(null);
+    }
+    
+    if (rankCol !== -1) {
+      // ล้างสีในคอลัมน์ Current Rank
+      postRankUpSheet.getRange(2, rankCol + 1, data.length - 1).setBackground(null);
+    }
+    
+    // ล้างสีในคอลัมน์แรงค์ต่างๆ (checkbox)
+    for (let col = 0; col < headers.length; col++) {
+      const header = String(headers[col] || "").trim();
+      if (header && 
+          !String(header).toLowerCase().includes("code") && 
+          !String(header).toLowerCase().includes("codename") && 
+          !String(header).toLowerCase().includes("rank") && 
+          !String(header).toLowerCase().includes("แรงค์") &&
+          !String(header).toLowerCase().includes("หมายเหตุ")) {
+        postRankUpSheet.getRange(2, col + 1, data.length - 1).setBackground(null);
+      }
+    }
+    
+    // ล้างหมายเหตุในคอลัมน์สุดท้าย
+    const lastCol = postRankUpSheet.getLastColumn();
+    postRankUpSheet.getRange(2, lastCol, data.length - 1).clearContent();
+
+    ui.alert("✅ รีเซ็ตการไฮไลท์เรียบร้อยแล้ว", "ล้างสีและหมายเหตุทั้งหมดแล้ว", ui.ButtonSet.OK);
+
+  } catch (error) {
+    ui.alert("❌ เกิดข้อผิดพลาด", `ไม่สามารถรีเซ็ตได้: ${error.message}`, ui.ButtonSet.OK);
+    console.error("resetMemberHighlighting Error: " + error.toString());
+  }
+}
+
+/**
+ * 🔍 ตรวจสอบว่าแรงค์ A สูงกว่าแรงค์ B หรือไม่
+ */
+function isHigherRank(rankA, rankB) {
+  const rankOrder = [
+    "Bronze", "Silver", "Gold", "Platinum", "Diamond", "Grandmaster", "Legend", "REBIRTH",
+    "Bronze II", "Silver II", "Gold II", "Platinum II", "Diamond II", "Grandmaster II", "Legend II"
+  ];
+  
+  const indexA = rankOrder.indexOf(rankA);
+  const indexB = rankOrder.indexOf(rankB);
+  
+  // ถ้าไม่พบในรายการ ให้ถือว่าต่ำกว่า
+  if (indexA === -1) return false;
+  if (indexB === -1) return false;
+  
+  return indexA > indexB;
+}
+
+/**
+ * 🔄 ฟังก์ชันที่ทำงานอัตโนมัติเมื่อมีการแก้ไขในชีท
+ * ฟังก์ชันนี้จะถูกเรียกเมื่อมีการแก้ไขข้อมูลในชีทใดๆ
+ */
+function onEdit(e) {
+  try {
+    const sheet = e.source.getActiveSheet();
+    const sheetName = sheet.getName();
+    
+    // ถ้าแก้ไขในชีท "โพสต์ Rank Up" ให้ไฮไลท์ใหม่
+    if (sheetName === "โพสต์ Rank Up") {
+      // รอสักครู่ให้การแก้ไขเสร็จสิ้น
+      Utilities.sleep(300);
+      
+      // ไฮไลท์คนที่ต้องทำโพสต์ใหม่
+      highlightMembersNeedingPosts();
+      
+      console.log("✅ อัปเดตการไฮไลท์ในชีท 'โพสต์ Rank Up' หลังจากแก้ไขข้อมูล");
+    }
+    
+  } catch (error) {
+    console.error("onEdit Error: " + error.toString());
+  }
 }
 
 // 🔧 ฟังก์ชันแก้ไขปัญหาระบบ Rebirth อัตโนมัติ
@@ -4801,192 +5245,6 @@ function checkAndFixFormDataSync() {
   } else {
     ui.alert("ตรวจสอบการซิงค์ข้อมูล", report, ui.ButtonSet.OK);
   }
-}
-
-// ➕ เพิ่มข้อมูลที่ตกหล่นจากฟอร์ม
-function addMissingFormEntries(missingEntries) {
-  const ui = SpreadsheetApp.getUi();
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const dashSheet = ss.getSheetByName("Member Dashboard");
-  const dbSheet = ss.getSheetByName("member");
-  
-  let successCount = 0;
-  let errorCount = 0;
-  let errorMessages = [];
-  
-  // ดึงข้อมูลปัจจุบันใน Member Dashboard เพื่อตรวจสอบซ้ำ
-  const dashData = dashSheet.getDataRange().getValues();
-  const currentPhones = dashData.slice(1).map(row => normalizePhone(row[1]));
-  const currentCodenames = dashData.slice(1).map(row => String(row[2]).toLowerCase().trim());
-  
-  missingEntries.forEach(entry => {
-    try {
-      const { timestamp, fullName, nickname, phone, codename, memberType, referrer } = entry.data;
-      
-      // ตรวจสอบซ้ำอีกครั้ง
-      if (currentPhones.includes(phone)) {
-        errorMessages.push(`${nickname}: เบอร์ซ้ำ`);
-        errorCount++;
-        return;
-      }
-      
-      if (currentCodenames.includes(codename.toLowerCase())) {
-        errorMessages.push(`${nickname}: Codename ซ้ำ`);
-        errorCount++;
-        return;
-      }
-      
-      // คำนวณ EXP เริ่มต้น
-      let initialExp = 0;
-      if (memberType.includes("Premium")) {
-        initialExp = 3;
-        if (referrer && currentPhones.includes(normalizePhone(referrer))) {
-          initialExp += 1;
-          addExpToPhone(normalizePhone(referrer), 2);
-          logExp(normalizePhone(referrer), "แนะนำเพื่อนสมัคร Premium (+2 EXP)", 2);
-        }
-      }
-      
-      // เพิ่มเข้า Member Dashboard
-      const newRow = [nickname, phone, codename, "Rookie", initialExp, ""];
-      const newRowIndex = dashSheet.getLastRow() + 1;
-      dashSheet.getRange(newRowIndex, 1, 1, newRow.length).setValues([newRow]);
-      dashSheet.getRange(newRowIndex, 2).setNumberFormat("@");
-      
-      // เพิ่มเข้า Member Database (ถ้ามี)
-      if (dbSheet) {
-        const dbRow = [
-          timestamp,
-          fullName,
-          nickname,
-          phone,
-          codename,
-          memberType,
-          referrer || ""
-        ];
-        dbSheet.appendRow(dbRow);
-        dbSheet.getRange(dbSheet.getLastRow(), 4).setNumberFormat("@");
-      }
-      
-      // บันทึก EXP Log
-      logExp(phone, "สมัครสมาชิก (เพิ่มจากข้อมูลที่ตกหล่น)", initialExp);
-      
-      // อัปเดตข้อมูลปัจจุบัน
-      currentPhones.push(phone);
-      currentCodenames.push(codename.toLowerCase());
-      
-      successCount++;
-      
-    } catch (error) {
-      errorMessages.push(`${entry.data.nickname}: ${error.message}`);
-      errorCount++;
-    }
-  });
-  
-  // อัปเดตระบบ
-  updateRanks();
-  updateLeaderboard();
-  
-  // แสดงผลลัพธ์
-  let resultMessage = `✅ เพิ่มสำเร็จ: ${successCount} คน\n`;
-  if (errorCount > 0) {
-    resultMessage += `❌ ไม่สำเร็จ: ${errorCount} คน\n\n`;
-    resultMessage += "รายละเอียดข้อผิดพลาด:\n";
-    errorMessages.forEach(msg => {
-      resultMessage += `• ${msg}\n`;
-    });
-  }
-  
-  ui.alert("ผลการเพิ่มข้อมูลที่ตกหล่น", resultMessage);
-}
-
-// 🧮 ฟังก์ชันทดสอบการคำนวณแรงค์
-function testRankCalculation() {
-  const ui = SpreadsheetApp.getUi();
-  
-  let testMsg = `🧮 ทดสอบการคำนวณแรงค์ (หลังแก้ไข)\n\n📊 ตัวอย่างการคำนวณ:\n\n`;
-  
-  // ทดสอบผู้เล่นที่ยังไม่เคยจุติ (multiplier = 1)
-  testMsg += `👤 ผู้เล่นที่ยังไม่เคยจุติ (Multiplier = x1):\n`;
-  testMsg += `• EXP 5 = Bronze\n`;
-  testMsg += `• EXP 15 = Silver\n`;
-  testMsg += `• EXP 30 = Gold\n`;
-  testMsg += `• EXP 50 = Platinum\n`;
-  testMsg += `• EXP 75 = Diamond\n`;
-  testMsg += `• EXP 120 = Grandmaster\n`;
-  testMsg += `• EXP 200 = Legend\n\n`;
-  
-  // ทดสอบผู้เล่นที่จุติครั้งที่ 1 (multiplier = 2)
-  testMsg += `👤 ผู้เล่นที่จุติครั้งที่ 1 (Multiplier = x2):\n`;
-  testMsg += `• EXP 10 = Bronze II (5×2 = 10)\n`;
-  testMsg += `• EXP 30 = Silver II (15×2 = 30)\n`;
-  testMsg += `• EXP 60 = Gold II (30×2 = 60)\n`;
-  testMsg += `• EXP 100 = Platinum II (50×2 = 100)\n`;
-  testMsg += `• EXP 150 = Diamond II (75×2 = 150)\n`;
-  testMsg += `• EXP 240 = Grandmaster II (120×2 = 240)\n`;
-  testMsg += `• EXP 400 = Legend II (200×2 = 400)\n\n`;
-  
-  // ทดสอบผู้เล่นที่จุติครั้งที่ 2 (multiplier = 3)
-  testMsg += `👤 ผู้เล่นที่จุติครั้งที่ 2 (Multiplier = x3):\n`;
-  testMsg += `• EXP 15 = Bronze III (5×3 = 15)\n`;
-  testMsg += `• EXP 45 = Silver III (15×3 = 45)\n`;
-  testMsg += `• EXP 90 = Gold III (30×3 = 90)\n`;
-  testMsg += `• EXP 150 = Platinum III (50×3 = 150)\n`;
-  testMsg += `• EXP 225 = Diamond III (75×3 = 225)\n`;
-  testMsg += `• EXP 360 = Grandmaster III (120×3 = 360)\n`;
-  testMsg += `• EXP 600 = Legend III (200×3 = 600)\n\n`;
-  
-  // ทดสอบผู้เล่นที่จุติครั้งที่ 3 (multiplier = 4)
-  testMsg += `👤 ผู้เล่นที่จุติครั้งที่ 3 (Multiplier = x4):\n`;
-  testMsg += `• EXP 20 = Bronze IV (5×4 = 20)\n`;
-  testMsg += `• EXP 60 = Silver IV (15×4 = 60)\n`;
-  testMsg += `• EXP 120 = Gold IV (30×4 = 120)\n`;
-  testMsg += `• EXP 200 = Platinum IV (50×4 = 200)\n`;
-  testMsg += `• EXP 300 = Diamond IV (75×4 = 300)\n`;
-  testMsg += `• EXP 480 = Grandmaster IV (120×4 = 480)\n`;
-  testMsg += `• EXP 800 = Legend IV (200×4 = 800)\n\n`;
-  
-  testMsg += `💡 หลักการใหม่:\n`;
-  testMsg += `• ผู้เล่นที่จุติแล้วจะใช้ EXP มากขึ้นเพื่อเลื่อนแรงค์\n`;
-  testMsg += `• ยิ่งจุติมาก ยิ่งใช้ EXP มากขึ้น (คูณด้วย multiplier)\n`;
-  testMsg += `• ระบบนี้จะทำให้การเลื่อนแรงค์ยากขึ้นตามจำนวนครั้งที่จุติ\n`;
-  testMsg += `• ผู้เล่นที่จุติแล้วจะได้ suffix (II, III, IV...) เพื่อแสดงความเก่งกาจ\n\n`;
-  
-  testMsg += `🔧 การแก้ไขที่ทำ:\n`;
-  testMsg += `• ใช้การคูณ (×) ในฟังก์ชัน calculateRequiredExp()\n`;
-  testMsg += `• อัปเดตตัวอย่างการทดสอบให้สอดคล้อง\n`;
-  
-  ui.alert("🧮 ทดสอบการคำนวณแรงค์", testMsg, ui.ButtonSet.OK);
-}
-
-// 🧮 ฟังก์ชันทดสอบการคำนวณแรงค์จริง
-function testActualRankCalculation() {
-  const ui = SpreadsheetApp.getUi();
-  
-  let testMsg = `🧮 ทดสอบการคำนวณแรงค์จริง\n\n📊 ผลการคำนวณ:\n\n`;
-  
-  // ทดสอบการคำนวณจริง
-  const testCases = [
-    { exp: 5, rebirthCount: 0, multiplier: 1, expected: "Bronze" },
-    { exp: 15, rebirthCount: 0, multiplier: 1, expected: "Silver" },
-    { exp: 30, rebirthCount: 0, multiplier: 1, expected: "Gold" },
-    { exp: 10, rebirthCount: 1, multiplier: 2, expected: "Bronze II" },
-    { exp: 30, rebirthCount: 1, multiplier: 2, expected: "Silver II" },
-    { exp: 15, rebirthCount: 2, multiplier: 3, expected: "Bronze III" },
-    { exp: 45, rebirthCount: 2, multiplier: 3, expected: "Silver III" },
-    { exp: 20, rebirthCount: 3, multiplier: 4, expected: "Bronze IV" },
-    { exp: 60, rebirthCount: 3, multiplier: 4, expected: "Silver IV" }
-  ];
-  
-  testCases.forEach((testCase, index) => {
-    const actual = calculateCorrectRank(testCase.exp, testCase.rebirthCount, testCase.multiplier);
-    const status = actual === testCase.expected ? "✅" : "❌";
-    testMsg += `${status} EXP: ${testCase.exp}, Rebirth: ${testCase.rebirthCount}, Multiplier: x${testCase.multiplier}\n`;
-    testMsg += `   คาดหวัง: ${testCase.expected}\n`;
-    testMsg += `   ได้รับ: ${actual}\n\n`;
-  });
-  
-  ui.alert("🧮 ทดสอบการคำนวณแรงค์จริง", testMsg, ui.ButtonSet.OK);
 }
 
 // 🔧 ฟังก์ชันแก้ไขแรงค์ที่ผิด
