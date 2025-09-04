@@ -2,31 +2,27 @@ function doGet() {
   try {
     var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Form Responses 1');
     if (!sheet) {
-      return ContentService.createTextOutput(JSON.stringify({ 
+      var response = ContentService.createTextOutput(JSON.stringify({ 
         error: "Sheet not found",
         users: [],
         total: 0,
         totalBoxes: 0,
         totalSpots: 0
-      }))
-      .setMimeType(ContentService.MimeType.JSON)
-      .addHeader('Access-Control-Allow-Origin', '*')
-      .addHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-      .addHeader('Access-Control-Allow-Headers', 'Content-Type');
+      }));
+      response.setMimeType(ContentService.MimeType.JSON);
+      return response;
     }
     
     var data = sheet.getDataRange().getValues();
     if (data.length <= 1) {
-      return ContentService.createTextOutput(JSON.stringify({ 
+      var response = ContentService.createTextOutput(JSON.stringify({ 
         users: [],
         total: 0,
         totalBoxes: 0,
         totalSpots: 0
-      }))
-      .setMimeType(ContentService.MimeType.JSON)
-      .addHeader('Access-Control-Allow-Origin', '*')
-      .addHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-      .addHeader('Access-Control-Allow-Headers', 'Content-Type');
+      }));
+      response.setMimeType(ContentService.MimeType.JSON);
+      return response;
     }
     
     var headers = data[0];
@@ -63,43 +59,35 @@ function doGet() {
       users.push(user);
     }
     
-    // ส่งข้อมูลกลับพร้อม CORS headers
+    // ส่งข้อมูลกลับ
     var response = ContentService.createTextOutput(JSON.stringify({
       users: users,
       total: users.length,
       totalBoxes: totalBoxes,
       totalSpots: totalSpots
-    }))
-    .setMimeType(ContentService.MimeType.JSON)
-    .addHeader('Access-Control-Allow-Origin', '*')
-    .addHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-    .addHeader('Access-Control-Allow-Headers', 'Content-Type');
+    }));
+    response.setMimeType(ContentService.MimeType.JSON);
     
     return response;
     
   } catch (error) {
     console.error('Error in doGet:', error);
-    return ContentService.createTextOutput(JSON.stringify({ 
+    var response = ContentService.createTextOutput(JSON.stringify({ 
       error: error.toString(),
       users: [],
       total: 0,
       totalBoxes: 0,
       totalSpots: 0
-    }))
-    .setMimeType(ContentService.MimeType.JSON)
-    .addHeader('Access-Control-Allow-Origin', '*')
-    .addHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-    .addHeader('Access-Control-Allow-Headers', 'Content-Type');
+    }));
+    response.setMimeType(ContentService.MimeType.JSON);
+    return response;
   }
 }
 
-// เพิ่มฟังก์ชันสำหรับจัดการ OPTIONS request (CORS preflight)
-function doOptions() {
-  return ContentService.createTextOutput('')
-    .addHeader('Access-Control-Allow-Origin', '*')
-    .addHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-    .addHeader('Access-Control-Allow-Headers', 'Content-Type')
-    .addHeader('Access-Control-Max-Age', '86400');
+// ใช้ doPost แทน doOptions สำหรับ CORS
+function doPost(e) {
+  // ส่งข้อมูลกลับเหมือน doGet แต่สำหรับ POST request
+  return doGet();
 }
 
 function getCodenameByPhone(phone) {
