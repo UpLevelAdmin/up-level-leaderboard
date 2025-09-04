@@ -771,6 +771,22 @@
       padding: 2rem;
     }
 
+    /* Loading spinner */
+    .spinner {
+      margin: 24px auto 8px auto;
+      border: 6px solid #e0e0e0;
+      border-top: 6px solid #42A5F5;
+      border-radius: 50%;
+      width: 48px;
+      height: 48px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg);}
+      100% { transform: rotate(360deg);}
+    }
+
     .error-message {
       background: rgba(255, 107, 107, 0.1);
       border: 1px solid rgba(255, 107, 107, 0.3);
@@ -989,6 +1005,7 @@
       </button>
       
       <div id="usersContainer">
+        <div class="spinner"></div>
         <div class="loading">กำลังโหลดข้อมูล...</div>
       </div>
     </div>
@@ -1029,21 +1046,40 @@
 
     function loadRegisteredUsers() {
       const container = document.getElementById('usersContainer');
-      container.innerHTML = '<div class="loading">กำลังโหลดข้อมูล...</div>';
+      container.innerHTML = '<div class="spinner"></div><div class="loading">กำลังโหลดข้อมูล...</div>';
+      
+      console.log('Loading data with JSONP...');
       
       // ใช้ JSONP แทน fetch เพื่อหลีกเลี่ยง CORS
       const script = document.createElement('script');
       script.src = apiUrl + '?callback=handleResponse';
-      document.head.appendChild(script);
+      
+      // เพิ่ม error handling
+      script.onerror = function() {
+        console.error('Script loading failed');
+        container.innerHTML = '<div class="error-message">ไม่สามารถโหลดข้อมูลได้</div>';
+      };
       
       // ลบ script tag หลังจากโหลดเสร็จ
       script.onload = function() {
+        console.log('Script loaded successfully');
         document.head.removeChild(script);
       };
+      
+      document.head.appendChild(script);
+      
+      // Timeout หลังจาก 10 วินาที
+      setTimeout(function() {
+        if (container.innerHTML.includes('กำลังโหลดข้อมูล')) {
+          console.log('Request timeout, trying fallback...');
+          container.innerHTML = '<div class="error-message">โหลดข้อมูลช้าเกินไป กรุณาลองใหม่</div>';
+        }
+      }, 10000);
     }
     
     // ฟังก์ชันที่ Apps Script จะเรียก
     function handleResponse(data) {
+      console.log('Received data:', data);
       if (data.error) {
         document.getElementById('usersContainer').innerHTML = `<div class="error-message">${data.error}</div>`;
         return;
