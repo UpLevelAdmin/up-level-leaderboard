@@ -1038,12 +1038,8 @@
   <script>
     console.log('DEBUG: Midnight Party Registration System');
     
-    // ลองใช้ URL ใหม่หรือ fallback
-    const apiUrls = [
-      "https://script.google.com/macros/s/AKfycbxthz0UZ4hREB1JZ_2Mk6L8dzOLTbO1YkJPwndLIpdb7UW_FF8J9uA/exec",
-      "https://script.google.com/macros/s/AKfycbwadjGJCKwILvuRQUnORnYnSnU_ctIZC64NVOMRBbqGN48yCZpyPGGpMln2GLqNqdjO/exec" // GBL API เป็น fallback
-    ];
-    
+    // ใช้ URL เดียวกับ GBL ที่ทำงานได้แล้ว
+    const apiUrl = "https://script.google.com/macros/s/AKfycbwadjGJCKwILvuRQUnORnYnSnU_ctIZC64NVOMRBbqGN48yCZpyPGGpMln2GLqNqdjO/exec";
     const memberDashboardApi = "https://script.google.com/macros/s/AKfycbxtjsDwHI6nJU4OIHExUxMaZwUn3qwakvdkzwbQO7C8Trzz5Gh84SX6F1gqb4BOFQcn/exec?func=getMemberDashboardData";
     
     // โหลดข้อมูลผู้ลงทะเบียนเมื่อหน้าเว็บโหลดเสร็จ
@@ -1057,118 +1053,88 @@
       
       console.log('Loading data with fetch...');
       
-      // ลองโหลดข้อมูลจาก API แรกก่อน
-      loadFromApi(apiUrls[0], container);
-    }
-
-    function loadFromApi(apiUrl, container) {
-      console.log('Trying API:', apiUrl);
-      
-      // ใช้ iframe เพื่อหลีกเลี่ยง CORS
-      const iframe = document.createElement('iframe');
-      iframe.style.display = 'none';
-      iframe.src = apiUrl;
-      
-      iframe.onload = function() {
-        try {
-          // ลองอ่านข้อมูลจาก iframe
-          const iframeContent = iframe.contentDocument || iframe.contentWindow.document;
-          const text = iframeContent.body.textContent;
-          console.log('Iframe content:', text);
-          
-          if (text && text.trim()) {
-            try {
-              const data = JSON.parse(text);
-              console.log('Parsed data:', data);
-              displayUsers(data);
-              return;
-            } catch (e) {
-              console.log('Failed to parse JSON:', e);
+      // ใช้วิธีเดียวกับ GBL: fetch() ธรรมดาและ Promise.all()
+      Promise.all([
+        fetch(apiUrl).then(res => res.json()),
+        fetch(memberDashboardApi).then(res => res.json())
+      ]).then(([data, members]) => {
+        console.log('Received data:', data);
+        console.log('Received members:', members);
+        
+        // สร้าง map เบอร์โทร -> { codename, rank }
+        const phoneMap = {};
+        if (members && Array.isArray(members)) {
+          members.forEach(m => {
+            const phone = String(m.phone || '').replace(/[^\d]/g, "");
+            if (phone) {
+              phoneMap[phone] = { 
+                codename: m.codename || '', 
+                rank: m.rank || '' 
+              };
             }
-          }
+          });
+        }
+        
+        // อัปเดต codename ในข้อมูลผู้ลงทะเบียน
+        if (data.participants && Array.isArray(data.participants)) {
+          data.participants.forEach(participant => {
+            // หาเบอร์โทรจาก column ที่เหมาะสม (เหมือน GBL)
+            const keys = Object.keys(participant);
+            let phone = '';
+            
+            // ลองหาเบอร์โทรจาก column ที่มีคำว่า 'เบอร์', 'phone', 'โทร'
+            for (let key of keys) {
+              if (key.toLowerCase().includes('เบอร์') || 
+                  key.toLowerCase().includes('phone') || 
+                  key.toLowerCase().includes('โทร')) {
+                phone = String(participant[key] || '').replace(/[^\d]/g, "");
+                break;
+              }
+            }
+            
+            if (phoneMap[phone]) {
+              participant.codename = phoneMap[phone].codename;
+              participant.rank = phoneMap[phone].rank;
+            }
+          });
           
-          // ถ้า iframe ไม่ได้ผล ลองใช้ JSONP
-          tryJSONP(apiUrl, container);
+          // แปลงข้อมูลให้ตรงกับที่ displayUsers คาดหวัง
+          const convertedData = {
+            users: data.participants.map(p => {
+              const keys = Object.keys(p);
+              return {
+                nickname: p[keys[1]] || 'ไม่ระบุชื่อ', // column B (เหมือน GBL)
+                phone: p[keys[4]] || '', // column E (เหมือน GBL)
+                boxes: 0, // จะต้องหา column ที่เหมาะสม
+                spots: 0, // จะต้องหา column ที่เหมาะสม
+                codename: p.codename || 'ไม่ระบุ',
+                rank: p.rank || ''
+              };
+            }),
+            total: data.participants.length,
+            totalBoxes: 0,
+            totalSpots: 0
+          };
           
-        } catch (e) {
-          console.log('Iframe failed, trying JSONP:', e);
-          tryJSONP(apiUrl, container);
-        }
-      };
-      
-      iframe.onerror = function() {
-        console.log('Iframe failed, trying JSONP...');
-        tryJSONP(apiUrl, container);
-      };
-      
-      document.body.appendChild(iframe);
-      
-      // Timeout หลังจาก 5 วินาที
-      setTimeout(() => {
-        if (document.body.contains(iframe)) {
-          document.body.removeChild(iframe);
-          console.log('Iframe timeout, trying JSONP...');
-          tryJSONP(apiUrl, container);
-        }
-      }, 5000);
-    }
-
-    function tryJSONP(apiUrl, container) {
-      console.log('Trying JSONP for:', apiUrl);
-      
-      const script = document.createElement('script');
-      const callbackName = 'jsonpCallback_' + Date.now();
-      
-      // สร้าง global callback function
-      window[callbackName] = function(data) {
-        console.log('Received data via JSONP:', data);
-        displayUsers(data);
-        // ลบ callback function
-        delete window[callbackName];
-        if (document.head.contains(script)) {
-          document.head.removeChild(script);
-        }
-      };
-      
-      // ใช้ JSONP
-      script.src = apiUrl + (apiUrl.includes('?') ? '&' : '?') + 'callback=' + callbackName;
-      script.onerror = function() {
-        console.log('JSONP failed, trying fallback...');
-        // ลองใช้ API อื่น
-        if (apiUrl === apiUrls[0] && apiUrls[1]) {
-          loadFromApi(apiUrls[1], container);
+          displayUsers(convertedData);
         } else {
-          // แสดงข้อมูลตัวอย่างถ้า API ทั้งหมดล้มเหลว
+          // ถ้าไม่มีข้อมูล ให้แสดงข้อมูลตัวอย่าง
           showFallbackData(container);
         }
-      };
-      
-      document.head.appendChild(script);
-      
-      // Timeout หลังจาก 5 วินาที
-      setTimeout(() => {
-        if (window[callbackName]) {
-          console.log('JSONP timeout, trying fallback...');
-          delete window[callbackName];
-          if (document.head.contains(script)) {
-            document.head.removeChild(script);
-          }
-          if (apiUrl === apiUrls[0] && apiUrls[1]) {
-            loadFromApi(apiUrls[1], container);
-          } else {
-            showFallbackData(container);
-          }
-        }
-      }, 5000);
+      }).catch(error => {
+        console.error('Fetch error:', error);
+        // แสดงข้อมูลตัวอย่างถ้าเกิด error
+        showFallbackData(container);
+      });
     }
 
     function showFallbackData(container) {
       console.log('Showing fallback data');
       const fallbackData = {
         users: [
-          { nickname: 'ตัวอย่างผู้เล่น 1', codename: 'Player001', boxes: 1, spots: 0 },
-          { nickname: 'ตัวอย่างผู้เล่น 2', codename: 'Player002', boxes: 0, spots: 2 },
-          { nickname: 'ตัวอย่างผู้เล่น 3', codename: 'Player003', boxes: 1, spots: 1 }
+          { nickname: 'ตัวอย่างผู้เล่น 1', codename: 'Player001', boxes: 1, spots: 0, rank: '' },
+          { nickname: 'ตัวอย่างผู้เล่น 2', codename: 'Player002', boxes: 0, spots: 2, rank: '' },
+          { nickname: 'ตัวอย่างผู้เล่น 3', codename: 'Player003', boxes: 1, spots: 1, rank: '' }
         ],
         total: 3,
         totalBoxes: 2,
