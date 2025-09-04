@@ -1038,8 +1038,8 @@
   <script>
     console.log('DEBUG: Midnight Party Registration System');
     
-    // ใช้ URL เดียวกับ GBL ที่ทำงานได้แล้ว
-    const apiUrl = "https://script.google.com/macros/s/AKfycbwadjGJCKwILvuRQUnORnYnSnU_ctIZC64NVOMRBbqGN48yCZpyPGGpMln2GLqNqdjO/exec";
+    // ใช้ URL ที่ถูกต้องของ Midnight Party
+    const apiUrl = "https://script.google.com/macros/s/AKfycbxthz0UZ4hREB1JZ_2Mk6L8dzOLTbO1YkJPwndLIpbsKSegqpfxjPDiDkb7UW_FF8J9uA/exec";
     const memberDashboardApi = "https://script.google.com/macros/s/AKfycbxtjsDwHI6nJU4OIHExUxMaZwUn3qwakvdkzwbQO7C8Trzz5Gh84SX6F1gqb4BOFQcn/exec?func=getMemberDashboardData";
     
     // โหลดข้อมูลผู้ลงทะเบียนเมื่อหน้าเว็บโหลดเสร็จ
@@ -1078,19 +1078,8 @@
         // อัปเดต codename ในข้อมูลผู้ลงทะเบียน
         if (data.participants && Array.isArray(data.participants)) {
           data.participants.forEach(participant => {
-            // หาเบอร์โทรจาก column ที่เหมาะสม (เหมือน GBL)
-            const keys = Object.keys(participant);
-            let phone = '';
-            
-            // ลองหาเบอร์โทรจาก column ที่มีคำว่า 'เบอร์', 'phone', 'โทร'
-            for (let key of keys) {
-              if (key.toLowerCase().includes('เบอร์') || 
-                  key.toLowerCase().includes('phone') || 
-                  key.toLowerCase().includes('โทร')) {
-                phone = String(participant[key] || '').replace(/[^\d]/g, "");
-                break;
-              }
-            }
+            // ใช้เบอร์โทรจาก column C (เบอร์โทรศัพท์ติดต่อ)
+            const phone = String(participant['เบอร์โทรศัพท์'] || '').replace(/[^\d]/g, "");
             
             if (phoneMap[phone]) {
               participant.codename = phoneMap[phone].codename;
@@ -1101,19 +1090,28 @@
           // แปลงข้อมูลให้ตรงกับที่ displayUsers คาดหวัง
           const convertedData = {
             users: data.participants.map(p => {
-              const keys = Object.keys(p);
+              // ใช้ชื่อเล่นจาก column I ถ้าไม่มีให้ใช้ชื่อ-นามสกุลจาก column B
+              const nickname = p['ชื่อเล่น'] || p['ชื่อ-นามสกุล'] || 'ไม่ระบุชื่อ';
+              
+              // ใช้เบอร์โทรจาก column C
+              const phone = p['เบอร์โทรศัพท์'] || '';
+              
+              // ใช้ข้อมูล Box และ Spot จาก column E และ F
+              const boxes = parseInt(p['กรณีจอง Box: ต้องการที่ Box (1350/Box)?'] || '0') || 0;
+              const spots = parseInt(p['กรณีจอง Spot: ต้องการที่ Spot (500 บาท/Spot)?'] || '0') || 0;
+              
               return {
-                nickname: p[keys[1]] || 'ไม่ระบุชื่อ', // column B (เหมือน GBL)
-                phone: p[keys[4]] || '', // column E (เหมือน GBL)
-                boxes: 0, // จะต้องหา column ที่เหมาะสม
-                spots: 0, // จะต้องหา column ที่เหมาะสม
+                nickname: nickname,
+                phone: phone,
+                boxes: boxes,
+                spots: spots,
                 codename: p.codename || 'ไม่ระบุ',
                 rank: p.rank || ''
               };
             }),
             total: data.participants.length,
-            totalBoxes: 0,
-            totalSpots: 0
+            totalBoxes: data.participants.reduce((sum, p) => sum + (parseInt(p['กรณีจอง Box: ต้องการที่ Box (1350/Box)?'] || '0') || 0), 0),
+            totalSpots: data.participants.reduce((sum, p) => sum + (parseInt(p['กรณีจอง Spot: ต้องการที่ Spot (500 บาท/Spot)?'] || '0') || 0), 0)
           };
           
           displayUsers(convertedData);
@@ -1164,7 +1162,7 @@
       let html = '<table style="width:100%; border-collapse:collapse; margin-top:1rem; background:rgba(255,255,255,0.05); border-radius:15px; overflow:hidden;">';
       html += '<thead><tr style="background:rgba(107,207,127,0.3);">';
       html += '<th style="padding:12px; text-align:center; color:#fff; font-weight:bold;">ลำดับ</th>';
-      html += '<th style="padding:12px; text-align:center; color:#fff; font-weight:bold;">ชื่อ-นามสกุล</th>';
+      html += '<th style="padding:12px; text-align:center; color:#fff; font-weight:bold;">ชื่อเล่น</th>';
       html += '<th style="padding:12px; text-align:center; color:#fff; font-weight:bold;">Codename</th>';
       html += '<th style="padding:12px; text-align:center; color:#fff; font-weight:bold;">การจอง</th>';
       html += '</tr></thead><tbody>';
