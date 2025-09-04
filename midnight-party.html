@@ -1020,7 +1020,7 @@
 
   <script>
     console.log('DEBUG: Midnight Party Registration System');
-    const apiUrl = "https://script.google.com/macros/s/AKfycbxthz0UZ4hREB1JZ_2Mk6L8dzOLTbO1YkJPwndLIpdb7UW_FF8J9uA/exec?type=json";
+    const apiUrl = "https://script.google.com/macros/s/AKfycbxthz0UZ4hREB1JZ_2Mk6L8dzOLTbO1YkJPwndLIpdb7UW_FF8J9uA/exec";
     
     // โหลดข้อมูลผู้ลงทะเบียนเมื่อหน้าเว็บโหลดเสร็จ
     window.addEventListener('load', function() {
@@ -1031,9 +1031,9 @@
       const container = document.getElementById('usersContainer');
       container.innerHTML = '<div class="loading">กำลังโหลดข้อมูล...</div>';
       
-      // เรียกใช้ Apps Script จาก URL ที่คุณให้มา
+      // ใช้ fetch เหมือนกับ GBL
       fetch(apiUrl)
-        .then(response => response.json())
+        .then(res => res.json())
         .then(data => {
           if (data.error) {
             container.innerHTML = `<div class="error-message">${data.error}</div>`;
@@ -1042,9 +1042,9 @@
           
           displayUsers(data);
         })
-        .catch(error => {
-          console.error('Error loading data:', error);
-          container.innerHTML = `<div class="error-message">เกิดข้อผิดพลาดในการโหลดข้อมูล: ${error.message}</div>`;
+        .catch(err => {
+          console.error('Error loading data:', err);
+          container.innerHTML = '<div class="error-message">เกิดข้อผิดพลาดในการโหลดข้อมูล</div>';
         });
     }
 
