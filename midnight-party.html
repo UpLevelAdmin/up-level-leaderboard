@@ -1064,7 +1064,58 @@
     function loadFromApi(apiUrl, container) {
       console.log('Trying API:', apiUrl);
       
-      // ใช้ JSONP หรือ proxy เพื่อหลีกเลี่ยง CORS
+      // ใช้ iframe เพื่อหลีกเลี่ยง CORS
+      const iframe = document.createElement('iframe');
+      iframe.style.display = 'none';
+      iframe.src = apiUrl;
+      
+      iframe.onload = function() {
+        try {
+          // ลองอ่านข้อมูลจาก iframe
+          const iframeContent = iframe.contentDocument || iframe.contentWindow.document;
+          const text = iframeContent.body.textContent;
+          console.log('Iframe content:', text);
+          
+          if (text && text.trim()) {
+            try {
+              const data = JSON.parse(text);
+              console.log('Parsed data:', data);
+              displayUsers(data);
+              return;
+            } catch (e) {
+              console.log('Failed to parse JSON:', e);
+            }
+          }
+          
+          // ถ้า iframe ไม่ได้ผล ลองใช้ JSONP
+          tryJSONP(apiUrl, container);
+          
+        } catch (e) {
+          console.log('Iframe failed, trying JSONP:', e);
+          tryJSONP(apiUrl, container);
+        }
+      };
+      
+      iframe.onerror = function() {
+        console.log('Iframe failed, trying JSONP...');
+        tryJSONP(apiUrl, container);
+      };
+      
+      document.body.appendChild(iframe);
+      
+      // Timeout หลังจาก 5 วินาที
+      setTimeout(() => {
+        if (document.body.contains(iframe)) {
+          document.body.removeChild(iframe);
+          console.log('Iframe timeout, trying JSONP...');
+          tryJSONP(apiUrl, container);
+        }
+      }, 5000);
+    }
+
+    function tryJSONP(apiUrl, container) {
+      console.log('Trying JSONP for:', apiUrl);
+      
       const script = document.createElement('script');
       const callbackName = 'jsonpCallback_' + Date.now();
       
@@ -1074,7 +1125,9 @@
         displayUsers(data);
         // ลบ callback function
         delete window[callbackName];
-        document.head.removeChild(script);
+        if (document.head.contains(script)) {
+          document.head.removeChild(script);
+        }
       };
       
       // ใช้ JSONP
@@ -1092,19 +1145,21 @@
       
       document.head.appendChild(script);
       
-      // Timeout หลังจาก 10 วินาที
+      // Timeout หลังจาก 5 วินาที
       setTimeout(() => {
         if (window[callbackName]) {
-          console.log('API timeout, trying fallback...');
+          console.log('JSONP timeout, trying fallback...');
           delete window[callbackName];
-          document.head.removeChild(script);
+          if (document.head.contains(script)) {
+            document.head.removeChild(script);
+          }
           if (apiUrl === apiUrls[0] && apiUrls[1]) {
             loadFromApi(apiUrls[1], container);
           } else {
             showFallbackData(container);
           }
         }
-      }, 10000);
+      }, 5000);
     }
 
     function showFallbackData(container) {
