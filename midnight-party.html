@@ -1048,43 +1048,19 @@
       const container = document.getElementById('usersContainer');
       container.innerHTML = '<div class="spinner"></div><div class="loading">กำลังโหลดข้อมูล...</div>';
       
-      console.log('Loading data with JSONP...');
+      console.log('Loading data with fetch...');
       
-      // ใช้ JSONP แทน fetch เพื่อหลีกเลี่ยง CORS
-      const script = document.createElement('script');
-      script.src = apiUrl + '?callback=handleResponse';
-      
-      // เพิ่ม error handling
-      script.onerror = function() {
-        console.error('Script loading failed');
-        container.innerHTML = '<div class="error-message">ไม่สามารถโหลดข้อมูลได้</div>';
-      };
-      
-      // ลบ script tag หลังจากโหลดเสร็จ
-      script.onload = function() {
-        console.log('Script loaded successfully');
-        document.head.removeChild(script);
-      };
-      
-      document.head.appendChild(script);
-      
-      // Timeout หลังจาก 10 วินาที
-      setTimeout(function() {
-        if (container.innerHTML.includes('กำลังโหลดข้อมูล')) {
-          console.log('Request timeout, trying fallback...');
-          container.innerHTML = '<div class="error-message">โหลดข้อมูลช้าเกินไป กรุณาลองใหม่</div>';
-        }
-      }, 10000);
-    }
-    
-    // ฟังก์ชันที่ Apps Script จะเรียก
-    function handleResponse(data) {
-      console.log('Received data:', data);
-      if (data.error) {
-        document.getElementById('usersContainer').innerHTML = `<div class="error-message">${data.error}</div>`;
-        return;
-      }
-      displayUsers(data);
+      // ใช้ fetch ธรรมดาเหมือน GBL
+      fetch(apiUrl)
+        .then(response => response.json())
+        .then(data => {
+          console.log('Received data:', data);
+          displayUsers(data);
+        })
+        .catch(error => {
+          console.error('Fetch error:', error);
+          container.innerHTML = '<div class="error-message">ไม่สามารถโหลดข้อมูลได้</div>';
+        });
     }
 
     function displayUsers(data) {

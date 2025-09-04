@@ -1,4 +1,4 @@
-function doGet(e) {
+function doGet() {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Form Responses 1');
   var data = sheet.getDataRange().getValues();
   var headers = data[0];
@@ -11,21 +11,8 @@ function doGet(e) {
     }
     users.push(obj);
   }
-  
-  // ตรวจสอบ callback parameter
-  var callback = e && e.parameter && e.parameter.callback;
-  
-  if (callback) {
-    // JSONP response
-    var jsonpResponse = callback + '(' + JSON.stringify({ users: users }) + ')';
-    return ContentService
-      .createTextOutput(jsonpResponse)
-      .setMimeType(ContentService.MimeType.JAVASCRIPT);
-  } else {
-    // ปกติ JSON response
-    return ContentService.createTextOutput(JSON.stringify({ users: users }))
-      .setMimeType(ContentService.MimeType.JSON);
-  }
+  return ContentService.createTextOutput(JSON.stringify({ users: users }))
+    .setMimeType(ContentService.MimeType.JSON);
 }
 
 function getCodenameByPhone(phone) {
