@@ -640,6 +640,147 @@
       color: #ffd93d;
     }
 
+    /* เพิ่ม CSS สำหรับส่วนแสดงรายชื่อ */
+    .registered-users-section {
+      background: linear-gradient(135deg, rgba(107, 207, 127, 0.1) 0%, rgba(107, 207, 127, 0.05) 100%);
+      border-radius: 20px;
+      padding: 2rem;
+      margin: 2rem 0;
+      border: 1px solid rgba(107, 207, 127, 0.3);
+    }
+
+    .users-title {
+      font-size: 1.8rem;
+      color: #6bcf7f;
+      margin-bottom: 1.5rem;
+      font-weight: 700;
+      text-align: center;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 15px;
+      padding: 1rem;
+      text-align: center;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .stat-number {
+      font-size: 2rem;
+      color: #ffd93d;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+      color: #e0e0e0;
+      font-size: 0.9rem;
+    }
+
+    .users-list {
+      max-height: 400px;
+      overflow-y: auto;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 15px;
+      padding: 1rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .user-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.8rem;
+      margin-bottom: 0.5rem;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.3s ease;
+    }
+
+    .user-item:hover {
+      background: rgba(255, 255, 255, 0.08);
+      transform: translateX(5px);
+    }
+
+    .user-info {
+      flex: 1;
+      text-align: left;
+    }
+
+    .user-name {
+      color: #ffd93d;
+      font-weight: 600;
+      font-size: 1rem;
+      margin-bottom: 0.2rem;
+    }
+
+    .user-codename {
+      color: #6bcf7f;
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+
+    .user-orders {
+      text-align: right;
+      min-width: 120px;
+    }
+
+    .order-detail {
+      color: #e0e0e0;
+      font-size: 0.8rem;
+      margin-bottom: 0.2rem;
+    }
+
+    .order-highlight {
+      color: #ff6b6b;
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+
+    .refresh-button {
+      background: linear-gradient(45deg, #6bcf7f, #4ade80);
+      color: #1a1a2e;
+      padding: 0.8rem 1.5rem;
+      border-radius: 25px;
+      border: none;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-bottom: 1rem;
+    }
+
+    .refresh-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(107, 207, 127, 0.4);
+    }
+
+    .loading {
+      text-align: center;
+      color: #ffd93d;
+      font-size: 1.1rem;
+      padding: 2rem;
+    }
+
+    .error-message {
+      background: rgba(255, 107, 107, 0.1);
+      border: 1px solid rgba(255, 107, 107, 0.3);
+      border-radius: 10px;
+      padding: 1rem;
+      color: #ff6b6b;
+      text-align: center;
+      margin: 1rem 0;
+    }
+
     /* Responsive */
     @media (max-width: 768px) {
       .container {
@@ -825,6 +966,33 @@
       </div>
     </div>
 
+    <div class="registered-users-section">
+      <h3 class="users-title">📋 รายชื่อผู้ลงทะเบียน</h3>
+      
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-number" id="totalUsers">-</div>
+          <div class="stat-label">ผู้ลงทะเบียนทั้งหมด</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="totalBoxes">-</div>
+          <div class="stat-label">Box ทั้งหมด</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="totalSpots">-</div>
+          <div class="stat-label">Spot ทั้งหมด</div>
+        </div>
+      </div>
+      
+      <button class="refresh-button" onclick="loadRegisteredUsers()">
+        🔄 รีเฟรชข้อมูล
+      </button>
+      
+      <div id="usersContainer">
+        <div class="loading">กำลังโหลดข้อมูล...</div>
+      </div>
+    </div>
+
     <div class="cta-section">
       <a href="https://forms.gle/C9p6aJQy7UxWnajw9" target="_blank" class="cta-button">
         🎯 ลงชื่อจองเลย!
@@ -849,5 +1017,95 @@
       </div>
     </div>
   </div>
+
+  <script>
+    console.log('DEBUG: Midnight Party Registration System');
+    const apiUrl = "https://script.google.com/macros/s/AKfycbxthz0UZ4hREB1JZ_2Mk6L8dzOLTbO1YkJPwndLIpdb7UW_FF8J9uA/exec";
+    
+    // โหลดข้อมูลผู้ลงทะเบียนเมื่อหน้าเว็บโหลดเสร็จ
+    window.addEventListener('load', function() {
+      loadRegisteredUsers();
+    });
+
+    function loadRegisteredUsers() {
+      const container = document.getElementById('usersContainer');
+      container.innerHTML = '<div class="loading">กำลังโหลดข้อมูล...</div>';
+      
+      // เรียกใช้ Apps Script จาก URL ที่คุณให้มา
+      fetch(apiUrl)
+        .then(response => response.json())
+        .then(data => {
+          if (data.error) {
+            container.innerHTML = `<div class="error-message">${data.error}</div>`;
+            return;
+          }
+          
+          displayUsers(data);
+        })
+        .catch(error => {
+          console.error('Error loading data:', error);
+          container.innerHTML = `<div class="error-message">เกิดข้อผิดพลาดในการโหลดข้อมูล: ${error.message}</div>`;
+        });
+    }
+
+    function displayUsers(data) {
+      const container = document.getElementById('usersContainer');
+      
+      // อัปเดตสถิติ
+      document.getElementById('totalUsers').textContent = data.total || 0;
+      document.getElementById('totalBoxes').textContent = data.totalBoxes || 0;
+      document.getElementById('totalSpots').textContent = data.totalSpots || 0;
+      
+      if (!data.users || data.users.length === 0) {
+        container.innerHTML = '<div class="loading">ยังไม่มีผู้ลงทะเบียน</div>';
+        return;
+      }
+      
+      // สร้างตารางแสดงข้อมูล
+      let html = '<table style="width:100%; border-collapse:collapse; margin-top:1rem; background:rgba(255,255,255,0.05); border-radius:15px; overflow:hidden;">';
+      html += '<thead><tr style="background:rgba(107,207,127,0.3);">';
+      html += '<th style="padding:12px; text-align:center; color:#fff; font-weight:bold;">ลำดับ</th>';
+      html += '<th style="padding:12px; text-align:center; color:#fff; font-weight:bold;">ชื่อเล่น</th>';
+      html += '<th style="padding:12px; text-align:center; color:#fff; font-weight:bold;">Codename</th>';
+      html += '<th style="padding:12px; text-align:center; color:#fff; font-weight:bold;">การจอง</th>';
+      html += '</tr></thead><tbody>';
+      
+      data.users.forEach((user, index) => {
+        const rowStyle = index % 2 === 0 ? 'background:rgba(255,255,255,0.03);' : 'background:rgba(255,255,255,0.05);';
+        
+        html += `<tr style="${rowStyle}">`;
+        html += `<td style="padding:12px; text-align:center; color:#ffd93d; font-weight:bold;">${index + 1}</td>`;
+        html += `<td style="padding:12px; text-align:center; color:#6bcf7f; font-weight:600;">${user.nickname ? user.nickname : 'ไม่มีชื่อเล่น'}</td>`;
+        
+        // แสดง Codename (มาจากการ map)
+        const codename = user.codename || 'ไม่ระบุ';
+        html += `<td style="padding:12px; text-align:center; color:#ffd93d; font-weight:bold;">${codename}</td>`;
+        
+        // แสดงรายละเอียดการจอง
+        let orderDetails = '';
+        if (user.boxes > 0) {
+          orderDetails += `📦 Box: ${user.boxes}`;
+        }
+        if (user.spots > 0) {
+          if (orderDetails) orderDetails += '<br>';
+          orderDetails += `🎯 Spot: ${user.spots}`;
+        }
+        if (user.boxes === 0 && user.spots === 0) {
+          orderDetails = '📝 ลงชื่อแล้ว';
+        }
+        html += `<td style="padding:12px; text-align:center; color:#e0e0e0;">${orderDetails}</td>`;
+        
+        html += '</tr>';
+      });
+      
+      html += '</tbody></table>';
+      container.innerHTML = html;
+    }
+
+    // รีเฟรชข้อมูลทุก 30 วินาที
+    setInterval(function() {
+      loadRegisteredUsers();
+    }, 30000);
+  </script>
 </body>
 </html>

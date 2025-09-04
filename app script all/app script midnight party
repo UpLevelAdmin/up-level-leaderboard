@@ -1,0 +1,111 @@
+function doGet() {
+  return HtmlService.createHtmlOutputFromFile('midnight-party')
+    .setTitle('Midnight Party - Up Level Academy')
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+}
+
+function getRegisteredUsers() {
+  try {
+    // เปิด Google Sheet โดยใช้ ID ของ Sheet
+    const sheetId = 'YOUR_SHEET_ID_HERE'; // ใส่ ID ของ Google Sheet ของคุณ
+    const sheet = SpreadsheetApp.openById(sheetId);
+    const worksheet = sheet.getSheetByName('Form Responses 1');
+    
+    if (!worksheet) {
+      return { error: 'ไม่พบ worksheet ที่ต้องการ' };
+    }
+    
+    // อ่านข้อมูลทั้งหมด
+    const data = worksheet.getDataRange().getValues();
+    
+    if (data.length <= 1) {
+      return { users: [], total: 0 };
+    }
+    
+    // แยก header และ data
+    const headers = data[0];
+    const rows = data.slice(1);
+    
+    // หา index ของ columns ที่ต้องการ
+    const nameIndex = headers.indexOf('ชื่อ-สกุล (Name-Surname)');
+    const phoneIndex = headers.indexOf('เบอร์โทรศัพท์ติดต่อ (Contact Phone Number)');
+    const nicknameIndex = headers.indexOf('ชื่อเล่น (Nickname)');
+    const boxIndex = headers.indexOf('กรณีจอง Box: ต้องการที่ Box (1350/Box)? (In case of Box reservation: How many Boxes (1350/Box)?)');
+    const spotIndex = headers.indexOf('กรณีจอง Spot: ต้องการกี่ Spot (500 บาท/Spot)? (In case of Spot reservation: How many Spots (500 Baht/Spot)?)');
+    
+    if (nameIndex === -1 || phoneIndex === -1) {
+      return { error: 'ไม่พบ columns ที่ต้องการ' };
+    }
+    
+    const users = [];
+    let totalBoxes = 0;
+    let totalSpots = 0;
+    
+    rows.forEach((row, index) => {
+      if (row[nameIndex] && row[nameIndex].trim() !== '') {
+        const user = {
+          id: index + 1,
+          name: row[nameIndex].trim(),
+          phone: row[phoneIndex] ? row[phoneIndex].toString().trim() : '',
+          nickname: row[nicknameIndex] ? row[nicknameIndex].trim() : '',
+          boxes: row[boxIndex] ? parseInt(row[boxIndex]) || 0 : 0,
+          spots: row[spotIndex] ? parseInt(row[spotIndex]) || 0 : 0,
+          timestamp: row[0] ? new Date(row[0]).toLocaleString('th-TH') : ''
+        };
+        
+        users.push(user);
+        totalBoxes += user.boxes;
+        totalSpots += user.spots;
+      }
+    });
+    
+    return {
+      users: users,
+      total: users.length,
+      totalBoxes: totalBoxes,
+      totalSpots: totalSpots,
+      success: true
+    };
+    
+  } catch (error) {
+    return { error: 'เกิดข้อผิดพลาด: ' + error.toString() };
+  }
+}
+
+function getCodenameByPhone(phone) {
+  try {
+    // เปิด Google Sheet ของ codename mapping
+    const codenameSheetId = 'YOUR_CODENAME_SHEET_ID'; // ใส่ ID ของ Sheet ที่มี codename mapping
+    const sheet = SpreadsheetApp.openById(codenameSheetId);
+    const worksheet = sheet.getSheetByName('Sheet1'); // หรือชื่อ sheet ที่มี codename
+    
+    if (!worksheet) {
+      return null;
+    }
+    
+    const data = worksheet.getDataRange().getValues();
+    const headers = data[0];
+    const rows = data.slice(1);
+    
+    // หา index ของ columns
+    const phoneIndex = headers.indexOf('เบอร์โทรศัพท์'); // ปรับตามชื่อ column ใน sheet ของคุณ
+    const codenameIndex = headers.indexOf('Codename'); // ปรับตามชื่อ column ใน sheet ของคุณ
+    
+    if (phoneIndex === -1 || codenameIndex === -1) {
+      return null;
+    }
+    
+    // ค้นหา codename จากเบอร์โทรศัพท์
+    for (let row of rows) {
+      if (row[phoneIndex] && row[phoneIndex].toString().trim() === phone.trim()) {
+        return row[codenameIndex] ? row[codenameIndex].trim() : null;
+      }
+    }
+    
+    return null;
+    
+  } catch (error) {
+    console.error('Error getting codename:', error);
+    return null;
+  }
+}
