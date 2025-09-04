@@ -1031,21 +1031,24 @@
       const container = document.getElementById('usersContainer');
       container.innerHTML = '<div class="loading">กำลังโหลดข้อมูล...</div>';
       
-      // ใช้ fetch เหมือนกับ GBL
-      fetch(apiUrl)
-        .then(res => res.json())
-        .then(data => {
-          if (data.error) {
-            container.innerHTML = `<div class="error-message">${data.error}</div>`;
-            return;
-          }
-          
-          displayUsers(data);
-        })
-        .catch(err => {
-          console.error('Error loading data:', err);
-          container.innerHTML = '<div class="error-message">เกิดข้อผิดพลาดในการโหลดข้อมูล</div>';
-        });
+      // ใช้ JSONP แทน fetch เพื่อหลีกเลี่ยง CORS
+      const script = document.createElement('script');
+      script.src = apiUrl + '?callback=handleResponse';
+      document.head.appendChild(script);
+      
+      // ลบ script tag หลังจากโหลดเสร็จ
+      script.onload = function() {
+        document.head.removeChild(script);
+      };
+    }
+    
+    // ฟังก์ชันที่ Apps Script จะเรียก
+    function handleResponse(data) {
+      if (data.error) {
+        document.getElementById('usersContainer').innerHTML = `<div class="error-message">${data.error}</div>`;
+        return;
+      }
+      displayUsers(data);
     }
 
     function displayUsers(data) {
