@@ -1,31 +1,67 @@
 function doGet() {
   try {
-    var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Form Responses 1');
-    if (!sheet) {
-      var response = ContentService.createTextOutput(JSON.stringify({ 
-        error: "Sheet not found",
+    console.log('doGet function called');
+    
+    // ตรวจสอบว่า spreadsheet มีอยู่หรือไม่
+    var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+    if (!spreadsheet) {
+      console.log('No active spreadsheet found');
+      return createResponse({ 
+        error: "No active spreadsheet found",
         users: [],
         total: 0,
         totalBoxes: 0,
         totalSpots: 0
-      }));
-      response.setMimeType(ContentService.MimeType.JSON);
-      return response;
+      });
     }
     
-    var data = sheet.getDataRange().getValues();
-    if (data.length <= 1) {
-      var response = ContentService.createTextOutput(JSON.stringify({ 
+    console.log('Spreadsheet ID:', spreadsheet.getId());
+    console.log('Spreadsheet name:', spreadsheet.getName());
+    
+    // ลองหา sheet ที่มีอยู่
+    var sheets = spreadsheet.getSheets();
+    console.log('Available sheets:', sheets.map(s => s.getName()));
+    
+    // ลองหา sheet ที่มีข้อมูล
+    var targetSheet = null;
+    var sheetNames = ['Form Responses 1', 'Form Responses', 'Responses', 'Sheet1'];
+    
+    for (var i = 0; i < sheetNames.length; i++) {
+      var sheet = spreadsheet.getSheetByName(sheetNames[i]);
+      if (sheet) {
+        targetSheet = sheet;
+        console.log('Found sheet:', sheetNames[i]);
+        break;
+      }
+    }
+    
+    if (!targetSheet) {
+      console.log('No suitable sheet found');
+      return createResponse({ 
+        error: "No suitable sheet found. Available sheets: " + sheets.map(s => s.getName()).join(', '),
         users: [],
         total: 0,
         totalBoxes: 0,
         totalSpots: 0
-      }));
-      response.setMimeType(ContentService.MimeType.JSON);
-      return response;
+      });
+    }
+    
+    var data = targetSheet.getDataRange().getValues();
+    console.log('Data rows found:', data.length);
+    
+    if (data.length <= 1) {
+      console.log('No data rows found');
+      return createResponse({ 
+        users: [],
+        total: 0,
+        totalBoxes: 0,
+        totalSpots: 0
+      });
     }
     
     var headers = data[0];
+    console.log('Headers:', headers);
+    
     var users = [];
     var totalBoxes = 0;
     var totalSpots = 0;
@@ -38,12 +74,29 @@ function doGet() {
     
     for (var i = 0; i < headers.length; i++) {
       var header = headers[i].toString().toLowerCase();
-      if (header.includes('ชื่อ') || header.includes('name')) nameIndex = i;
-      if (header.includes('เบอร์') || header.includes('phone') || header.includes('โทร')) phoneIndex = i;
-      if (header.includes('box') || header.includes('กล่อง')) boxIndex = i;
-      if (header.includes('spot') || header.includes('สปอต')) spotIndex = i;
+      console.log('Checking header', i, ':', header);
+      
+      if (header.includes('ชื่อ') || header.includes('name') || header.includes('nickname')) {
+        nameIndex = i;
+        console.log('Found name column at index:', i);
+      }
+      if (header.includes('เบอร์') || header.includes('phone') || header.includes('โทร') || header.includes('tel')) {
+        phoneIndex = i;
+        console.log('Found phone column at index:', i);
+      }
+      if (header.includes('box') || header.includes('กล่อง') || header.includes('boxes')) {
+        boxIndex = i;
+        console.log('Found box column at index:', i);
+      }
+      if (header.includes('spot') || header.includes('สปอต') || header.includes('spots')) {
+        spotIndex = i;
+        console.log('Found spot column at index:', i);
+      }
     }
     
+    console.log('Column indices - name:', nameIndex, 'phone:', phoneIndex, 'box:', boxIndex, 'spot:', spotIndex);
+    
+    // สร้างข้อมูลผู้ใช้
     for (var i = 1; i < data.length; i++) {
       var row = data[i];
       var user = {
@@ -51,42 +104,50 @@ function doGet() {
         phone: phoneIndex >= 0 ? (row[phoneIndex] || '') : '',
         boxes: boxIndex >= 0 ? (parseInt(row[boxIndex]) || 0) : 0,
         spots: spotIndex >= 0 ? (parseInt(row[spotIndex]) || 0) : 0,
-        codename: 'ไม่ระบุ' // จะถูกอัปเดตจาก member dashboard
+        codename: 'ไม่ระบุ'
       };
       
       totalBoxes += user.boxes;
       totalSpots += user.spots;
       users.push(user);
+      
+      console.log('User', i, ':', user);
     }
     
-    // ส่งข้อมูลกลับ
-    var response = ContentService.createTextOutput(JSON.stringify({
+    var result = {
       users: users,
       total: users.length,
       totalBoxes: totalBoxes,
-      totalSpots: totalSpots
-    }));
-    response.setMimeType(ContentService.MimeType.JSON);
+      totalSpots: totalSpots,
+      debug: {
+        sheetName: targetSheet.getName(),
+        headers: headers,
+        columnIndices: { name: nameIndex, phone: phoneIndex, box: boxIndex, spot: spotIndex }
+      }
+    };
     
-    return response;
+    console.log('Final result:', result);
+    return createResponse(result);
     
   } catch (error) {
     console.error('Error in doGet:', error);
-    var response = ContentService.createTextOutput(JSON.stringify({ 
+    return createResponse({ 
       error: error.toString(),
       users: [],
       total: 0,
       totalBoxes: 0,
       totalSpots: 0
-    }));
-    response.setMimeType(ContentService.MimeType.JSON);
-    return response;
+    });
   }
 }
 
-// ใช้ doPost แทน doOptions สำหรับ CORS
+function createResponse(data) {
+  var response = ContentService.createTextOutput(JSON.stringify(data));
+  response.setMimeType(ContentService.MimeType.JSON);
+  return response;
+}
+
 function doPost(e) {
-  // ส่งข้อมูลกลับเหมือน doGet แต่สำหรับ POST request
   return doGet();
 }
 
