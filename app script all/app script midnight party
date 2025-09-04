@@ -2,45 +2,115 @@ function doGet() {
   try {
     console.log('doGet function called');
     
-    // ส่งข้อมูลทดสอบเสมอเพื่อให้แน่ใจว่าไม่มี error
-    var testData = {
-      users: [
-        { nickname: 'ทดสอบผู้เล่น 1', codename: 'Test001', boxes: 1, spots: 0 },
-        { nickname: 'ทดสอบผู้เล่น 2', codename: 'Test002', boxes: 0, spots: 2 },
-        { nickname: 'ทดสอบผู้เล่น 3', codename: 'Test003', boxes: 1, spots: 1 }
-      ],
-      total: 3,
-      totalBoxes: 2,
-      totalSpots: 3,
+    // ตรวจสอบว่า spreadsheet มีอยู่หรือไม่
+    var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+    if (!spreadsheet) {
+      console.log('No active spreadsheet found');
+      return createResponse({ 
+        participants: [],
+        error: "No active spreadsheet found"
+      });
+    }
+    
+    console.log('Spreadsheet ID:', spreadsheet.getId());
+    console.log('Spreadsheet name:', spreadsheet.getName());
+    
+    // ลองหา sheet ที่มีอยู่
+    var sheets = spreadsheet.getSheets();
+    console.log('Available sheets:', sheets.map(s => s.getName()));
+    
+    // ลองหา sheet ที่มีข้อมูล
+    var targetSheet = null;
+    var sheetNames = ['Form Responses 1', 'Form Responses', 'Responses', 'Sheet1'];
+    
+    for (var i = 0; i < sheetNames.length; i++) {
+      var sheet = spreadsheet.getSheetByName(sheetNames[i]);
+      if (sheet) {
+        targetSheet = sheet;
+        console.log('Found sheet:', sheetNames[i]);
+        break;
+      }
+    }
+    
+    if (!targetSheet) {
+      console.log('No suitable sheet found, using test data');
+      // ส่งข้อมูลทดสอบถ้าไม่มี sheet
+      return createResponse({
+        participants: [
+          { 'ชื่อ-นามสกุล': 'ทดสอบผู้เล่น 1', 'เบอร์โทรศัพท์': '0812345678', 'ระดับการเล่น': 'Rookie' },
+          { 'ชื่อ-นามสกุล': 'ทดสอบผู้เล่น 2', 'เบอร์โทรศัพท์': '0823456789', 'ระดับการเล่น': 'Bronze' },
+          { 'ชื่อ-นามสกุล': 'ทดสอบผู้เล่น 3', 'เบอร์โทรศัพท์': '0834567890', 'ระดับการเล่น': 'Silver' }
+        ],
+        debug: {
+          message: "Using test data - no suitable sheet found",
+          availableSheets: sheets.map(s => s.getName())
+        }
+      });
+    }
+    
+    var data = targetSheet.getDataRange().getValues();
+    console.log('Data rows found:', data.length);
+    
+    if (data.length <= 1) {
+      console.log('No data rows found, using test data');
+      return createResponse({
+        participants: [
+          { 'ชื่อ-นามสกุล': 'ทดสอบผู้เล่น 1', 'เบอร์โทรศัพท์': '0812345678', 'ระดับการเล่น': 'Rookie' },
+          { 'ชื่อ-นามสกุล': 'ทดสอบผู้เล่น 2', 'เบอร์โทรศัพท์': '0823456789', 'ระดับการเล่น': 'Bronze' },
+          { 'ชื่อ-นามสกุล': 'ทดสอบผู้เล่น 3', 'เบอร์โทรศัพท์': '0834567890', 'ระดับการเล่น': 'Silver' }
+        ],
+        debug: {
+          message: "Using test data - no data rows found",
+          sheetName: targetSheet.getName()
+        }
+      });
+    }
+    
+    var headers = data[0];
+    console.log('Headers:', headers);
+    
+    var participants = [];
+    
+    // สร้างข้อมูลผู้ใช้ในรูปแบบเดียวกับ GBL
+    for (var i = 1; i < data.length; i++) {
+      var row = data[i];
+      var participant = {};
+      
+      // สร้าง object โดยใช้ชื่อ column เป็น key (เหมือน GBL)
+      for (var j = 0; j < headers.length; j++) {
+        participant[headers[j]] = row[j] || '';
+      }
+      
+      participants.push(participant);
+      console.log('Participant', i, ':', participant);
+    }
+    
+    var result = {
+      participants: participants,
       debug: {
-        message: "Test data loaded successfully",
-        timestamp: new Date().toISOString()
+        sheetName: targetSheet.getName(),
+        headers: headers,
+        message: "Data loaded successfully from sheet"
       }
     };
     
-    console.log('Sending test data:', testData);
-    return createResponse(testData);
+    console.log('Final result:', result);
+    return createResponse(result);
     
   } catch (error) {
     console.error('Error in doGet:', error);
     // ส่งข้อมูลทดสอบถ้าเกิด error
-    var errorData = {
-      users: [
-        { nickname: 'ทดสอบผู้เล่น 1', codename: 'Test001', boxes: 1, spots: 0 },
-        { nickname: 'ทดสอบผู้เล่น 2', codename: 'Test002', boxes: 0, spots: 2 },
-        { nickname: 'ทดสอบผู้เล่น 3', codename: 'Test003', boxes: 1, spots: 1 }
+    return createResponse({
+      participants: [
+        { 'ชื่อ-นามสกุล': 'ทดสอบผู้เล่น 1', 'เบอร์โทรศัพท์': '0812345678', 'ระดับการเล่น': 'Rookie' },
+        { 'ชื่อ-นามสกุล': 'ทดสอบผู้เล่น 2', 'เบอร์โทรศัพท์': '0823456789', 'ระดับการเล่น': 'Bronze' },
+        { 'ชื่อ-นามสกุล': 'ทดสอบผู้เล่น 3', 'เบอร์โทรศัพท์': '0834567890', 'ระดับการเล่น': 'Silver' }
       ],
-      total: 3,
-      totalBoxes: 2,
-      totalSpots: 3,
       error: error.toString(),
       debug: {
-        message: "Using test data due to error",
-        timestamp: new Date().toISOString()
+        message: "Using test data due to error"
       }
-    };
-    
-    return createResponse(errorData);
+    });
   }
 }
 
