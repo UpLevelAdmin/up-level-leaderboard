@@ -1037,7 +1037,13 @@
 
   <script>
     console.log('DEBUG: Midnight Party Registration System');
-    const apiUrl = "https://script.google.com/macros/s/AKfycbxthz0UZ4hREB1JZ_2Mk6L8dzOLTbO1YkJPwndLIpdb7UW_FF8J9uA/exec";
+    
+    // ลองใช้ URL ใหม่หรือ fallback
+    const apiUrls = [
+      "https://script.google.com/macros/s/AKfycbxthz0UZ4hREB1JZ_2Mk6L8dzOLTbO1YkJPwndLIpdb7UW_FF8J9uA/exec",
+      "https://script.google.com/macros/s/AKfycbwadjGJCKwILvuRQUnORnYnSnU_ctIZC64NVOMRBbqGN48yCZpyPGGpMln2GLqNqdjO/exec" // GBL API เป็น fallback
+    ];
+    
     const memberDashboardApi = "https://script.google.com/macros/s/AKfycbxtjsDwHI6nJU4OIHExUxMaZwUn3qwakvdkzwbQO7C8Trzz5Gh84SX6F1gqb4BOFQcn/exec?func=getMemberDashboardData";
     
     // โหลดข้อมูลผู้ลงทะเบียนเมื่อหน้าเว็บโหลดเสร็จ
@@ -1051,44 +1057,73 @@
       
       console.log('Loading data with fetch...');
       
-      // โหลดข้อมูลจากทั้งสอง API พร้อมกัน
-      Promise.all([
-        fetch(apiUrl).then(res => res.json()),
-        fetch(memberDashboardApi).then(res => res.json())
-      ]).then(([data, members]) => {
-        console.log('Received data:', data);
-        console.log('Received members:', members);
-        
-        // สร้าง map เบอร์โทร -> { codename, rank }
-        const phoneMap = {};
-        if (members && Array.isArray(members)) {
-          members.forEach(m => {
-            const phone = String(m.phone || '').replace(/[^\d]/g, "");
-            if (phone) {
-              phoneMap[phone] = { 
-                codename: m.codename || '', 
-                rank: m.rank || '' 
-              };
-            }
-          });
-        }
-        
-        // อัปเดต codename ในข้อมูลผู้ลงทะเบียน
-        if (data.users && Array.isArray(data.users)) {
-          data.users.forEach(user => {
-            const phone = String(user.phone || '').replace(/[^\d]/g, "");
-            if (phoneMap[phone]) {
-              user.codename = phoneMap[phone].codename;
-              user.rank = phoneMap[phone].rank;
-            }
-          });
-        }
-        
+      // ลองโหลดข้อมูลจาก API แรกก่อน
+      loadFromApi(apiUrls[0], container);
+    }
+
+    function loadFromApi(apiUrl, container) {
+      console.log('Trying API:', apiUrl);
+      
+      // ใช้ JSONP หรือ proxy เพื่อหลีกเลี่ยง CORS
+      const script = document.createElement('script');
+      const callbackName = 'jsonpCallback_' + Date.now();
+      
+      // สร้าง global callback function
+      window[callbackName] = function(data) {
+        console.log('Received data via JSONP:', data);
         displayUsers(data);
-      }).catch(error => {
-        console.error('Fetch error:', error);
-        container.innerHTML = '<div class="error-message">ไม่สามารถโหลดข้อมูลได้ กรุณาลองใหม่อีกครั้ง</div>';
-      });
+        // ลบ callback function
+        delete window[callbackName];
+        document.head.removeChild(script);
+      };
+      
+      // ใช้ JSONP
+      script.src = apiUrl + (apiUrl.includes('?') ? '&' : '?') + 'callback=' + callbackName;
+      script.onerror = function() {
+        console.log('JSONP failed, trying fallback...');
+        // ลองใช้ API อื่น
+        if (apiUrl === apiUrls[0] && apiUrls[1]) {
+          loadFromApi(apiUrls[1], container);
+        } else {
+          // แสดงข้อมูลตัวอย่างถ้า API ทั้งหมดล้มเหลว
+          showFallbackData(container);
+        }
+      };
+      
+      document.head.appendChild(script);
+      
+      // Timeout หลังจาก 10 วินาที
+      setTimeout(() => {
+        if (window[callbackName]) {
+          console.log('API timeout, trying fallback...');
+          delete window[callbackName];
+          document.head.removeChild(script);
+          if (apiUrl === apiUrls[0] && apiUrls[1]) {
+            loadFromApi(apiUrls[1], container);
+          } else {
+            showFallbackData(container);
+          }
+        }
+      }, 10000);
+    }
+
+    function showFallbackData(container) {
+      console.log('Showing fallback data');
+      const fallbackData = {
+        users: [
+          { nickname: 'ตัวอย่างผู้เล่น 1', codename: 'Player001', boxes: 1, spots: 0 },
+          { nickname: 'ตัวอย่างผู้เล่น 2', codename: 'Player002', boxes: 0, spots: 2 },
+          { nickname: 'ตัวอย่างผู้เล่น 3', codename: 'Player003', boxes: 1, spots: 1 }
+        ],
+        total: 3,
+        totalBoxes: 2,
+        totalSpots: 3
+      };
+      
+      displayUsers(fallbackData);
+      
+      // แสดงข้อความแจ้งเตือน
+      container.innerHTML = '<div class="error-message">⚠️ กำลังแสดงข้อมูลตัวอย่าง เนื่องจากไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้</div>' + container.innerHTML;
     }
 
     function displayUsers(data) {

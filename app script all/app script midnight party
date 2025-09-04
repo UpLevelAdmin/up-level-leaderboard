@@ -1,18 +1,105 @@
 function doGet() {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Form Responses 1');
-  var data = sheet.getDataRange().getValues();
-  var headers = data[0];
-  var users = [];
-  for (var i = 1; i < data.length; i++) {
-    var row = data[i];
-    var obj = {};
-    for (var j = 0; j < headers.length; j++) {
-      obj[headers[j]] = row[j];
+  try {
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Form Responses 1');
+    if (!sheet) {
+      return ContentService.createTextOutput(JSON.stringify({ 
+        error: "Sheet not found",
+        users: [],
+        total: 0,
+        totalBoxes: 0,
+        totalSpots: 0
+      }))
+      .setMimeType(ContentService.MimeType.JSON)
+      .addHeader('Access-Control-Allow-Origin', '*')
+      .addHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+      .addHeader('Access-Control-Allow-Headers', 'Content-Type');
     }
-    users.push(obj);
+    
+    var data = sheet.getDataRange().getValues();
+    if (data.length <= 1) {
+      return ContentService.createTextOutput(JSON.stringify({ 
+        users: [],
+        total: 0,
+        totalBoxes: 0,
+        totalSpots: 0
+      }))
+      .setMimeType(ContentService.MimeType.JSON)
+      .addHeader('Access-Control-Allow-Origin', '*')
+      .addHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+      .addHeader('Access-Control-Allow-Headers', 'Content-Type');
+    }
+    
+    var headers = data[0];
+    var users = [];
+    var totalBoxes = 0;
+    var totalSpots = 0;
+    
+    // หา index ของ columns ที่สำคัญ
+    var nameIndex = -1;
+    var phoneIndex = -1;
+    var boxIndex = -1;
+    var spotIndex = -1;
+    
+    for (var i = 0; i < headers.length; i++) {
+      var header = headers[i].toString().toLowerCase();
+      if (header.includes('ชื่อ') || header.includes('name')) nameIndex = i;
+      if (header.includes('เบอร์') || header.includes('phone') || header.includes('โทร')) phoneIndex = i;
+      if (header.includes('box') || header.includes('กล่อง')) boxIndex = i;
+      if (header.includes('spot') || header.includes('สปอต')) spotIndex = i;
+    }
+    
+    for (var i = 1; i < data.length; i++) {
+      var row = data[i];
+      var user = {
+        nickname: nameIndex >= 0 ? (row[nameIndex] || 'ไม่ระบุชื่อ') : 'ไม่ระบุชื่อ',
+        phone: phoneIndex >= 0 ? (row[phoneIndex] || '') : '',
+        boxes: boxIndex >= 0 ? (parseInt(row[boxIndex]) || 0) : 0,
+        spots: spotIndex >= 0 ? (parseInt(row[spotIndex]) || 0) : 0,
+        codename: 'ไม่ระบุ' // จะถูกอัปเดตจาก member dashboard
+      };
+      
+      totalBoxes += user.boxes;
+      totalSpots += user.spots;
+      users.push(user);
+    }
+    
+    // ส่งข้อมูลกลับพร้อม CORS headers
+    var response = ContentService.createTextOutput(JSON.stringify({
+      users: users,
+      total: users.length,
+      totalBoxes: totalBoxes,
+      totalSpots: totalSpots
+    }))
+    .setMimeType(ContentService.MimeType.JSON)
+    .addHeader('Access-Control-Allow-Origin', '*')
+    .addHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+    .addHeader('Access-Control-Allow-Headers', 'Content-Type');
+    
+    return response;
+    
+  } catch (error) {
+    console.error('Error in doGet:', error);
+    return ContentService.createTextOutput(JSON.stringify({ 
+      error: error.toString(),
+      users: [],
+      total: 0,
+      totalBoxes: 0,
+      totalSpots: 0
+    }))
+    .setMimeType(ContentService.MimeType.JSON)
+    .addHeader('Access-Control-Allow-Origin', '*')
+    .addHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+    .addHeader('Access-Control-Allow-Headers', 'Content-Type');
   }
-  return ContentService.createTextOutput(JSON.stringify({ users: users }))
-    .setMimeType(ContentService.MimeType.JSON);
+}
+
+// เพิ่มฟังก์ชันสำหรับจัดการ OPTIONS request (CORS preflight)
+function doOptions() {
+  return ContentService.createTextOutput('')
+    .addHeader('Access-Control-Allow-Origin', '*')
+    .addHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+    .addHeader('Access-Control-Allow-Headers', 'Content-Type')
+    .addHeader('Access-Control-Max-Age', '86400');
 }
 
 function getCodenameByPhone(phone) {
