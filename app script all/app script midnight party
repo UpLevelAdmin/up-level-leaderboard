@@ -8,45 +8,30 @@ function doGet() {
 
 function getRegisteredUsers() {
   try {
-    // เปิด Google Sheet โดยใช้ ID ของ Sheet
-    const sheetId = '19a30Bs6jdZKa64LUSfsILAzv81yFIGf-ZrRxIRmkSpM';
-    const sheet = SpreadsheetApp.openById(sheetId);
-    const worksheet = sheet.getSheetByName('Form Responses 1');
-    
-    if (!worksheet) {
-      return { error: 'ไม่พบ worksheet ที่ต้องการ' };
-    }
-    
-    // อ่านข้อมูลทั้งหมด
-    const data = worksheet.getDataRange().getValues();
-    
-    if (data.length <= 1) {
-      return { users: [], total: 0 };
-    }
-    
-    // แยก header และ data
-    const headers = data[0];
-    const rows = data.slice(1);
+    // ใช้ getActiveSpreadsheet() เหมือนกับ GBL
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Form Responses 1');
+    var data = sheet.getDataRange().getValues();
+    var headers = data[0];
+    var users = [];
+    var totalBoxes = 0;
+    var totalSpots = 0;
     
     // หา index ของ columns ที่ต้องการ
-    const nameIndex = headers.indexOf('ชื่อ-สกุล (Name-Surname)');
-    const phoneIndex = headers.indexOf('เบอร์โทรศัพท์ติดต่อ (Contact Phone Number)');
-    const nicknameIndex = headers.indexOf('ชื่อเล่น (Nickname)');
-    const boxIndex = headers.indexOf('กรณีจอง Box: ต้องการที่ Box (1350/Box)? (In case of Box reservation: How many Boxes (1350/Box)?)');
-    const spotIndex = headers.indexOf('กรณีจอง Spot: ต้องการกี่ Spot (500 บาท/Spot)? (In case of Spot reservation: How many Spots (500 Baht/Spot)?)');
+    var nameIndex = headers.indexOf('ชื่อ-สกุล (Name-Surname)');
+    var phoneIndex = headers.indexOf('เบอร์โทรศัพท์ติดต่อ (Contact Phone Number)');
+    var nicknameIndex = headers.indexOf('ชื่อเล่น (Nickname)');
+    var boxIndex = headers.indexOf('กรณีจอง Box: ต้องการที่ Box (1350/Box)? (In case of Box reservation: How many Boxes (1350/Box)?)');
+    var spotIndex = headers.indexOf('กรณีจอง Spot: ต้องการกี่ Spot (500 บาท/Spot)? (In case of Spot reservation: How many Spots (500 Baht/Spot)?)');
     
     if (nameIndex === -1 || phoneIndex === -1) {
       return { error: 'ไม่พบ columns ที่ต้องการ' };
     }
     
-    const users = [];
-    let totalBoxes = 0;
-    let totalSpots = 0;
-    
-    rows.forEach((row, index) => {
+    for (var i = 1; i < data.length; i++) {
+      var row = data[i];
       if (row[nameIndex] && row[nameIndex].trim() !== '') {
-        const user = {
-          id: index + 1,
+        var user = {
+          id: i,
           name: row[nameIndex].trim(),
           phone: row[phoneIndex] ? row[phoneIndex].toString().trim() : '',
           nickname: row[nicknameIndex] ? row[nicknameIndex].trim() : '',
@@ -59,7 +44,7 @@ function getRegisteredUsers() {
         totalBoxes += user.boxes;
         totalSpots += user.spots;
       }
-    });
+    }
     
     return {
       users: users,
