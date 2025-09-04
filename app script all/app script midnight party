@@ -33,18 +33,10 @@ function doGet() {
     }
     
     if (!targetSheet) {
-      console.log('No suitable sheet found, using test data');
-      // ส่งข้อมูลทดสอบถ้าไม่มี sheet
-      return createResponse({
-        participants: [
-          { 'ชื่อ-นามสกุล': 'ทดสอบผู้เล่น 1', 'เบอร์โทรศัพท์': '0812345678', 'ระดับการเล่น': 'Rookie' },
-          { 'ชื่อ-นามสกุล': 'ทดสอบผู้เล่น 2', 'เบอร์โทรศัพท์': '0823456789', 'ระดับการเล่น': 'Bronze' },
-          { 'ชื่อ-นามสกุล': 'ทดสอบผู้เล่น 3', 'เบอร์โทรศัพท์': '0834567890', 'ระดับการเล่น': 'Silver' }
-        ],
-        debug: {
-          message: "Using test data - no suitable sheet found",
-          availableSheets: sheets.map(s => s.getName())
-        }
+      console.log('No suitable sheet found');
+      return createResponse({ 
+        participants: [],
+        error: "No suitable sheet found. Available sheets: " + sheets.map(s => s.getName()).join(', ')
       });
     }
     
@@ -52,17 +44,10 @@ function doGet() {
     console.log('Data rows found:', data.length);
     
     if (data.length <= 1) {
-      console.log('No data rows found, using test data');
-      return createResponse({
-        participants: [
-          { 'ชื่อ-นามสกุล': 'ทดสอบผู้เล่น 1', 'เบอร์โทรศัพท์': '0812345678', 'ระดับการเล่น': 'Rookie' },
-          { 'ชื่อ-นามสกุล': 'ทดสอบผู้เล่น 2', 'เบอร์โทรศัพท์': '0823456789', 'ระดับการเล่น': 'Bronze' },
-          { 'ชื่อ-นามสกุล': 'ทดสอบผู้เล่น 3', 'เบอร์โทรศัพท์': '0834567890', 'ระดับการเล่น': 'Silver' }
-        ],
-        debug: {
-          message: "Using test data - no data rows found",
-          sheetName: targetSheet.getName()
-        }
+      console.log('No data rows found');
+      return createResponse({ 
+        participants: [],
+        error: "No data rows found in sheet: " + targetSheet.getName()
       });
     }
     
@@ -99,16 +84,11 @@ function doGet() {
     
   } catch (error) {
     console.error('Error in doGet:', error);
-    // ส่งข้อมูลทดสอบถ้าเกิด error
     return createResponse({
-      participants: [
-        { 'ชื่อ-นามสกุล': 'ทดสอบผู้เล่น 1', 'เบอร์โทรศัพท์': '0812345678', 'ระดับการเล่น': 'Rookie' },
-        { 'ชื่อ-นามสกุล': 'ทดสอบผู้เล่น 2', 'เบอร์โทรศัพท์': '0823456789', 'ระดับการเล่น': 'Bronze' },
-        { 'ชื่อ-นามสกุล': 'ทดสอบผู้เล่น 3', 'เบอร์โทรศัพท์': '0834567890', 'ระดับการเล่น': 'Silver' }
-      ],
+      participants: [],
       error: error.toString(),
       debug: {
-        message: "Using test data due to error"
+        message: "Error occurred while processing data"
       }
     });
   }
