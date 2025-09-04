@@ -1,13 +1,15 @@
 function doGet() {
-  return HtmlService.createHtmlOutputFromFile('midnight-party')
-    .setTitle('Midnight Party - Up Level Academy')
-    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+  // ส่งข้อมูลเป็น JSON สำหรับการเรียกใช้จากหน้าเว็บ
+  const data = getRegisteredUsers();
+  return ContentService
+    .createTextOutput(JSON.stringify(data))
+    .setMimeType(ContentService.MimeType.JSON);
 }
 
 function getRegisteredUsers() {
   try {
     // เปิด Google Sheet โดยใช้ ID ของ Sheet
-    const sheetId = 'YOUR_SHEET_ID_HERE'; // ใส่ ID ของ Google Sheet ของคุณ
+    const sheetId = '19a30Bs6jdZKa64LUSfsILAzv81yFIGf-ZrRxIRmkSpM';
     const sheet = SpreadsheetApp.openById(sheetId);
     const worksheet = sheet.getSheetByName('Form Responses 1');
     

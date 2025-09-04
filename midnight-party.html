@@ -1022,8 +1022,33 @@
     console.log('DEBUG: Midnight Party Registration System');
     const apiUrl = "https://script.google.com/macros/s/AKfycbxthz0UZ4hREB1JZ_2Mk6L8dzOLTbO1YkJPwndLIpdb7UW_FF8J9uA/exec";
     
+    // เพิ่ม debug function
+    function debugApiResponse() {
+      console.log('Testing API response...');
+      fetch(apiUrl)
+        .then(response => {
+          console.log('Response status:', response.status);
+          console.log('Response headers:', response.headers);
+          return response.text();
+        })
+        .then(text => {
+          console.log('Raw response:', text);
+          try {
+            const data = JSON.parse(text);
+            console.log('Parsed JSON:', data);
+          } catch (e) {
+            console.error('JSON parse error:', e);
+          }
+        })
+        .catch(error => {
+          console.error('Fetch error:', error);
+        });
+    }
+
     // โหลดข้อมูลผู้ลงทะเบียนเมื่อหน้าเว็บโหลดเสร็จ
     window.addEventListener('load', function() {
+      console.log('Page loaded, calling debug function...');
+      debugApiResponse(); // เรียก debug function ก่อน
       loadRegisteredUsers();
     });
 
