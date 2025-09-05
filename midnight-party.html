@@ -794,6 +794,25 @@
       margin: 1rem 0;
     }
 
+    /* Force 2-column layout for cards on mobile */
+    @media (max-width: 768px) {
+      .pokemon-cards,
+      .support-grid,
+      .item-grid {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 24px !important;
+        padding: 0 16px !important;
+      }
+      
+      .pokemon-cards .card-item,
+      .support-grid .support-item,
+      .item-grid .item-item {
+        width: 100% !important;
+        max-width: none !important;
+      }
+    }
+
     /* Responsive */
     @media (max-width: 768px) {
       .container {
@@ -835,8 +854,9 @@
       
       /* ปรับการ์ดโปเกมอนให้เป็น 2 คอลัมน์บนมือถือ */
       .pokemon-cards {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 24px;
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 24px !important;
         padding: 0 16px;
         justify-content: center;
       }
@@ -882,8 +902,9 @@
       
       /* ปรับการ์ดซัพพอร์ตและไอเท็มให้เป็น 2 คอลัมน์บนมือถือ */
       .support-grid, .item-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 24px;
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 24px !important;
         padding: 0 16px;
         justify-content: center;
       }
@@ -1018,14 +1039,16 @@
       
       .pokemon-cards {
         display: grid !important;
-        grid-template-columns: 1fr !important;
-        gap: 1rem !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 16px !important;
+        padding: 0 12px;
       }
       
       .support-grid, .item-grid {
         display: grid !important;
-        grid-template-columns: 1fr !important;
-        gap: 1rem !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 16px !important;
+        padding: 0 12px;
       }
       
       .stats-grid {
