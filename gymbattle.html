@@ -281,9 +281,9 @@
 
     .promo-cards-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      grid-template-columns: repeat(2, 1fr);
       gap: 20px;
-      max-width: 800px;
+      max-width: 600px;
       margin: 0 auto;
     }
 
@@ -340,17 +340,18 @@
     }
 
     .modal-content {
-      position: relative;
-      margin: auto;
-      padding: 20px;
-      width: 90%;
-      max-width: 500px;
-      background: #fff;
-      border-radius: 16px;
-      text-align: center;
-      animation: modalSlideIn 0.3s ease;
+      position: fixed;
       top: 50%;
-      transform: translateY(-50%);
+      left: 50%;
+      transform: translate(-50%, -50%);
+      padding: 0;
+      width: auto;
+      max-width: 90vw;
+      max-height: 90vh;
+      background: transparent;
+      border-radius: 0;
+      text-align: center;
+      animation: none;
     }
 
     @keyframes modalSlideIn {
@@ -365,26 +366,30 @@
     }
 
     .modal-close {
-      position: absolute;
-      top: 10px;
-      right: 15px;
-      font-size: 28px;
+      position: fixed;
+      top: 20px;
+      right: 30px;
+      font-size: 32px;
       font-weight: bold;
-      color: #aaa;
+      color: #fff;
       cursor: pointer;
       transition: color 0.3s;
+      z-index: 1001;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
     }
 
     .modal-close:hover {
-      color: #000;
+      color: #ff6b6b;
     }
 
     .modal img {
-      width: 100%;
-      max-width: 450px;
+      width: auto;
+      max-width: 90vw;
+      max-height: 90vh;
       height: auto;
       border-radius: 12px;
-      margin-bottom: 16px;
+      margin: 0;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
     }
 
     .modal-title {
@@ -476,8 +481,6 @@
     <div class="modal-content">
       <span class="modal-close">&times;</span>
       <img id="modalCardImage" src="" alt="Card Image">
-      <h3 id="modalCardTitle" class="modal-title"></h3>
-      <p id="modalCardDescription" class="modal-description"></p>
     </div>
   </div>
   <script>
@@ -762,7 +765,7 @@
       promoCards.forEach(card => {
         const imageUrl = `https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/08/th_news__MPromo_${card.number}.png`;
         html += `
-          <div class="promo-card" onclick="openCardModal('${imageUrl}', '${card.title}', '${card.description}')">
+          <div class="promo-card" onclick="openCardModal('${imageUrl}')">
             <img src="${imageUrl}" alt="${card.title}" loading="lazy">
             <div class="promo-card-title">${card.name}</div>
           </div>
@@ -772,16 +775,11 @@
     }
 
     // Open card modal
-    function openCardModal(imageUrl, title, description) {
+    function openCardModal(imageUrl) {
       const modal = document.getElementById('cardModal');
       const modalImage = document.getElementById('modalCardImage');
-      const modalTitle = document.getElementById('modalCardTitle');
-      const modalDescription = document.getElementById('modalCardDescription');
 
       modalImage.src = imageUrl;
-      modalImage.alt = title;
-      modalTitle.textContent = title;
-      modalDescription.textContent = description;
       modal.style.display = 'block';
     }
 
