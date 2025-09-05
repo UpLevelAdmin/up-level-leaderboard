@@ -332,11 +332,12 @@
       width: 100%;
       max-width: 200px;
       aspect-ratio: 7/9;
-      object-fit: cover;
+      object-fit: contain;
       border-radius: 15px;
       box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
       transition: all 0.3s ease;
       filter: brightness(0.9) contrast(1.1);
+      background: #fff;
     }
 
     .card-item:hover .pokemon-card-img {
@@ -492,13 +493,14 @@
       width: 100%;
       max-width: 160px;
       aspect-ratio: 7/9;
-      object-fit: cover;
+      object-fit: contain;
       border-radius: 10px;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
       transition: all 0.3s ease;
       filter: brightness(0.95) contrast(1.1);
       display: block;
       margin: 0 auto;
+      background: #fff;
     }
 
     .support-item:hover .support-card-img, .item-item:hover .item-card-img {
@@ -853,6 +855,8 @@
       .pokemon-card-img {
         max-width: 120px;
         aspect-ratio: 7/9;
+        object-fit: contain;
+        background: #fff;
       }
       
       .card-name {
@@ -902,6 +906,8 @@
       .support-card-img, .item-card-img {
         max-width: 100px;
         aspect-ratio: 7/9;
+        object-fit: contain;
+        background: #fff;
       }
       
       .support-item h4, .item-item h4 {
@@ -1024,11 +1030,15 @@
       .pokemon-card-img {
         max-width: 150px;
         aspect-ratio: 7/9;
+        object-fit: contain;
+        background: #fff;
       }
       
       .support-card-img, .item-card-img {
         max-width: 120px;
         aspect-ratio: 7/9;
+        object-fit: contain;
+        background: #fff;
       }
     }
   </style>
