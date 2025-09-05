@@ -281,7 +281,7 @@
 
     .promo-cards-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
       gap: 20px;
       max-width: 800px;
       margin: 0 auto;
@@ -341,7 +341,7 @@
 
     .modal-content {
       position: relative;
-      margin: 5% auto;
+      margin: auto;
       padding: 20px;
       width: 90%;
       max-width: 500px;
@@ -349,6 +349,8 @@
       border-radius: 16px;
       text-align: center;
       animation: modalSlideIn 0.3s ease;
+      top: 50%;
+      transform: translateY(-50%);
     }
 
     @keyframes modalSlideIn {
@@ -737,18 +739,18 @@
 
     // Promo Cards Data
     const promoCards = [
-      { number: "004", title: "การ์ดโปรโม 004", description: "การ์ดโปรโมพิเศษจาก Gym Battle" },
-      { number: "005", title: "การ์ดโปรโม 005", description: "การ์ดโปรโมพิเศษจาก Gym Battle" },
-      { number: "006", title: "การ์ดโปรโม 006", description: "การ์ดโปรโมพิเศษจาก Gym Battle" },
-      { number: "007", title: "การ์ดโปรโม 007", description: "การ์ดโปรโมพิเศษจาก Gym Battle" },
-      { number: "008", title: "การ์ดโปรโม 008", description: "การ์ดโปรโมพิเศษจาก Gym Battle" },
-      { number: "009", title: "การ์ดโปรโม 009", description: "การ์ดโปรโมพิเศษจาก Gym Battle" },
-      { number: "010", title: "การ์ดโปรโม 010", description: "การ์ดโปรโมพิเศษจาก Gym Battle" },
-      { number: "011", title: "การ์ดโปรโม 011", description: "การ์ดโปรโมพิเศษจาก Gym Battle" },
-      { number: "012", title: "การ์ดโปรโม 012", description: "การ์ดโปรโมพิเศษจาก Gym Battle" },
-      { number: "013", title: "การ์ดโปรโม 013", description: "การ์ดโปรโมพิเศษจาก Gym Battle" },
-      { number: "014", title: "การ์ดโปรโม 014", description: "การ์ดโปรโมพิเศษจาก Gym Battle" },
-      { number: "015", title: "การ์ดโปรโม 015", description: "การ์ดโปรโมพิเศษจาก Gym Battle" }
+      { number: "004", name: "จิโคริตา", title: "จิโคริตา", description: "การ์ดโปรโมพิเศษจาก Gym Battle" },
+      { number: "005", name: "ลาพลาส ex", title: "ลาพลาส ex", description: "การ์ดโปรโมพิเศษจาก Gym Battle" },
+      { number: "006", name: "มิว ex", title: "มิว ex", description: "การ์ดโปรโมพิเศษจาก Gym Battle" },
+      { number: "007", name: "มาคุโนชิตะ", title: "มาคุโนชิตะ", description: "การ์ดโปรโมพิเศษจาก Gym Battle" },
+      { number: "008", name: "อิคิริงโกะ ex", title: "อิคิริงโกะ ex", description: "การ์ดโปรโมพิเศษจาก Gym Battle" },
+      { number: "009", name: "พลั่วเจาะรู", title: "พลั่วเจาะรู", description: "การ์ดโปรโมพิเศษจาก Gym Battle" },
+      { number: "010", name: "ภาชนะแห่งผืนปฐพี", title: "ภาชนะแห่งผืนปฐพี", description: "การ์ดโปรโมพิเศษจาก Gym Battle" },
+      { number: "011", name: "โปฟฟินมิตรภาพ", title: "โปฟฟินมิตรภาพ", description: "การ์ดโปรโมพิเศษจาก Gym Battle" },
+      { number: "012", name: "ฆ้องต่อสู้", title: "ฆ้องต่อสู้", description: "การ์ดโปรโมพิเศษจาก Gym Battle" },
+      { number: "013", name: "ชุดจับแมลง", title: "ชุดจับแมลง", description: "การ์ดโปรโมพิเศษจาก Gym Battle" },
+      { number: "014", name: "ปณิธานของลิเลีย", title: "ปณิธานของลิเลีย", description: "การ์ดโปรโมพิเศษจาก Gym Battle" },
+      { number: "015", name: "มิสเทรีการ์เด้น", title: "มิสเทรีการ์เด้น", description: "การ์ดโปรโมพิเศษจาก Gym Battle" }
     ];
 
     // Generate promo cards HTML
@@ -762,7 +764,7 @@
         html += `
           <div class="promo-card" onclick="openCardModal('${imageUrl}', '${card.title}', '${card.description}')">
             <img src="${imageUrl}" alt="${card.title}" loading="lazy">
-            <div class="promo-card-number">#${card.number}</div>
+            <div class="promo-card-title">${card.name}</div>
           </div>
         `;
       });
