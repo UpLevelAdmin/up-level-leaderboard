@@ -297,9 +297,9 @@
     }
 
     .pokemon-cards {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 1rem;
+      display: grid !important;
+      grid-template-columns: repeat(2, 1fr) !important;
+      gap: 1rem !important;
       margin: 1.5rem 0;
       align-items: center;
     }
@@ -441,9 +441,9 @@
     }
 
     .support-grid, .item-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 1rem;
+      display: grid !important;
+      grid-template-columns: repeat(2, 1fr) !important;
+      gap: 1rem !important;
       align-items: center;
     }
 
@@ -969,6 +969,13 @@
         padding: 8px 4px;
       }
       
+      /* ปรับ grid สำหรับตารางผู้ลงทะเบียนบนมือถือ */
+      #usersContainer div[style*="grid-template-columns"] {
+        grid-template-columns: 50px 1fr 100px 80px !important;
+        gap: 0.3rem !important;
+        font-size: 0.8rem !important;
+      }
+      
       /* ปรับปุ่ม */
       .cta-button {
         padding: 1.2rem 2rem;
@@ -1372,45 +1379,42 @@
       }
       
       // สร้างตารางแสดงข้อมูล
-      let html = '<table style="width:100%; border-collapse:collapse; margin-top:1rem; background:rgba(255,255,255,0.05); border-radius:15px; overflow:hidden;">';
-      html += '<thead><tr style="background:rgba(107,207,127,0.3);">';
-      html += '<th style="padding:12px; text-align:center; color:#fff; font-weight:bold;">ลำดับ</th>';
-      html += '<th style="padding:12px; text-align:center; color:#fff; font-weight:bold;">ชื่อเล่น</th>';
-      html += '<th style="padding:12px; text-align:center; color:#fff; font-weight:bold;">Codename</th>';
-      html += '<th style="padding:12px; text-align:center; color:#fff; font-weight:bold;">การจอง</th>';
-      html += '</tr></thead><tbody>';
+      let html = '<div style="display:grid; grid-template-columns:1fr; gap:0.5rem; margin-top:1rem; background:rgba(255,255,255,0.05); border-radius:15px; padding:1rem; overflow:hidden;">';
+      html += '<div style="display:grid; grid-template-columns:60px 1fr 120px 100px; gap:0.5rem; padding:0.5rem; background:rgba(107,207,127,0.3); border-radius:8px; font-weight:bold; color:#fff; text-align:center;">';
+      html += '<div>ลำดับ</div><div>ชื่อเล่น</div><div>Codename</div><div>การจอง</div>';
+      html += '</div>';
       
       data.users.forEach((user, index) => {
         const rowStyle = index % 2 === 0 ? 'background:rgba(255,255,255,0.03);' : 'background:rgba(255,255,255,0.05);';
         
-        html += `<tr style="${rowStyle}">`;
-        html += `<td style="padding:12px; text-align:center; color:#ffd93d; font-weight:bold;">${index + 1}</td>`;
-        html += `<td style="padding:12px; text-align:center; color:#6bcf7f; font-weight:600;">${user.nickname || 'ไม่ระบุชื่อ'}</td>`;
+        html += `<div style="display:grid; grid-template-columns:60px 1fr 120px 100px; gap:0.5rem; padding:0.5rem; ${rowStyle} border-radius:8px; align-items:center;">`;
+        html += `<div style="text-align:center; color:#ffd93d; font-weight:bold; font-size:0.9rem;">${index + 1}</div>`;
+        html += `<div style="text-align:left; color:#6bcf7f; font-weight:600; font-size:0.9rem; word-break:break-word;">${user.nickname || 'ไม่ระบุชื่อ'}</div>`;
         
         // แสดง Codename พร้อม rank emoji
         const codename = user.codename || 'ไม่ระบุ';
         const rank = user.rank || '';
         const rankEmoji = getRankEmoji(rank);
-        html += `<td style="padding:12px; text-align:center; color:#ffd93d; font-weight:bold;">${rankEmoji} ${codename} ${rankEmoji}</td>`;
+        html += `<div style="text-align:center; color:#ffd93d; font-weight:bold; font-size:0.8rem;">${rankEmoji} ${codename} ${rankEmoji}</div>`;
         
-        // แสดงรายละเอียดการจองในบรรทัดเดียวกัน
+        // แสดงรายละเอียดการจอง
         let orderDetails = '';
         if (user.boxes > 0) {
-          orderDetails += `📦 Box: ${user.boxes}`;
+          orderDetails += `📦${user.boxes}`;
         }
         if (user.spots > 0) {
-          if (orderDetails) orderDetails += ' | ';
-          orderDetails += `🎯 Spot: ${user.spots}`;
+          if (orderDetails) orderDetails += ' ';
+          orderDetails += `🎯${user.spots}`;
         }
         if (user.boxes === 0 && user.spots === 0) {
-          orderDetails = '📝 ลงชื่อแล้ว';
+          orderDetails = '📝';
         }
-        html += `<td style="padding:12px; text-align:center; color:#e0e0e0; white-space:nowrap;">${orderDetails}</td>`;
+        html += `<div style="text-align:center; color:#e0e0e0; font-size:0.8rem;">${orderDetails}</div>`;
         
-        html += '</tr>';
+        html += '</div>';
       });
       
-      html += '</tbody></table>';
+      html += '</div>';
       container.innerHTML = html;
     }
 
