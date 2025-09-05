@@ -331,7 +331,8 @@
     .pokemon-card-img {
       width: 100%;
       max-width: 200px;
-      height: auto;
+      aspect-ratio: 7/9;
+      object-fit: cover;
       border-radius: 15px;
       box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
       transition: all 0.3s ease;
@@ -490,7 +491,8 @@
     .support-card-img, .item-card-img {
       width: 100%;
       max-width: 160px;
-      height: auto;
+      aspect-ratio: 7/9;
+      object-fit: cover;
       border-radius: 10px;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
       transition: all 0.3s ease;
@@ -808,6 +810,14 @@
         font-size: 2rem;
       }
       
+      .event-subtitle {
+        font-size: 1.1rem;
+      }
+      
+      .event-date {
+        font-size: 1.2rem;
+      }
+      
       .pricing-section {
         grid-template-columns: 1fr;
       }
@@ -828,12 +838,193 @@
         font-size: 20px;
       }
       
+      /* ปรับการ์ดโปเกมอนให้เป็น 2 คอลัมน์บนมือถือ */
+      .pokemon-cards {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.8rem;
+      }
+      
+      .card-item {
+        max-width: none;
+        padding: 0.8rem;
+      }
+      
+      .pokemon-card-img {
+        max-width: 120px;
+        aspect-ratio: 7/9;
+      }
+      
+      .card-name {
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+      }
+      
+      .card-stats {
+        padding: 0.3rem;
+        margin-bottom: 0.8rem;
+      }
+      
+      .hp, .type {
+        font-size: 0.9rem;
+      }
+      
+      .card-description {
+        font-size: 0.8rem;
+        margin-bottom: 0.8rem;
+      }
+      
+      .card-attacks {
+        padding: 0.6rem;
+      }
+      
+      .attack-name {
+        font-size: 0.8rem;
+      }
+      
+      .attack-damage {
+        font-size: 0.9rem;
+        padding: 0.1rem 0.3rem;
+      }
+      
+      /* ปรับการ์ดซัพพอร์ตและไอเท็มให้เป็น 2 คอลัมน์บนมือถือ */
+      .support-grid, .item-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.8rem;
+      }
+      
+      .support-item, .item-item {
+        max-width: none;
+        padding: 0.8rem;
+      }
+      
+      .support-card-img, .item-card-img {
+        max-width: 100px;
+        aspect-ratio: 7/9;
+      }
+      
+      .support-item h4, .item-item h4 {
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+      }
+      
+      .support-item p, .item-item p {
+        font-size: 0.8rem;
+        line-height: 1.4;
+      }
+      
+      /* ปรับส่วนข้อมูลสำคัญ */
+      .info-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+      
+      .info-card {
+        padding: 1rem;
+      }
+      
+      .info-card h4 {
+        font-size: 1.1rem;
+        margin-bottom: 0.8rem;
+      }
+      
+      .info-list li {
+        font-size: 0.9rem;
+        padding: 0.6rem;
+        margin-bottom: 0.6rem;
+      }
+      
+      /* ปรับส่วนสถิติ */
+      .stats-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.8rem;
+      }
+      
+      .stat-card {
+        padding: 0.8rem;
+      }
+      
+      .stat-number {
+        font-size: 1.5rem;
+      }
+      
+      .stat-label {
+        font-size: 0.8rem;
+      }
+      
+      /* ปรับตารางผู้ลงทะเบียน */
+      .users-list table {
+        font-size: 0.8rem;
+      }
+      
+      .users-list th,
+      .users-list td {
+        padding: 8px 4px;
+      }
+      
+      /* ปรับปุ่ม */
+      .cta-button {
+        padding: 1.2rem 2rem;
+        font-size: 1.1rem;
+      }
+      
+      .cta-button-top {
+        padding: 0.8rem 2rem;
+        font-size: 1rem;
+      }
+      
+      .refresh-button {
+        padding: 0.6rem 1.2rem;
+        font-size: 0.9rem;
+      }
+    }
+    
+    /* สำหรับหน้าจอเล็กมาก (iPhone SE, etc.) */
+    @media (max-width: 480px) {
+      .container {
+        padding: 0.8rem;
+        margin: 0.3rem;
+      }
+      
+      .event-title {
+        font-size: 1.8rem;
+      }
+      
+      .event-subtitle {
+        font-size: 1rem;
+      }
+      
+      .event-date {
+        font-size: 1.1rem;
+      }
+      
       .pokemon-cards {
         grid-template-columns: 1fr;
+        gap: 1rem;
       }
       
       .support-grid, .item-grid {
         grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+      
+      .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 0.8rem;
+      }
+      
+      .card-item, .support-item, .item-item {
+        max-width: 100%;
+        padding: 1rem;
+      }
+      
+      .pokemon-card-img {
+        max-width: 150px;
+        aspect-ratio: 7/9;
+      }
+      
+      .support-card-img, .item-card-img {
+        max-width: 120px;
+        aspect-ratio: 7/9;
       }
     }
   </style>
