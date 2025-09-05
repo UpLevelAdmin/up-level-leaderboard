@@ -297,12 +297,12 @@
     }
 
     .pokemon-cards {
-      display: grid !important;
-      grid-template-columns: repeat(2, 1fr) !important;
-      gap: 16px !important;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 32px;
       max-width: 100%;
       margin: 0 auto;
-      padding: 0 8px;
+      padding: 0 20px;
       justify-content: center;
     }
 
@@ -439,12 +439,12 @@
     }
 
     .support-grid, .item-grid {
-      display: grid !important;
-      grid-template-columns: repeat(2, 1fr) !important;
-      gap: 16px !important;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 32px;
       max-width: 100%;
       margin: 0 auto;
-      padding: 0 8px;
+      padding: 0 20px;
       justify-content: center;
     }
 
@@ -797,6 +797,61 @@
       margin: 1rem 0;
     }
 
+    /* Modal Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.8);
+      backdrop-filter: blur(4px);
+    }
+
+    .modal-content {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      padding: 0;
+      width: auto;
+      max-width: 90vw;
+      max-height: 90vh;
+      background: transparent;
+      border-radius: 0;
+      text-align: center;
+      animation: none;
+    }
+
+    .modal-close {
+      position: fixed;
+      top: 20px;
+      right: 30px;
+      font-size: 32px;
+      font-weight: bold;
+      color: #fff;
+      cursor: pointer;
+      transition: color 0.3s;
+      z-index: 1001;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    }
+
+    .modal-close:hover {
+      color: #ff6b6b;
+    }
+
+    .modal img {
+      width: auto;
+      max-width: 90vw;
+      max-height: 90vh;
+      height: auto;
+      border-radius: 12px;
+      margin: 0;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+
     /* Force 2-column layout for cards on mobile */
     @media (max-width: 768px) {
       .pokemon-cards,
@@ -804,8 +859,9 @@
       .item-grid {
         display: grid !important;
         grid-template-columns: repeat(2, 1fr) !important;
-        gap: 12px !important;
-        padding: 0 4px !important;
+        gap: 24px !important;
+        padding: 0 16px !important;
+        justify-content: center !important;
       }
       
       .pokemon-cards .card-item,
@@ -859,8 +915,8 @@
       .pokemon-cards {
         display: grid !important;
         grid-template-columns: repeat(2, 1fr) !important;
-        gap: 12px !important;
-        padding: 0 4px;
+        gap: 24px !important;
+        padding: 0 16px;
         justify-content: center;
       }
       
@@ -907,8 +963,8 @@
       .support-grid, .item-grid {
         display: grid !important;
         grid-template-columns: repeat(2, 1fr) !important;
-        gap: 12px !important;
-        padding: 0 4px;
+        gap: 24px !important;
+        padding: 0 16px;
         justify-content: center;
       }
       
@@ -1105,28 +1161,28 @@
       </div>
       
       <div class="pokemon-cards">
-        <div class="card-item">
+        <div class="card-item" onclick="openCardModal('https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/08/th_news_MA1_077.png')">
           <div class="card-image">
             <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/08/th_news_MA1_077.png" alt="เมก้าลูคาริโอex" class="pokemon-card-img">
           </div>
           <div class="card-name">เมก้าลูคาริโอex</div>
         </div>
         
-        <div class="card-item">
+        <div class="card-item" onclick="openCardModal('https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/08/th_news_MA1_060.png')">
           <div class="card-image">
             <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/08/th_news_MA1_060.png" alt="เมก้าเซอไนท์ex" class="pokemon-card-img">
           </div>
           <div class="card-name">เมก้าเซอไนท์ex</div>
         </div>
         
-        <div class="card-item">
+        <div class="card-item" onclick="openCardModal('https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/08/th_news_MA1_003.png')">
           <div class="card-image">
             <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/08/th_news_MA1_003.png" alt="เมก้าฟุชิกิบานะex" class="pokemon-card-img">
           </div>
           <div class="card-name">เมก้าฟุชิกิบานะex</div>
         </div>
         
-        <div class="card-item">
+        <div class="card-item" onclick="openCardModal('https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/08/th_news_MA1_100.png')">
           <div class="card-image">
             <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/08/th_news_MA1_100.png" alt="เมก้าลาทิอาสex" class="pokemon-card-img">
           </div>
@@ -1137,14 +1193,14 @@
       <div class="support-cards">
         <h3 class="support-title">🃏 การ์ดซัพพอร์ต</h3>
         <div class="support-grid">
-          <div class="support-item">
+          <div class="support-item" onclick="openCardModal('https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/08/th_news_MA1_122.png')">
             <div class="support-image">
               <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/08/th_news_MA1_122.png" alt="ปณิธานของลิเลีย" class="support-card-img">
             </div>
             <h4>ปณิธานของลิเลีย</h4>
             <p>สามารถนำการ์ดบนมือของฝ่ายตัวเองใส่กลับไปในสำรับการ์ดและจั่วการ์ดได้สูงสุดถึง 8 ใบ เป็นการ์ดซัพพอร์ตที่ช่วยสนับสนุนการเล่นในช่วงต้นเกม</p>
           </div>
-          <div class="support-item">
+          <div class="support-item" onclick="openCardModal('https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/08/th_news_MA1_121.png')">
             <div class="support-image">
               <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/08/th_news_MA1_121.png" alt="ความอาทรของมิตสึรุ" class="support-card-img">
             </div>
@@ -1282,6 +1338,14 @@
           📸 uplevel.acad
         </a>
       </div>
+    </div>
+  </div>
+
+  <!-- Modal for card details -->
+  <div id="cardModal" class="modal">
+    <div class="modal-content">
+      <span class="modal-close">&times;</span>
+      <img id="modalCardImage" src="" alt="Card Image">
     </div>
   </div>
 
@@ -1482,6 +1546,46 @@
     setInterval(function() {
       loadRegisteredUsers();
     }, 30000);
+
+    // Modal functions
+    function openCardModal(imageUrl) {
+      const modal = document.getElementById('cardModal');
+      const modalImage = document.getElementById('modalCardImage');
+
+      modalImage.src = imageUrl;
+      modal.style.display = 'block';
+    }
+
+    function closeCardModal() {
+      const modal = document.getElementById('cardModal');
+      modal.style.display = 'none';
+    }
+
+    // Modal event listeners
+    document.addEventListener('DOMContentLoaded', function() {
+      // Modal close events
+      const modal = document.getElementById('cardModal');
+      const closeBtn = document.querySelector('.modal-close');
+      
+      if (closeBtn) {
+        closeBtn.addEventListener('click', closeCardModal);
+      }
+      
+      if (modal) {
+        modal.addEventListener('click', function(event) {
+          if (event.target === modal) {
+            closeCardModal();
+          }
+        });
+      }
+
+      // Close modal with Escape key
+      document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+          closeCardModal();
+        }
+      });
+    });
   </script>
 </body>
 </html>
