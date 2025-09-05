@@ -379,7 +379,7 @@
 
     .modal img {
       width: 100%;
-      max-width: 300px;
+      max-width: 450px;
       height: auto;
       border-radius: 12px;
       margin-bottom: 16px;
@@ -417,11 +417,15 @@
         width: 95%;
         padding: 16px;
       }
+      
+      .modal img {
+        max-width: 350px;
+      }
     }
 
     @media (max-width: 480px) {
       .promo-cards-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, 1fr);
         gap: 12px;
       }
       
@@ -431,6 +435,10 @@
       
       .promo-cards-subtitle {
         font-size: 1em;
+      }
+      
+      .modal img {
+        max-width: 300px;
       }
     }
   </style>
@@ -753,7 +761,6 @@
         html += `
           <div class="promo-card" onclick="openCardModal('${imageUrl}', '${card.title}', '${card.description}')">
             <img src="${imageUrl}" alt="${card.title}" loading="lazy">
-            <div class="promo-card-title">${card.title}</div>
             <div class="promo-card-number">#${card.number}</div>
           </div>
         `;
