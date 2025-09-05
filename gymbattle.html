@@ -282,19 +282,21 @@
     .promo-cards-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 20px;
-      max-width: 600px;
+      gap: 16px;
+      max-width: 100%;
       margin: 0 auto;
+      padding: 0 16px;
     }
 
     .promo-card {
       background: #fff;
       border-radius: 12px;
-      padding: 16px;
+      padding: 12px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
       transition: all 0.3s ease;
       cursor: pointer;
       text-align: center;
+      width: 100%;
     }
 
     .promo-card:hover {
@@ -304,17 +306,19 @@
 
     .promo-card img {
       width: 100%;
-      max-width: 150px;
       height: auto;
       border-radius: 8px;
-      margin-bottom: 12px;
+      margin-bottom: 8px;
+      aspect-ratio: 1;
+      object-fit: cover;
     }
 
     .promo-card-title {
-      font-size: 1.1em;
+      font-size: 0.9em;
       font-weight: bold;
       color: #2c3e50;
-      margin-bottom: 8px;
+      margin-bottom: 4px;
+      line-height: 1.2;
     }
 
     .promo-card-number {
@@ -408,15 +412,20 @@
     @media (max-width: 768px) {
       .promo-cards-grid {
         grid-template-columns: repeat(2, 1fr);
-        gap: 16px;
+        gap: 12px;
+        padding: 0 12px;
       }
       
       .promo-card {
-        padding: 12px;
+        padding: 8px;
       }
       
       .promo-card img {
-        max-width: 120px;
+        margin-bottom: 6px;
+      }
+      
+      .promo-card-title {
+        font-size: 0.8em;
       }
       
       .modal-content {
@@ -433,7 +442,16 @@
     @media (max-width: 480px) {
       .promo-cards-grid {
         grid-template-columns: repeat(2, 1fr);
-        gap: 12px;
+        gap: 10px;
+        padding: 0 8px;
+      }
+      
+      .promo-card {
+        padding: 6px;
+      }
+      
+      .promo-card-title {
+        font-size: 0.75em;
       }
       
       .promo-cards-title {
