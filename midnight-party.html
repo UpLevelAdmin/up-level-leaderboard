@@ -108,7 +108,7 @@
     .product-showcase {
       background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
       border-radius: 20px;
-      padding: 2rem;
+      padding: 6px;
       margin: 2rem 0;
       border: 1px solid rgba(255, 255, 255, 0.2);
     }
@@ -299,17 +299,17 @@
     .pokemon-cards {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 32px;
+      gap: 60px;
       max-width: 100%;
-      margin: 0 auto;
-      padding: 0 20px;
+      margin: 0;
+      padding: 0 40px;
       justify-content: center;
     }
 
     .card-item {
       background: #fff;
       border-radius: 12px;
-      padding: 12px;
+      padding: 6px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
       transition: all 0.3s ease;
       cursor: pointer;
@@ -333,7 +333,7 @@
       height: auto;
       border-radius: 8px;
       margin-bottom: 8px;
-      aspect-ratio: 7/9;
+      aspect-ratio: 6/9;
       object-fit: contain;
       display: block;
       background: #fff;
@@ -441,17 +441,17 @@
     .support-grid, .item-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 32px;
+      gap: 60px;
       max-width: 100%;
-      margin: 0 auto;
-      padding: 0 20px;
+      margin: 0;
+      padding: 0 40px;
       justify-content: center;
     }
 
     .support-item, .item-item {
       background: #fff;
       border-radius: 12px;
-      padding: 12px;
+      padding: 6px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
       transition: all 0.3s ease;
       cursor: pointer;
@@ -495,7 +495,7 @@
       height: auto;
       border-radius: 8px;
       margin-bottom: 8px;
-      aspect-ratio: 7/9;
+      aspect-ratio: 6/9;
       object-fit: contain;
       display: block;
       background: #fff;
@@ -857,18 +857,18 @@
       .pokemon-cards,
       .support-grid,
       .item-grid {
-        display: grid !important;
-        grid-template-columns: repeat(2, 1fr) !important;
-        gap: 8px !important;
-        padding: 0 16px !important;
-        justify-content: center !important;
+        display: grid ;
+        grid-template-columns: repeat(2, 1fr) ;
+        gap: 12px ;
+        padding: 0 6px ;
+        justify-content: center ;
       }
       
       .pokemon-cards .card-item,
       .support-grid .support-item,
       .item-grid .item-item {
-        width: 100% !important;
-        max-width: none !important;
+        width: 80% ;
+        max-width: none ;
       }
     }
 
@@ -913,23 +913,28 @@
       
       /* ปรับการ์ดโปเกมอนให้เป็น 2 คอลัมน์บนมือถือ */
       .pokemon-cards {
-        display: grid !important;
-        grid-template-columns: repeat(2, 1fr) !important;
-        gap: 8px !important;
-        padding: 0 16px;
+        display: grid ;
+        grid-template-columns: repeat(2, 1fr) ;
+        gap: 20px ;
+        padding: 0 6px;
         justify-content: center;
       }
       
       .card-item {
-        padding: 8px;
+        padding: 6px;
+      }
+      
+      .card-image {
+        margin-bottom: 0.2rem;
       }
       
       .pokemon-card-img {
-        margin-bottom: 6px;
+        margin-bottom: 2px;
       }
       
       .card-name {
         font-size: 0.7em;
+        margin-bottom: 2px;
       }
       
       .card-stats {
@@ -961,19 +966,27 @@
       
       /* ปรับการ์ดซัพพอร์ตและไอเท็มให้เป็น 2 คอลัมน์บนมือถือ */
       .support-grid, .item-grid {
-        display: grid !important;
-        grid-template-columns: repeat(2, 1fr) !important;
-        gap: 8px !important;
-        padding: 0 16px;
+        display: grid ;
+        grid-template-columns: repeat(2, 1fr) ;
+        gap: 20px ;
+        padding: 0 6px;
         justify-content: center;
       }
       
       .support-item, .item-item {
-        padding: 8px;
+        padding: 6px;
       }
       
       .support-card-img, .item-card-img {
-        margin-bottom: 6px;
+        margin-bottom: 2px;
+      }
+      
+      .support-item h4, .item-item h4 {
+        margin-bottom: 2px;
+      }
+      
+      .support-item p, .item-item p {
+        margin-bottom: 0;
       }
       
       .support-item h4, .item-item h4 {
@@ -1097,17 +1110,17 @@
       }
       
       .pokemon-cards {
-        display: grid !important;
-        grid-template-columns: repeat(2, 1fr) !important;
-        gap: 4px !important;
-        padding: 0 2px;
+        display: grid ;
+        grid-template-columns: repeat(2, 1fr) ;
+        gap: 12px ;
+        padding: 0 6px;
       }
       
       .support-grid, .item-grid {
-        display: grid !important;
-        grid-template-columns: repeat(2, 1fr) !important;
-        gap: 4px !important;
-        padding: 0 2px;
+        display: grid ;
+        grid-template-columns: repeat(2, 1fr) ;
+        gap: 12px ;
+        padding: 0 6px;
       }
       
       .stats-grid {
@@ -1117,19 +1130,19 @@
       
       .card-item, .support-item, .item-item {
         max-width: 100%;
-        padding: 1rem;
+        padding: 6px;
       }
       
       .pokemon-card-img {
         max-width: 150px;
-        aspect-ratio: 7/9;
+        aspect-ratio: 6/9;
         object-fit: contain;
         background: #fff;
       }
       
       .support-card-img, .item-card-img {
         max-width: 120px;
-        aspect-ratio: 7/9;
+        aspect-ratio: 6/9;
         object-fit: contain;
         background: #fff;
       }
