@@ -47,7 +47,23 @@ function doGet(e) {
         date === "วันเสาร์ที่ 6 กันยายน 2568" || 
         date === "วันอังคารที่ 9 กันยายน 2568") {
       groupedData[date + " *ไม่ได้รับ PROMO GYM*"] = [];
+      // เพิ่มรูปแบบที่ไม่มีช่องว่างระหว่าง "กันยายน" กับ "2568"
+      var dateNoSpace = date.replace("กันยายน 2568", "กันยายน2568");
+      groupedData[dateNoSpace + " *ไม่ได้รับ PROMO GYM*"] = [];
     }
+  });
+  
+  // เพิ่มรูปแบบวันที่ที่อาจแตกต่างกัน (เช่น 2568 vs 2025)
+  var alternativeDates = [
+    "วันอังคารที่ 2 กันยายน 2025",
+    "วันศุกร์ที่ 5 กันยายน 2025", 
+    "วันเสาร์ที่ 6 กันยายน 2025",
+    "วันอังคารที่ 9 กันยายน 2025"
+  ];
+  
+  alternativeDates.forEach(date => {
+    groupedData[date] = [];
+    groupedData[date + " *ไม่ได้รับ PROMO GYM*"] = [];
   });
 
   for (var i = 1; i < data.length; i++) {
@@ -69,6 +85,17 @@ function doGet(e) {
         var dateWithPromo = cleanDate + " *ไม่ได้รับ PROMO GYM*";
         if (groupedData[dateWithPromo]) {
           groupedData[dateWithPromo].push({ nickname: nickname, level: level, phone: phone });
+        } else {
+          // ลองแปลงปี 2568 เป็น 2025 หรือกลับกัน
+          var convertedDate = cleanDate.replace('2568', '2025');
+          if (groupedData[convertedDate]) {
+            groupedData[convertedDate].push({ nickname: nickname, level: level, phone: phone });
+          } else {
+            var convertedDateWithPromo = convertedDate + " *ไม่ได้รับ PROMO GYM*";
+            if (groupedData[convertedDateWithPromo]) {
+              groupedData[convertedDateWithPromo].push({ nickname: nickname, level: level, phone: phone });
+            }
+          }
         }
       }
     }
@@ -81,10 +108,32 @@ function doGet(e) {
   console.log("Debug - วันที่ 5 กันยายน:", groupedData["วันศุกร์ที่ 5 กันยายน 2568"]);
   console.log("Debug - วันที่ 5 กันยายน with PROMO:", groupedData["วันศุกร์ที่ 5 กันยายน 2568 *ไม่ได้รับ PROMO GYM*"]);
   
+  // Debug: เปรียบเทียบวันที่ 2 และ 5
+  console.log("=== เปรียบเทียบวันที่ 2 และ 5 ===");
+  console.log("วันที่ 2 ปกติ:", groupedData["วันอังคารที่ 2 กันยายน 2568"].length);
+  console.log("วันที่ 2 with PROMO:", groupedData["วันอังคารที่ 2 กันยายน 2568 *ไม่ได้รับ PROMO GYM*"].length);
+  console.log("วันที่ 5 ปกติ:", groupedData["วันศุกร์ที่ 5 กันยายน 2568"].length);
+  console.log("วันที่ 5 with PROMO:", groupedData["วันศุกร์ที่ 5 กันยายน 2568 *ไม่ได้รับ PROMO GYM*"].length);
+  
   // Debug: แสดงข้อมูลดิบจาก Google Sheets
   console.log("Debug - Raw data from sheet:");
-  for (var i = 1; i < Math.min(data.length, 10); i++) {
+  for (var i = 1; i < Math.min(data.length, 20); i++) {
     console.log(`Row ${i}: Date="${data[i][1]}", Nickname="${data[i][3]}"`);
+  }
+  
+  // Debug: ตรวจสอบรูปแบบวันที่ที่แตกต่างกัน
+  console.log("Debug - ตรวจสอบรูปแบบวันที่ที่แตกต่างกัน:");
+  for (var i = 1; i < data.length; i++) {
+    var date = data[i][1];
+    if (date && (date.includes("2 กันยายน") || date.includes("5 กันยายน"))) {
+      console.log(`Row ${i}: "${date}" - Length: ${date.length}`);
+      // ตรวจสอบว่ามีช่องว่างหรืออักขระพิเศษหรือไม่
+      for (var j = 0; j < date.length; j++) {
+        if (date.charCodeAt(j) > 127) {
+          console.log(`  Char ${j}: "${date[j]}" (${date.charCodeAt(j)})`);
+        }
+      }
+    }
   }
   
   // Debug: ตรวจสอบข้อมูลวันที่ 5 กันยายนโดยเฉพาะ
@@ -93,6 +142,22 @@ function doGet(e) {
     var date = data[i][1];
     if (date && date.includes("5 กันยายน")) {
       console.log(`Found date 5: "${date}", Nickname: "${data[i][3]}"`);
+      
+      // ตรวจสอบรูปแบบวันที่ที่แตกต่างกัน
+      if (date.includes("2568")) {
+        console.log(`Date format with 2568: "${date}"`);
+      }
+      if (date.includes("2025")) {
+        console.log(`Date format with 2025: "${date}"`);
+      }
+      
+      // ตรวจสอบว่าข้อมูลนี้ถูกใส่ใน groupedData ตรงไหน
+      console.log(`Checking groupedData for: "${date}"`);
+      if (groupedData[date]) {
+        console.log(`Found in groupedData["${date}"]: ${groupedData[date].length} items`);
+      } else {
+        console.log(`NOT found in groupedData["${date}"]`);
+      }
     }
   }
   
@@ -108,7 +173,18 @@ function doGet(e) {
     dates.forEach(function(date) {
       var players = groupedData[date] || [];
       var playersWithPromo = groupedData[date + " *ไม่ได้รับ PROMO GYM*"] || [];
-      finalGroupedData[date] = players.concat(playersWithPromo);
+      
+      // เพิ่มข้อมูลจากรูปแบบที่ไม่มีช่องว่างระหว่าง "กันยายน" กับ "2568"
+      var dateNoSpace = date.replace("กันยายน 2568", "กันยายน2568");
+      var playersNoSpace = groupedData[dateNoSpace] || [];
+      var playersNoSpaceWithPromo = groupedData[dateNoSpace + " *ไม่ได้รับ PROMO GYM*"] || [];
+      
+      // เพิ่มข้อมูลจากรูปแบบวันที่ที่แตกต่างกัน (2568 vs 2025)
+      var alternativeDate = date.replace('2568', '2025');
+      var altPlayers = groupedData[alternativeDate] || [];
+      var altPlayersWithPromo = groupedData[alternativeDate + " *ไม่ได้รับ PROMO GYM*"] || [];
+      
+      finalGroupedData[date] = players.concat(playersWithPromo, playersNoSpace, playersNoSpaceWithPromo, altPlayers, altPlayersWithPromo);
       
       // Debug: แสดงข้อมูลที่รวมแล้ว
       console.log(`Final data for ${date}: ${finalGroupedData[date].length} players`);
@@ -225,7 +301,7 @@ function doGet(e) {
 
 // แก้ไขข้อมูลเหล่านี้
 const BOT_TOKEN = "8284717743:AAGfu8Z-r6SI_TeAslai9vA600nNagjzH5k";
-const CHAT_ID = "7384721744"; // Chat ID ของคุณ
+const CHAT_ID = "-4911555842"; // Group Chat ID
 
 const TELEGRAM_API_URL = `https://api.telegram.org/bot${BOT_TOKEN}`;
 
@@ -267,7 +343,7 @@ function onFormSubmit(e) {
 📊 *รวมวันที่ ${selectedDate}: ${countForDate} คน*
 
 ---
-📊 [ตรวจสอบรายชื่อทั้งหมด](https://script.google.com/macros/s/AKfycbzS4XdB83QGZ8K5ZZvmSuzrTAKIOHe_svyQiKuoz3qKqpR0omm81ccBsGHkfzmYkUV3/exec)`;
+📊 [ตรวจสอบรายชื่อทั้งหมด](https://uplevelguild.netlify.app/gymbattle)`;
     
     // ส่งไปยัง Telegram
     const payload = {
@@ -385,7 +461,7 @@ function sendDailySummary() {
       message += `📝 ยังไม่มีผู้สมัครวันนี้`;
     }
     
-    message += `\n---\n📊 [ตรวจสอบรายชื่อทั้งหมด](https://script.google.com/macros/s/AKfycbzS4XdB83QGZ8K5ZZvmSuzrTAKIOHe_svyQiKuoz3qKqpR0omm81ccBsGHkfzmYkUV3/exec)`;
+    message += `\n---\n📊 [ตรวจสอบรายชื่อทั้งหมด](https://uplevelguild.netlify.app/gymbattle)`;
     
     const payload = {
       chat_id: CHAT_ID,

@@ -1,3 +1,86 @@
+// ===== ฟังก์ชันแจ้งเตือน Telegram =====
+
+// แก้ไขข้อมูลเหล่านี้
+const BOT_TOKEN = "8284717743:AAGfu8Z-r6SI_TeAslai9vA600nNagjzH5k";
+const CHAT_ID = "-4911555842"; // Group Chat ID
+
+const TELEGRAM_API_URL = `https://api.telegram.org/bot${BOT_TOKEN}`;
+
+/**
+ * ฟังก์ชันที่ทำงานเมื่อมีการส่งฟอร์ม
+ */
+function onFormSubmit(e) {
+  try {
+    // ดึงข้อมูลจากฟอร์ม
+    const responses = e.values;
+    const timestamp = responses[0];
+    const nickname = responses[1] || responses[2] || responses[3]; // ลองหลาย column
+    const phone = responses[4] || responses[5] || responses[6]; // ลองหลาย column
+    
+    // นับจำนวนคนที่สมัคร
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Form Responses 1");
+    let totalCount = 0;
+    
+    if (sheet) {
+      const data = sheet.getDataRange().getValues();
+      totalCount = data.length - 1; // ลบ header row
+    }
+    
+    // สร้างข้อความแจ้งเตือน
+    const message = `🏆 *มีคนสมัคร GBL ใหม่!*
+
+👤 *ชื่อเล่น:* ${nickname}
+📱 *เบอร์โทร:* ${phone}
+⏰ *เวลาที่สมัคร:* ${timestamp}
+
+📊 *รวมผู้สมัคร GBL: ${totalCount} คน*
+
+---
+📊 [ตรวจสอบรายชื่อทั้งหมด](https://uplevelguild.netlify.app/gbl)`;
+    
+    // ส่งไปยัง Telegram
+    const payload = {
+      chat_id: CHAT_ID,
+      text: message,
+      parse_mode: "Markdown",
+      disable_web_page_preview: true
+    };
+    
+    UrlFetchApp.fetch(`${TELEGRAM_API_URL}/sendMessage`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      payload: JSON.stringify(payload)
+    });
+    
+    console.log("✅ ส่งการแจ้งเตือน GBL ไปยัง Telegram สำเร็จ");
+    
+  } catch (error) {
+    console.error("❌ เกิดข้อผิดพลาด:", error);
+  }
+}
+
+/**
+ * ฟังก์ชันทดสอบการส่งไปยัง Telegram
+ */
+function testTelegramNotification() {
+  const testData = {
+    values: [
+      new Date().toLocaleString('th-TH'),
+      "ผู้ทดสอบ GBL",
+      "",
+      "",
+      "0812345678",
+      "",
+      ""
+    ]
+  };
+  
+  onFormSubmit(testData);
+  console.log("🧪 ส่งการทดสอบ GBL ไปยัง Telegram แล้ว");
+}
+
 function doGet() {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Form Responses 1');
   var data = sheet.getDataRange().getValues();

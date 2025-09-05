@@ -297,8 +297,8 @@
     }
 
     .pokemon-cards {
-      display: flex;
-      flex-direction: column;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
       gap: 1rem;
       margin: 1.5rem 0;
       align-items: center;
@@ -439,8 +439,8 @@
     }
 
     .support-grid, .item-grid {
-      display: flex;
-      flex-direction: column;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
       gap: 1rem;
       align-items: center;
     }
@@ -827,6 +827,14 @@
       .home-button::before {
         font-size: 20px;
       }
+      
+      .pokemon-cards {
+        grid-template-columns: 1fr;
+      }
+      
+      .support-grid, .item-grid {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
@@ -1180,19 +1188,19 @@
         const rankEmoji = getRankEmoji(rank);
         html += `<td style="padding:12px; text-align:center; color:#ffd93d; font-weight:bold;">${rankEmoji} ${codename} ${rankEmoji}</td>`;
         
-        // แสดงรายละเอียดการจอง
+        // แสดงรายละเอียดการจองในบรรทัดเดียวกัน
         let orderDetails = '';
         if (user.boxes > 0) {
           orderDetails += `📦 Box: ${user.boxes}`;
         }
         if (user.spots > 0) {
-          if (orderDetails) orderDetails += '<br>';
+          if (orderDetails) orderDetails += ' | ';
           orderDetails += `🎯 Spot: ${user.spots}`;
         }
         if (user.boxes === 0 && user.spots === 0) {
           orderDetails = '📝 ลงชื่อแล้ว';
         }
-        html += `<td style="padding:12px; text-align:center; color:#e0e0e0;">${orderDetails}</td>`;
+        html += `<td style="padding:12px; text-align:center; color:#e0e0e0; white-space:nowrap;">${orderDetails}</td>`;
         
         html += '</tr>';
       });
