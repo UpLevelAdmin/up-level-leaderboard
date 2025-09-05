@@ -840,8 +840,9 @@
       
       /* ปรับการ์ดโปเกมอนให้เป็น 2 คอลัมน์บนมือถือ */
       .pokemon-cards {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 0.8rem;
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 0.8rem !important;
       }
       
       .card-item {
@@ -888,8 +889,9 @@
       
       /* ปรับการ์ดซัพพอร์ตและไอเท็มให้เป็น 2 คอลัมน์บนมือถือ */
       .support-grid, .item-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 0.8rem;
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 0.8rem !important;
       }
       
       .support-item, .item-item {
@@ -998,13 +1000,15 @@
       }
       
       .pokemon-cards {
-        grid-template-columns: 1fr;
-        gap: 1rem;
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 1rem !important;
       }
       
       .support-grid, .item-grid {
-        grid-template-columns: 1fr;
-        gap: 1rem;
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 1rem !important;
       }
       
       .stats-grid {
