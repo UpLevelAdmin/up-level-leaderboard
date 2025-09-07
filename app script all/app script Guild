@@ -3265,34 +3265,46 @@ function checkMissingMembers() {
   const missingMembers = [];
   
   for (let i = 1; i < formData.length; i++) {
-    const formRow = formData[i];
-    const formPhone = normalizePhone(formRow[3]); // เบอร์โทรในคอลัมน์ที่ 4
-    const formNickname = String(formRow[2]).toLowerCase().trim(); // ชื่อเล่นในคอลัมน์ที่ 3
-    const formCodename = String(formRow[4]).toLowerCase().trim(); // Codename ในคอลัมน์ที่ 5
-    
-    // ข้ามถ้าเบอร์ว่างหรือไม่ถูกต้อง
-    if (!formPhone || formPhone.length !== 10) continue;
-    
-    // ตรวจสอบว่าข้อมูลใดมีใน Member Dashboard หรือไม่
-    const hasPhone = dashPhones.includes(formPhone);
-    const hasCodename = dashCodenames.includes(formCodename);
-    
-    // ถ้าไม่มีเบอร์โทรและไม่มี Codename = ตกหล่น (ชื่อเล่นซ้ำได้)
-    if (!hasPhone && !hasCodename) {
-      missingMembers.push({
-        row: i + 1,
-        fullName: formRow[1],
-        nickname: formRow[2],
-        phone: formPhone,
-        codename: formRow[4],
-        memberType: formRow[5],
-        referrer: normalizePhone(formRow[6] || ""),
-        timestamp: formRow[0],
-        matchStatus: {
-          phone: hasPhone,
-          codename: hasCodename
-        }
-      });
+    try {
+      const formRow = formData[i];
+      
+      // ตรวจสอบว่าข้อมูลในแถวมีครบถ้วนหรือไม่
+      if (!formRow || formRow.length < 7) {
+        console.warn(`แถว ${i + 1}: ข้อมูลไม่ครบถ้วน`);
+        continue;
+      }
+      
+      const formPhone = normalizePhone(formRow[3]); // เบอร์โทรในคอลัมน์ที่ 4
+      const formNickname = String(formRow[2] || "").toLowerCase().trim(); // ชื่อเล่นในคอลัมน์ที่ 3
+      const formCodename = String(formRow[4] || "").toLowerCase().trim(); // Codename ในคอลัมน์ที่ 5
+      
+      // ข้ามถ้าเบอร์ว่างหรือไม่ถูกต้อง
+      if (!formPhone || formPhone.length !== 10) continue;
+      
+      // ตรวจสอบว่าข้อมูลใดมีใน Member Dashboard หรือไม่
+      const hasPhone = dashPhones.includes(formPhone);
+      const hasCodename = dashCodenames.includes(formCodename);
+      
+      // ถ้าไม่มีเบอร์โทรและไม่มี Codename = ตกหล่น (ชื่อเล่นซ้ำได้)
+      if (!hasPhone && !hasCodename) {
+        missingMembers.push({
+          row: i + 1,
+          fullName: formRow[1] || "",
+          nickname: formRow[2] || "",
+          phone: formPhone,
+          codename: formRow[4] || "",
+          memberType: formRow[5] || "",
+          referrer: normalizePhone(formRow[6] || ""),
+          timestamp: formRow[0] || "",
+          matchStatus: {
+            phone: hasPhone,
+            codename: hasCodename
+          }
+        });
+      }
+    } catch (error) {
+      console.error(`เกิดข้อผิดพลาดในการประมวลผลแถว ${i + 1}:`, error);
+      continue;
     }
   }
   
@@ -3315,7 +3327,12 @@ function checkMissingMembers() {
   const response = ui.alert("สมาชิกที่ตกหล่น", message, ui.ButtonSet.YES_NO);
   
   if (response === ui.Button.YES) {
-    addMissingMembers(missingMembers);
+    // ตรวจสอบให้แน่ใจว่า missingMembers มีข้อมูลก่อนเรียกใช้
+    if (missingMembers && missingMembers.length > 0) {
+      addMissingMembers(missingMembers);
+    } else {
+      ui.alert("❌ ข้อผิดพลาด", "ไม่พบข้อมูลสมาชิกที่ตกหล่น", ui.ButtonSet.OK);
+    }
   }
 }
 
@@ -3325,6 +3342,16 @@ function addMissingMembers(missingMembers) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const dashSheet = ss.getSheetByName("Member Dashboard");
   const dbSheet = ss.getSheetByName("member");
+  
+  // ตรวจสอบว่าพารามิเตอร์ missingMembers ถูกต้องหรือไม่
+  if (!missingMembers || !Array.isArray(missingMembers)) {
+    return ui.alert("❌ ข้อผิดพลาด", "ไม่พบข้อมูลสมาชิกที่ตกหล่น หรือข้อมูลไม่ถูกต้อง", ui.ButtonSet.OK);
+  }
+  
+  // ตรวจสอบว่ามีสมาชิกที่ต้องเพิ่มหรือไม่
+  if (missingMembers.length === 0) {
+    return ui.alert("ℹ️ ข้อมูล", "ไม่มีสมาชิกที่ต้องเพิ่ม", ui.ButtonSet.OK);
+  }
   
   let successCount = 0;
   let errorCount = 0;
@@ -5245,6 +5272,100 @@ function checkAndFixFormDataSync() {
   } else {
     ui.alert("ตรวจสอบการซิงค์ข้อมูล", report, ui.ButtonSet.OK);
   }
+}
+
+// ➕ เพิ่มข้อมูลที่ตกหล่นจาก Google Form เข้า Member Dashboard
+function addMissingFormEntries(missingEntries) {
+  const ui = SpreadsheetApp.getUi();
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const dashSheet = ss.getSheetByName("Member Dashboard");
+  const dbSheet = ss.getSheetByName("member");
+  
+  // ตรวจสอบว่าพารามิเตอร์ missingEntries ถูกต้องหรือไม่
+  if (!missingEntries || !Array.isArray(missingEntries)) {
+    return ui.alert("❌ ข้อผิดพลาด", "ไม่พบข้อมูลที่ตกหล่น หรือข้อมูลไม่ถูกต้อง", ui.ButtonSet.OK);
+  }
+  
+  // ตรวจสอบว่ามีข้อมูลที่ต้องเพิ่มหรือไม่
+  if (missingEntries.length === 0) {
+    return ui.alert("ℹ️ ข้อมูล", "ไม่มีข้อมูลที่ต้องเพิ่ม", ui.ButtonSet.OK);
+  }
+  
+  let successCount = 0;
+  let errorCount = 0;
+  let errorMessages = [];
+  
+  missingEntries.forEach(entry => {
+    try {
+      const member = entry.data;
+      
+      // ตรวจสอบข้อมูลซ้ำอีกครั้ง
+      const dashData = dashSheet.getDataRange().getValues();
+      const dashPhones = dashData.slice(1).map(row => normalizePhone(row[1]));
+      const dashCodenames = dashData.slice(1).map(row => String(row[2]).toLowerCase().trim());
+      
+      if (dashPhones.includes(member.phone)) {
+        errorMessages.push(`${member.nickname}: เบอร์ซ้ำ`);
+        errorCount++;
+        return;
+      }
+      
+      if (dashCodenames.includes(member.codename.toLowerCase())) {
+        errorMessages.push(`${member.nickname}: Codename ซ้ำ`);
+        errorCount++;
+        return;
+      }
+      
+      // คำนวณ EXP เริ่มต้น
+      let initialExp = 0;
+      if (member.memberType && member.memberType.includes("Premium")) {
+        initialExp = 3;
+        if (member.referrer && dashPhones.includes(member.referrer)) {
+          initialExp += 1;
+          addExpToPhone(member.referrer, 2);
+          logExp(member.referrer, "แนะนำเพื่อนสมัคร Premium (+2 EXP)", 2);
+        }
+      }
+      
+      // เพิ่มเข้า Member Dashboard
+      const newRow = [member.nickname, member.phone, member.codename, "Rookie", initialExp, ""];
+      const newRowIndex = dashSheet.getLastRow() + 1;
+      dashSheet.getRange(newRowIndex, 1, 1, newRow.length).setValues([newRow]);
+      dashSheet.getRange(newRowIndex, 2).setNumberFormat("@");
+      
+      // บันทึก EXP Log
+      if (initialExp > 0) {
+        logExp(member.phone, "สมัครสมาชิก", initialExp);
+      }
+      
+      successCount++;
+      
+    } catch (error) {
+      console.error(`เกิดข้อผิดพลาดในการเพิ่ม ${entry.data.nickname}:`, error);
+      errorMessages.push(`${entry.data.nickname}: ${error.message}`);
+      errorCount++;
+    }
+  });
+  
+  // อัปเดต Rank และ Leaderboard
+  if (successCount > 0) {
+    updateRanks();
+    updateLeaderboard();
+  }
+  
+  // แสดงผลลัพธ์
+  let resultMessage = `📊 ผลการเพิ่มข้อมูล:\n\n`;
+  resultMessage += `✅ สำเร็จ: ${successCount} รายการ\n`;
+  resultMessage += `❌ ผิดพลาด: ${errorCount} รายการ\n\n`;
+  
+  if (errorMessages.length > 0) {
+    resultMessage += `รายละเอียดข้อผิดพลาด:\n`;
+    errorMessages.forEach(msg => {
+      resultMessage += `• ${msg}\n`;
+    });
+  }
+  
+  ui.alert("ผลการเพิ่มข้อมูล", resultMessage, ui.ButtonSet.OK);
 }
 
 // 🔧 ฟังก์ชันแก้ไขแรงค์ที่ผิด

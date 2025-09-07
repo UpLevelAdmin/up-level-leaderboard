@@ -331,7 +331,8 @@
     }
     
     .pairing-card {
-      display: flex;
+      display: grid;
+      grid-template-columns: auto 1fr auto 1fr auto;
       align-items: center;
       min-height: 56px;
       gap: 2px;
@@ -470,9 +471,17 @@
     
     .status-badge {
       flex-shrink: 0;
-      min-width: 50px;
+      min-width: 6px;
       text-align: center;
       height: 32px;
+      width: 6px;
+      padding: 0px;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      justify-self: center;
+      align-self: center;
     }
     
     .status-completed {
@@ -806,7 +815,7 @@
       color: #fff;
       font-weight: 700;
       font-size: 0.85em;
-      padding: 0.5em 0.2em;
+      padding: 0.3em 0.1em;
       text-align: center;
       white-space: nowrap;
       border-bottom: 2px solid #6366f1;
@@ -819,29 +828,29 @@
     
     .standings-table th:first-child {
       border-radius: 6px 0 0 6px;
-      width: 10%;
+      width: 8%;
     }
     
     .standings-table th:nth-child(2) {
       text-align: left;
-      width: 22%;
+      width: 30%;
     }
     
-    .standings-table th:nth-child(3) { width: 12%; }
-    .standings-table th:nth-child(4) { width: 12%; }
-    .standings-table th:nth-child(5) { width: 12%; }
-    .standings-table th:nth-child(6) { width: 12%; }
-    .standings-table th:nth-child(7) { width: 12%; }
-    .standings-table th:nth-child(8) { width: 12%; }
+    .standings-table th:nth-child(3) { width: 10%; }
+    .standings-table th:nth-child(4) { width: 10%; }
+    .standings-table th:nth-child(5) { width: 10%; }
+    .standings-table th:nth-child(6) { width: 10%; }
+    .standings-table th:nth-child(7) { width: 10%; }
+    .standings-table th:nth-child(8) { width: 10%; }
     .standings-table th:last-child {
       border-radius: 0 6px 6px 0;
-      width: 12%;
+      width: 10%;
     }
     
     .standings-table td {
-      padding: 0.4em 0.3em;
+      padding: 0.2em 0.1em;
       text-align: center;
-      font-size: 0.85rem;
+      font-size: 0.75rem;
       font-weight: 500;
     }
     
@@ -864,7 +873,7 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      max-width: 120px;
+      max-width: 200px;
       cursor: pointer;
       position: relative;
     }
@@ -949,7 +958,9 @@
     }
     
     /* Responsive Design */
-    @media (max-width: 768px) {
+    
+    /* Large mobile devices (iPhone 12 Pro, Galaxy S21, etc.) */
+    @media (max-width: 768px) and (min-width: 481px) {
       body {
         padding: 10px;
       }
@@ -973,18 +984,150 @@
         padding: 16px;
       }
       
+      /* Large mobile pairing card - optimized layout */
       .pairing-card {
-        flex-direction: row;
+        display: grid;
+        grid-template-columns: auto 1fr auto 1fr auto;
         gap: 2px;
         text-align: center;
         width: 100%;
+        max-width: 100%;
         box-sizing: border-box;
+        padding: 6px 8px;
+        height: 48px;
+        font-size: 13px;
+        margin-bottom: 8px;
+        overflow: hidden;
+        position: relative;
+        border-radius: 14px;
+        transition: all 0.2s ease;
+        align-items: center;
+      }
+      
+      /* Large mobile completed card styling */
+      .pairing-card.completed {
+        border: 3px solid #10B981;
+        background: linear-gradient(135deg, #ECFDF5 0%, #F0FDF4 100%);
+        box-shadow: 0 2px 8px rgba(16, 185, 129, 0.15);
+      }
+      
+      .pairing-card.pending {
+        border: 3px solid #D97706;
+        background: linear-gradient(135deg, #FFFFFF 0%, #FEFBF3 100%);
+        box-shadow: 0 2px 8px rgba(217, 119, 6, 0.1);
+      }
+      
+      .pairing-card.bye {
+        border: 3px solid #6B7280;
+        background: linear-gradient(135deg, #F3F4F6 0%, #F9FAFB 100%);
+        box-shadow: 0 2px 8px rgba(107, 114, 128, 0.1);
       }
       
       .player-vs {
         flex-direction: row;
-        gap: 2px;
+        gap: 5px;
         align-items: center;
+      }
+      
+      .table-no {
+        padding: 3px 6px;
+        margin: 1px;
+        font-size: 9px;
+        font-weight: 600;
+        height: 32px;
+        line-height: 1.2;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(59, 130, 246, 0.1);
+        border-radius: 6px;
+        color: #1E40AF;
+        box-shadow: 0 1px 3px rgba(59, 130, 246, 0.2);
+        width: auto;
+        min-width: 40px;
+        box-sizing: border-box;
+      }
+      
+      .round-label {
+        padding: 3px 6px;
+        margin: 1px;
+        font-size: 0.7em;
+        font-weight: 600;
+        border-radius: 6px;
+        background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+        color: white;
+        box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+        width: auto;
+        min-width: 35px;
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 32px;
+      }
+      
+      .player-name {
+        padding: 3px 6px;
+        margin: 1px;
+        font-size: 10px;
+        font-weight: 500;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 6px;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        transition: all 0.2s ease;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 32px;
+      }
+      
+      .player-name:hover {
+        background: rgba(255, 255, 255, 1);
+        transform: scale(1.02);
+      }
+      
+      .score {
+        font-size: 10px;
+        font-weight: 700;
+        padding: 3px 6px;
+        margin: 1px;
+        border-radius: 6px;
+        background: rgba(0, 0, 0, 0.05);
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        width: auto;
+        min-width: 35px;
+        box-sizing: border-box;
+        height: 32px;
+      }
+      
+      .status-badge {
+        width: auto;
+        height: 32px;
+        font-size: 9px;
+        padding: 3px 6px;
+        margin: 1px;
+        line-height: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-sizing: border-box;
+        border-radius: 6px;
+        font-weight: 600;
+        background: rgba(16, 185, 129, 0.1);
+        color: #059669;
+        box-shadow: 0 1px 3px rgba(16, 185, 129, 0.2);
+        min-width: 30px;
+        justify-self: end;
       }
       
       /* Remove accordion container constraints on mobile */
@@ -1010,38 +1153,285 @@
       }
       
       .standings-table {
-        font-size: 12px;
+        font-size: 10px;
       }
       
       .standings-table th,
       .standings-table td {
-        padding: 8px 6px;
+        padding: 4px 2px;
+      }
+      
+      .standings-table th {
+        font-size: 0.7em;
+        padding: 0.2em 0.05em;
+      }
+      
+      .standings-table td {
+        font-size: 0.65rem;
+        padding: 0.15em 0.05em;
+      }
+      
+      .standings-table th:nth-child(2) {
+        width: 35%;
+      }
+      
+      .standings-table td:nth-child(2) {
+        max-width: 150px;
       }
       
       .player-block {
-        min-width: 80px;
-        max-width: 120px;
-        font-size: 0.9em;
-        padding: 0.1em 0.3em;
+        min-width: 50px;
+        max-width: 80px;
+        font-size: 0.8em;
+        padding: 2px 4px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
       }
       
       .pairing-result {
-        font-size: 1em;
-        padding: 0.1em 0.5em;
-        min-width: 50px;
+        font-size: 0.8em;
+        padding: 2px 6px;
+        min-width: 40px;
         white-space: nowrap;
       }
+    }
+    
+    /* Standard mobile devices */
+    @media (max-width: 480px) {
+      body {
+        padding: 10px;
+      }
       
+      .container {
+        border-radius: 12px;
+        margin: 8px;
+      }
+      
+      .tab-content {
+        padding: 16px;
+      }
+      
+      .tournament-header {
+        font-size: 20px;
+        padding: 16px;
+        margin-bottom: 16px;
+      }
+      
+      .accordion-content {
+        padding: 16px;
+      }
+      
+      /* Mobile pairing card - optimized layout */
       .pairing-card {
-        gap: 2px;
-        padding: 8px;
+        display: grid;
+        grid-template-columns: auto 1fr auto 1fr auto;
+        gap: 1px;
+        text-align: center;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+        padding: 5px 8px;
+        height: 44px;
+        font-size: 12px;
+        margin-bottom: 6px;
+        overflow: hidden;
+        position: relative;
+        border-radius: 12px;
+        transition: all 0.2s ease;
+        align-items: center;
+      }
+      
+      /* Mobile completed card styling */
+      .pairing-card.completed {
+        border: 3px solid #10B981;
+        background: linear-gradient(135deg, #ECFDF5 0%, #F0FDF4 100%);
+        box-shadow: 0 2px 8px rgba(16, 185, 129, 0.15);
+      }
+      
+      .pairing-card.pending {
+        border: 3px solid #D97706;
+        background: linear-gradient(135deg, #FFFFFF 0%, #FEFBF3 100%);
+        box-shadow: 0 2px 8px rgba(217, 119, 6, 0.1);
+      }
+      
+      .pairing-card.bye {
+        border: 3px solid #6B7280;
+        background: linear-gradient(135deg, #F3F4F6 0%, #F9FAFB 100%);
+        box-shadow: 0 2px 8px rgba(107, 114, 128, 0.1);
       }
       
       .player-vs {
-        gap: 2px;
+        flex-direction: row;
+        gap: 4px;
+        align-items: center;
+      }
+      
+      .table-no {
+        padding: 2px 4px;
+        margin: 1px;
+        font-size: 8px;
+        font-weight: 600;
+        height: 28px;
+        line-height: 1.2;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(59, 130, 246, 0.1);
+        border-radius: 5px;
+        color: #1E40AF;
+        box-shadow: 0 1px 3px rgba(59, 130, 246, 0.2);
+        width: auto;
+        min-width: 35px;
+        box-sizing: border-box;
+      }
+      
+      .round-label {
+        padding: 2px 4px;
+        margin: 1px;
+        font-size: 0.65em;
+        font-weight: 600;
+        border-radius: 5px;
+        background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+        color: white;
+        box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+        width: auto;
+        min-width: 30px;
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 28px;
+      }
+      
+      .player-name {
+        padding: 2px 4px;
+        margin: 1px;
+        font-size: 9px;
+        font-weight: 500;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 5px;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        transition: all 0.2s ease;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 28px;
+      }
+      
+      .player-name:hover {
+        background: rgba(255, 255, 255, 1);
+        transform: scale(1.02);
+      }
+      
+      .score {
+        font-size: 9px;
+        font-weight: 700;
+        padding: 2px 4px;
+        margin: 1px;
+        border-radius: 5px;
+        background: rgba(0, 0, 0, 0.05);
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        width: auto;
+        min-width: 30px;
+        box-sizing: border-box;
+        height: 28px;
+      }
+      
+      .status-badge {
+        width: auto;
+        height: 28px;
+        font-size: 8px;
+        padding: 2px 4px;
+        margin: 1px;
+        line-height: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-sizing: border-box;
+        border-radius: 5px;
+        font-weight: 600;
+        background: rgba(16, 185, 129, 0.1);
+        color: #059669;
+        box-shadow: 0 1px 3px rgba(16, 185, 129, 0.2);
+        min-width: 25px;
+        justify-self: end;
+      }
+      
+      /* Remove accordion container constraints on mobile */
+      .accordion {
+        overflow: visible;
+      }
+      
+      .accordion-content {
+        overflow: visible;
+      }
+      
+      .summary-stats {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+      }
+      
+      .stat-card {
+        padding: 16px;
+      }
+      
+      .stat-number {
+        font-size: 24px;
+      }
+      
+      .standings-table {
+        font-size: 10px;
+      }
+      
+      .standings-table th,
+      .standings-table td {
+        padding: 4px 2px;
+      }
+      
+      .standings-table th {
+        font-size: 0.7em;
+        padding: 0.2em 0.05em;
+      }
+      
+      .standings-table td {
+        font-size: 0.65rem;
+        padding: 0.15em 0.05em;
+      }
+      
+      .standings-table th:nth-child(2) {
+        width: 35%;
+      }
+      
+      .standings-table td:nth-child(2) {
+        max-width: 150px;
+      }
+      
+      .player-block {
+        min-width: 50px;
+        max-width: 80px;
+        font-size: 0.8em;
+        padding: 2px 4px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      
+      .pairing-result {
+        font-size: 0.8em;
+        padding: 2px 6px;
+        min-width: 40px;
+        white-space: nowrap;
       }
     }
     
@@ -1053,6 +1443,284 @@
       .tab-button {
         padding: 16px 12px;
         font-size: 14px;
+      }
+      
+      .standings-table {
+        font-size: 8px;
+      }
+      
+      .standings-table th {
+        font-size: 0.6em;
+        padding: 0.15em 0.03em;
+      }
+      
+      .standings-table td {
+        font-size: 0.55rem;
+        padding: 0.1em 0.03em;
+      }
+      
+      .standings-table th:nth-child(2) {
+        width: 40%;
+      }
+      
+      .standings-table td:nth-child(2) {
+        max-width: 120px;
+      }
+      
+      /* Small mobile pairing card adjustments */
+      .pairing-card {
+        display: grid;
+        grid-template-columns: auto 1fr auto 1fr auto;
+        gap: 1px;
+        padding: 4px 6px;
+        height: 36px;
+        font-size: 10px;
+        border-radius: 10px;
+        align-items: center;
+      }
+      
+      .pairing-card.completed {
+        border: 2px solid #10B981;
+      }
+      
+      .pairing-card.pending {
+        border: 2px solid #D97706;
+      }
+      
+      .pairing-card.bye {
+        border: 2px solid #6B7280;
+      }
+      
+      .table-no {
+        padding: 1px 3px;
+        margin: 1px;
+        font-size: 6px;
+        border-radius: 4px;
+        box-shadow: 0 1px 2px rgba(59, 130, 246, 0.2);
+        width: auto;
+        min-width: 30px;
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(59, 130, 246, 0.1);
+        color: #1E40AF;
+        font-weight: 600;
+        height: 24px;
+      }
+      
+      .round-label {
+        padding: 1px 3px;
+        margin: 1px;
+        font-size: 0.55em;
+        border-radius: 4px;
+        width: auto;
+        min-width: 25px;
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+        color: white;
+        font-weight: 600;
+        height: 24px;
+      }
+      
+      .player-name {
+        padding: 1px 3px;
+        margin: 1px;
+        font-size: 7px;
+        border-radius: 4px;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.9);
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-weight: 500;
+        height: 24px;
+      }
+      
+      .score {
+        font-size: 7px;
+        padding: 1px 3px;
+        margin: 1px;
+        border-radius: 4px;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        width: auto;
+        min-width: 25px;
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.05);
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        font-weight: 700;
+        height: 24px;
+      }
+      
+      .status-badge {
+        width: auto;
+        height: 24px;
+        font-size: 6px;
+        padding: 1px 3px;
+        margin: 1px;
+        border-radius: 4px;
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(16, 185, 129, 0.1);
+        color: #059669;
+        font-weight: 600;
+        box-shadow: 0 1px 2px rgba(16, 185, 129, 0.2);
+        min-width: 20px;
+        justify-self: end;
+      }
+    }
+    
+    @media (max-width: 360px) {
+      .standings-table {
+        font-size: 7px;
+      }
+      
+      .standings-table th {
+        font-size: 0.55em;
+        padding: 0.1em 0.02em;
+      }
+      
+      .standings-table td {
+        font-size: 0.5rem;
+        padding: 0.08em 0.02em;
+      }
+      
+      .standings-table th:nth-child(2) {
+        width: 45%;
+      }
+      
+      .standings-table td:nth-child(2) {
+        max-width: 100px;
+      }
+      
+      /* Extra small mobile pairing card adjustments */
+      .pairing-card {
+        display: grid;
+        grid-template-columns: auto 1fr auto 1fr auto;
+        gap: 1px;
+        padding: 3px 5px;
+        height: 32px;
+        font-size: 9px;
+        border-radius: 8px;
+        align-items: center;
+      }
+      
+      .pairing-card.completed {
+        border: 2px solid #10B981;
+      }
+      
+      .pairing-card.pending {
+        border: 2px solid #D97706;
+      }
+      
+      .pairing-card.bye {
+        border: 2px solid #6B7280;
+      }
+      
+      .table-no {
+        padding: 1px 2px;
+        margin: 1px;
+        font-size: 5px;
+        border-radius: 3px;
+        box-shadow: 0 1px 2px rgba(59, 130, 246, 0.2);
+        width: auto;
+        min-width: 25px;
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(59, 130, 246, 0.1);
+        color: #1E40AF;
+        font-weight: 600;
+        height: 20px;
+      }
+      
+      .round-label {
+        padding: 1px 2px;
+        margin: 1px;
+        font-size: 0.45em;
+        border-radius: 3px;
+        width: auto;
+        min-width: 20px;
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+        color: white;
+        font-weight: 600;
+        height: 20px;
+      }
+      
+      .player-name {
+        padding: 1px 2px;
+        margin: 1px;
+        font-size: 6px;
+        border-radius: 3px;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.9);
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-weight: 500;
+        height: 20px;
+      }
+      
+      .score {
+        font-size: 6px;
+        padding: 1px 2px;
+        margin: 1px;
+        border-radius: 3px;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        width: auto;
+        min-width: 20px;
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.05);
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        font-weight: 700;
+        height: 20px;
+      }
+      
+      .status-badge {
+        width: auto;
+        height: 20px;
+        font-size: 5px;
+        padding: 1px 2px;
+        margin: 1px;
+        border-radius: 3px;
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(16, 185, 129, 0.1);
+        color: #059669;
+        font-weight: 600;
+        box-shadow: 0 1px 2px rgba(16, 185, 129, 0.2);
+        min-width: 18px;
+        justify-self: end;
       }
     }
     
@@ -1085,66 +1753,8 @@
       }
     }
     
-    /* Mobile optimization for player names */
+    /* Mobile tooltip for standings */
     @media (max-width: 768px) {
-      .player-name {
-        max-width: 70px !important;
-        min-width: 50px !important;
-        font-size: 0.8em !important;
-        padding: 3px 4px !important;
-        white-space: nowrap !important;
-        overflow: hidden !important;
-        text-overflow: ellipsis !important;
-      }
-      
-      .player-block {
-        max-width: 70px !important;
-        min-width: 50px !important;
-        font-size: 0.8em !important;
-        padding: 3px 4px !important;
-        white-space: nowrap !important;
-        overflow: hidden !important;
-        text-overflow: ellipsis !important;
-      }
-      
-      .pairing-card {
-        padding: 6px 10px !important;
-        gap: 2px !important;
-      }
-      
-      .player-vs {
-        gap: 2px !important;
-      }
-      
-      .vs {
-        font-size: 0.9em !important;
-        margin: 0 4px !important;
-      }
-      
-      .round-label {
-        font-size: 0.75em !important;
-        padding: 4px 6px !important;
-        min-width: 45px !important;
-        margin-right: 6px !important;
-      }
-      
-      .status-badge {
-        font-size: 0.65em !important;
-        padding: 4px 6px !important;
-        min-width: 50px !important;
-        max-width: 60px !important;
-      }
-      
-      .pairing-card {
-        padding: 8px 12px !important;
-        gap: 2px !important;
-      }
-      
-      .player-vs {
-        gap: 2px !important;
-      }
-      
-      /* Mobile tooltip for standings */
       .standings-table td[data-full-text]:active::after,
       .standings-table td[data-full-text]:focus::after,
       .standings-table td[data-full-text]:hover::after {
@@ -1614,7 +2224,7 @@
             const p2ShortName = truncateName(p2DisplayName);
             
             const statusClass = result ? 'completed' : 'pending';
-            const statusText = result ? '✅ เสร็จสิ้น' : '⏳ รอผล';
+            const statusText = result ? '✅' : '⏳';
             
             html += `<div class="pairing-card ${statusClass}">
               <div class="round-label" style="background-color: #3B82F6; color: white;">โต๊ะ ${tableNo}</div>
@@ -1912,28 +2522,28 @@
             p2Class += ' loser';
             resultDisplay = '1 : 0';
             statusClass = 'completed';
-            statusText = '✅ เสร็จสิ้น';
+            statusText = '✅';
             console.log('Round Robin - Player 1 wins, classes:', p1Class, p2Class);
           } else if (result === '0:1') {
             p1Class += ' loser';
             p2Class += ' winner';
             resultDisplay = '0 : 1';
             statusClass = 'completed';
-            statusText = '✅ เสร็จสิ้น';
+            statusText = '✅';
             console.log('Round Robin - Player 2 wins, classes:', p1Class, p2Class);
           } else if (result === '1:1') {
             p1Class += ' draw';
             p2Class += ' draw';
             resultDisplay = '1 : 1';
             statusClass = 'completed';
-            statusText = '✅ เสร็จสิ้น';
+            statusText = '✅';
             console.log('Round Robin - Draw, classes:', p1Class, p2Class);
           } else if (result === '0:0') {
             p1Class += ' loser';
             p2Class += ' loser';
             resultDisplay = '0 : 0';
             statusClass = 'completed';
-            statusText = '✅ เสร็จสิ้น';
+            statusText = '✅';
             console.log('Round Robin - Double loss, classes:', p1Class, p2Class);
           } else {
             resultDisplay = '- : -';

@@ -46,11 +46,14 @@
       background: #fff;
       border-radius: 0 0 12px 12px;
       overflow: hidden;
+      table-layout: fixed;
     }
     th, td {
       padding: 10px 8px;
       text-align: center;
       border-bottom: 1px solid #ddd;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
     }
     th {
       font-weight: bold;
@@ -105,6 +108,51 @@
     .codename-rank[data-rank="Diamond"]     .codename { color: #00bfff; font-size: 1.28em; font-weight: bold; }
     .codename-rank[data-rank="Grandmaster"] .codename { color: #8e24aa; font-size: 1.35em; font-weight: bold; }
     .codename-rank[data-rank="Legend"]      .codename { color: #e53935; font-size: 1.45em; font-weight: bold; }
+    
+    /* Mobile responsive codename sizes */
+    @media (max-width: 768px) {
+      .codename-rank[data-rank="Rookie"]      .codename { font-size: 5px; }
+      .codename-rank[data-rank="Bronze"]      .codename { font-size: 5px; }
+      .codename-rank[data-rank="Silver"]      .codename { font-size: 5px; }
+      .codename-rank[data-rank="Gold"]        .codename { font-size: 5px; }
+      .codename-rank[data-rank="Platinum"]    .codename { font-size: 5px; }
+      .codename-rank[data-rank="Diamond"]     .codename { font-size: 5px; }
+      .codename-rank[data-rank="Grandmaster"] .codename { font-size: 5px; }
+      .codename-rank[data-rank="Legend"]      .codename { font-size: 5px; }
+    }
+    
+    @media (max-width: 480px) {
+      .codename-rank[data-rank="Rookie"]      .codename { font-size: 5px; }
+      .codename-rank[data-rank="Bronze"]      .codename { font-size: 5px; }
+      .codename-rank[data-rank="Silver"]      .codename { font-size: 5px; }
+      .codename-rank[data-rank="Gold"]        .codename { font-size: 5px; }
+      .codename-rank[data-rank="Platinum"]    .codename { font-size: 5px; }
+      .codename-rank[data-rank="Diamond"]     .codename { font-size: 5px; }
+      .codename-rank[data-rank="Grandmaster"] .codename { font-size: 5px; }
+      .codename-rank[data-rank="Legend"]      .codename { font-size: 5px; }
+    }
+    
+    @media (max-width: 360px) {
+      .codename-rank[data-rank="Rookie"]      .codename { font-size: 5px; }
+      .codename-rank[data-rank="Bronze"]      .codename { font-size: 5px; }
+      .codename-rank[data-rank="Silver"]      .codename { font-size: 5px; }
+      .codename-rank[data-rank="Gold"]        .codename { font-size: 5px; }
+      .codename-rank[data-rank="Platinum"]    .codename { font-size: 5px; }
+      .codename-rank[data-rank="Diamond"]     .codename { font-size: 5px; }
+      .codename-rank[data-rank="Grandmaster"] .codename { font-size: 5px; }
+      .codename-rank[data-rank="Legend"]      .codename { font-size: 5px; }
+    }
+    
+    @media (max-width: 320px) {
+      .codename-rank[data-rank="Rookie"]      .codename { font-size: 5px; }
+      .codename-rank[data-rank="Bronze"]      .codename { font-size: 5px; }
+      .codename-rank[data-rank="Silver"]      .codename { font-size: 5px; }
+      .codename-rank[data-rank="Gold"]        .codename { font-size: 5px; }
+      .codename-rank[data-rank="Platinum"]    .codename { font-size: 5px; }
+      .codename-rank[data-rank="Diamond"]     .codename { font-size: 5px; }
+      .codename-rank[data-rank="Grandmaster"] .codename { font-size: 5px; }
+      .codename-rank[data-rank="Legend"]      .codename { font-size: 5px; }
+    }
     .codename-rank[data-rank="Gold"]        .codename,
     .codename-rank[data-rank="Platinum"]    .codename,
     .codename-rank[data-rank="Diamond"]     .codename,
@@ -412,64 +460,311 @@
       line-height: 1.6;
     }
 
+    /* ซ่อนข้อความ "เสร็จสิ้น" และแสดงแค่ติ๊กถูก */
+    @media (max-width: 768px) {
+      /* ซ่อนข้อความ "เสร็จสิ้น" */
+      *:contains("เสร็จสิ้น") {
+        font-size: 0 !important;
+        color: transparent !important;
+      }
+      
+      /* แสดงแค่ติ๊กถูก */
+      *:contains("เสร็จสิ้น")::before {
+        content: "✓";
+        font-size: 8px !important;
+        color: #4caf50 !important;
+        display: inline-block !important;
+      }
+      
+      /* ซ่อนข้อความ "รอผล" และแสดงแค่ "รอ" */
+      *:contains("รอผล") {
+        font-size: 0 !important;
+        color: transparent !important;
+      }
+      
+      *:contains("รอผล")::before {
+        content: "รอ";
+        font-size: 8px !important;
+        color: #ff9800 !important;
+        display: inline-block !important;
+      }
+    }
+
     /* Mobile Responsive */
     @media (max-width: 768px) {
+      .gymbattle-container {
+        margin: 2px auto;
+        padding: 0 1px 2px 1px;
+      }
+      
+      h2 {
+        font-size: 0.77em;
+        margin-bottom: 8px;
+      }
+      
+      .date-header {
+        padding: 2px;
+        margin-top: 4px;
+        font-size: 0.5em;
+      }
+      
+      th, td {
+        padding: 0px 0px;
+        font-size: 5px;
+      }
+      
+      th {
+        font-size: 5px;
+      }
+      
+      /* ตารางคะแนนด้านล่างสุด (ตารางผู้สมัคร) - ปรับฟอนท์ให้เล็กลงเพื่อแสดงชื่อเต็ม */
+      .gymbattle-container table th,
+      .gymbattle-container table td {
+        padding: 0px 0px;
+        font-size: 5px;
+      }
+      
+      .gymbattle-container table th {
+        font-size: 5px;
+      }
+      
+      .register-btn {
+        margin: 8px auto 0 auto;
+        padding: 6px 0;
+        font-size: 0.63em;
+        max-width: 200px;
+      }
+      
       .promo-cards-grid {
         grid-template-columns: repeat(2, 1fr);
-        gap: 24px;
-        padding: 0 16px;
+        gap: 4px;
+        padding: 0 2px;
         justify-content: center;
       }
       
       .promo-card {
-        padding: 8px;
+        padding: 3px;
       }
       
       .promo-card img {
-        margin-bottom: 6px;
+        margin-bottom: 2px;
       }
       
       .promo-card-title {
-        font-size: 0.8em;
+        font-size: 0.49em;
+      }
+      
+      .promo-cards-title {
+        font-size: 0.84em;
+      }
+      
+      .promo-cards-subtitle {
+        font-size: 0.6em;
       }
       
       .modal-content {
         margin: 10% auto;
         width: 95%;
-        padding: 16px;
-      }
-      
-      .modal img {
-        max-width: 350px;
-      }
-    }
-
-    @media (max-width: 480px) {
-      .promo-cards-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 16px;
-        padding: 0 12px;
-        justify-content: center;
-      }
-      
-      .promo-card {
-        padding: 6px;
-      }
-      
-      .promo-card-title {
-        font-size: 0.75em;
-      }
-      
-      .promo-cards-title {
-        font-size: 1.5em;
-      }
-      
-      .promo-cards-subtitle {
-        font-size: 1em;
+        padding: 12px;
       }
       
       .modal img {
         max-width: 300px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .gymbattle-container {
+        margin: 2px auto;
+        padding: 0 1px 2px 1px;
+      }
+      
+      h2 {
+        font-size: 0.63em;
+        margin-bottom: 7px;
+      }
+      
+      .date-header {
+        padding: 1px;
+        margin-top: 3px;
+        font-size: 0.4em;
+      }
+      
+      th, td {
+        padding: 0px 0px;
+        font-size: 5px;
+      }
+      
+      th {
+        font-size: 5px;
+      }
+      
+      /* ตารางคะแนนด้านล่างสุด (ตารางผู้สมัคร) - ปรับฟอนท์ให้เล็กลงเพื่อแสดงชื่อเต็ม */
+      .gymbattle-container table th,
+      .gymbattle-container table td {
+        padding: 0px 0px;
+        font-size: 5px;
+      }
+      
+      .gymbattle-container table th {
+        font-size: 5px;
+      }
+      
+      .register-btn {
+        margin: 7px auto 0 auto;
+        padding: 4px 0;
+        font-size: 0.56em;
+        max-width: 160px;
+      }
+      
+      .promo-cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 3px;
+        padding: 0 1px;
+        justify-content: center;
+      }
+      
+      .promo-card {
+        padding: 2px;
+      }
+      
+      .promo-card-title {
+        font-size: 0.42em;
+      }
+      
+      .promo-cards-title {
+        font-size: 0.7em;
+      }
+      
+      .promo-cards-subtitle {
+        font-size: 0.53em;
+      }
+      
+      .modal img {
+        max-width: 220px;
+      }
+    }
+    
+    @media (max-width: 360px) {
+      .gymbattle-container {
+        margin: 2px auto;
+        padding: 0 1px 2px 1px;
+      }
+      
+      h2 {
+        font-size: 10px;
+        margin-bottom: 6px;
+      }
+      
+      .date-header {
+        padding: 3px;
+        margin-top: 6px;
+        font-size: 10px;
+      }
+      
+      th, td {
+        padding: 0px 0px;
+        font-size: 5px;
+      }
+      
+      th {
+        font-size: 5px;
+      }
+      
+      .register-btn {
+        margin: 6px auto 0 auto;
+        padding: 4px 0;
+        font-size: 10px;
+        max-width: 180px;
+      }
+      
+      .promo-cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 6px;
+        padding: 0 1px;
+        justify-content: center;
+      }
+      
+      .promo-card {
+        padding: 2px;
+      }
+      
+      .promo-card-title {
+        font-size: 10px;
+      }
+      
+      .promo-cards-title {
+        font-size: 10px;
+      }
+      
+      .promo-cards-subtitle {
+        font-size: 10px;
+      }
+      
+      .modal img {
+        max-width: 220px;
+      }
+    }
+    
+    /* Extra small screens */
+    @media (max-width: 320px) {
+      .gymbattle-container {
+        margin: 1px auto;
+        padding: 0 1px 1px 1px;
+      }
+      
+      h2 {
+        font-size: 10px;
+        margin-bottom: 4px;
+      }
+      
+      .date-header {
+        padding: 2px;
+        margin-top: 4px;
+        font-size: 10px;
+      }
+      
+      th, td {
+        padding: 0px 0px;
+        font-size: 5px;
+      }
+      
+      th {
+        font-size: 5px;
+      }
+      
+      .register-btn {
+        margin: 4px auto 0 auto;
+        padding: 3px 0;
+        font-size: 10px;
+        max-width: 160px;
+      }
+      
+      .promo-cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 4px;
+        padding: 0 1px;
+        justify-content: center;
+      }
+      
+      .promo-card {
+        padding: 1px;
+      }
+      
+      .promo-card-title {
+        font-size: 10px;
+      }
+      
+      .promo-cards-title {
+        font-size: 10px;
+      }
+      
+      .promo-cards-subtitle {
+        font-size: 10px;
+      }
+      
+      .modal img {
+        max-width: 200px;
       }
     }
   </style>
