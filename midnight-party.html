@@ -1468,6 +1468,11 @@
         if (data.participants && data.participants.length > 0) {
           console.log('Sample participant columns:', Object.keys(data.participants[0]));
           console.log('Sample participant data:', data.participants[0]);
+          
+          // Debug: แสดงข้อมูล Box และ Spot ของ participant แรก
+          const firstParticipant = data.participants[0];
+          console.log('First participant Box data:', firstParticipant['กรณีจอง Box:  ต้องการกี่ Box (1350/Box)?']);
+          console.log('First participant Spot data:', firstParticipant['กรณีจอง Spot: ต้องการกี่ Spot (500 บาท/Spot)?']);
         }
         
         // สร้าง map เบอร์โทร -> { codename, rank }
@@ -1527,13 +1532,16 @@
               const phone = p['เบอร์โทรศัพท์'] || p['เบอร์โทรศัพท์ติดต่อ'] || p['เบอร์โทร'] || p['Phone'] || p['phone'] || p.phone || '';
               
               // ใช้ข้อมูล Box และ Spot จาก column E และ F
-              // Column E: 'กรณีจอง Box: ต้องการที่ Box (1350/Box)?'
-              // Column F: 'กรณีจอง Spot: ต้องการที่ Spot (500 บาท/Spot)?'
+              // Column E: 'กรณีจอง Box:  ต้องการกี่ Box (1350/Box)?' (มีช่องว่างเพิ่ม)
+              // Column F: 'กรณีจอง Spot: ต้องการกี่ Spot (500 บาท/Spot)?'
               let boxes = 0;
               let spots = 0;
               
-              // แปลงข้อมูล Box จาก column E
-              const boxData = p['กรณีจอง Box: ต้องการที่ Box (1350/Box)?'] || '';
+              // แปลงข้อมูล Box จาก column E - ลองหลายรูปแบบ
+              const boxData = p['กรณีจอง Box:  ต้องการกี่ Box (1350/Box)?'] || 
+                             p['กรณีจอง Box: ต้องการที่ Box (1350/Box)?'] || 
+                             p['กรณีจอง Box: ต้องการกี่ Box (1350/Box)?'] || '';
+              
               if (boxData && typeof boxData === 'string') {
                 const boxMatch = boxData.match(/(\d+)\s*Box/);
                 if (boxMatch) {
@@ -1542,7 +1550,9 @@
               }
               
               // แปลงข้อมูล Spot จาก column F
-              const spotData = p['กรณีจอง Spot: ต้องการที่ Spot (500 บาท/Spot)?'] || '';
+              const spotData = p['กรณีจอง Spot: ต้องการกี่ Spot (500 บาท/Spot)?'] || 
+                              p['กรณีจอง Spot: ต้องการที่ Spot (500 บาท/Spot)?'] || '';
+              
               if (spotData && typeof spotData === 'string') {
                 const spotMatch = spotData.match(/(\d+)\s*Spot/);
                 if (spotMatch) {
@@ -1551,11 +1561,12 @@
               }
               
               // Debug logging
-              console.log(`User ${p.nickname}:`, {
+              console.log(`User ${nickname}:`, {
                 boxData: boxData,
                 boxes: boxes,
                 spotData: spotData,
-                spots: spots
+                spots: spots,
+                allColumns: Object.keys(p)
               });
               
               return {
@@ -1569,7 +1580,9 @@
             }),
             total: data.participants.length,
             totalBoxes: data.participants.reduce((sum, p) => {
-              const boxData = p['กรณีจอง Box: ต้องการที่ Box (1350/Box)?'] || '';
+              const boxData = p['กรณีจอง Box:  ต้องการกี่ Box (1350/Box)?'] || 
+                             p['กรณีจอง Box: ต้องการที่ Box (1350/Box)?'] || 
+                             p['กรณีจอง Box: ต้องการกี่ Box (1350/Box)?'] || '';
               if (boxData && typeof boxData === 'string') {
                 const boxMatch = boxData.match(/(\d+)\s*Box/);
                 if (boxMatch) {
@@ -1579,7 +1592,8 @@
               return sum;
             }, 0),
             totalSpots: data.participants.reduce((sum, p) => {
-              const spotData = p['กรณีจอง Spot: ต้องการที่ Spot (500 บาท/Spot)?'] || '';
+              const spotData = p['กรณีจอง Spot: ต้องการกี่ Spot (500 บาท/Spot)?'] || 
+                              p['กรณีจอง Spot: ต้องการที่ Spot (500 บาท/Spot)?'] || '';
               if (spotData && typeof spotData === 'string') {
                 const spotMatch = spotData.match(/(\d+)\s*Spot/);
                 if (spotMatch) {
