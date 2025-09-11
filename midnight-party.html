@@ -1527,8 +1527,36 @@
               const phone = p['เบอร์โทรศัพท์'] || p['เบอร์โทรศัพท์ติดต่อ'] || p['เบอร์โทร'] || p['Phone'] || p['phone'] || p.phone || '';
               
               // ใช้ข้อมูล Box และ Spot จาก column E และ F
-              const boxes = parseInt(p['กรณีจอง Box: ต้องการที่ Box (1350/Box)?'] || '0') || 0;
-              const spots = parseInt(p['กรณีจอง Spot: ต้องการที่ Spot (500 บาท/Spot)?'] || '0') || 0;
+              // Column E: 'กรณีจอง Box: ต้องการที่ Box (1350/Box)?'
+              // Column F: 'กรณีจอง Spot: ต้องการที่ Spot (500 บาท/Spot)?'
+              let boxes = 0;
+              let spots = 0;
+              
+              // แปลงข้อมูล Box จาก column E
+              const boxData = p['กรณีจอง Box: ต้องการที่ Box (1350/Box)?'] || '';
+              if (boxData && typeof boxData === 'string') {
+                const boxMatch = boxData.match(/(\d+)\s*Box/);
+                if (boxMatch) {
+                  boxes = parseInt(boxMatch[1]) || 0;
+                }
+              }
+              
+              // แปลงข้อมูล Spot จาก column F
+              const spotData = p['กรณีจอง Spot: ต้องการที่ Spot (500 บาท/Spot)?'] || '';
+              if (spotData && typeof spotData === 'string') {
+                const spotMatch = spotData.match(/(\d+)\s*Spot/);
+                if (spotMatch) {
+                  spots = parseInt(spotMatch[1]) || 0;
+                }
+              }
+              
+              // Debug logging
+              console.log(`User ${p.nickname}:`, {
+                boxData: boxData,
+                boxes: boxes,
+                spotData: spotData,
+                spots: spots
+              });
               
               return {
                 nickname: nickname,
@@ -1540,8 +1568,26 @@
               };
             }),
             total: data.participants.length,
-            totalBoxes: data.participants.reduce((sum, p) => sum + (parseInt(p['กรณีจอง Box: ต้องการที่ Box (1350/Box)?'] || '0') || 0), 0),
-            totalSpots: data.participants.reduce((sum, p) => sum + (parseInt(p['กรณีจอง Spot: ต้องการที่ Spot (500 บาท/Spot)?'] || '0') || 0), 0)
+            totalBoxes: data.participants.reduce((sum, p) => {
+              const boxData = p['กรณีจอง Box: ต้องการที่ Box (1350/Box)?'] || '';
+              if (boxData && typeof boxData === 'string') {
+                const boxMatch = boxData.match(/(\d+)\s*Box/);
+                if (boxMatch) {
+                  return sum + (parseInt(boxMatch[1]) || 0);
+                }
+              }
+              return sum;
+            }, 0),
+            totalSpots: data.participants.reduce((sum, p) => {
+              const spotData = p['กรณีจอง Spot: ต้องการที่ Spot (500 บาท/Spot)?'] || '';
+              if (spotData && typeof spotData === 'string') {
+                const spotMatch = spotData.match(/(\d+)\s*Spot/);
+                if (spotMatch) {
+                  return sum + (parseInt(spotMatch[1]) || 0);
+                }
+              }
+              return sum;
+            }, 0)
           };
           
           displayUsers(convertedData);
@@ -1617,11 +1663,11 @@
       document.getElementById('totalSpots').textContent = uniqueUsers.reduce((sum, user) => sum + user.spots, 0);
       
       // สร้างตารางแสดงข้อมูล
-      let html = '<table style="width:100%; border-collapse:collapse; margin-top:1rem; background:#fff; border-radius:12px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.1);">';
+      let html = '<table style="width:100%; border-collapse:collapse; margin:1rem auto; background:#fff; border-radius:12px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.1); max-width:800px;">';
       html += '<thead><tr style="background:#42A5F5;">';
-      html += '<th style="padding:10px 8px; text-align:center; color:#fff; font-weight:bold; font-size:1.05em; width:50px;">ลำดับ</th>';
-      html += '<th style="padding:10px 8px; text-align:left; color:#fff; font-weight:bold; font-size:1.05em;">ชื่อเล่น/Codename</th>';
-      html += '<th style="padding:10px 8px; text-align:center; color:#fff; font-weight:bold; font-size:1.05em; width:120px;">จำนวน Box/Spot</th>';
+      html += '<th style="padding:12px 8px; text-align:center; color:#fff; font-weight:bold; font-size:1.05em; width:60px;">ลำดับ</th>';
+      html += '<th style="padding:12px 8px; text-align:center; color:#fff; font-weight:bold; font-size:1.05em;">ชื่อเล่น/Codename</th>';
+      html += '<th style="padding:12px 8px; text-align:center; color:#fff; font-weight:bold; font-size:1.05em; width:140px;">จำนวน Box/Spot</th>';
       html += '</tr></thead><tbody>';
       
       uniqueUsers.forEach((user, index) => {
@@ -1649,7 +1695,7 @@
           codenameDisplay = `<br><span class="codename-rank" data-rank="${rank}" style="font-size:0.85em;"><span>${rankEmoji}</span> ${codenameHtml} <span>${rankEmoji}</span></span>`;
         }
         
-        html += `<td style="padding:10px 8px; text-align:left; color:#2c3e50; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:200px;">${displayName}${codenameDisplay}</td>`;
+        html += `<td style="padding:12px 8px; text-align:center; color:#2c3e50; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:300px;">${displayName}${codenameDisplay}</td>`;
         
         // แสดงจำนวน Box/Spot ที่รวมแล้ว
         let orderDetails = '';
@@ -1663,7 +1709,7 @@
         if (user.boxes === 0 && user.spots === 0) {
           orderDetails = '📝';
         }
-        html += `<td style="padding:10px 8px; text-align:center; color:#2c3e50; white-space:nowrap; font-size:0.9em;">${orderDetails}</td>`;
+        html += `<td style="padding:12px 8px; text-align:center; color:#2c3e50; white-space:nowrap; font-size:0.9em; font-weight:600;">${orderDetails}</td>`;
         
         html += '</tr>';
       });
