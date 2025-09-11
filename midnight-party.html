@@ -678,6 +678,9 @@
       font-weight: 700;
       text-align: center;
       text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .stats-grid {
@@ -1074,6 +1077,14 @@
         gap: 1rem;
       }
       
+      /* ปรับหัวข้อรายชื่อผู้ลงทะเบียนในมือถือ */
+      .users-title {
+        font-size: 1.4rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      
       .info-card {
         padding: 1rem;
       }
@@ -1186,6 +1197,14 @@
       
       .event-date {
         font-size: 1.1rem;
+      }
+      
+      /* ปรับหัวข้อรายชื่อผู้ลงทะเบียนในหน้าจอเล็กมาก */
+      .users-title {
+        font-size: 1.2rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
       
       .pokemon-cards {
