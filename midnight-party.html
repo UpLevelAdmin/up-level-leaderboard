@@ -1578,50 +1578,80 @@
     function displayUsers(data) {
       const container = document.getElementById('usersContainer');
       
-      // อัปเดตสถิติ
-      document.getElementById('totalUsers').textContent = data.total || 0;
-      document.getElementById('totalBoxes').textContent = data.totalBoxes || 0;
-      document.getElementById('totalSpots').textContent = data.totalSpots || 0;
+      // อัปเดตสถิติ (จะอัปเดตใหม่หลังจากรวมข้อมูลแล้ว)
       
       if (!data.users || data.users.length === 0) {
         container.innerHTML = '<div class="loading">ยังไม่มีผู้ลงทะเบียน</div>';
         return;
       }
       
+      // รวมข้อมูลของลูกค้าที่จองหลายครั้งเข้าด้วยกัน
+      const userMap = {};
+      data.users.forEach(user => {
+        const phone = String(user.phone || '').replace(/[^\d]/g, "");
+        const key = phone || user.nickname; // ใช้เบอร์โทรเป็น key หรือชื่อเล่นถ้าไม่มีเบอร์โทร
+        
+        if (userMap[key]) {
+          // รวมข้อมูลการจอง
+          userMap[key].boxes += user.boxes || 0;
+          userMap[key].spots += user.spots || 0;
+        } else {
+          // สร้างข้อมูลใหม่
+          userMap[key] = {
+            nickname: user.nickname,
+            codename: user.codename,
+            rank: user.rank,
+            boxes: user.boxes || 0,
+            spots: user.spots || 0,
+            phone: user.phone
+          };
+        }
+      });
+      
+      // แปลงเป็น array และเรียงลำดับตามชื่อ
+      const uniqueUsers = Object.values(userMap).sort((a, b) => a.nickname.localeCompare(b.nickname));
+      
+      // อัปเดตสถิติด้วยข้อมูลที่รวมแล้ว
+      document.getElementById('totalUsers').textContent = uniqueUsers.length;
+      document.getElementById('totalBoxes').textContent = uniqueUsers.reduce((sum, user) => sum + user.boxes, 0);
+      document.getElementById('totalSpots').textContent = uniqueUsers.reduce((sum, user) => sum + user.spots, 0);
+      
       // สร้างตารางแสดงข้อมูล
       let html = '<table style="width:100%; border-collapse:collapse; margin-top:1rem; background:#fff; border-radius:12px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.1);">';
       html += '<thead><tr style="background:#42A5F5;">';
       html += '<th style="padding:10px 8px; text-align:center; color:#fff; font-weight:bold; font-size:1.05em; width:50px;">ลำดับ</th>';
-      html += '<th style="padding:10px 8px; text-align:left; color:#fff; font-weight:bold; font-size:1.05em;">ชื่อเล่น</th>';
-      html += '<th style="padding:10px 8px; text-align:center; color:#fff; font-weight:bold; font-size:1.05em; width:100px;">Codename</th>';
-      html += '<th style="padding:10px 8px; text-align:center; color:#fff; font-weight:bold; font-size:1.05em; width:80px;">การจอง</th>';
+      html += '<th style="padding:10px 8px; text-align:left; color:#fff; font-weight:bold; font-size:1.05em;">ชื่อเล่น/Codename</th>';
+      html += '<th style="padding:10px 8px; text-align:center; color:#fff; font-weight:bold; font-size:1.05em; width:120px;">จำนวน Box/Spot</th>';
       html += '</tr></thead><tbody>';
       
-      data.users.forEach((user, index) => {
+      uniqueUsers.forEach((user, index) => {
         html += `<tr style="border-bottom:1px solid #ddd;">`;
         html += `<td style="padding:10px 8px; text-align:center; color:#2c3e50; font-weight:bold;">${index + 1}</td>`;
         
-        // ตัดชื่อเล่นถ้ายาวเกิน 15 ตัวอักษร
+        // แสดงชื่อเล่นและ codename ในคอลัมน์เดียวกัน
         let displayName = user.nickname || 'ไม่ระบุชื่อ';
         if (displayName.length > 15) {
           displayName = displayName.substring(0, 15) + '...';
         }
-        html += `<td style="padding:10px 8px; text-align:left; color:#2c3e50; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:120px;">${displayName}</td>`;
         
-        // แสดง Codename พร้อม rank emoji และเอฟเฟกต์ (เหมือน gymbattle.html)
-        const codename = user.codename || 'ไม่ระบุ';
-        const rank = user.rank || '';
-        const rankEmoji = getRankEmoji(rank);
-        let displayCodename = codename;
-        if (displayCodename.length > 8) {
-          displayCodename = displayCodename.substring(0, 8) + '...';
+        // แสดง codename ใต้ชื่อเล่น
+        let codenameDisplay = '';
+        if (user.codename && user.codename !== 'ไม่ระบุ') {
+          const rank = user.rank || '';
+          const rankEmoji = getRankEmoji(rank);
+          let displayCodename = user.codename;
+          if (displayCodename.length > 8) {
+            displayCodename = displayCodename.substring(0, 8) + '...';
+          }
+          
+          // ใช้ renderCodenameEffect เหมือน gymbattle.html
+          const codenameHtml = renderCodenameEffect(displayCodename, rank);
+          codenameDisplay = `<br><span class="codename-rank" data-rank="${rank}" style="font-size:0.85em;"><span>${rankEmoji}</span> ${codenameHtml} <span>${rankEmoji}</span></span>`;
         }
         
-        // ใช้ renderCodenameEffect เหมือน gymbattle.html
-        const codenameHtml = renderCodenameEffect(displayCodename, rank);
-        html += `<td style="padding:10px 8px; text-align:center; color:#2c3e50; font-weight:bold; white-space:nowrap; font-size:0.9em;"><span class="codename-rank" data-rank="${rank}"><span>${rankEmoji}</span> ${codenameHtml} <span>${rankEmoji}</span></span></td>`;
+        html += `<td style="padding:10px 8px; text-align:left; color:#2c3e50; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:200px;">${displayName}${codenameDisplay}</td>`;
         
-        // แสดงรายละเอียดการจอง
+        // แสดงจำนวน Box/Spot ที่รวมแล้ว
         let orderDetails = '';
         if (user.boxes > 0) {
           orderDetails += `📦${user.boxes}`;
