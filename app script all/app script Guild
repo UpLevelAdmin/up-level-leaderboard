@@ -57,7 +57,10 @@ function onOpen() {
     .addItem("🔑 เพิ่มแอดมิน", "addAdminEmail")
     .addItem("🔄 เปลี่ยนเบอร์สมาชิก", "changeMemberPhoneNumber")
     .addSeparator()
-    .addItem("🔧 ตั้งค่า Trigger อัตโนมัติ", "setupSheetSelectionTrigger");
+    .addItem("🔧 ตั้งค่า Trigger อัตโนมัติ", "setupSheetSelectionTrigger")
+    .addSeparator()
+    .addItem("📊 ตรวจสอบสถานะ Triggers", "checkTriggerStatus")
+    .addItem("⏰ ตั้งค่า Missing Members Trigger", "setupMissingMembersTrigger");
 
   // 🎨 เมนูไฮไลท์แรงค์
   const highlightMenu = ui.createMenu("🎨 ไฮไลท์แรงค์")
@@ -259,52 +262,60 @@ function getEligiblePlayersForRebirth() {
 
 // ✅ รับข้อมูลจาก Google Form
 function onFormSubmit(e) {
-  const values = e.values;
-  const fullName = values[1];
-  const nickname = values[2];
-  const rawPhone = values[3];
-  const phone = normalizePhone(rawPhone);
-  const codename = values[4].trim();
-  const memberType = values[5];
-  const referrer = normalizePhone(values[6] || "");
+  try {
+    Logger.log("📥 เริ่มประมวลผลฟอร์ม - onFormSubmit");
+    Logger.log("Event data: " + JSON.stringify(e));
+    
+    const values = e.values;
+    const fullName = values[1];
+    const nickname = values[2];
+    const rawPhone = values[3];
+    const phone = normalizePhone(rawPhone);
+    const codename = values[4].trim();
+    const memberType = values[5];
+    const referrer = normalizePhone(values[6] || "");
 
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const dbSheet = ss.getSheetByName("Member Database");
-  const dashSheet = ss.getSheetByName("Member Dashboard");
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const dbSheet = ss.getSheetByName("Member Database");
+    const dashSheet = ss.getSheetByName("Member Dashboard");
 
-  const rowNum = dbSheet.getLastRow();
-  const lastCol = dbSheet.getLastColumn();
-
-  const phonesInDash = dashSheet.getRange(2, 2, Math.max(dashSheet.getLastRow() - 1, 1)).getValues()
-    .flat().map(p => normalizePhone(p));
-  const codenamesInDash = dashSheet.getRange(2, 3, Math.max(dashSheet.getLastRow() - 1, 1)).getValues()
-    .flat().map(c => String(c).toLowerCase().trim());
-
-  Logger.log("📥 กำลังตรวจข้อมูลฟอร์ม");
-  Logger.log("📞 เบอร์: " + phone);
-  Logger.log("🧑 Codename: " + codename);
-
-  let foundPhoneDup = phonesInDash.includes(phone);
-  let foundCodenameDup = codenamesInDash.includes(codename.toLowerCase());
-
-  if (foundPhoneDup) {
-    dbSheet.getRange(rowNum, 4).setValue(`${phone} (DUPLICATE)`);
-    dbSheet.getRange(rowNum, 4).setNumberFormat("@");
-    Logger.log("⚠️ พบเบอร์ซ้ำ!");
-  }
-
-  if (foundCodenameDup) {
-    dbSheet.getRange(rowNum, 5).setValue(`${codename} (DUPLICATE)`);
-    Logger.log("⚠️ พบ Codename ซ้ำ!");
-  }
-
-  if (foundPhoneDup || foundCodenameDup) {
-    if (rowNum >= 2 && lastCol >= 1) {
-      dbSheet.getRange(rowNum, 1, 1, lastCol).setBackground("#f28b82");
+    if (!dbSheet || !dashSheet) {
+      throw new Error("ไม่พบชีท Member Database หรือ Member Dashboard");
     }
-    Logger.log("🛑 หยุดการลงทะเบียนเพราะข้อมูลซ้ำ");
-    return;
-  }
+
+    const rowNum = dbSheet.getLastRow();
+    const lastCol = dbSheet.getLastColumn();
+
+    const phonesInDash = dashSheet.getRange(2, 2, Math.max(dashSheet.getLastRow() - 1, 1)).getValues()
+      .flat().map(p => normalizePhone(p));
+    const codenamesInDash = dashSheet.getRange(2, 3, Math.max(dashSheet.getLastRow() - 1, 1)).getValues()
+      .flat().map(c => String(c).toLowerCase().trim());
+
+    Logger.log("📥 กำลังตรวจข้อมูลฟอร์ม");
+    Logger.log("📞 เบอร์: " + phone);
+    Logger.log("🧑 Codename: " + codename);
+
+    let foundPhoneDup = phonesInDash.includes(phone);
+    let foundCodenameDup = codenamesInDash.includes(codename.toLowerCase());
+
+    if (foundPhoneDup) {
+      dbSheet.getRange(rowNum, 4).setValue(`${phone} (DUPLICATE)`);
+      dbSheet.getRange(rowNum, 4).setNumberFormat("@");
+      Logger.log("⚠️ พบเบอร์ซ้ำ!");
+    }
+
+    if (foundCodenameDup) {
+      dbSheet.getRange(rowNum, 5).setValue(`${codename} (DUPLICATE)`);
+      Logger.log("⚠️ พบ Codename ซ้ำ!");
+    }
+
+    if (foundPhoneDup || foundCodenameDup) {
+      if (rowNum >= 2 && lastCol >= 1) {
+        dbSheet.getRange(rowNum, 1, 1, lastCol).setBackground("#f28b82");
+      }
+      Logger.log("🛑 หยุดการลงทะเบียนเพราะข้อมูลซ้ำ");
+      return;
+    }
 
   // --- ปรับ logic การบวก EXP ตามที่ต้องการ ---
   let initialExp = 0;
@@ -332,6 +343,26 @@ function onFormSubmit(e) {
 
   updateRanks();
   updateLeaderboard();
+  
+  Logger.log("✅ ประมวลผลฟอร์มเสร็จสิ้น - onFormSubmit");
+  
+  } catch (error) {
+    Logger.log("❌ onFormSubmit Error: " + error.toString());
+    Logger.log("Event data: " + JSON.stringify(e));
+    
+    // ส่งอีเมลแจ้งเตือนแอดมิน
+    try {
+      const adminEmail = Session.getActiveUser().getEmail();
+      MailApp.sendEmail({
+        to: adminEmail,
+        subject: "⚠️ Form Submit Error - Up Level Guild",
+        body: `เกิดข้อผิดพลาดในการประมวลผลฟอร์ม:\n\n${error.toString()}\n\nEvent: ${JSON.stringify(e)}\n\nเวลา: ${new Date().toLocaleString('th-TH')}`
+      });
+      Logger.log("✅ ส่งอีเมลแจ้งเตือนแอดมินเรียบร้อย");
+    } catch (emailError) {
+      Logger.log("❌ ไม่สามารถส่งอีเมลแจ้งเตือนได้: " + emailError.toString());
+    }
+  }
 }
 
 
@@ -3432,14 +3463,16 @@ function addMissingMembers(missingMembers) {
 
 // 🔔 แจ้งเตือนสมาชิกที่ตกหล่นผ่านอีเมล
 function notifyMissingMembers() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const formSheet = ss.getSheetByName("member");
-  const dashSheet = ss.getSheetByName("Member Dashboard");
-  
-  if (!formSheet || !dashSheet) {
-    Logger.log("ไม่พบชีท member หรือ Member Dashboard");
-    return;
-  }
+  try {
+    Logger.log("🔍 เริ่มตรวจสอบสมาชิกที่ตกหล่น - notifyMissingMembers");
+    
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const formSheet = ss.getSheetByName("member");
+    const dashSheet = ss.getSheetByName("Member Dashboard");
+    
+    if (!formSheet || !dashSheet) {
+      throw new Error("ไม่พบชีท member หรือ Member Dashboard");
+    }
   
   const formData = formSheet.getDataRange().getValues();
   const dashData = dashSheet.getDataRange().getValues();
@@ -3550,26 +3583,206 @@ function notifyMissingMembers() {
   } else {
     Logger.log("ไม่พบสมาชิกที่ตกหล่น");
   }
+  
+  Logger.log("✅ ตรวจสอบสมาชิกที่ตกหล่นเสร็จสิ้น - notifyMissingMembers");
+  
+  } catch (error) {
+    Logger.log("❌ notifyMissingMembers Error: " + error.toString());
+    
+    // ส่งอีเมลแจ้งเตือนแอดมิน
+    try {
+      const adminEmail = Session.getActiveUser().getEmail();
+      MailApp.sendEmail({
+        to: adminEmail,
+        subject: "⚠️ Missing Members Check Error - Up Level Guild",
+        body: `เกิดข้อผิดพลาดในการตรวจสอบสมาชิกที่ตกหล่น:\n\n${error.toString()}\n\nเวลา: ${new Date().toLocaleString('th-TH')}`
+      });
+      Logger.log("✅ ส่งอีเมลแจ้งเตือนแอดมินเรียบร้อย");
+    } catch (emailError) {
+      Logger.log("❌ ไม่สามารถส่งอีเมลแจ้งเตือนได้: " + emailError.toString());
+    }
+  }
 }
 
 // ⏰ ตั้งค่า Trigger สำหรับตรวจสอบสมาชิกที่ตกหล่นทุกวัน
 function setupMissingMembersTrigger() {
-  // ลบ trigger เดิม (ถ้ามี)
-  const triggers = ScriptApp.getProjectTriggers();
-  triggers.forEach(trigger => {
-    if (trigger.getHandlerFunction() === 'notifyMissingMembers') {
-      ScriptApp.deleteTrigger(trigger);
+  try {
+    Logger.log("🔧 เริ่มตั้งค่า Trigger - setupMissingMembersTrigger");
+    
+    // ลบ trigger เดิม (ถ้ามี)
+    const triggers = ScriptApp.getProjectTriggers();
+    let deletedCount = 0;
+    
+    triggers.forEach(trigger => {
+      if (trigger.getHandlerFunction() === 'notifyMissingMembers') {
+        ScriptApp.deleteTrigger(trigger);
+        deletedCount++;
+        Logger.log("🗑️ ลบ trigger เดิม: " + trigger.getUniqueId());
+      }
+    });
+    
+    if (deletedCount > 0) {
+      Logger.log(`🗑️ ลบ trigger เดิมจำนวน ${deletedCount} ตัว`);
     }
-  });
-  
-  // สร้าง trigger ใหม่ - ตรวจสอบทุกวันเวลา 9:00 น.
-  ScriptApp.newTrigger('notifyMissingMembers')
-    .timeBased()
-    .everyDays(1)
-    .atHour(9)
-    .create();
-  
-  Logger.log("ตั้งค่า Trigger สำหรับตรวจสอบสมาชิกที่ตกหล่นสำเร็จ (ทุกวันเวลา 9:00 น.)");
+    
+    // สร้าง trigger ใหม่ - ตรวจสอบทุกวันเวลา 9:00 น.
+    const newTrigger = ScriptApp.newTrigger('notifyMissingMembers')
+      .timeBased()
+      .everyDays(1)
+      .atHour(9)
+      .create();
+    
+    Logger.log("✅ ตั้งค่า Trigger สำเร็จ: " + newTrigger.getUniqueId());
+    Logger.log("⏰ ตั้งค่า Trigger สำหรับตรวจสอบสมาชิกที่ตกหล่นสำเร็จ (ทุกวันเวลา 9:00 น.)");
+    
+    // แสดงผลลัพธ์ให้ผู้ใช้
+    const ui = SpreadsheetApp.getUi();
+    ui.alert("✅ ตั้งค่า Trigger สำเร็จ", 
+      `ตั้งค่า Trigger สำหรับตรวจสอบสมาชิกที่ตกหล่นเรียบร้อยแล้ว\n\n` +
+      `- ตรวจสอบทุกวันเวลา 9:00 น.\n` +
+      `- ลบ trigger เดิมจำนวน ${deletedCount} ตัว\n` +
+      `- สร้าง trigger ใหม่: ${newTrigger.getUniqueId()}`, 
+      ui.ButtonSet.OK);
+    
+  } catch (error) {
+    Logger.log("❌ setupMissingMembersTrigger Error: " + error.toString());
+    
+    // แสดงข้อผิดพลาดให้ผู้ใช้
+    const ui = SpreadsheetApp.getUi();
+    ui.alert("❌ เกิดข้อผิดพลาด", 
+      `ไม่สามารถตั้งค่า Trigger ได้:\n\n${error.toString()}`, 
+      ui.ButtonSet.OK);
+    
+    // ส่งอีเมลแจ้งเตือนแอดมิน
+    try {
+      const adminEmail = Session.getActiveUser().getEmail();
+      MailApp.sendEmail({
+        to: adminEmail,
+        subject: "⚠️ Trigger Setup Error - Up Level Guild",
+        body: `เกิดข้อผิดพลาดในการตั้งค่า Trigger:\n\n${error.toString()}\n\nเวลา: ${new Date().toLocaleString('th-TH')}`
+      });
+      Logger.log("✅ ส่งอีเมลแจ้งเตือนแอดมินเรียบร้อย");
+    } catch (emailError) {
+      Logger.log("❌ ไม่สามารถส่งอีเมลแจ้งเตือนได้: " + emailError.toString());
+    }
+    
+    throw error;
+  }
+}
+
+// 📊 ตรวจสอบสถานะ Triggers ทั้งหมด
+function checkTriggerStatus() {
+  try {
+    Logger.log("📊 เริ่มตรวจสอบสถานะ Triggers");
+    
+    const triggers = ScriptApp.getProjectTriggers();
+    const ui = SpreadsheetApp.getUi();
+    
+    if (triggers.length === 0) {
+      ui.alert("📊 สถานะ Triggers", "ไม่พบ Trigger ใดๆ ในโปรเจค", ui.ButtonSet.OK);
+      return;
+    }
+    
+    let statusMessage = "📊 สถานะ Triggers ทั้งหมด:\n\n";
+    let activeCount = 0;
+    let errorCount = 0;
+    
+    triggers.forEach((trigger, index) => {
+      const functionName = trigger.getHandlerFunction();
+      const eventType = trigger.getEventType();
+      const uniqueId = trigger.getUniqueId();
+      const isActive = uniqueId ? true : false;
+      
+      if (isActive) activeCount++;
+      else errorCount++;
+      
+      statusMessage += `${index + 1}. Function: ${functionName}\n`;
+      statusMessage += `   Type: ${eventType}\n`;
+      statusMessage += `   Status: ${isActive ? '✅ Active' : '❌ Inactive'}\n`;
+      statusMessage += `   ID: ${uniqueId || 'N/A'}\n\n`;
+    });
+    
+    statusMessage += `\n📈 สรุป:\n`;
+    statusMessage += `- จำนวนทั้งหมด: ${triggers.length} ตัว\n`;
+    statusMessage += `- ทำงานปกติ: ${activeCount} ตัว\n`;
+    statusMessage += `- มีปัญหา: ${errorCount} ตัว\n`;
+    
+    if (errorCount > 0) {
+      statusMessage += `\n⚠️ แนะนำ: เรียกใช้ฟังก์ชัน setupMissingMembersTrigger() เพื่อแก้ไข`;
+    }
+    
+    ui.alert("📊 สถานะ Triggers", statusMessage, ui.ButtonSet.OK);
+    Logger.log("✅ ตรวจสอบสถานะ Triggers เสร็จสิ้น");
+    
+  } catch (error) {
+    Logger.log("❌ checkTriggerStatus Error: " + error.toString());
+    const ui = SpreadsheetApp.getUi();
+    ui.alert("❌ เกิดข้อผิดพลาด", 
+      `ไม่สามารถตรวจสอบสถานะ Trigger ได้:\n\n${error.toString()}`, 
+      ui.ButtonSet.OK);
+  }
+}
+
+// 🔧 ตั้งค่า Trigger สำหรับฟังก์ชัน onSheetSelection
+function setupSheetSelectionTrigger() {
+  try {
+    Logger.log("🔧 เริ่มตั้งค่า Trigger - setupSheetSelectionTrigger");
+    
+    // ลบ trigger เดิม (ถ้ามี)
+    const triggers = ScriptApp.getProjectTriggers();
+    let deletedCount = 0;
+    
+    triggers.forEach(trigger => {
+      if (trigger.getHandlerFunction() === 'onSheetSelection') {
+        ScriptApp.deleteTrigger(trigger);
+        deletedCount++;
+        Logger.log("🗑️ ลบ trigger เดิม: " + trigger.getUniqueId());
+      }
+    });
+    
+    if (deletedCount > 0) {
+      Logger.log(`🗑️ ลบ trigger เดิมจำนวน ${deletedCount} ตัว`);
+    }
+    
+    // สร้าง trigger ใหม่
+    const newTrigger = ScriptApp.newTrigger('onSheetSelection')
+      .onSelection()
+      .create();
+    
+    Logger.log("✅ ตั้งค่า Trigger สำเร็จ: " + newTrigger.getUniqueId());
+    
+    // แสดงผลลัพธ์ให้ผู้ใช้
+    const ui = SpreadsheetApp.getUi();
+    ui.alert("✅ ตั้งค่า Trigger สำเร็จ", 
+      `ตั้งค่า Trigger สำหรับ onSheetSelection เรียบร้อยแล้ว\n\n` +
+      `- ลบ trigger เดิมจำนวน ${deletedCount} ตัว\n` +
+      `- สร้าง trigger ใหม่: ${newTrigger.getUniqueId()}`, 
+      ui.ButtonSet.OK);
+    
+  } catch (error) {
+    Logger.log("❌ setupSheetSelectionTrigger Error: " + error.toString());
+    
+    // แสดงข้อผิดพลาดให้ผู้ใช้
+    const ui = SpreadsheetApp.getUi();
+    ui.alert("❌ เกิดข้อผิดพลาด", 
+      `ไม่สามารถตั้งค่า Trigger ได้:\n\n${error.toString()}`, 
+      ui.ButtonSet.OK);
+    
+    // ส่งอีเมลแจ้งเตือนแอดมิน
+    try {
+      const adminEmail = Session.getActiveUser().getEmail();
+      MailApp.sendEmail({
+        to: adminEmail,
+        subject: "⚠️ Sheet Selection Trigger Setup Error - Up Level Guild",
+        body: `เกิดข้อผิดพลาดในการตั้งค่า Trigger:\n\n${error.toString()}\n\nเวลา: ${new Date().toLocaleString('th-TH')}`
+      });
+      Logger.log("✅ ส่งอีเมลแจ้งเตือนแอดมินเรียบร้อย");
+    } catch (emailError) {
+      Logger.log("❌ ไม่สามารถส่งอีเมลแจ้งเตือนได้: " + emailError.toString());
+    }
+    
+    throw error;
+  }
 }
 
 // 🏆 Round Robin Tournament Functions
