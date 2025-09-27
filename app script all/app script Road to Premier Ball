@@ -1,0 +1,789 @@
+// ✅ Up Level Challenge: Road to Premier Ball - App Script
+
+function onOpen() {
+  const ui = SpreadsheetApp.getUi();
+  
+  // 🎯 เมนู Road to Premier Ball
+  const roadToPremierMenu = ui.createMenu("🎯 Road to Premier Ball")
+    .addItem("📊 สรุปข้อมูลผู้สมัคร", "showRoadToPremierSummary")
+    .addItem("📅 ดูผู้สมัครตามวันที่", "showParticipantsByDate")
+    .addItem("🏆 บันทึกผลการแข่งขัน", "recordMatchResult")
+    .addItem("🎁 บันทึกการแลกแต้ม", "recordPointRedemption")
+    .addItem("📈 อัปเดตแต้มสะสม", "updatePoints")
+    .addSeparator()
+    .addItem("🔧 ตั้งค่า Trigger อัตโนมัติ", "setupRoadToPremierTrigger")
+    .addItem("📊 ตรวจสอบสถานะ Triggers", "checkTriggerStatus");
+
+  // 🛠️ เมนูระบบ
+  const systemMenu = ui.createMenu("🛠️ ระบบ")
+    .addItem("🗑️ ลบข้อมูลซ้ำ", "clearDuplicateEntries")
+    .addItem("❌ ลบข้อมูลผู้สมัคร", "removeParticipant")
+    .addItem("🔄 รีเซ็ตแต้มสะสม", "resetAllPoints")
+    .addItem("📊 ส่งออกข้อมูล", "exportData");
+
+  // สร้างเมนูหลัก
+  ui.createMenu("🎯 Road to Premier Ball")
+    .addSubMenu(roadToPremierMenu)
+    .addSubMenu(systemMenu)
+    .addToUi();
+}
+
+// ✅ รับข้อมูลจาก Google Form - Road to Premier Ball
+function onFormSubmit(e) {
+  try {
+    Logger.log("📥 เริ่มประมวลผลฟอร์ม Road to Premier Ball - onFormSubmit");
+    Logger.log("Event data: " + JSON.stringify(e));
+    
+    const values = e.values;
+    const timestamp = values[0];
+    const registrationDate = values[1]; // วันที่สมัครแข่งขัน
+    const fullName = values[2]; // ชื่อ - นามสกุล (ภาษาอังกฤษ)
+    const nickname = values[3]; // ชื่อเล่น
+    const trainerId = values[4]; // Trainer ID
+    const phone = normalizePhone(values[5]); // เบอร์โทรสำหรับติดต่อ
+    const playLevel = values[6]; // ระดับการเล่น
+    const termsConfirmed = values[7]; // ยืนยันเงื่อนไข
+
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const participantsSheet = ss.getSheetByName("Participants");
+    const pointsSheet = ss.getSheetByName("Points System");
+
+    if (!participantsSheet) {
+      throw new Error("ไม่พบชีท Participants");
+    }
+
+    // ตรวจสอบข้อมูลซ้ำ
+    const existingData = participantsSheet.getDataRange().getValues();
+    const existingPhones = existingData.slice(1).map(row => normalizePhone(row[5]));
+    const existingTrainerIds = existingData.slice(1).map(row => String(row[4]).trim());
+
+    let isDuplicate = false;
+    let duplicateReason = "";
+
+    if (existingPhones.includes(phone)) {
+      isDuplicate = true;
+      duplicateReason = "เบอร์โทรซ้ำ";
+    }
+
+    if (existingTrainerIds.includes(trainerId.trim())) {
+      isDuplicate = true;
+      duplicateReason += duplicateReason ? ", Trainer ID ซ้ำ" : "Trainer ID ซ้ำ";
+    }
+
+    // บันทึกข้อมูลผู้สมัคร
+    const newRow = [
+      timestamp,
+      registrationDate,
+      fullName,
+      nickname,
+      trainerId,
+      phone,
+      playLevel,
+      termsConfirmed,
+      isDuplicate ? `DUPLICATE: ${duplicateReason}` : "OK",
+      0 // แต้มสะสมเริ่มต้น
+    ];
+
+    const newRowIndex = participantsSheet.getLastRow() + 1;
+    participantsSheet.getRange(newRowIndex, 1, 1, newRow.length).setValues([newRow]);
+    
+    // ตั้งรูปแบบเบอร์โทร
+    participantsSheet.getRange(newRowIndex, 6).setNumberFormat("@");
+
+    if (isDuplicate) {
+      // ไฮไลท์แถวที่มีข้อมูลซ้ำ
+      participantsSheet.getRange(newRowIndex, 1, 1, newRow.length).setBackground("#f28b82");
+      Logger.log("⚠️ พบข้อมูลซ้ำ: " + duplicateReason);
+    } else {
+      // ไฮไลท์แถวใหม่
+      participantsSheet.getRange(newRowIndex, 1, 1, newRow.length).setBackground("#d9ead3");
+      Logger.log("✅ บันทึกข้อมูลผู้สมัครใหม่เรียบร้อย");
+    }
+
+    // สร้างระบบแต้มถ้ายังไม่มี
+    initializePointsSystem();
+
+    // อัปเดตสรุปข้อมูล
+    updateSummaryData();
+    
+    Logger.log("✅ ประมวลผลฟอร์ม Road to Premier Ball เสร็จสิ้น");
+    
+  } catch (error) {
+    Logger.log("❌ onFormSubmit Error: " + error.toString());
+    Logger.log("Event data: " + JSON.stringify(e));
+    
+    // ส่งอีเมลแจ้งเตือนแอดมิน
+    try {
+      const adminEmail = Session.getActiveUser().getEmail();
+      MailApp.sendEmail({
+        to: adminEmail,
+        subject: "⚠️ Road to Premier Ball Form Submit Error",
+        body: `เกิดข้อผิดพลาดในการประมวลผลฟอร์ม Road to Premier Ball:\n\n${error.toString()}\n\nEvent: ${JSON.stringify(e)}\n\nเวลา: ${new Date().toLocaleString('th-TH')}`
+      });
+      Logger.log("✅ ส่งอีเมลแจ้งเตือนแอดมินเรียบร้อย");
+    } catch (emailError) {
+      Logger.log("❌ ไม่สามารถส่งอีเมลแจ้งเตือนได้: " + emailError.toString());
+    }
+  }
+}
+
+// ✅ ปรับเบอร์โทรให้เป็นรูปแบบมาตรฐาน
+function normalizePhone(phone) {
+  if (!phone) return "";
+  let normalized = String(phone).replace(/[^\d]/g, "");
+  if (normalized.length === 9 && normalized[0] !== "0") {
+    normalized = "0" + normalized;
+  }
+  return normalized;
+}
+
+// ✅ สร้างระบบแต้มถ้ายังไม่มี
+function initializePointsSystem() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let pointsSheet = ss.getSheetByName("Points System");
+  
+  if (!pointsSheet) {
+    pointsSheet = ss.insertSheet("Points System");
+    
+    // สร้างหัวข้อตาราง
+    const headers = [
+      "แต้ม", "รางวัล", "จำนวนคงเหลือ", "จำนวนที่แลกแล้ว", "หมายเหตุ"
+    ];
+    
+    const rewards = [
+      [1, "Booster Pack 1 ซอง", 50, 0, ""],
+      [2, "ลูกเต๋าธรรมดา 1 ชุด / ตัวนับสถานะ / แฟ้มพิคาชู", 20, 0, ""],
+      [3, "ลูกเต๋านับแดเมจ / Sleeve DefendD", 15, 0, ""],
+      [5, "Deck Case / Outter Sleeves / กล่องพับเก็บการ์ด", 10, 0, ""],
+      [7, "Sleeve Pokémon / กล่องใส่ Playmat / แฟ้มการ์ด", 8, 0, ""],
+      [10, "Deck Case + Sleeve / ชุดอุปกรณ์รวม / 12 Booster Packs", 5, 0, ""],
+      [12, "Deck Case + Sleeve + กล่อง Playmat / แฟ้ม + ลูกเต๋านับแดเมจ + ตัวนับสถานะ / 15 Booster Packs", 3, 0, ""],
+      [15, "Booster Box / Playmat", 2, 0, ""]
+    ];
+    
+    pointsSheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+    pointsSheet.getRange(2, 1, rewards.length, headers.length).setValues(rewards);
+    
+    // ตั้งรูปแบบ
+    pointsSheet.getRange(1, 1, 1, headers.length).setBackground("#4285f4").setFontColor("white").setFontWeight("bold");
+    pointsSheet.autoResizeColumns(1, headers.length);
+    
+    Logger.log("✅ สร้างระบบแต้มเรียบร้อย");
+  }
+}
+
+// ✅ อัปเดตสรุปข้อมูล
+function updateSummaryData() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let summarySheet = ss.getSheetByName("Summary");
+  
+  if (!summarySheet) {
+    summarySheet = ss.insertSheet("Summary");
+  }
+  
+  const participantsSheet = ss.getSheetByName("Participants");
+  const participantsData = participantsSheet.getDataRange().getValues();
+  
+  // คำนวณสถิติ
+  const totalParticipants = participantsData.length - 1; // ลบหัวข้อ
+  const uniqueParticipants = new Set(participantsData.slice(1).map(row => normalizePhone(row[5]))).size;
+  const duplicateEntries = totalParticipants - uniqueParticipants;
+  
+  // สรุปตามวันที่
+  const dateSummary = {};
+  participantsData.slice(1).forEach(row => {
+    const date = row[1];
+    if (date) {
+      dateSummary[date] = (dateSummary[date] || 0) + 1;
+    }
+  });
+  
+  // เขียนข้อมูลสรุป
+  summarySheet.clear();
+  summarySheet.getRange(1, 1).setValue("📊 สรุปข้อมูล Road to Premier Ball");
+  summarySheet.getRange(1, 1).setFontSize(16).setFontWeight("bold");
+  
+  summarySheet.getRange(3, 1).setValue("จำนวนผู้สมัครทั้งหมด:");
+  summarySheet.getRange(3, 2).setValue(totalParticipants);
+  
+  summarySheet.getRange(4, 1).setValue("จำนวนผู้สมัครไม่ซ้ำ:");
+  summarySheet.getRange(4, 2).setValue(uniqueParticipants);
+  
+  summarySheet.getRange(5, 1).setValue("จำนวนข้อมูลซ้ำ:");
+  summarySheet.getRange(5, 2).setValue(duplicateEntries);
+  
+  summarySheet.getRange(7, 1).setValue("📅 สรุปตามวันที่:");
+  summarySheet.getRange(7, 1).setFontWeight("bold");
+  
+  let row = 8;
+  Object.keys(dateSummary).forEach(date => {
+    summarySheet.getRange(row, 1).setValue(date);
+    summarySheet.getRange(row, 2).setValue(dateSummary[date]);
+    row++;
+  });
+  
+  summarySheet.autoResizeColumns(1, 2);
+  Logger.log("✅ อัปเดตสรุปข้อมูลเรียบร้อย");
+}
+
+// ✅ แสดงสรุปข้อมูลผู้สมัคร
+function showRoadToPremierSummary() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const participantsSheet = ss.getSheetByName("Participants");
+  
+  if (!participantsSheet) {
+    SpreadsheetApp.getUi().alert("ไม่พบชีท Participants");
+    return;
+  }
+  
+  const data = participantsSheet.getDataRange().getValues();
+  const totalParticipants = data.length - 1;
+  const uniqueParticipants = new Set(data.slice(1).map(row => normalizePhone(row[5]))).size;
+  
+  const message = `📊 สรุปข้อมูล Road to Premier Ball\n\n` +
+    `จำนวนผู้สมัครทั้งหมด: ${totalParticipants}\n` +
+    `จำนวนผู้สมัครไม่ซ้ำ: ${uniqueParticipants}\n` +
+    `จำนวนข้อมูลซ้ำ: ${totalParticipants - uniqueParticipants}`;
+  
+  SpreadsheetApp.getUi().alert(message);
+}
+
+// ✅ แสดงผู้สมัครตามวันที่
+function showParticipantsByDate() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const participantsSheet = ss.getSheetByName("Participants");
+  
+  if (!participantsSheet) {
+    SpreadsheetApp.getUi().alert("ไม่พบชีท Participants");
+    return;
+  }
+  
+  const data = participantsSheet.getDataRange().getValues();
+  const dateSummary = {};
+  
+  data.slice(1).forEach(row => {
+    const date = row[1];
+    if (date) {
+      dateSummary[date] = (dateSummary[date] || 0) + 1;
+    }
+  });
+  
+  let message = "📅 ผู้สมัครตามวันที่:\n\n";
+  Object.keys(dateSummary).forEach(date => {
+    message += `${date}: ${dateSummary[date]} คน\n`;
+  });
+  
+  SpreadsheetApp.getUi().alert(message);
+}
+
+// ✅ บันทึกผลการแข่งขัน
+function recordMatchResult() {
+  const ui = SpreadsheetApp.getUi();
+  
+  const trainerId = ui.prompt("บันทึกผลการแข่งขัน", "กรุณาใส่ Trainer ID:", ui.ButtonSet.OK_CANCEL);
+  if (trainerId.getSelectedButton() !== ui.Button.OK) return;
+  
+  const result = ui.alert("ผลการแข่งขัน", "ผู้เล่นชนะหรือแพ้?", ui.ButtonSet.YES_NO);
+  const isWin = result === ui.Button.YES;
+  
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const participantsSheet = ss.getSheetByName("Participants");
+  const data = participantsSheet.getDataRange().getValues();
+  
+  // หาผู้เล่นจาก Trainer ID
+  let playerRow = -1;
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][4]).trim() === trainerId.getResponseText().trim()) {
+      playerRow = i + 1;
+      break;
+    }
+  }
+  
+  if (playerRow === -1) {
+    ui.alert("ไม่พบผู้เล่น", "ไม่พบ Trainer ID ที่ระบุ");
+    return;
+  }
+  
+  // อัปเดตแต้ม
+  const currentPoints = Number(data[playerRow - 1][9]) || 0;
+  const newPoints = currentPoints + (isWin ? 1 : 0);
+  
+  participantsSheet.getRange(playerRow, 10).setValue(newPoints);
+  
+  // บันทึกใน Match Log
+  logMatchResult(trainerId.getResponseText(), isWin, newPoints);
+  
+  ui.alert("บันทึกเรียบร้อย", `แต้มสะสมใหม่: ${newPoints}`);
+}
+
+// ✅ บันทึกการแลกแต้ม
+function recordPointRedemption() {
+  const ui = SpreadsheetApp.getUi();
+  
+  const trainerId = ui.prompt("บันทึกการแลกแต้ม", "กรุณาใส่ Trainer ID:", ui.ButtonSet.OK_CANCEL);
+  if (trainerId.getSelectedButton() !== ui.Button.OK) return;
+  
+  const points = ui.prompt("แต้มที่ใช้", "กรุณาใส่จำนวนแต้มที่ใช้:", ui.ButtonSet.OK_CANCEL);
+  if (points.getSelectedButton() !== ui.Button.OK) return;
+  
+  const pointsUsed = Number(points.getResponseText());
+  if (isNaN(pointsUsed) || pointsUsed <= 0) {
+    ui.alert("ข้อมูลไม่ถูกต้อง", "กรุณาใส่จำนวนแต้มที่เป็นตัวเลขและมากกว่า 0");
+    return;
+  }
+  
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const participantsSheet = ss.getSheetByName("Participants");
+  const data = participantsSheet.getDataRange().getValues();
+  
+  // หาผู้เล่นจาก Trainer ID
+  let playerRow = -1;
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][4]).trim() === trainerId.getResponseText().trim()) {
+      playerRow = i + 1;
+      break;
+    }
+  }
+  
+  if (playerRow === -1) {
+    ui.alert("ไม่พบผู้เล่น", "ไม่พบ Trainer ID ที่ระบุ");
+    return;
+  }
+  
+  const currentPoints = Number(data[playerRow - 1][9]) || 0;
+  if (currentPoints < pointsUsed) {
+    ui.alert("แต้มไม่เพียงพอ", `แต้มที่มี: ${currentPoints}, แต้มที่ต้องการใช้: ${pointsUsed}`);
+    return;
+  }
+  
+  // อัปเดตแต้ม
+  const newPoints = currentPoints - pointsUsed;
+  participantsSheet.getRange(playerRow, 10).setValue(newPoints);
+  
+  // บันทึกใน Redemption Log
+  logPointRedemption(trainerId.getResponseText(), pointsUsed, newPoints);
+  
+  ui.alert("แลกแต้มเรียบร้อย", `แต้มคงเหลือ: ${newPoints}`);
+}
+
+// ✅ อัปเดตแต้มสะสม
+function updatePoints() {
+  const ui = SpreadsheetApp.getUi();
+  
+  const trainerId = ui.prompt("อัปเดตแต้มสะสม", "กรุณาใส่ Trainer ID:", ui.ButtonSet.OK_CANCEL);
+  if (trainerId.getSelectedButton() !== ui.Button.OK) return;
+  
+  const points = ui.prompt("แต้มสะสมใหม่", "กรุณาใส่จำนวนแต้มสะสม:", ui.ButtonSet.OK_CANCEL);
+  if (points.getSelectedButton() !== ui.Button.OK) return;
+  
+  const newPoints = Number(points.getResponseText());
+  if (isNaN(newPoints) || newPoints < 0) {
+    ui.alert("ข้อมูลไม่ถูกต้อง", "กรุณาใส่จำนวนแต้มที่เป็นตัวเลขและไม่น้อยกว่า 0");
+    return;
+  }
+  
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const participantsSheet = ss.getSheetByName("Participants");
+  const data = participantsSheet.getDataRange().getValues();
+  
+  // หาผู้เล่นจาก Trainer ID
+  let playerRow = -1;
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][4]).trim() === trainerId.getResponseText().trim()) {
+      playerRow = i + 1;
+      break;
+    }
+  }
+  
+  if (playerRow === -1) {
+    ui.alert("ไม่พบผู้เล่น", "ไม่พบ Trainer ID ที่ระบุ");
+    return;
+  }
+  
+  const oldPoints = Number(data[playerRow - 1][9]) || 0;
+  participantsSheet.getRange(playerRow, 10).setValue(newPoints);
+  
+  // บันทึกใน Points Log
+  logPointsUpdate(trainerId.getResponseText(), oldPoints, newPoints);
+  
+  ui.alert("อัปเดตแต้มเรียบร้อย", `แต้มเดิม: ${oldPoints}, แต้มใหม่: ${newPoints}`);
+}
+
+// ✅ บันทึกผลการแข่งขัน
+function logMatchResult(trainerId, isWin, newPoints) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let matchLogSheet = ss.getSheetByName("Match Log");
+  
+  if (!matchLogSheet) {
+    matchLogSheet = ss.insertSheet("Match Log");
+    const headers = ["วันที่/เวลา", "Trainer ID", "ผลการแข่งขัน", "แต้มสะสมใหม่"];
+    matchLogSheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+    matchLogSheet.getRange(1, 1, 1, headers.length).setBackground("#4285f4").setFontColor("white").setFontWeight("bold");
+  }
+  
+  const now = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "dd/MM/yyyy HH:mm:ss");
+  const result = isWin ? "ชนะ" : "แพ้";
+  
+  const newRow = [now, trainerId, result, newPoints];
+  const newRowIndex = matchLogSheet.getLastRow() + 1;
+  matchLogSheet.getRange(newRowIndex, 1, 1, newRow.length).setValues([newRow]);
+  matchLogSheet.getRange(newRowIndex, 1).setNumberFormat("@");
+}
+
+// ✅ บันทึกการแลกแต้ม
+function logPointRedemption(trainerId, pointsUsed, remainingPoints) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let redemptionLogSheet = ss.getSheetByName("Redemption Log");
+  
+  if (!redemptionLogSheet) {
+    redemptionLogSheet = ss.insertSheet("Redemption Log");
+    const headers = ["วันที่/เวลา", "Trainer ID", "แต้มที่ใช้", "แต้มคงเหลือ"];
+    redemptionLogSheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+    redemptionLogSheet.getRange(1, 1, 1, headers.length).setBackground("#4285f4").setFontColor("white").setFontWeight("bold");
+  }
+  
+  const now = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "dd/MM/yyyy HH:mm:ss");
+  const newRow = [now, trainerId, pointsUsed, remainingPoints];
+  const newRowIndex = redemptionLogSheet.getLastRow() + 1;
+  redemptionLogSheet.getRange(newRowIndex, 1, 1, newRow.length).setValues([newRow]);
+  redemptionLogSheet.getRange(newRowIndex, 1).setNumberFormat("@");
+}
+
+// ✅ บันทึกการอัปเดตแต้ม
+function logPointsUpdate(trainerId, oldPoints, newPoints) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let pointsLogSheet = ss.getSheetByName("Points Log");
+  
+  if (!pointsLogSheet) {
+    pointsLogSheet = ss.insertSheet("Points Log");
+    const headers = ["วันที่/เวลา", "Trainer ID", "แต้มเดิม", "แต้มใหม่", "การเปลี่ยนแปลง"];
+    pointsLogSheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+    pointsLogSheet.getRange(1, 1, 1, headers.length).setBackground("#4285f4").setFontColor("white").setFontWeight("bold");
+  }
+  
+  const now = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "dd/MM/yyyy HH:mm:ss");
+  const change = newPoints - oldPoints;
+  const changeText = change > 0 ? `+${change}` : String(change);
+  
+  const newRow = [now, trainerId, oldPoints, newPoints, changeText];
+  const newRowIndex = pointsLogSheet.getLastRow() + 1;
+  pointsLogSheet.getRange(newRowIndex, 1, 1, newRow.length).setValues([newRow]);
+  pointsLogSheet.getRange(newRowIndex, 1).setNumberFormat("@");
+}
+
+// ✅ ลบข้อมูลซ้ำ
+function clearDuplicateEntries() {
+  const ui = SpreadsheetApp.getUi();
+  const result = ui.alert("ยืนยันการลบ", "คุณต้องการลบข้อมูลซ้ำหรือไม่?", ui.ButtonSet.YES_NO);
+  
+  if (result !== ui.Button.YES) return;
+  
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const participantsSheet = ss.getSheetByName("Participants");
+  const data = participantsSheet.getDataRange().getValues();
+  
+  const uniqueEntries = [];
+  const seenPhones = new Set();
+  const seenTrainerIds = new Set();
+  
+  // เก็บหัวข้อ
+  uniqueEntries.push(data[0]);
+  
+  // ตรวจสอบข้อมูลซ้ำ
+  for (let i = 1; i < data.length; i++) {
+    const phone = normalizePhone(data[i][5]);
+    const trainerId = String(data[i][4]).trim();
+    
+    if (!seenPhones.has(phone) && !seenTrainerIds.has(trainerId)) {
+      uniqueEntries.push(data[i]);
+      seenPhones.add(phone);
+      seenTrainerIds.add(trainerId);
+    }
+  }
+  
+  // เขียนข้อมูลใหม่
+  participantsSheet.clear();
+  participantsSheet.getRange(1, 1, uniqueEntries.length, uniqueEntries[0].length).setValues(uniqueEntries);
+  
+  // ตั้งรูปแบบ
+  participantsSheet.getRange(1, 1, 1, uniqueEntries[0].length).setBackground("#4285f4").setFontColor("white").setFontWeight("bold");
+  participantsSheet.autoResizeColumns(1, uniqueEntries[0].length);
+  
+  ui.alert("ลบข้อมูลซ้ำเรียบร้อย", `ลบข้อมูลซ้ำ ${data.length - uniqueEntries.length} รายการ`);
+}
+
+// ✅ ลบข้อมูลผู้สมัคร
+function removeParticipant() {
+  const ui = SpreadsheetApp.getUi();
+  
+  const trainerId = ui.prompt("ลบข้อมูลผู้สมัคร", "กรุณาใส่ Trainer ID:", ui.ButtonSet.OK_CANCEL);
+  if (trainerId.getSelectedButton() !== ui.Button.OK) return;
+  
+  const result = ui.alert("ยืนยันการลบ", `คุณต้องการลบข้อมูล ${trainerId.getResponseText()} หรือไม่?`, ui.ButtonSet.YES_NO);
+  if (result !== ui.Button.YES) return;
+  
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const participantsSheet = ss.getSheetByName("Participants");
+  const data = participantsSheet.getDataRange().getValues();
+  
+  // หาผู้เล่นจาก Trainer ID
+  let playerRow = -1;
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][4]).trim() === trainerId.getResponseText().trim()) {
+      playerRow = i + 1;
+      break;
+    }
+  }
+  
+  if (playerRow === -1) {
+    ui.alert("ไม่พบผู้เล่น", "ไม่พบ Trainer ID ที่ระบุ");
+    return;
+  }
+  
+  // ลบแถว
+  participantsSheet.deleteRow(playerRow);
+  
+  ui.alert("ลบข้อมูลเรียบร้อย", `ลบข้อมูล ${trainerId.getResponseText()} เรียบร้อย`);
+}
+
+// ✅ รีเซ็ตแต้มสะสมทั้งหมด
+function resetAllPoints() {
+  const ui = SpreadsheetApp.getUi();
+  const result = ui.alert("ยืนยันการรีเซ็ต", "คุณต้องการรีเซ็ตแต้มสะสมทั้งหมดเป็น 0 หรือไม่?", ui.ButtonSet.YES_NO);
+  
+  if (result !== ui.Button.YES) return;
+  
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const participantsSheet = ss.getSheetByName("Participants");
+  const data = participantsSheet.getDataRange().getValues();
+  
+  // รีเซ็ตแต้มทั้งหมดเป็น 0
+  for (let i = 2; i <= participantsSheet.getLastRow(); i++) {
+    participantsSheet.getRange(i, 10).setValue(0);
+  }
+  
+  ui.alert("รีเซ็ตแต้มเรียบร้อย", "รีเซ็ตแต้มสะสมทั้งหมดเป็น 0 เรียบร้อย");
+}
+
+// ✅ ส่งออกข้อมูล
+function exportData() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const participantsSheet = ss.getSheetByName("Participants");
+  
+  if (!participantsSheet) {
+    SpreadsheetApp.getUi().alert("ไม่พบชีท Participants");
+    return;
+  }
+  
+  const data = participantsSheet.getDataRange().getValues();
+  const csvContent = data.map(row => row.join(",")).join("\n");
+  
+  // สร้างไฟล์ CSV
+  const blob = Utilities.newBlob(csvContent, "text/csv", "Road_to_Premier_Ball_Participants.csv");
+  
+  // ส่งอีเมลไฟล์ CSV
+  const adminEmail = Session.getActiveUser().getEmail();
+  MailApp.sendEmail({
+    to: adminEmail,
+    subject: "📊 ข้อมูลผู้สมัคร Road to Premier Ball",
+    body: "ข้อมูลผู้สมัคร Road to Premier Ball ตามที่ร้องขอ",
+    attachments: [blob]
+  });
+  
+  SpreadsheetApp.getUi().alert("ส่งออกข้อมูลเรียบร้อย", "ส่งไฟล์ CSV ไปยังอีเมลแล้ว");
+}
+
+// ✅ ตั้งค่า Trigger อัตโนมัติ
+function setupRoadToPremierTrigger() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  
+  // ลบ trigger เดิม
+  const triggers = ScriptApp.getProjectTriggers();
+  triggers.forEach(trigger => {
+    if (trigger.getHandlerFunction() === "onFormSubmit") {
+      ScriptApp.deleteTrigger(trigger);
+    }
+  });
+  
+  // สร้าง trigger ใหม่
+  ScriptApp.newTrigger("onFormSubmit")
+    .for(ss)
+    .onFormSubmit()
+    .create();
+  
+  SpreadsheetApp.getUi().alert("ตั้งค่า Trigger เรียบร้อย", "ตั้งค่า Trigger อัตโนมัติสำหรับฟอร์มเรียบร้อย");
+}
+
+// ✅ ตรวจสอบสถานะ Triggers
+function checkTriggerStatus() {
+  const triggers = ScriptApp.getProjectTriggers();
+  let message = "📊 สถานะ Triggers:\n\n";
+  
+  if (triggers.length === 0) {
+    message += "ไม่มี Trigger ที่ตั้งค่าไว้";
+  } else {
+    triggers.forEach((trigger, index) => {
+      message += `${index + 1}. ${trigger.getHandlerFunction()}\n`;
+      message += `   Event: ${trigger.getEventType()}\n`;
+      message += `   Source: ${trigger.getTriggerSource()}\n\n`;
+    });
+  }
+  
+  SpreadsheetApp.getUi().alert("สถานะ Triggers", message);
+}
+
+// ✅ API สำหรับหน้าเว็บ - ดึงข้อมูลผู้สมัคร Road to Premier Ball
+function doGet(e) {
+  try {
+    const action = e.parameter.func || 'getParticipants';
+    
+    switch(action) {
+      case 'getParticipants':
+        return getParticipantsData();
+      case 'getParticipantsByDate':
+        return getParticipantsByDate(e.parameter.date);
+      case 'getSummary':
+        return getSummaryData();
+      default:
+        return ContentService
+          .createTextOutput(JSON.stringify({
+            status: "error",
+            message: "Unknown function"
+          }))
+          .setMimeType(ContentService.MimeType.JSON);
+    }
+  } catch (error) {
+    return ContentService
+      .createTextOutput(JSON.stringify({
+        status: "error",
+        message: error.toString()
+      }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+// ✅ ดึงข้อมูลผู้สมัครทั้งหมด
+function getParticipantsData() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const participantsSheet = ss.getSheetByName("Participants");
+  
+  if (!participantsSheet) {
+    return ContentService
+      .createTextOutput(JSON.stringify({
+        status: "error",
+        message: "Participants sheet not found"
+      }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+  
+  const data = participantsSheet.getDataRange().getValues();
+  const headers = data[0];
+  const participants = [];
+  
+  for (let i = 1; i < data.length; i++) {
+    const row = data[i];
+    const participant = {
+      timestamp: row[0],
+      registrationDate: row[1],
+      fullName: row[2],
+      nickname: row[3],
+      trainerId: row[4],
+      phone: row[5],
+      playLevel: row[6],
+      termsConfirmed: row[7],
+      status: row[8],
+      points: row[9] || 0
+    };
+    participants.push(participant);
+  }
+  
+  return ContentService
+    .createTextOutput(JSON.stringify({
+      status: "success",
+      participants: participants,
+      total: participants.length
+    }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+// ✅ ดึงข้อมูลผู้สมัครตามวันที่
+function getParticipantsByDate(date) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const participantsSheet = ss.getSheetByName("Participants");
+  
+  if (!participantsSheet) {
+    return ContentService
+      .createTextOutput(JSON.stringify({
+        status: "error",
+        message: "Participants sheet not found"
+      }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+  
+  const data = participantsSheet.getDataRange().getValues();
+  const participants = [];
+  
+  for (let i = 1; i < data.length; i++) {
+    const row = data[i];
+    if (row[1] === date) { // วันที่สมัครแข่งขัน
+      const participant = {
+        nickname: row[3],
+        phone: row[5],
+        level: row[6],
+        trainerId: row[4],
+        points: row[9] || 0
+      };
+      participants.push(participant);
+    }
+  }
+  
+  return ContentService
+    .createTextOutput(JSON.stringify({
+      status: "success",
+      date: date,
+      participants: participants,
+      count: participants.length
+    }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+// ✅ ดึงข้อมูลสรุป
+function getSummaryData() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const participantsSheet = ss.getSheetByName("Participants");
+  
+  if (!participantsSheet) {
+    return ContentService
+      .createTextOutput(JSON.stringify({
+        status: "error",
+        message: "Participants sheet not found"
+      }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+  
+  const data = participantsSheet.getDataRange().getValues();
+  const totalParticipants = data.length - 1;
+  const uniqueParticipants = new Set(data.slice(1).map(row => normalizePhone(row[5]))).size;
+  const duplicateEntries = totalParticipants - uniqueParticipants;
+  
+  // สรุปตามวันที่
+  const dateSummary = {};
+  data.slice(1).forEach(row => {
+    const date = row[1];
+    if (date) {
+      dateSummary[date] = (dateSummary[date] || 0) + 1;
+    }
+  });
+  
+  return ContentService
+    .createTextOutput(JSON.stringify({
+      status: "success",
+      summary: {
+        totalParticipants: totalParticipants,
+        uniqueParticipants: uniqueParticipants,
+        duplicateEntries: duplicateEntries,
+        dateSummary: dateSummary
+      }
+    }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
