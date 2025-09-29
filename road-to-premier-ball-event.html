@@ -507,7 +507,7 @@
     ];
 
     // API สำหรับ Road to Premier Ball
-    const roadToPremierApi = "https://script.googleusercontent.com/macros/echo?user_content_key=AehSKLhQY4mTywojYIdz88awqKQ5dYslYOqgR7aUqLQIkJqu9aQfDsuKyyVMcPYsOHNMlVyV1OSWeo1R_-1tu-6HHVhJPVJjTbKmbsh69r_xip_p4WqSSpu_nFT9S8GYzsvnU28rKQE6Cla1QZ6JPOCD54iw3IkdFjg5mtUUP_L6SStN5h5ww45-XoGa0TYkil2A6Zx7z2NbkpSwPCiYq-fYlu0NzhBs_DLEcsmfV9zCnVnsB8-Yh-yj2A-7Jl8R5jg8Sfp7UcNPx4z0DptOnO7kBXiamzZ74x7Y4MKnLxbYJQ5m_gKMvlgS-p9sBAL_hw&lib=Mp8k5g_wgGj0KNEc0CNwaPnFr3qi2vAlX";
+    const roadToPremierApi = "https://script.google.com/macros/s/AKfycbyRImCXj09sIztWDmKrn-LxisZeCdiXV279cQu097CxFPux6Sc2ofFI8eu6aFDHnJui/exec";
     
     // ดึงข้อมูลสมาชิกจาก Member Dashboard (สำหรับ codename และ rank)
     const memberDashboardApi = "https://script.google.com/macros/s/AKfycbxtjsDwHI6nJU4OIHExUxMaZwUn3qwakvdkzwbQO7C8Trzz5Gh84SX6F1gqb4BOFQcn/exec?func=getMemberDashboardData";
@@ -664,7 +664,7 @@
         
         html += `<table id="${groupId}" ${tableStyle}><thead><tr>
             <th style="background:${color.border};color:#fff;">ลำดับ</th>
-            <th style="background:${color.border};color:#fff;">ชื่อเล่น</th>
+            <th style="background:${color.border};color:#fff;">ชื่อ</th>
             <th style="background:${color.border};color:#fff;">ระดับการเล่น</th>
           </tr></thead><tbody>`;
         
@@ -674,7 +674,7 @@
           if (allPlayers.length > 0 && idx === 0) {
             html += `<tr><td colspan="3" style="background: #fff3cd; color: #856404; padding: 10px;">📊 ข้อมูลผู้สมัครทั้งหมด (${allPlayers.length} คน):</td></tr>`;
             allPlayers.forEach((player, idx3) => {
-              let displayName = player.nickname;
+              let displayName = `${player.fullName || player.nickname || ''}`;
               let phone = String(player.phone || '').replace(/[^\d]/g, "");
               const profile = phoneMap[phone];
               if (profile && profile.codename && profile.rank) {
@@ -690,7 +690,7 @@
           }
         } else {
           players.forEach((player, idx2) => {
-            let displayName = player.nickname;
+            let displayName = `${player.fullName || player.nickname || ''}`;
             let phone = String(player.phone || '').replace(/[^\d]/g, "");
             const profile = phoneMap[phone];
             if (profile && profile.codename && profile.rank) {
