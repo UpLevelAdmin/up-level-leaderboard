@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Tournament Management - iPad Menu</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 10px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+            padding: 20px;
+        }
+
+        .menu-section {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .menu-section:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+            border-color: #667eea;
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .menu-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .menu-button {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 18px 20px;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+            position: relative;
+            overflow: hidden;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            touch-action: manipulation;
+        }
+
+        .menu-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .menu-button:active {
+            transform: scale(0.98);
+        }
+
+        .menu-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .menu-button .icon {
+            font-size: 1.3rem;
+            min-width: 28px;
+        }
+
+        .menu-button .text {
+            flex: 1;
+            line-height: 1.3;
+        }
+
+        .loading {
+            position: relative;
+        }
+
+        .loading::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            right: 15px;
+            width: 20px;
+            height: 20px;
+            border: 2px solid transparent;
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            transform: translateY(-50%);
+        }
+
+        @keyframes spin {
+            0% { transform: translateY(-50%) rotate(0deg); }
+            100% { transform: translateY(-50%) rotate(360deg); }
+        }
+
+        .status-message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 10px;
+            color: white;
+            font-weight: 500;
+            z-index: 1000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            max-width: 300px;
+        }
+
+        .status-message.show {
+            transform: translateX(0);
+        }
+
+        .status-message.success {
+            background: linear-gradient(135deg, #00b894, #00a085);
+        }
+
+        .status-message.error {
+            background: linear-gradient(135deg, #e17055, #d63031);
+        }
+
+        .status-message.info {
+            background: linear-gradient(135deg, #74b9ff, #0984e3);
+        }
+
+        /* iPad specific styles */
+        @media (max-width: 1024px) {
+            .menu-grid {
+                grid-template-columns: 1fr;
+                padding: 15px;
+            }
+
+            .menu-section {
+                padding: 15px;
+            }
+
+            .menu-button {
+                padding: 20px;
+                font-size: 1.1rem;
+                min-height: 65px;
+            }
+
+            .section-title {
+                font-size: 1.2rem;
+            }
+        }
+
+        /* Landscape orientation for iPad */
+        @media (max-width: 1024px) and (orientation: landscape) {
+            .menu-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* Prevent zoom on double tap */
+        * {
+            touch-action: manipulation;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏆 Tournament Management</h1>
+            <p>ระบบจัดการการแข่งขัน - สำหรับ iPad</p>
+        </div>
+
+        <div class="menu-grid">
+            <!-- Tournament Management Section -->
+            <div class="menu-section">
+                <div class="section-title">
+                    <span>🏆</span>
+                    <span>Tournament</span>
+                </div>
+                <div class="menu-buttons">
+                    <button class="menu-button" onclick="executeFunction('generatePlayerIDs')">
+                        <span class="icon">🆔</span>
+                        <span class="text">สร้าง Player ID อัตโนมัติ</span>
+                    </button>
+                    <button class="menu-button" onclick="executeFunction('fixPhoneNumbers')">
+                        <span class="icon">📞</span>
+                        <span class="text">แก้ไขเบอร์โทรให้มี 0 นำหน้า</span>
+                    </button>
+                    <button class="menu-button" onclick="executeFunction('pairFirstRound')">
+                        <span class="icon">🎲</span>
+                        <span class="text">จับคู่รอบแรก</span>
+                    </button>
+                    <button class="menu-button" onclick="executeFunction('pairNextRound')">
+                        <span class="icon">➡️</span>
+                        <span class="text">จับคู่รอบถัดไป</span>
+                    </button>
+                    <button class="menu-button" onclick="executeFunction('updateStandings')">
+                        <span class="icon">🔁</span>
+                        <span class="text">อัปเดต Standings</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Round Robin Section -->
+            <div class="menu-section">
+                <div class="section-title">
+                    <span>🔄</span>
+                    <span>Round Robin</span>
+                </div>
+                <div class="menu-buttons">
+                    <button class="menu-button" onclick="executeFunction('createRoundRobinTournament')">
+                        <span class="icon">🔄</span>
+                        <span class="text">สร้าง Round Robin</span>
+                    </button>
+                    <button class="menu-button" onclick="executeFunction('updateRoundRobinResults')">
+                        <span class="icon">📊</span>
+                        <span class="text">อัปเดตผล Round Robin</span>
+                    </button>
+                    <button class="menu-button" onclick="executeFunction('autoUpdateRoundRobinResults')">
+                        <span class="icon">🔄</span>
+                        <span class="text">อัปเดตผลและ Standings อัตโนมัติ</span>
+                    </button>
+                    <button class="menu-button" onclick="executeFunction('createRoundRobinStanding')">
+                        <span class="icon">🏆</span>
+                        <span class="text">สร้างสรุปผล Round Robin</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Data Management Section -->
+            <div class="menu-section">
+                <div class="section-title">
+                    <span>🛠️</span>
+                    <span>Data Management</span>
+                </div>
+                <div class="menu-buttons">
+                    <button class="menu-button" onclick="executeFunction('clearAllData')">
+                        <span class="icon">🧹</span>
+                        <span class="text">เคลียร์ทั้งหมด (เริ่มใหม่)</span>
+                    </button>
+                    <button class="menu-button" onclick="executeFunction('showStandingCheckResult')">
+                        <span class="icon">🔍</span>
+                        <span class="text">ตรวจสอบ Standing แบบเร็ว</span>
+                    </button>
+                    <button class="menu-button" onclick="executeFunction('forceUpdateAllStatus')">
+                        <span class="icon">🔄</span>
+                        <span class="text">บังคับอัปเดต Status ทั้งหมด</span>
+                    </button>
+                    <button class="menu-button" onclick="executeFunction('fixPlayerDataIssues')">
+                        <span class="icon">🔧</span>
+                        <span class="text">แก้ไขปัญหาข้อมูล Player</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Formatting Section -->
+            <div class="menu-section">
+                <div class="section-title">
+                    <span>🎨</span>
+                    <span>Formatting</span>
+                </div>
+                <div class="menu-buttons">
+                    <button class="menu-button" onclick="executeFunction('createPairingHeader')">
+                        <span class="icon">📋</span>
+                        <span class="text">สร้างหัวตาราง Pairing</span>
+                    </button>
+                    <button class="menu-button" onclick="executeFunction('formatPairingSheet')">
+                        <span class="icon">🎨</span>
+                        <span class="text">จัดรูปแบบชีท</span>
+                    </button>
+                    <button class="menu-button" onclick="executeFunction('improveVisualFormatting')">
+                        <span class="icon">✨</span>
+                        <span class="text">ปรับแต่งการแสดงผล</span>
+                    </button>
+                    <button class="menu-button" onclick="executeFunction('fixTextOverlap')">
+                        <span class="icon">🔧</span>
+                        <span class="text">แก้ไขการทับชื่อ</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="statusMessage" class="status-message"></div>
+
+    <script>
+        // Function to execute Google Apps Script functions
+        function executeFunction(functionName) {
+            const button = event.target.closest('.menu-button');
+            
+            // Show loading state
+            button.classList.add('loading');
+            button.disabled = true;
+            
+            // Show status message
+            showStatus('กำลังดำเนินการ...', 'info');
+            
+            // Simulate function execution (replace with actual Google Apps Script call)
+            setTimeout(() => {
+                button.classList.remove('loading');
+                button.disabled = false;
+                showStatus('ดำเนินการเสร็จสิ้น!', 'success');
+            }, 2000);
+        }
+
+        // Function to show status messages
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('statusMessage');
+            statusDiv.textContent = message;
+            statusDiv.className = `status-message ${type} show`;
+            
+            setTimeout(() => {
+                statusDiv.classList.remove('show');
+            }, 3000);
+        }
+
+        // Add touch event listeners for better mobile support
+        document.addEventListener('DOMContentLoaded', function() {
+            const buttons = document.querySelectorAll('.menu-button');
+            
+            buttons.forEach(button => {
+                // Add touch feedback
+                button.addEventListener('touchstart', function() {
+                    this.style.transform = 'scale(0.98)';
+                });
+                
+                button.addEventListener('touchend', function() {
+                    this.style.transform = '';
+                });
+            });
+        });
+
+        // Prevent zoom on double tap for iPad
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function (event) {
+            const now = (new Date()).getTime();
+            if (now - lastTouchEnd <= 300) {
+                event.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
+    </script>
+</body>
+</html>

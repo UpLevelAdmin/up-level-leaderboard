@@ -82,6 +82,7 @@ let globalLastStandingsCheck = 0;
 let globalLastStandingsUpdate = 0;
 let globalScoreCheckCounter = 0;
 let globalScoreCheckEnabled = false;
+let globalLastStandingCompletenessCheck = 0; // ป้องกันการแจ้งเตือนซ้ำซ้อน
 
 // === Constants & Helpers ===============================================
 const SHEETS = {
@@ -188,6 +189,7 @@ function onOpen() {
     .addItem('🔄 บังคับอัปเดต Status ทั้งหมด', 'forceUpdateAllStatus')
     .addItem('⚡ อัปเดต Status เป็น OK (สำหรับผลที่กรอกแล้ว)', 'updatePendingStatusToOK')
     .addItem('🔍 ตรวจสอบความสมบูรณ์ของรอบล่าสุด', 'checkRoundCompletion')
+    .addItem('🔍 ตรวจสอบความสมบูรณ์ของ Standing', 'checkStandingCompleteness')
     .addItem('🔄 รีเซ็ตสถานะการอัปเดต Standings', 'resetStandingsUpdateFlags')
     
     .addItem('🔧 แก้ไขปัญหาข้อมูล Player', 'fixPlayerDataIssues')
@@ -229,6 +231,19 @@ function onOpen() {
     .addItem('🏋️ สร้าง Gym Standing for fill', 'createGymStandingForFill')
     .addToUi();
 
+  // 🎯 Custom Menu - เมนูแบบใหม่ที่ใช้งานได้ทั้ง Desktop และ iPad
+  ui.createMenu('🎯 Custom Menu')
+    .addItem('🖥️ เปิดเมนูแบบ Desktop', 'openCustomMenu')
+    .addItem('📱 เปิดเมนูแบบ iPad/Sidebar', 'openCustomMenuSidebar')
+    .addItem('🤖 เปิดเมนูอัตโนมัติ (แนะนำ)', 'openSmartMenu')
+    .addSeparator()
+    .addItem('🌐 เปิดเว็บแอปสำหรับ iPad', 'createIPadWebApp')
+    .addItem('📱 เปิด Sidebar สำหรับ iPad', 'createIPadSidebar')
+    .addSeparator()
+    .addItem('🔍 ทดสอบการเชื่อมต่อ', 'testConnection')
+    .addItem('📊 ตรวจสอบสถานะระบบ', 'getSystemStatus')
+    .addToUi();
+
 
   // ตั้งค่า Hide Standing controls ในชีท Pairing เท่านั้น
   setupPairingHideStandingControls();
@@ -241,6 +256,9 @@ function onOpen() {
   
   // ⚡ เพิ่ม: ตั้งค่าขนาดคอลัมน์ Standing ครั้งเดียวตอนเริ่มต้น
   setupStandingColumnWidthsOnce();
+  
+  // 🎯 เพิ่ม: ลบชีท Menu เก่า (ถ้ามี)
+  removeOldMenuSheet();
 }
 
 function pairFirstRound() {
@@ -424,6 +442,14 @@ function pairFirstRound() {
     updateStandingsInBackground();
   } catch (error) {
     console.log('เกิดข้อผิดพลาดในการอัปเดต Standings (bg):', error);
+  }
+  
+  // ⚡ เพิ่ม: ปรับขนาดคอลัมน์ชื่อผู้เล่นหลังจากจับคู่เสร็จ
+  try {
+    adjustPlayerNameColumns(pairingSheet);
+    console.log('ปรับขนาดคอลัมน์ชื่อผู้เล่นเรียบร้อยแล้ว');
+  } catch (error) {
+    console.log('เกิดข้อผิดพลาดในการปรับขนาดคอลัมน์:', error);
   }
 }
 function pairNextRound() {
@@ -687,26 +713,28 @@ function pairNextRound() {
     return eligible;
   }
 
-  // ฟังก์ชันคำนวณความเหมาะสมของคู่ต่อสู้ (แก้ไขตามหลัก Swiss ที่ถูกต้อง)
+  // ฟังก์ชันคำนวณความเหมาะสมของคู่ต่อสู้ (ตามหลัก Swiss Tournament)
   function calculatePairingScore(p1, p2) {
     const pointDiff = Math.abs(p1.points - p2.points);
     
     // หลักการ Swiss Tournament ที่ถูกต้อง:
-    // 1. คะแนนใกล้เคียงกัน = คะแนนสูง (คนชนะเจอคนชนะ)
-    // 2. คะแนนต่างกันมาก = คะแนนต่ำ (pair down ได้แต่น้อย)
+    // 1. คะแนนเท่ากัน = คะแนนสูงสุด (100)
+    // 2. คะแนนใกล้เคียง = คะแนนสูง (ลดลงตามความต่าง)
+    // 3. คะแนนต่างกันมาก = คะแนนต่ำ (pair down)
     
-    // ให้ความสำคัญกับคะแนนใกล้เคียงมากที่สุด (หลักการ Swiss)
-    const pointScore = Math.max(0, 100 - pointDiff * 20); // คะแนนใกล้เคียง = คะแนนสูง
-    
-    // เพิ่มคะแนนสำหรับคนที่คะแนนสูง (คนชนะควรเจอกันก่อน)
-    const avgPoints = (p1.points + p2.points) / 2;
-    const avgScore = avgPoints * 2; // คะแนนเฉลี่ยสูง = คะแนนสูง
-    
-    // คำนวณคะแนนรวม (ให้ความสำคัญกับคะแนนใกล้เคียงมากที่สุด)
-    return (pointScore * 0.8) + (avgScore * 0.2);
+    // ให้ความสำคัญกับคะแนนใกล้เคียงมากที่สุด
+    if (pointDiff === 0) {
+      return 100; // คะแนนเท่ากัน = ดีที่สุด
+    } else if (pointDiff === 1) {
+      return 80; // คะแนนใกล้เคียง = ดีมาก
+    } else if (pointDiff === 2) {
+      return 60; // คะแนนต่างปานกลาง = ใช้ได้
+    } else {
+      return Math.max(0, 40 - (pointDiff - 2) * 10); // คะแนนต่างมาก = ไม่ดี
+    }
   }
 
-  // ฟังก์ชันจับคู่แบบ backtracking (ปรับปรุงตามหลัก Swiss Tournament)
+  // ฟังก์ชันจับคู่แบบ Swiss Tournament ที่ถูกต้อง
   function pairPlayers(players, matchHistory) {
     // ⚡ เพิ่ม: ตรวจสอบ timeout
     if (Date.now() - startTime > MAX_TIME) {
@@ -718,9 +746,10 @@ function pairNextRound() {
     if (players.length === 1) return false;
 
     // --- หลักการ Swiss Tournament ที่ถูกต้อง ---
-    // 1. คนคะแนนเท่ากันเจอกันก่อน (ถ้ายังไม่เคยเจอกัน)
-    // 2. ถ้าไม่มีคู่คะแนนเท่ากัน ให้ pair down (คนคะแนนต่างกัน)
-    // 3. หลีกเลี่ยงการซ้ำ 100%
+    // 1. จัดกลุ่มผู้เล่นตามคะแนน (จากสูงไปต่ำ)
+    // 2. จับคู่ภายในกลุ่มคะแนนเดียวกันก่อน
+    // 3. ถ้าเหลือคี่ ให้จับคู่กับกลุ่มถัดไป (pair down)
+    // 4. หลีกเลี่ยงการซ้ำ 100%
 
     // จัดกลุ่มผู้เล่นตามคะแนน
     const pointsGroups = {};
@@ -731,76 +760,115 @@ function pairNextRound() {
     
     const sortedPoints = Object.keys(pointsGroups).map(Number).sort((a, b) => b - a);
     
-    // 1. หาคู่คะแนนเท่ากันที่ยังไม่เคยเจอกัน
-    for (let points of sortedPoints) {
-      const playersInGroup = pointsGroups[points];
-      if (playersInGroup.length >= 2) {
-        for (let i = 0; i < playersInGroup.length; i++) {
-          for (let j = i + 1; j < playersInGroup.length; j++) {
-            const p1 = playersInGroup[i];
-            const p2 = playersInGroup[j];
-            
-            const hasPlayed = matchHistory[p1.id] && matchHistory[p1.id].includes(p2.id);
+    // จับคู่แบบ Swiss ที่ถูกต้อง
+    console.log(`🎯 เริ่มจับคู่แบบ Swiss - กลุ่มคะแนน: ${sortedPoints.join(', ')}`);
+    
+    for (let i = 0; i < sortedPoints.length; i++) {
+      const currentPoints = sortedPoints[i];
+      const currentGroup = pointsGroups[currentPoints];
+      
+      if (currentGroup.length === 0) continue;
+      
+      console.log(`📊 กลุ่ม ${currentPoints} คะแนน: ${currentGroup.length} คน`);
+      
+      // จับคู่ภายในกลุ่มเดียวกัน
+      const pairsInGroup = [];
+      const remainingInGroup = [...currentGroup];
+      
+      // หาคู่ที่ยังไม่เคยเจอกันภายในกลุ่ม
+      for (let j = 0; j < remainingInGroup.length; j++) {
+        for (let k = j + 1; k < remainingInGroup.length; k++) {
+          const p1 = remainingInGroup[j];
+          const p2 = remainingInGroup[k];
+          
+          const hasPlayed = matchHistory[p1.id] && matchHistory[p1.id].includes(p2.id);
+          
+          if (!hasPlayed) {
+            pairsInGroup.push([p1, p2]);
+            console.log(`✅ จับคู่ภายในกลุ่ม: ${p1.name} (${p1.points}) vs ${p2.name} (${p2.points})`);
+            remainingInGroup.splice(k, 1);
+            remainingInGroup.splice(j, 1);
+            j--; // ปรับ index หลังลบ
+            break;
+          }
+        }
+      }
+      
+      // เพิ่มคู่ที่จับได้
+      paired.push(...pairsInGroup);
+      
+      // ถ้าเหลือคนในกลุ่ม (คี่) ให้จับคู่กับกลุ่มถัดไป
+      if (remainingInGroup.length > 0) {
+        const remainingPlayer = remainingInGroup[0];
+        
+        // หาคู่จากกลุ่มถัดไป (คะแนนต่ำกว่า)
+        let foundPair = false;
+        for (let nextGroupIndex = i + 1; nextGroupIndex < sortedPoints.length; nextGroupIndex++) {
+          const nextPoints = sortedPoints[nextGroupIndex];
+          const nextGroup = pointsGroups[nextPoints];
+          
+          if (nextGroup.length === 0) continue;
+          
+          // หาคู่ที่ยังไม่เคยเจอกัน
+          for (let k = 0; k < nextGroup.length; k++) {
+            const opponent = nextGroup[k];
+            const hasPlayed = matchHistory[remainingPlayer.id] && matchHistory[remainingPlayer.id].includes(opponent.id);
             
             if (!hasPlayed) {
-              // ⚡ ลบ debug logging ที่ไม่จำเป็น
-              // console.log(`จับคู่คะแนนเท่ากัน: ${p1.name} (${p1.points} pts) vs ${p2.name} (${p2.points} pts)`);
-              
-              const remainingPlayers = players.filter(p => p.id !== p1.id && p.id !== p2.id);
-              paired.push([p1, p2]);
-              
-              if (pairPlayers(remainingPlayers, matchHistory)) {
-                return true;
-              }
-              
-              paired.pop(); // backtrack
+              paired.push([remainingPlayer, opponent]);
+              console.log(`🔗 จับคู่ข้ามกลุ่ม: ${remainingPlayer.name} (${remainingPlayer.points}) vs ${opponent.name} (${opponent.points})`);
+              pointsGroups[nextPoints].splice(k, 1); // ลบคนที่จับคู่แล้ว
+              foundPair = true;
+              break;
             }
           }
+          
+          if (foundPair) break;
+        }
+        
+        // ถ้าไม่เจอคู่ ให้ลอง backtrack
+        if (!foundPair) {
+          // ลบคู่ที่เพิ่งเพิ่ม
+          paired.splice(paired.length - pairsInGroup.length, pairsInGroup.length);
+          
+          // ลองวิธีอื่น
+          const p1 = currentGroup[0];
+          const eligibleOpponents = getEligibleOpponents(p1, players.filter(p => p.id !== p1.id), matchHistory);
+          
+          if (eligibleOpponents.length === 0) {
+            return false;
+          }
+          
+          // เรียงตามความเหมาะสม (คะแนนใกล้เคียงก่อน)
+          eligibleOpponents.sort((a, b) => {
+            const diffA = Math.abs(p1.points - a.points);
+            const diffB = Math.abs(p1.points - b.points);
+            
+            if (diffA !== diffB) {
+              return diffA - diffB; // คะแนนใกล้เคียงก่อน
+            }
+            
+            return b.points - a.points; // คะแนนสูงก่อน
+          });
+          
+          // ลองจับคู่กับคนที่เหมาะสมที่สุด
+          for (let p2 of eligibleOpponents) {
+            const remainingPlayers = players.filter(p => p.id !== p1.id && p.id !== p2.id);
+            paired.push([p1, p2]);
+            
+            if (pairPlayers(remainingPlayers, matchHistory)) {
+              return true;
+            }
+            
+            paired.pop(); // backtrack
+          }
+          
+          return false;
         }
       }
     }
     
-    // 2. ถ้าไม่มีคู่คะแนนเท่ากัน ให้ pair down
-    const p1 = players[0];
-    const eligibleOpponents = getEligibleOpponents(p1, players.slice(1), matchHistory);
-    
-    if (eligibleOpponents.length === 0) {
-      return false; // ไม่มีคู่ที่เหมาะสม
-    }
-    
-    // เรียงตามความเหมาะสม (คะแนนใกล้เคียงก่อน)
-    eligibleOpponents.sort((a, b) => {
-      const scoreA = calculatePairingScore(p1, a);
-      const scoreB = calculatePairingScore(p1, b);
-      
-      // เรียงตามคะแนนความเหมาะสม (สูงสุดก่อน)
-      if (scoreA !== scoreB) {
-        return scoreB - scoreA;
-      }
-      
-      // ถ้าคะแนนเท่ากัน ให้เลือกคนที่มีคะแนนสูงกว่า
-      return b.points - a.points;
-    });
-    
-    // Debug: แสดงการจับคู่
-    console.log(`🎯 จับคู่ ${p1.name} (${p1.points} pts):`);
-    eligibleOpponents.slice(0, 3).forEach(opp => {
-      const score = calculatePairingScore(p1, opp);
-      console.log(`  - vs ${opp.name} (${opp.points} pts) = Score: ${score.toFixed(1)}`);
-    });
-    
-    for (let p2 of eligibleOpponents) {
-      const remainingPlayers = players.filter(p => p.id !== p1.id && p.id !== p2.id);
-      paired.push([p1, p2]);
-      
-      if (pairPlayers(remainingPlayers, matchHistory)) {
-        return true;
-      }
-      
-      paired.pop(); // backtrack
-    }
-    
-    return false;
+    return true;
   }
 
   // ลองจับคู่แบบ backtracking
@@ -973,6 +1041,49 @@ function pairNextRound() {
   // ⚡ เพิ่ม: แสดงผลลัพธ์การปรับปรุง
   const endTime = Date.now();
   const duration = (endTime - startTime) / 1000;
+  // ตรวจสอบความถูกต้องของการจับคู่
+  console.log(`\n🔍 ตรวจสอบการจับคู่รอบที่ ${nextRound}:`);
+  let isValidPairing = true;
+  const validationIssues = [];
+  
+  // ตรวจสอบการจับคู่ตามหลัก Swiss
+  const pointsGroups = {};
+  paired.forEach(([p1, p2]) => {
+    if (!pointsGroups[p1.points]) pointsGroups[p1.points] = [];
+    if (!pointsGroups[p2.points]) pointsGroups[p2.points] = [];
+    pointsGroups[p1.points].push(p1);
+    pointsGroups[p2.points].push(p2);
+  });
+  
+  // ตรวจสอบว่าคู่ที่มีคะแนนเท่ากันได้จับคู่กันหรือไม่
+  Object.keys(pointsGroups).forEach(points => {
+    const group = pointsGroups[points];
+    if (group.length >= 2) {
+      const samePointsPairs = paired.filter(([p1, p2]) => 
+        p1.points == points && p2.points == points
+      );
+      if (samePointsPairs.length === 0) {
+        validationIssues.push(`กลุ่ม ${points} คะแนน (${group.length} คน) ไม่ได้จับคู่ภายในกลุ่ม`);
+        isValidPairing = false;
+      }
+    }
+  });
+  
+  if (isValidPairing) {
+    console.log(`✅ การจับคู่ถูกต้องตามหลัก Swiss Tournament`);
+  } else {
+    console.log(`⚠️ พบปัญหาในการจับคู่:`);
+    validationIssues.forEach(issue => console.log(`  - ${issue}`));
+  }
+
+  // ⚡ เพิ่ม: ปรับขนาดคอลัมน์ชื่อผู้เล่นหลังจากจับคู่เสร็จ
+  try {
+    adjustPlayerNameColumns(pairingSheet);
+    console.log('ปรับขนาดคอลัมน์ชื่อผู้เล่นเรียบร้อยแล้ว');
+  } catch (error) {
+    console.log('เกิดข้อผิดพลาดในการปรับขนาดคอลัมน์:', error);
+  }
+
   console.log(`✅ จับคู่รอบที่ ${nextRound} สำเร็จ - ใช้เวลา ${duration.toFixed(2)} วินาที`);
   } catch (err) {
     console.log('pairNextRound error:', err);
@@ -1650,6 +1761,15 @@ function updateStandings() {
   standingSheet.setColumnWidth(16, 300); // Pairing History
   
   // ใช้ Hide Standing controls ในชีท Paring เท่านั้น (ไม่สร้างในชีท Standing)
+  
+  // ⚡ เพิ่ม: ตรวจสอบความสมบูรณ์ของ Standing อัตโนมัติ
+  try {
+    // รอ 1 วินาทีเพื่อให้ Standing อัปเดตเสร็จสมบูรณ์
+    Utilities.sleep(1000);
+    checkStandingCompletenessAuto();
+  } catch (error) {
+    console.log('เกิดข้อผิดพลาดในการตรวจสอบ Standing อัตโนมัติ:', error);
+  }
 }
 
 
@@ -4853,7 +4973,7 @@ function getMaxNameLengthFromBucket() {
     }
     
     // ดึงค่าความยาวชื่อสูงสุด
-    const maxNameLength = bucketSheet.getRange(1, maxNameLengthCol + 1).getValue();
+    const maxNameLength = bucketSheet.getRange(2, maxNameLengthCol).getValue();
     
     if (maxNameLength && typeof maxNameLength === 'number') {
       console.log(`ดึงความยาวชื่อสูงสุดจาก Bucket: ${maxNameLength} ตัวอักษร`);
@@ -5234,9 +5354,100 @@ function normalizeNewPairingNames(sheet, startRow, rowCount) {
 }
 
 // ⚡ ลบฟังก์ชัน separateRoundsVisually ที่ซ้ำซ้อน - ใช้ formatPairingComplete แทน
-// function separateRoundsVisually() {
-//   // ฟังก์ชันนี้ถูกลบออกแล้วเพราะซ้ำซ้อนกับ formatPairingComplete
-// }
+function separateRoundsVisually() {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const pairingSheet = ss.getSheetByName('Pairing');
+    
+    if (!pairingSheet || pairingSheet.getLastRow() <= 1) {
+      console.log('ไม่พบข้อมูลในชีท Pairing');
+      return;
+    }
+    
+    const lastRow = pairingSheet.getLastRow();
+    const data = pairingSheet.getRange(2, 1, lastRow - 1, pairingSheet.getLastColumn()).getValues();
+    
+    // สีสำหรับแต่ละรอบ (สีที่แตกต่างกันชัดเจน)
+    const roundColors = [
+      '#e3f2fd', // ฟ้าอ่อน - รอบ 1
+      '#f3e5f5', // ม่วงอ่อน - รอบ 2  
+      '#e8f5e8', // เขียวอ่อน - รอบ 3
+      '#fff3e0', // ส้มอ่อน - รอบ 4
+      '#fce4ec', // ชมพูอ่อน - รอบ 5
+      '#e0f2f1', // เขียวมินต์ - รอบ 6
+      '#f1f8e9', // เขียวใบไผ่ - รอบ 7
+      '#fff8e1', // เหลืองอ่อน - รอบ 8
+      '#e8eaf6', // ม่วงเทา - รอบ 9
+      '#ffebee'  // แดงอ่อน - รอบ 10
+    ];
+    
+    // ล้างสีเดิมก่อน (ไม่รวมหัวตาราง)
+    const allDataRange = pairingSheet.getRange(2, 1, lastRow - 1, pairingSheet.getLastColumn());
+    allDataRange.setBackground(null);
+    
+    // จัดรูปแบบหัวตารางให้สวยงาม
+    const headerRange = pairingSheet.getRange(1, 1, 1, pairingSheet.getLastColumn());
+    headerRange.setBackground('#1f2937'); // สีเทาเข้ม
+    headerRange.setFontColor('#ffffff'); // ตัวอักษรสีขาว
+    headerRange.setFontWeight('bold');
+    headerRange.setHorizontalAlignment('center');
+    headerRange.setBorder(true, true, true, true, true, true, '#374151', SpreadsheetApp.BorderStyle.SOLID);
+    
+    let currentRound = null;
+    let colorIndex = 0;
+    let roundStart = 0;
+    
+    console.log('เริ่มแยกสีตามรอบ...');
+    
+    // วนลูปผ่านข้อมูลแต่ละแถว
+    for (let i = 0; i <= data.length; i++) {
+      const round = i < data.length ? data[i][0] : null; // คอลัมน์ ROUND
+      
+      // เมื่อเจอรอบใหม่หรือจบข้อมูล
+      if (round !== currentRound) {
+        // ใส่สีและจัดรูปแบบให้รอบที่ผ่านมา
+        if (currentRound !== null && i > roundStart) {
+          const rowCount = i - roundStart;
+          const roundRange = pairingSheet.getRange(roundStart + 2, 1, rowCount, pairingSheet.getLastColumn());
+          
+          // ใส่สีพื้นหลัง
+          roundRange.setBackground(roundColors[colorIndex]);
+          
+          // จัดรูปแบบข้อความให้อ่านง่าย
+          roundRange.setFontWeight('normal');
+          roundRange.setHorizontalAlignment('center');
+          roundRange.setBorder(true, true, true, true, true, true, '#d1d5db', SpreadsheetApp.BorderStyle.SOLID);
+          
+          // เพิ่มเส้นบนของรอับใหม่ (ยกเว้นรอบแรก)
+          if (roundStart > 0) {
+            const borderRange = pairingSheet.getRange(roundStart + 2, 1, 1, pairingSheet.getLastColumn());
+            borderRange.setBorder(true, null, null, null, null, null, '#374151', SpreadsheetApp.BorderStyle.SOLID_THICK);
+          }
+          
+          // จัดรูปแบบคอลัมน์ชื่อผู้เล่นให้ชิดซ้าย
+          const p1NameRange = pairingSheet.getRange(roundStart + 2, 4, rowCount, 1); // คอลัมน์ D (PLAYER 1)
+          const p2NameRange = pairingSheet.getRange(roundStart + 2, 10, rowCount, 1); // คอลัมน์ J (PLAYER 2)
+          p1NameRange.setHorizontalAlignment('left');
+          p2NameRange.setHorizontalAlignment('left');
+          
+          console.log(`รอบ ${currentRound}: แถว ${roundStart + 2}-${roundStart + 1 + rowCount} ใช้สี ${roundColors[colorIndex]}`);
+        }
+        
+        // เตรียมสำหรับรอบใหม่
+        if (round !== null && round !== '') {
+          currentRound = round;
+          colorIndex = (round - 1) % roundColors.length;
+          roundStart = i;
+        }
+      }
+    }
+    
+    console.log('แยกรอบด้วยสีเรียบร้อยแล้ว');
+    
+  } catch (error) {
+    console.log('เกิดข้อผิดพลาดในการแยกรอบด้วยสี:', error);
+  }
+}
 
 // 🎯 ฟังก์ชัน onEdit - ทำงานอัตโนมัติเมื่อแก้ไขชีท
 
@@ -5255,6 +5466,15 @@ function onEdit(e) {
       
       // ข้ามแถวแรก (header)
       if (row === 1) return;
+      
+      // ⚡ เพิ่ม: ตรวจสอบ Standing อัตโนมัติทุกครั้งที่มีการแก้ไขเซลใดๆ
+      try {
+        // รอ 1 วินาทีเพื่อให้การแก้ไขเสร็จสมบูรณ์
+        Utilities.sleep(1000);
+        checkStandingCompletenessAuto();
+      } catch (checkError) {
+        console.log('เกิดข้อผิดพลาดในการตรวจสอบ Standing อัตโนมัติ:', checkError);
+      }
       
       // ใช้ตำแหน่งคงที่แบบเวอร์ชันเก่า
       const winP1Col = 5;
@@ -5724,6 +5944,16 @@ function updateStandingsInBackground() {
     try {
       updateStandings();
       console.log('✅ อัปเดต Standings ในพื้นหลังสำเร็จ');
+      
+      // ⚡ เพิ่ม: ตรวจสอบความสมบูรณ์ของ Standing อัตโนมัติหลังอัปเดตเสร็จ
+      try {
+        // รอ 2 วินาทีเพื่อให้ Standing อัปเดตเสร็จสมบูรณ์
+        Utilities.sleep(2000);
+        checkStandingCompletenessAuto();
+      } catch (checkError) {
+        console.log('เกิดข้อผิดพลาดในการตรวจสอบ Standing อัตโนมัติ:', checkError);
+      }
+      
     } catch (error) {
       console.log('❌ เกิดข้อผิดพลาดในการอัปเดต Standings:', error);
       // ไม่ต้องหยุดการทำงานถ้าเกิดข้อผิดพลาด
@@ -6143,9 +6373,16 @@ function updateBucketCache(standings, dropSet, playerTrIdMap) {
     
     // เพิ่มข้อมูลผู้เล่น
     const bucketData = [];
+    let maxNameLength = 0;
+    
     Object.entries(standings).forEach(([playerId, stats]) => {
       const status = dropSet.has(stats.name) || dropSet.has(playerId) ? 'DROPPED' : 'ACTIVE';
       const points = stats.win * 3 + stats.draw;
+      
+      // คำนวณความยาวชื่อสูงสุด
+      if (stats.name && typeof stats.name === 'string') {
+        maxNameLength = Math.max(maxNameLength, stats.name.length);
+      }
       
       bucketData.push([
             playerId,
@@ -6161,9 +6398,16 @@ function updateBucketCache(standings, dropSet, playerTrIdMap) {
     });
     
     // เขียนข้อมูล
-        if (bucketData.length > 0) {
+    if (bucketData.length > 0) {
       bucketSheet.getRange(2, 1, bucketData.length, headers.length).setValues(bucketData);
     }
+    
+    // เพิ่มคอลัมน์ MAX_NAME_LENGTH สำหรับการคำนวณขนาดคอลัมน์
+    const maxNameLengthCol = headers.length + 1;
+    bucketSheet.getRange(1, maxNameLengthCol).setValue('MAX_NAME_LENGTH');
+    bucketSheet.getRange(2, maxNameLengthCol).setValue(maxNameLength);
+    
+    console.log(`📏 คำนวณความยาวชื่อสูงสุด: ${maxNameLength} ตัวอักษร`);
     
     console.log('✅ อัปเดต Bucket cache สำเร็จ');
     
@@ -6171,4 +6415,2142 @@ function updateBucketCache(standings, dropSet, playerTrIdMap) {
     console.log('❌ เกิดข้อผิดพลาดในการอัปเดต Bucket cache:', error);
     // ไม่ throw error เพื่อไม่ให้กระทบ updateStandings
   }
+}
+
+// 🔧 แก้ไขปัญหาข้อมูล Player
+function fixPlayerDataIssues() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const playersSheet = ss.getSheetByName("Players");
+  
+  if (!playersSheet) {
+    SpreadsheetApp.getUi().alert("❌ ไม่พบชีท Players");
+    return;
+  }
+  
+  const playersData = playersSheet.getDataRange().getValues();
+  const headers = playersData[0];
+  
+  // ตรวจสอบและแก้ไขชื่อคอลัมน์
+  let fixedHeaders = [...headers];
+  let hasChanges = false;
+  
+  // แก้ไขชื่อคอลัมน์ที่ไม่ถูกต้อง
+  for (let i = 0; i < fixedHeaders.length; i++) {
+    const header = fixedHeaders[i];
+    
+    // แก้ไขชื่อคอลัมน์ Player ID
+    if (header === "PLAYER ID" || header === "Player ID" || header === "player_id") {
+      fixedHeaders[i] = "Player_id";
+      hasChanges = true;
+    }
+    
+    // แก้ไขชื่อคอลัมน์ Player Name
+    if (header === "PLAYER NAME" || header === "Player Name" || header === "player_name") {
+      fixedHeaders[i] = "Name";
+      hasChanges = true;
+    }
+    
+    // แก้ไขชื่อคอลัมน์ TR ID
+    if (header === "TR ID" || header === "tr_id") {
+      fixedHeaders[i] = "TR_ID";
+      hasChanges = true;
+    }
+  }
+  
+  // อัปเดต headers ถ้ามีการเปลี่ยนแปลง
+  if (hasChanges) {
+    playersSheet.getRange(1, 1, 1, fixedHeaders.length).setValues([fixedHeaders]);
+    SpreadsheetApp.getUi().alert(`✅ แก้ไขชื่อคอลัมน์สำเร็จ!\n\n📋 การเปลี่ยนแปลง:\n${headers.map((old, i) => old !== fixedHeaders[i] ? `• "${old}" → "${fixedHeaders[i]}"` : '').filter(x => x).join('\n')}`);
+  } else {
+    SpreadsheetApp.getUi().alert("✅ ชื่อคอลัมน์ถูกต้องแล้ว ไม่ต้องแก้ไข");
+  }
+  
+  // ตรวจสอบข้อมูลผู้เล่นที่ว่าง
+  const playerIdCol = fixedHeaders.indexOf("Player_id");
+  const playerNameCol = fixedHeaders.indexOf("Name");
+  
+  if (playerIdCol === -1 || playerNameCol === -1) {
+    SpreadsheetApp.getUi().alert("❌ ยังไม่พบคอลัมน์ Player_id หรือ Name\n\nกรุณาตรวจสอบข้อมูลในชีท Players");
+    return;
+  }
+  
+  // ตรวจสอบข้อมูลที่ว่าง
+  let emptyRows = [];
+  for (let i = 1; i < playersData.length; i++) {
+    const row = playersData[i];
+    const playerId = row[playerIdCol];
+    const playerName = row[playerNameCol];
+    
+    if (!playerId || !playerName || playerId.toString().trim() === "" || playerName.toString().trim() === "") {
+      emptyRows.push(i + 1);
+    }
+  }
+  
+  if (emptyRows.length > 0) {
+    SpreadsheetApp.getUi().alert(`⚠️ พบข้อมูลที่ว่างในแถว: ${emptyRows.join(', ')}\n\nกรุณากรอกข้อมูลให้ครบถ้วน`);
+  } else {
+    SpreadsheetApp.getUi().alert("✅ ข้อมูลผู้เล่นครบถ้วนแล้ว");
+  }
+}
+
+// 🚫 Drop ผู้เล่น (เลือกจากรายชื่อ)
+function dropPlayerFromList() {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const pairingSheet = ss.getSheetByName('Pairing');
+    const playersSheet = ss.getSheetByName('Players');
+    
+    if (!playersSheet || playersSheet.getLastRow() <= 1) {
+      SpreadsheetApp.getUi().alert('ไม่พบข้อมูลผู้เล่น');
+      return;
+    }
+    
+    // ดึงรายชื่อผู้เล่นทั้งหมด
+    const playersData = playersSheet.getRange(2, 1, playersSheet.getLastRow() - 1, 4).getValues();
+    
+    // ดึงรายชื่อผู้เล่นที่ drop แล้ว
+    const currentDropList = pairingSheet.getRange('M2:M').getValues().flat().filter(name => name);
+    const dropSet = new Set(currentDropList.map(x => x.trim()));
+    
+    // สร้างรายชื่อผู้เล่นที่ยังไม่ drop
+    const activePlayersList = playersData
+      .filter(row => row[0] && row[1] && !dropSet.has(row[0]) && !dropSet.has(row[1]))
+      .map(row => `${row[0]} - ${row[1]}`) // ID - Name
+      .sort();
+    
+    if (activePlayersList.length === 0) {
+      SpreadsheetApp.getUi().alert('ไม่มีผู้เล่นที่สามารถ drop ได้');
+      return;
+    }
+    
+    // แสดง dialog ให้เลือกผู้เล่น
+    const ui = SpreadsheetApp.getUi();
+    const response = ui.prompt(
+      '🚫 Drop ผู้เล่น',
+      `เลือกผู้เล่นที่ต้องการ drop:\n\n${activePlayersList.map((player, index) => `${index + 1}. ${player}`).join('\n')}\n\nกรอกหมายเลข (1-${activePlayersList.length}):`,
+      ui.ButtonSet.OK_CANCEL
+    );
+    
+    if (response.getSelectedButton() === ui.Button.OK) {
+      const selectedIndex = parseInt(response.getResponseText().trim()) - 1;
+      
+      if (selectedIndex >= 0 && selectedIndex < activePlayersList.length) {
+        const selectedPlayer = activePlayersList[selectedIndex];
+        const playerId = selectedPlayer.split(' - ')[0];
+        const playerName = selectedPlayer.split(' - ')[1];
+        
+        // เพิ่มผู้เล่นลงใน drop list (คอลัมน์ M)
+        const dropColumn = pairingSheet.getRange('M:M');
+        const dropValues = dropColumn.getValues();
+        
+        // หาแถวว่างแรกในคอลัมน์ M
+        let emptyRow = 2;
+        for (let i = 1; i < dropValues.length; i++) {
+          if (!dropValues[i][0]) {
+            emptyRow = i + 1;
+            break;
+          }
+        }
+        
+        // เพิ่มชื่อผู้เล่นลงในคอลัมน์ Drop
+        pairingSheet.getRange(emptyRow, 13).setValue(playerName); // คอลัมน์ M = 13
+        
+        // อัปเดต Standings ให้แสดงผู้เล่นที่ drop เป็น 'DROP'
+        updateStandings();
+        
+        SpreadsheetApp.getUi().alert(
+          '✅ Drop ผู้เล่นสำเร็จ',
+          `ผู้เล่น "${playerName}" ถูก drop จากการแข่งขันแล้ว\n\n` +
+          `• ผู้เล่นจะแสดงเป็น "DROP" ใน Standing\n` +
+          `• ผู้เล่นจะไม่ถูกจับคู่ในรอบต่อไป\n` +
+          `• สามารถยกเลิก drop ได้ด้วยฟังก์ชัน "ยกเลิก Drop ผู้เล่น"`,
+          SpreadsheetApp.getUi().ButtonSet.OK
+        );
+        
+      } else {
+        SpreadsheetApp.getUi().alert('หมายเลขที่เลือกไม่ถูกต้อง');
+      }
+    }
+    
+  } catch (error) {
+    console.log('Error in dropPlayerFromList:', error);
+    SpreadsheetApp.getUi().alert('เกิดข้อผิดพลาดในการ drop ผู้เล่น: ' + error.toString());
+  }
+}
+
+// ✅ ยกเลิก Drop ผู้เล่น
+function cancelPlayerDrop() {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const pairingSheet = ss.getSheetByName('Pairing');
+    
+    // ดึงรายชื่อผู้เล่นที่ drop แล้ว
+    const dropList = pairingSheet.getRange('M2:M').getValues().flat().filter(name => name);
+    
+    if (dropList.length === 0) {
+      SpreadsheetApp.getUi().alert('ไม่มีผู้เล่นที่ถูก drop');
+      return;
+    }
+    
+    // แสดง dialog ให้เลือกผู้เล่นที่จะยกเลิก drop
+    const ui = SpreadsheetApp.getUi();
+    const response = ui.prompt(
+      '✅ ยกเลิก Drop ผู้เล่น',
+      `เลือกผู้เล่นที่ต้องการยกเลิก drop:\n\n${dropList.map((player, index) => `${index + 1}. ${player}`).join('\n')}\n\nกรอกหมายเลข (1-${dropList.length}):`,
+      ui.ButtonSet.OK_CANCEL
+    );
+    
+    if (response.getSelectedButton() === ui.Button.OK) {
+      const selectedIndex = parseInt(response.getResponseText().trim()) - 1;
+      
+      if (selectedIndex >= 0 && selectedIndex < dropList.length) {
+        const playerToRestore = dropList[selectedIndex];
+        
+        // หาแถวที่มีชื่อผู้เล่นนี้ในคอลัมน์ M และลบออก
+        const dropColumn = pairingSheet.getRange('M:M');
+        const dropValues = dropColumn.getValues();
+        
+        for (let i = 1; i < dropValues.length; i++) {
+          if (dropValues[i][0] === playerToRestore) {
+            pairingSheet.getRange(i + 1, 13).clearContent(); // คอลัมน์ M = 13
+            break;
+          }
+        }
+        
+        // อัปเดต Standings
+        updateStandings();
+        
+        SpreadsheetApp.getUi().alert(
+          '✅ ยกเลิก Drop สำเร็จ',
+          `ผู้เล่น "${playerToRestore}" กลับเข้าสู่การแข่งขันแล้ว\n\n` +
+          `• ผู้เล่นจะแสดงในอันดับปกติใน Standing\n` +
+          `• ผู้เล่นจะถูกจับคู่ในรอบต่อไป`,
+          SpreadsheetApp.getUi().ButtonSet.OK
+        );
+        
+      } else {
+        SpreadsheetApp.getUi().alert('หมายเลขที่เลือกไม่ถูกต้อง');
+      }
+    }
+    
+  } catch (error) {
+    console.log('Error in cancelPlayerDrop:', error);
+    SpreadsheetApp.getUi().alert('เกิดข้อผิดพลาดในการยกเลิก drop ผู้เล่น: ' + error.toString());
+  }
+}
+
+// 📞 แก้ไขเบอร์โทรให้มี 0 นำหน้า
+function fixPhoneNumbers() {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const playersSheet = ss.getSheetByName('Players');
+    
+    if (!playersSheet || playersSheet.getLastRow() <= 1) {
+      SpreadsheetApp.getUi().alert('ไม่พบข้อมูลผู้เล่น');
+      return;
+    }
+    
+    const lastRow = playersSheet.getLastRow();
+    const telRange = playersSheet.getRange(2, 4, lastRow - 1, 1); // คอลัมน์ D (Tel)
+    const telValues = telRange.getValues();
+    
+    let fixedCount = 0;
+    
+    // ตั้งค่าทั้งคอลัมน์เป็น text format ก่อน
+    telRange.setNumberFormat('@');
+    
+    // แก้ไขเบอร์โทรทีละช่อง
+    for (let i = 0; i < telValues.length; i++) {
+      const currentTel = telValues[i][0];
+      if (currentTel && currentTel !== '') {
+        let formattedTel = currentTel.toString().trim();
+        
+        // ถ้าไม่ขึ้นต้นด้วย 0 ให้เพิ่ม 0 นำหน้า
+        if (!formattedTel.startsWith('0') && formattedTel.length >= 9) {
+          formattedTel = '0' + formattedTel;
+          
+          // บันทึกค่าใหม่
+          const cell = playersSheet.getRange(i + 2, 4);
+          cell.setNumberFormat('@'); // ตั้งเป็น text format
+          cell.setValue(formattedTel);
+          
+          fixedCount++;
+          console.log(`Fixed phone: ${currentTel} → ${formattedTel}`);
+        }
+      }
+    }
+    
+    SpreadsheetApp.getUi().alert(
+      '✅ แก้ไขเบอร์โทรเรียบร้อยแล้ว',
+      `แก้ไขเบอร์โทรจำนวน ${fixedCount} รายการ\n\n` +
+      `• เพิ่ม 0 นำหน้าให้เบอร์โทรที่ไม่มี\n` +
+      `• ตั้งค่าคอลัมน์เป็น text format เพื่อรักษา 0 นำหน้า\n` +
+      `• ตัวอย่าง: 936106031 → 0936106031`,
+      SpreadsheetApp.getUi().ButtonSet.OK
+    );
+    
+  } catch (error) {
+    console.log('Error in fixPhoneNumbers:', error);
+    SpreadsheetApp.getUi().alert('เกิดข้อผิดพลาดในการแก้ไขเบอร์โทร: ' + error.toString());
+  }
+}
+
+// 🏋️ สร้าง Gym Standing for fill
+function createGymStandingForFill() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const standingSheet = ss.getSheetByName('Standing');
+  const playersSheet = ss.getSheetByName('Players');
+  
+  // ตรวจสอบว่ามีชีท Gym Standing for fill แล้วหรือไม่
+  let gymSheet = ss.getSheetByName('Gym Standing for fill');
+  if (gymSheet) {
+    const response = SpreadsheetApp.getUi().alert(
+      '⚠️ คำเตือน',
+      'มีชีท Gym Standing for fill อยู่แล้ว ต้องการสร้างใหม่หรือไม่?',
+      SpreadsheetApp.getUi().ButtonSet.YES_NO
+    );
+    if (response === SpreadsheetApp.getUi().Button.NO) return;
+    ss.deleteSheet(gymSheet);
+  }
+  
+  // สร้างชีทใหม่
+  gymSheet = ss.insertSheet('Gym Standing for fill');
+  
+  // อัปเดต Standings ก่อน
+  updateStandings();
+  
+  // ดึงข้อมูลจากชีท Standing และ Players
+  const standingsData = standingSheet.getRange(2, 1, standingSheet.getLastRow()-1, 12).getValues();
+  const playersData = playersSheet.getRange(2, 1, playersSheet.getLastRow()-1, 4).getValues();
+  
+  // สร้าง map ของ Player ID กับเบอร์โทร
+  const playerPhoneMap = {};
+  playersData.forEach(row => {
+    if (row[0] && row[3]) { // Player ID และเบอร์โทร
+      let phone = row[3];
+      const originalPhone = phone;
+      
+      // แปลงเบอร์โทรให้เป็น string และลบช่องว่าง
+      phone = phone.toString().trim();
+      
+      // เพิ่ม 0 นำหน้าถ้าเบอร์โทรไม่ขึ้นต้นด้วย 0 และมีความยาว 9 หลัก
+      if (phone && phone.length === 9 && !phone.startsWith('0')) {
+        phone = '0' + phone;
+      }
+      
+      playerPhoneMap[row[0]] = phone;
+      
+      // ล็อกเพื่อตรวจสอบ
+      console.log(`Player ${row[1]}: Original phone = "${originalPhone}", Formatted phone = "${phone}"`);
+    }
+  });
+  
+  // สร้างหัวตารางตามรูป
+  const headers = [
+    'Player Name',
+    'Player Phone', 
+    'Codename',
+    '# Rank',
+    'Points',
+    'matches_played',
+    'matches_won',
+    'matches_lost',
+    'winrate (%)',
+    'opp_winrate (%)',
+    'note'
+  ];
+  
+  // ตั้งหัวตาราง
+  gymSheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+  
+  // จัดรูปแบบหัวตาราง
+  const headerRange = gymSheet.getRange(1, 1, 1, headers.length);
+  headerRange.setBackground('#4a5568'); // สีม่วงเข้ม
+  headerRange.setFontColor('#ffffff'); // ข้อความสีขาว
+  headerRange.setFontWeight('bold');
+  headerRange.setFontSize(12);
+  headerRange.setHorizontalAlignment('center');
+  headerRange.setVerticalAlignment('middle');
+  headerRange.setBorder(true, true, true, true, true, true, '#2d3748', SpreadsheetApp.BorderStyle.SOLID);
+  
+  // เพิ่มข้อมูลผู้เล่น
+  let rowIndex = 2;
+  standingsData.forEach((row, index) => {
+    if (row[0] && row[1] && row[2]) { // มี Rank, Player ID, และ Player Name
+      const rank = row[0];
+      const playerId = row[1];
+      let playerName = row[2];
+      const points = row[8] || 0;
+      const played = row[4] || 0;
+      const wins = row[5] || 0;
+      const losses = row[7] || 0;
+      const winrate = row[9] ? parseInt(row[9]) : 0;
+      const oppWinrate = row[10] ? parseInt(row[10]) : 0;
+      const phone = playerPhoneMap[playerId] || '';
+      
+      // แก้ไขชื่อผู้เล่น - ลบ "th..." และ "_" ออก เหลือแต่ชื่อ
+      if (playerName && typeof playerName === 'string') {
+        // ลบ "th" + ตัวเลข + "_" ออกจากชื่อ
+        playerName = playerName.replace(/^th\d+_/, '');
+      }
+      
+      // ล็อกข้อมูลที่ใช้สร้างตาราง
+      console.log(`Creating row for ${playerName}: Phone = "${phone}", Player ID = "${playerId}"`);
+      
+      // คำนวณ winrate จากข้อมูล
+      let calculatedWinrate = 0;
+      if (played > 0) {
+        calculatedWinrate = Math.round((wins / played) * 100);
+      }
+      
+      const rowData = [
+        playerName,           // Player Name
+        phone,               // Player Phone
+        '',                  // Codename (ว่างไว้ให้กรอก)
+        rank,                // # Rank
+        points,              // Points
+        played,              // matches_played
+        wins,                // matches_won
+        losses,              // matches_lost
+        calculatedWinrate,   // winrate (%)
+        oppWinrate,          // opp_winrate (%)
+        ''                   // note (ว่างไว้ให้กรอก)
+      ];
+      
+      gymSheet.getRange(rowIndex, 1, 1, rowData.length).setValues([rowData]);
+      rowIndex++;
+    }
+  });
+  
+  // จัดรูปแบบข้อมูล
+  if (rowIndex > 2) {
+    const dataRange = gymSheet.getRange(2, 1, rowIndex - 2, headers.length);
+    dataRange.setHorizontalAlignment('center');
+    dataRange.setVerticalAlignment('middle');
+    dataRange.setFontSize(11);
+    dataRange.setBorder(true, true, true, true, true, true, '#e2e8f0', SpreadsheetApp.BorderStyle.SOLID);
+    
+    // จัดรูปแบบคอลัมน์ชื่อผู้เล่นให้ชิดซ้าย
+    gymSheet.getRange(2, 1, rowIndex - 2, 1).setHorizontalAlignment('left');
+    
+    // จัดรูปแบบคอลัมน์เบอร์โทรให้ชิดซ้าย
+    gymSheet.getRange(2, 2, rowIndex - 2, 1).setHorizontalAlignment('left');
+    
+    // จัดรูปแบบคอลัมน์ Codename และ Note ให้ชิดซ้าย
+    gymSheet.getRange(2, 3, rowIndex - 2, 1).setHorizontalAlignment('left');
+    gymSheet.getRange(2, 11, rowIndex - 2, 1).setHorizontalAlignment('left');
+  }
+  
+  // ปรับขนาดคอลัมน์
+  gymSheet.setColumnWidth(1, 150);  // Player Name
+  gymSheet.setColumnWidth(2, 120);  // Player Phone
+  gymSheet.setColumnWidth(3, 100);  // Codename
+  gymSheet.setColumnWidth(4, 60);   // # Rank
+  gymSheet.setColumnWidth(5, 60);   // Points
+  gymSheet.setColumnWidth(6, 100);  // matches_played
+  gymSheet.setColumnWidth(7, 100);  // matches_won
+  gymSheet.setColumnWidth(8, 100);  // matches_lost
+  gymSheet.setColumnWidth(9, 100);  // winrate (%)
+  gymSheet.setColumnWidth(10, 120); // opp_winrate (%)
+  gymSheet.setColumnWidth(11, 100); // note
+  
+  SpreadsheetApp.getUi().alert(
+    '✅ สร้าง Gym Standing for fill สำเร็จ',
+    `สร้างชีท "Gym Standing for fill" เรียบร้อยแล้ว\n\n` +
+    `• ข้อมูลผู้เล่น ${rowIndex - 2} คน\n` +
+    `• เบอร์โทรถูกจัดรูปแบบให้มี 0 นำหน้า\n` +
+    `• ชื่อผู้เล่นถูกทำความสะอาดแล้ว\n` +
+    `• พร้อมสำหรับการกรอก Codename และ Note`,
+    SpreadsheetApp.getUi().ButtonSet.OK
+  );
+}
+
+// 🪣 อัปเดต Bucket Cache (Manual)
+function updateBucketCacheManual() {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const standingSheet = ss.getSheetByName('Standing');
+    const pairingSheet = ss.getSheetByName('Pairing');
+    
+    if (!standingSheet || !pairingSheet) {
+      SpreadsheetApp.getUi().alert('❌ ไม่พบชีท Standing หรือ Pairing');
+      return;
+    }
+    
+    // ดึงข้อมูล standings
+    const standingsData = standingSheet.getRange(2, 1, standingSheet.getLastRow() - 1, 12).getValues();
+    const standings = {};
+    
+    standingsData.forEach(row => {
+      if (row[1] && row[2]) { // Player ID และ Name
+        standings[row[1]] = {
+          name: row[2],
+          trId: row[3] || '',
+          played: row[4] || 0,
+          win: row[5] || 0,
+          draw: row[6] || 0,
+          loss: row[7] || 0
+        };
+      }
+    });
+    
+    // ดึงข้อมูล drop list
+    const dropList = pairingSheet.getRange('M2:M').getValues().flat().filter(name => name);
+    const dropSet = new Set(dropList.map(x => x.trim()));
+    
+    // สร้าง playerTrIdMap
+    const playerTrIdMap = {};
+    Object.entries(standings).forEach(([playerId, stats]) => {
+      playerTrIdMap[playerId] = stats.trId;
+    });
+    
+    // อัปเดต cache
+    updateBucketCache(standings, dropSet, playerTrIdMap);
+    
+    SpreadsheetApp.getUi().alert('✅ อัปเดต Bucket Cache สำเร็จ');
+    
+  } catch (error) {
+    console.log('Error in updateBucketCacheManual:', error);
+    SpreadsheetApp.getUi().alert('❌ เกิดข้อผิดพลาดในการอัปเดต Bucket Cache: ' + error.toString());
+  }
+}
+
+// 🗑️ Clear Pairing (เคลียร์การจับคู่ทั้งหมด)
+function clearPairingData() {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const pairingSheet = ss.getSheetByName('Pairing');
+    
+    if (!pairingSheet) {
+      SpreadsheetApp.getUi().alert('❌ ไม่พบชีท Pairing');
+      return;
+    }
+    
+    const response = SpreadsheetApp.getUi().alert(
+      '⚠️ คำเตือน',
+      'คุณแน่ใจหรือไม่ที่จะลบข้อมูลการจับคู่, Standing และ Bucket ทั้งหมด?\n\nการดำเนินการนี้ไม่สามารถย้อนกลับได้',
+      SpreadsheetApp.getUi().ButtonSet.YES_NO
+    );
+    
+    if (response === SpreadsheetApp.getUi().Button.YES) {
+      // ลบแถวทั้งหมดยกเว้นหัวตาราง
+      if (pairingSheet.getLastRow() > 1) {
+        const lastRow = pairingSheet.getLastRow();
+        const rowCount = lastRow - 1; // ลบแถวทั้งหมดยกเว้นแถวแรก (header)
+        
+        // ลบแถวจากล่างขึ้นบน
+        pairingSheet.deleteRows(2, rowCount);
+      }
+      
+      // ล้างข้อมูลในคอลัมน์ Drop (M) - เผื่อมีข้อมูลเหลือ
+      pairingSheet.getRange('M:M').clearContent();
+      
+      // ล้างข้อมูลในชีท Standing ด้วย
+      const standingSheet = ss.getSheetByName('Standing');
+      if (standingSheet && standingSheet.getLastRow() > 1) {
+        const standingLastRow = standingSheet.getLastRow();
+        const standingRowCount = standingLastRow - 1; // ลบแถวทั้งหมดยกเว้นแถวแรก (header)
+        
+        // ลบแถวจากล่างขึ้นบน
+        standingSheet.deleteRows(2, standingRowCount);
+      }
+      
+      // ล้างข้อมูลในชีท Bucket ด้วย
+      const bucketSheet = ss.getSheetByName('Bucket');
+      if (bucketSheet && bucketSheet.getLastRow() > 1) {
+        const bucketLastRow = bucketSheet.getLastRow();
+        const bucketRowCount = bucketLastRow - 1; // ลบแถวทั้งหมดยกเว้นแถวแรก (header)
+        
+        // ลบแถวจากล่างขึ้นบน
+        bucketSheet.deleteRows(2, bucketRowCount);
+      }
+      
+      SpreadsheetApp.getUi().alert('✅ ลบข้อมูลการจับคู่, Standing และ Bucket เรียบร้อยแล้ว');
+    }
+    
+  } catch (error) {
+    console.log('Error in clearPairingData:', error);
+    SpreadsheetApp.getUi().alert('❌ เกิดข้อผิดพลาดในการล้างข้อมูล: ' + error.toString());
+  }
+}
+
+// ⚡ อัปเดต Status เป็น OK (สำหรับผลที่กรอกแล้ว)
+function updatePendingStatusToOK() {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const pairingSheet = ss.getSheetByName('Pairing');
+    
+    if (!pairingSheet) {
+      SpreadsheetApp.getUi().alert('❌ ไม่พบชีท Pairing');
+      return;
+    }
+    
+    const lastRow = pairingSheet.getLastRow();
+    if (lastRow <= 1) {
+      SpreadsheetApp.getUi().alert('❌ ไม่มีข้อมูลในชีท Pairing');
+      return;
+    }
+    
+    const data = pairingSheet.getRange(2, 1, lastRow - 1, pairingSheet.getLastColumn()).getValues();
+    const headers = pairingSheet.getRange(1, 1, 1, pairingSheet.getLastColumn()).getValues()[0];
+    
+    const statusCol = headers.indexOf('STATUS') + 1;
+    const resultCol = headers.indexOf('RESULT') + 1;
+    
+    if (statusCol === 0 || resultCol === 0) {
+      SpreadsheetApp.getUi().alert('❌ ไม่พบคอลัมน์ STATUS หรือ RESULT');
+      return;
+    }
+    
+    let updatedCount = 0;
+    
+    for (let i = 0; i < data.length; i++) {
+      const result = data[i][resultCol - 1];
+      const status = data[i][statusCol - 1];
+      
+      // ถ้ามีผลการแข่งขันแต่ status ไม่ใช่ OK
+      if (result && result !== '' && status !== 'OK') {
+        pairingSheet.getRange(i + 2, statusCol).setValue('OK');
+        updatedCount++;
+      }
+    }
+    
+    SpreadsheetApp.getUi().alert(`✅ อัปเดต Status เป็น OK เรียบร้อยแล้ว\n\nจำนวนรายการที่อัปเดต: ${updatedCount}`);
+    
+  } catch (error) {
+    console.log('Error in updatePendingStatusToOK:', error);
+    SpreadsheetApp.getUi().alert('❌ เกิดข้อผิดพลาดในการอัปเดต Status: ' + error.toString());
+  }
+}
+
+// 🔄 รีเซ็ตสถานะการอัปเดต Standings
+function resetStandingsUpdateFlags() {
+  try {
+    globalStandingsUpdateScheduled = false;
+    globalLastStandingsCheck = 0;
+    globalLastStandingsUpdate = 0;
+    globalScoreCheckCounter = 0;
+    globalScoreCheckEnabled = false;
+    
+    SpreadsheetApp.getUi().alert('✅ รีเซ็ตสถานะการอัปเดต Standings เรียบร้อยแล้ว');
+    
+  } catch (error) {
+    console.log('Error in resetStandingsUpdateFlags:', error);
+    SpreadsheetApp.getUi().alert('❌ เกิดข้อผิดพลาดในการรีเซ็ตสถานะ: ' + error.toString());
+  }
+}
+
+// 🔍 ตรวจสอบความสมบูรณ์ของ Standing อัตโนมัติ (ไม่แสดง dialog)
+function checkStandingCompletenessAuto() {
+  try {
+    // ป้องกันการแจ้งเตือนซ้ำซ้อน - ตรวจสอบทุก 3 วินาที
+    const now = Date.now();
+    if (globalLastStandingCompletenessCheck && (now - globalLastStandingCompletenessCheck) < 3000) {
+      console.log('⏳ ตรวจสอบ Standing สมบูรณ์บ่อยเกินไป - ข้าม');
+      return;
+    }
+    globalLastStandingCompletenessCheck = now;
+    
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const pairingSheet = ss.getSheetByName('Pairing');
+    const standingSheet = ss.getSheetByName('Standing');
+    
+    if (!pairingSheet || !standingSheet) {
+      console.log('ไม่พบชีท Pairing หรือ Standing - ข้ามการตรวจสอบ');
+      return;
+    }
+    
+    // หารอบล่าสุดจากการจับคู่
+    const pairingData = pairingSheet.getRange('A2:A').getValues().flat().filter(r => r);
+    if (pairingData.length === 0) {
+      console.log('ไม่พบข้อมูลการจับคู่ - ข้ามการตรวจสอบ');
+      return;
+    }
+    
+    const currentRound = Math.max(...pairingData);
+    
+    // ดึงข้อมูล Standing
+    if (standingSheet.getLastRow() <= 1) {
+      console.log('ไม่พบข้อมูลใน Standing - ข้ามการตรวจสอบ');
+      return;
+    }
+    
+    const standingsData = standingSheet.getRange(2, 1, standingSheet.getLastRow() - 1, 12).getValues();
+    
+    // ตรวจสอบผู้เล่นที่ยังไม่ครบรอบ
+    const incompletePlayers = [];
+    const completePlayers = [];
+    
+    standingsData.forEach((row, index) => {
+      const rank = row[0];
+      const playerId = row[1];
+      const playerName = row[2];
+      const played = row[4] || 0;
+      
+      // ข้ามแถว DROP
+      if (rank === 'DROP' || !playerId || !playerName) return;
+      
+      if (played < currentRound) {
+        incompletePlayers.push({
+          name: playerName,
+          played: played,
+          expected: currentRound
+        });
+      } else {
+        completePlayers.push({
+          name: playerName,
+          played: played
+        });
+      }
+    });
+    
+    // แจ้งเตือนอัตโนมัติ
+    if (incompletePlayers.length === 0) {
+      // ทุกคนครบแล้ว - เปลี่ยน Status เป็น "Ready for next round"
+      try {
+        const statusCol = 12; // คอลัมน์ Status
+        const pairingData = pairingSheet.getDataRange().getValues();
+        
+        // หาแถวที่มี Status = "OK" และเปลี่ยนเป็น "Ready for next round"
+        for (let i = 1; i < pairingData.length; i++) {
+          const row = pairingData[i];
+          if (row[statusCol] === 'OK') {
+            pairingSheet.getRange(i + 1, statusCol + 1).setValue('Ready for next round');
+          }
+        }
+        
+        // แสดง toast notification
+        const message = `🎉 Standing รอบที่ ${currentRound} สมบูรณ์! พร้อมจับคู่รอบถัดไปได้`;
+        SpreadsheetApp.getActiveSpreadsheet().toast(message, 'Standing สมบูรณ์', 5);
+        console.log(`✅ Standing รอบที่ ${currentRound} สมบูรณ์ - ผู้เล่นครบ ${completePlayers.length} คน - เปลี่ยน Status เป็น "Ready for next round"`);
+        
+      } catch (statusError) {
+        console.log('เกิดข้อผิดพลาดในการเปลี่ยน Status:', statusError);
+        // แสดง toast notification แบบปกติ
+        const message = `🎉 Standing รอบที่ ${currentRound} สมบูรณ์! พร้อมจับคู่รอบถัดไปได้`;
+        SpreadsheetApp.getActiveSpreadsheet().toast(message, 'Standing สมบูรณ์', 5);
+      }
+    } else {
+      // ยังมีคนไม่ครบ - ไม่แจ้งเตือน (เพื่อไม่ให้รบกวน)
+      console.log(`⚠️ Standing รอบที่ ${currentRound} ยังไม่สมบูรณ์ - ${incompletePlayers.length} คนยังไม่ครบ (ไม่แจ้งเตือน)`);
+    }
+    
+  } catch (error) {
+    console.log('Error in checkStandingCompletenessAuto:', error);
+  }
+}
+
+// 🔍 ตรวจสอบความสมบูรณ์ของ Standing และแจ้งเตือน
+function checkStandingCompleteness() {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const pairingSheet = ss.getSheetByName('Pairing');
+    const standingSheet = ss.getSheetByName('Standing');
+    
+    if (!pairingSheet || !standingSheet) {
+      SpreadsheetApp.getUi().alert('❌ ไม่พบชีท Pairing หรือ Standing');
+      return;
+    }
+    
+    // หารอบล่าสุดจากการจับคู่
+    const pairingData = pairingSheet.getRange('A2:A').getValues().flat().filter(r => r);
+    if (pairingData.length === 0) {
+      SpreadsheetApp.getUi().alert('❌ ไม่พบข้อมูลการจับคู่');
+      return;
+    }
+    
+    const currentRound = Math.max(...pairingData);
+    console.log(`🔍 ตรวจสอบความสมบูรณ์ของ Standing รอบที่ ${currentRound}`);
+    
+    // ดึงข้อมูล Standing
+    if (standingSheet.getLastRow() <= 1) {
+      SpreadsheetApp.getUi().alert('❌ ไม่พบข้อมูลใน Standing');
+      return;
+    }
+    
+    const standingsData = standingSheet.getRange(2, 1, standingSheet.getLastRow() - 1, 12).getValues();
+    
+    // ตรวจสอบผู้เล่นที่ยังไม่ครบรอบ
+    const incompletePlayers = [];
+    const completePlayers = [];
+    
+    standingsData.forEach((row, index) => {
+      const rank = row[0];
+      const playerId = row[1];
+      const playerName = row[2];
+      const played = row[4] || 0;
+      
+      // ข้ามแถว DROP
+      if (rank === 'DROP' || !playerId || !playerName) return;
+      
+      if (played < currentRound) {
+        incompletePlayers.push({
+          name: playerName,
+          played: played,
+          expected: currentRound
+        });
+      } else {
+        completePlayers.push({
+          name: playerName,
+          played: played
+        });
+      }
+    });
+    
+    // สร้างรายงาน
+    let message = `🔍 รายงานความสมบูรณ์ของ Standing รอบที่ ${currentRound}\n\n`;
+    
+    if (incompletePlayers.length === 0) {
+      // ทุกคนครบแล้ว
+      message += `✅ **Standing อัปเดตเรียบร้อยแล้ว!**\n\n`;
+      message += `📊 สถิติ:\n`;
+      message += `• ผู้เล่นที่ครบรอบ: ${completePlayers.length} คน\n`;
+      message += `• ผู้เล่นที่ยังไม่ครบ: 0 คน\n\n`;
+      message += `🎯 **พร้อมให้ตรวจสอบและเตรียมจับคู่รอบถัดไปได้!**\n\n`;
+      
+      // แสดงรายชื่อผู้เล่นที่ครบ
+      if (completePlayers.length > 0) {
+        message += `👥 รายชื่อผู้เล่นที่ครบรอบที่ ${currentRound}:\n`;
+        completePlayers.forEach((player, index) => {
+          message += `${index + 1}. ${player.name} (${player.played} เกม)\n`;
+        });
+      }
+      
+      SpreadsheetApp.getUi().alert('🎉 Standing สมบูรณ์!', message, SpreadsheetApp.getUi().ButtonSet.OK);
+      
+    } else {
+      // ยังมีคนไม่ครบ
+      message += `⚠️ **Standing ยังไม่สมบูรณ์**\n\n`;
+      message += `📊 สถิติ:\n`;
+      message += `• ผู้เล่นที่ครบรอบ: ${completePlayers.length} คน\n`;
+      message += `• ผู้เล่นที่ยังไม่ครบ: ${incompletePlayers.length} คน\n\n`;
+      
+      message += `❌ รายชื่อผู้เล่นที่ยังไม่ครบรอบที่ ${currentRound}:\n`;
+      incompletePlayers.forEach((player, index) => {
+        message += `${index + 1}. ${player.name} (เล่นแล้ว ${player.played} เกม, ควรเป็น ${player.expected} เกม)\n`;
+      });
+      
+      message += `\n💡 **กรุณาตรวจสอบและกรอกผลการแข่งขันให้ครบก่อน**`;
+      
+      SpreadsheetApp.getUi().alert('⚠️ Standing ยังไม่สมบูรณ์', message, SpreadsheetApp.getUi().ButtonSet.OK);
+    }
+    
+  } catch (error) {
+    console.log('Error in checkStandingCompleteness:', error);
+    SpreadsheetApp.getUi().alert('❌ เกิดข้อผิดพลาดในการตรวจสอบ Standing: ' + error.toString());
+  }
+}
+
+// 📏 ปรับขนาดคอลัมน์ชื่อผู้เล่นในชีท Pairing
+function adjustPlayerNameColumns(pairingSheet) {
+  try {
+    if (!pairingSheet) {
+      console.log('ไม่พบชีท Pairing');
+      return;
+    }
+    
+    const lastRow = pairingSheet.getLastRow();
+    if (lastRow <= 1) return; // ไม่มีข้อมูล
+    
+    // คอลัมน์ D (PLAYER 1) และ J (PLAYER 2)
+    const player1Col = 4; // คอลัมน์ D
+    const player2Col = 10; // คอลัมน์ J
+    
+    // หาความยาวชื่อผู้เล่นที่ยาวที่สุดในคอลัมน์ D
+    let maxPlayer1Length = 0;
+    const player1Range = pairingSheet.getRange(2, player1Col, lastRow - 1, 1);
+    const player1Values = player1Range.getValues();
+    
+    player1Values.forEach(row => {
+      const name = row[0] ? row[0].toString() : '';
+      if (name.length > maxPlayer1Length) {
+        maxPlayer1Length = name.length;
+      }
+    });
+    
+    // หาความยาวชื่อผู้เล่นที่ยาวที่สุดในคอลัมน์ J
+    let maxPlayer2Length = 0;
+    const player2Range = pairingSheet.getRange(2, player2Col, lastRow - 1, 1);
+    const player2Values = player2Range.getValues();
+    
+    player2Values.forEach(row => {
+      const name = row[0] ? row[0].toString() : '';
+      if (name.length > maxPlayer2Length) {
+        maxPlayer2Length = name.length;
+      }
+    });
+    
+    // คำนวณความกว้างที่เหมาะสม (ขั้นต่ำ 150px, สูงสุด 300px)
+    const player1Width = Math.max(150, Math.min(300, maxPlayer1Length * 8 + 20));
+    const player2Width = Math.max(150, Math.min(300, maxPlayer2Length * 8 + 20));
+    
+    // ตั้งค่าความกว้างคอลัมน์
+    pairingSheet.setColumnWidth(player1Col, player1Width);
+    pairingSheet.setColumnWidth(player2Col, player2Width);
+    
+    console.log(`ปรับขนาดคอลัมน์ชื่อผู้เล่น: D=${player1Width}px, J=${player2Width}px`);
+    
+  } catch (error) {
+    console.log('เกิดข้อผิดพลาดในการปรับขนาดคอลัมน์ชื่อผู้เล่น:', error);
+  }
+}
+
+// 📏 ปรับขนาดคอลัมน์สำคัญในชีท Standing
+function resizeStandingColumns(standingSheet) {
+  try {
+    const lastRow = standingSheet.getLastRow();
+    if (lastRow <= 1) return;
+    
+    // คอลัมน์ C (PLAYER NAME)
+    const nameCol = 3;
+    const nameRange = standingSheet.getRange(2, nameCol, lastRow - 1, 1);
+    const nameValues = nameRange.getValues();
+    
+    let maxNameLength = 0;
+    nameValues.forEach(row => {
+      const name = row[0] ? row[0].toString() : '';
+      if (name.length > maxNameLength) {
+        maxNameLength = name.length;
+      }
+    });
+    
+    const nameWidth = Math.max(150, Math.min(300, maxNameLength * 8 + 20));
+    standingSheet.setColumnWidth(nameCol, nameWidth);
+    
+    // คอลัมน์ D (TR_ID) - ขนาดคงที่
+    standingSheet.setColumnWidth(4, 100);
+    
+    // คอลัมน์ L (H2H) - ขนาดคงที่
+    standingSheet.setColumnWidth(12, 350);
+    
+    console.log(`ปรับขนาดคอลัมน์ Standing: C=${nameWidth}px, D=100px, L=350px`);
+    
+  } catch (error) {
+    console.log('เกิดข้อผิดพลาดในการปรับขนาดคอลัมน์ Standing:', error);
+  }
+}
+
+// 📏 ปรับขนาดคอลัมน์เฉพาะที่สำคัญ (เร็วขึ้น)
+function smartResizeAllSheetsSilent() {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    
+    // ปรับชีท Pairing - คอลัมน์ D (PLAYER 1) และ J (PLAYER 2)
+    const pairingSheet = ss.getSheetByName('Pairing');
+    if (pairingSheet && pairingSheet.getLastRow() > 1) {
+      adjustPlayerNameColumns(pairingSheet);
+      console.log('ปรับขนาดคอลัมน์ชีท Pairing (D, J)');
+    }
+    
+    // ปรับชีท Standing - คอลัมน์ C (PLAYER NAME), D (TR_ID), L (H2H)
+    const standingSheet = ss.getSheetByName('Standing');
+    if (standingSheet && standingSheet.getLastRow() > 1) {
+      resizeStandingColumns(standingSheet);
+      console.log('ปรับขนาดคอลัมน์ชีท Standing (C, D, L)');
+    }
+    
+    console.log('ปรับขนาดคอลัมน์สำคัญเรียบร้อยแล้ว (เร็วขึ้น)');
+    
+  } catch (error) {
+    console.log('เกิดข้อผิดพลาดในการปรับขนาดคอลัมน์:', error);
+  }
+}
+
+// 🪣 สร้าง Bucket Sheet ใหม่
+function createBucketSheet() {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    
+    // ตรวจสอบว่ามีชีท Bucket อยู่แล้วหรือไม่
+    let bucketSheet = ss.getSheetByName('Bucket');
+    if (bucketSheet) {
+      const response = SpreadsheetApp.getUi().alert(
+        '⚠️ คำเตือน',
+        'มีชีท Bucket อยู่แล้ว ต้องการสร้างใหม่หรือไม่?',
+        SpreadsheetApp.getUi().ButtonSet.YES_NO
+      );
+      if (response === SpreadsheetApp.getUi().Button.NO) return;
+      ss.deleteSheet(bucketSheet);
+    }
+    
+    // สร้างชีทใหม่
+    bucketSheet = ss.insertSheet('Bucket');
+    
+    // สร้าง header
+    const headers = ['Player ID', 'Player Name', 'TR_ID', 'Status', 'Played', 'Win', 'Draw', 'Loss', 'Points'];
+    bucketSheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+    
+    // จัดรูปแบบหัวตาราง
+    const headerRange = bucketSheet.getRange(1, 1, 1, headers.length);
+    headerRange.setBackground('#4285f4'); // สีน้ำเงิน
+    headerRange.setFontColor('#ffffff'); // ข้อความสีขาว
+    headerRange.setFontWeight('bold');
+    headerRange.setFontSize(12);
+    headerRange.setHorizontalAlignment('center');
+    headerRange.setVerticalAlignment('middle');
+    headerRange.setBorder(true, true, true, true, true, true, '#2d3748', SpreadsheetApp.BorderStyle.SOLID);
+    
+    // ปรับขนาดคอลัมน์
+    bucketSheet.setColumnWidth(1, 100);  // Player ID
+    bucketSheet.setColumnWidth(2, 150);  // Player Name
+    bucketSheet.setColumnWidth(3, 80);   // TR_ID
+    bucketSheet.setColumnWidth(4, 80);   // Status
+    bucketSheet.setColumnWidth(5, 80);   // Played
+    bucketSheet.setColumnWidth(6, 60);   // Win
+    bucketSheet.setColumnWidth(7, 60);   // Draw
+    bucketSheet.setColumnWidth(8, 60);   // Loss
+    bucketSheet.setColumnWidth(9, 60);   // Points
+    
+    SpreadsheetApp.getUi().alert('✅ สร้าง Bucket Sheet ใหม่เรียบร้อยแล้ว');
+    
+  } catch (error) {
+    console.log('Error in createBucketSheet:', error);
+    SpreadsheetApp.getUi().alert('❌ เกิดข้อผิดพลาดในการสร้าง Bucket Sheet: ' + error.toString());
+  }
+}
+
+// ========================================
+// 🎯 Custom Menu System for Desktop & iPad
+// ========================================
+
+/**
+ * สร้าง HTML สำหรับ Custom Menu
+ */
+function getCustomMenuHTML() {
+  return `
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Tournament Management Menu</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .menu-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .menu-header {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .menu-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .menu-header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 30px;
+        }
+
+        .menu-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .menu-section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            border-color: #667eea;
+        }
+
+        .menu-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .menu-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .menu-button {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+            position: relative;
+            overflow: hidden;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .menu-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .menu-button:active {
+            transform: translateY(0);
+        }
+
+        .menu-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .menu-button .icon {
+            font-size: 1.2rem;
+            min-width: 24px;
+        }
+
+        .menu-button .text {
+            flex: 1;
+        }
+
+        .loading {
+            position: relative;
+        }
+
+        .loading::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            right: 15px;
+            width: 20px;
+            height: 20px;
+            border: 2px solid transparent;
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            transform: translateY(-50%);
+        }
+
+        @keyframes spin {
+            0% { transform: translateY(-50%) rotate(0deg); }
+            100% { transform: translateY(-50%) rotate(360deg); }
+        }
+
+        .status-message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 10px;
+            color: white;
+            font-weight: 500;
+            z-index: 1000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+
+        .status-message.show {
+            transform: translateX(0);
+        }
+
+        .status-message.success {
+            background: linear-gradient(135deg, #00b894, #00a085);
+        }
+
+        .status-message.error {
+            background: linear-gradient(135deg, #e17055, #d63031);
+        }
+
+        .status-message.info {
+            background: linear-gradient(135deg, #74b9ff, #0984e3);
+        }
+
+        /* Touch-friendly styles for iPad */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .menu-header h1 {
+                font-size: 2rem;
+            }
+
+            .menu-grid {
+                grid-template-columns: 1fr;
+                padding: 20px;
+            }
+
+            .menu-section {
+                padding: 20px;
+            }
+
+            .menu-button {
+                padding: 18px 20px;
+                font-size: 1.1rem;
+                min-height: 60px;
+            }
+
+            .section-title {
+                font-size: 1.3rem;
+            }
+        }
+
+        /* Landscape orientation for iPad */
+        @media (max-width: 1024px) and (orientation: landscape) {
+            .menu-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {
+            .menu-container {
+                background: rgba(30, 30, 30, 0.95);
+                color: white;
+            }
+
+            .menu-section {
+                background: #2d2d2d;
+                color: white;
+            }
+
+            .section-title {
+                color: white;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="menu-container">
+        <div class="menu-header">
+            <h1>🏆 Tournament Management</h1>
+            <p>ระบบจัดการการแข่งขัน - ใช้งานได้ทั้งคอมพิวเตอร์และ iPad</p>
+        </div>
+
+        <div class="menu-grid">
+            <!-- Tournament Management Section -->
+            <div class="menu-section">
+                <div class="section-title">
+                    <span>🏆</span>
+                    <span>Tournament</span>
+                </div>
+                <div class="menu-buttons">
+                    <button class="menu-button" onclick="executeFunction('generatePlayerIDs')">
+                        <span class="icon">🆔</span>
+                        <span class="text">สร้าง Player ID อัตโนมัติ</span>
+                    </button>
+                    <button class="menu-button" onclick="executeFunction('fixPhoneNumbers')">
+                        <span class="icon">📞</span>
+                        <span class="text">แก้ไขเบอร์โทรให้มี 0 นำหน้า</span>
+                    </button>
+                    <button class="menu-button" onclick="executeFunction('pairFirstRound')">
+                        <span class="icon">🎲</span>
+                        <span class="text">จับคู่รอบแรก</span>
+                    </button>
+                    <button class="menu-button" onclick="executeFunction('pairNextRound')">
+                        <span class="icon">➡️</span>
+                        <span class="text">จับคู่รอบถัดไป</span>
+                    </button>
+                    <button class="menu-button" onclick="executeFunction('updateStandings')">
+                        <span class="icon">🔁</span>
+                        <span class="text">อัปเดต Standings</span>
+                    </button>
+                    <button class="menu-button" onclick="executeFunction('undoLastPairing')">
+                        <span class="icon">↩️</span>
+                        <span class="text">ย้อนจับคู่รอบล่าสุด</span>
+                    </button>
+                    <button class="menu-button" onclick="executeFunction('undoMultipleRounds')">
+                        <span class="icon">↩️</span>
+                        <span class="text">ย้อนจับคู่หลายรอบ</span>
+                    </button>
+                    <button class="menu-button" onclick="executeFunction('dropPlayerFromList')">
+                        <span class="icon">🚫</span>
+                        <span class="text">Drop ผู้เล่น (เลือกจากรายชื่อ)</span>
+                    </button>
+                    <button class="menu-button" onclick="executeFunction('cancelPlayerDrop')">
+                        <span class="icon">✅</span>
+                        <span class="text">ยกเลิก Drop ผู้เล่น</span>
+                    </button>
+                    <button class="menu-button" onclick="executeFunction('clearPairingData')">
+                        <span class="icon">🗑️</span>
+                        <span class="text">Clear Pairing (เคลียร์การจับคู่ทั้งหมด)</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Round Robin Section -->
+            <div class="menu-section">
+                <div class="section-title">
+                    <span>🔄</span>
+                    <span>Round Robin</span>
+                </div>
+                <div class="menu-buttons">
+                    <button class="menu-button" onclick="executeFunction('createRoundRobinTournament')">
+                        <span class="icon">🔄</span>
+                        <span class="text">สร้าง Round Robin</span>
+                    </button>
+                    <button class="menu-button" onclick="executeFunction('updateRoundRobinResults')">
+                        <span class="icon">📊</span>
+                        <span class="text">อัปเดตผล Round Robin</span>
+                    </button>
+                    <button class="menu-button" onclick="executeFunction('autoUpdateRoundRobinResults')">
+                        <span class="icon">🔄</span>
+                        <span class="text">อัปเดตผลและ Standings อัตโนมัติ</span>
+                    </button>
+                    <button class="menu-button" onclick="executeFunction('createRoundRobinStanding')">
+                        <span class="icon">🏆</span>
+                        <span class="text">สร้างสรุปผล Round Robin</span>
+                    </button>
+                    <button class="menu-button" onclick="executeFunction('fixRoundRobinStandingsData')">
+                        <span class="icon">🔧</span>
+                        <span class="text">แก้ไขข้อมูล Standings (OW% & H2H)</span>
+                    </button>
+                    <button class="menu-button" onclick="executeFunction('fixAllRoundRobinData')">
+                        <span class="icon">🔧</span>
+                        <span class="text">แก้ไขข้อมูลทั้งหมดในครั้งเดียว</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Analysis Section -->
+            <div class="menu-section">
+                <div class="section-title">
+                    <span>📊</span>
+                    <span>Analysis</span>
+                </div>
+                <div class="menu-buttons">
+                    <button class="menu-button" onclick="executeFunction('showPairingValidation')">
+                        <span class="icon">🔍</span>
+                        <span class="text">ตรวจสอบการจับคู่</span>
+                    </button>
+                    <button class="menu-button" onclick="executeFunction('showPairingStats')">
+                        <span class="icon">📊</span>
+                        <span class="text">สถิติการแข่งขัน</span>
+                    </button>
+                    <button class="menu-button" onclick="executeFunction('showTournamentAdvice')">
+                        <span class="icon">💡</span>
+                        <span class="text">คำแนะนำการจัดการ</span>
+                    </button>
+                    <button class="menu-button" onclick="executeFunction('showBracketPairing')">
+                        <span class="icon">📊</span>
+                        <span class="text">แสดง Bracket Pairing</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Data Management Section -->
+            <div class="menu-section">
+                <div class="section-title">
+                    <span>🛠️</span>
+                    <span>Data Management</span>
+                </div>
+                <div class="menu-buttons">
+                    <button class="menu-button" onclick="executeFunction('clearAllData')">
+                        <span class="icon">🧹</span>
+                        <span class="text">เคลียร์ทั้งหมด (เริ่มใหม่)</span>
+                    </button>
+                    <button class="menu-button" onclick="executeFunction('clearBucketData')">
+                        <span class="icon">🪣</span>
+                        <span class="text">เคลียร์ Bucket (ความยาวชื่อ)</span>
+                    </button>
+                    <button class="menu-button" onclick="executeFunction('forceResizeH2HColumn')">
+                        <span class="icon">📏</span>
+                        <span class="text">บังคับปรับขนาดคอลัมน์ L (H2H)</span>
+                    </button>
+                    <button class="menu-button" onclick="executeFunction('showStandingCheckResult')">
+                        <span class="icon">🔍</span>
+                        <span class="text">ตรวจสอบ Standing แบบเร็ว</span>
+                    </button>
+                    <button class="menu-button" onclick="executeFunction('forceUpdateAllStatus')">
+                        <span class="icon">🔄</span>
+                        <span class="text">บังคับอัปเดต Status ทั้งหมด</span>
+                    </button>
+                    <button class="menu-button" onclick="executeFunction('updatePendingStatusToOK')">
+                        <span class="icon">⚡</span>
+                        <span class="text">อัปเดต Status เป็น OK (สำหรับผลที่กรอกแล้ว)</span>
+                    </button>
+                    <button class="menu-button" onclick="executeFunction('checkRoundCompletion')">
+                        <span class="icon">🔍</span>
+                        <span class="text">ตรวจสอบความสมบูรณ์ของรอบล่าสุด</span>
+                    </button>
+                    <button class="menu-button" onclick="executeFunction('checkStandingCompleteness')">
+                        <span class="icon">🔍</span>
+                        <span class="text">ตรวจสอบความสมบูรณ์ของ Standing</span>
+                    </button>
+                    <button class="menu-button" onclick="executeFunction('resetStandingsUpdateFlags')">
+                        <span class="icon">🔄</span>
+                        <span class="text">รีเซ็ตสถานะการอัปเดต Standings</span>
+                    </button>
+                    <button class="menu-button" onclick="executeFunction('fixPlayerDataIssues')">
+                        <span class="icon">🔧</span>
+                        <span class="text">แก้ไขปัญหาข้อมูล Player</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Formatting Section -->
+            <div class="menu-section">
+                <div class="section-title">
+                    <span>🎨</span>
+                    <span>Formatting</span>
+                </div>
+                <div class="menu-buttons">
+                    <button class="menu-button" onclick="executeFunction('createPairingHeader')">
+                        <span class="icon">📋</span>
+                        <span class="text">สร้างหัวตาราง Pairing</span>
+                    </button>
+                    <button class="menu-button" onclick="executeFunction('formatPairingSheet')">
+                        <span class="icon">🎨</span>
+                        <span class="text">จัดรูปแบบชีท</span>
+                    </button>
+                    <button class="menu-button" onclick="executeFunction('improveVisualFormatting')">
+                        <span class="icon">✨</span>
+                        <span class="text">ปรับแต่งการแสดงผล</span>
+                    </button>
+                    <button class="menu-button" onclick="executeFunction('fixTextOverlap')">
+                        <span class="icon">🔧</span>
+                        <span class="text">แก้ไขการทับชื่อ</span>
+                    </button>
+                    <button class="menu-button" onclick="executeFunction('separateRoundsVisually')">
+                        <span class="icon">📊</span>
+                        <span class="text">แยกรอบการแข่งขัน</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Export & Reports Section -->
+            <div class="menu-section">
+                <div class="section-title">
+                    <span>📊</span>
+                    <span>Export & Reports</span>
+                </div>
+                <div class="menu-buttons">
+                    <button class="menu-button" onclick="executeFunction('exportStandingsToCSV')">
+                        <span class="icon">📊</span>
+                        <span class="text">Export Standings to CSV</span>
+                    </button>
+                    <button class="menu-button" onclick="executeFunction('exportPairingResultsToCSV')">
+                        <span class="icon">🎮</span>
+                        <span class="text">Export Pairing Results to CSV</span>
+                    </button>
+                    <button class="menu-button" onclick="executeFunction('exportCompleteTournamentData')">
+                        <span class="icon">📋</span>
+                        <span class="text">Export Complete Tournament Data</span>
+                    </button>
+                    <button class="menu-button" onclick="executeFunction('createGymStandingForFill')">
+                        <span class="icon">🏋️</span>
+                        <span class="text">สร้าง Gym Standing for fill</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="statusMessage" class="status-message"></div>
+
+    <script>
+        // Function to execute Google Apps Script functions
+        function executeFunction(functionName) {
+            const button = event.target.closest('.menu-button');
+            const originalText = button.innerHTML;
+            
+            // Show loading state
+            button.classList.add('loading');
+            button.disabled = true;
+            
+            // Show status message
+            showStatus('กำลังดำเนินการ...', 'info');
+            
+            try {
+                // Execute the function using Google Apps Script
+                google.script.run
+                    .withSuccessHandler(function(result) {
+                        button.classList.remove('loading');
+                        button.disabled = false;
+                        showStatus('ดำเนินการเสร็จสิ้น!', 'success');
+                    })
+                    .withFailureHandler(function(error) {
+                        button.classList.remove('loading');
+                        button.disabled = false;
+                        showStatus('เกิดข้อผิดพลาด: ' + error.message, 'error');
+                        console.error('Error executing function:', error);
+                    })
+                    [functionName]();
+            } catch (error) {
+                button.classList.remove('loading');
+                button.disabled = false;
+                showStatus('เกิดข้อผิดพลาด: ' + error.message, 'error');
+                console.error('Error:', error);
+            }
+        }
+
+        // Function to show status messages
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('statusMessage');
+            statusDiv.textContent = message;
+            statusDiv.className = \`status-message \${type} show\`;
+            
+            setTimeout(() => {
+                statusDiv.classList.remove('show');
+            }, 3000);
+        }
+
+        // Add touch event listeners for better mobile support
+        document.addEventListener('DOMContentLoaded', function() {
+            const buttons = document.querySelectorAll('.menu-button');
+            
+            buttons.forEach(button => {
+                // Add touch feedback
+                button.addEventListener('touchstart', function() {
+                    this.style.transform = 'scale(0.95)';
+                });
+                
+                button.addEventListener('touchend', function() {
+                    this.style.transform = '';
+                });
+            });
+        });
+
+        // Prevent zoom on double tap for iPad
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function (event) {
+            const now = (new Date()).getTime();
+            if (now - lastTouchEnd <= 300) {
+                event.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
+    </script>
+</body>
+</html>
+  `;
+}
+
+/**
+ * เปิด Custom Menu สำหรับใช้งานบน Desktop และ iPad
+ */
+function openCustomMenu() {
+  try {
+    const htmlOutput = HtmlService.createHtmlOutput(getCustomMenuHTML())
+      .setWidth(1200)
+      .setHeight(800)
+      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+    
+    SpreadsheetApp.getUi().showModalDialog(htmlOutput, '🏆 Tournament Management Menu');
+  } catch (error) {
+    console.error('Error opening custom menu:', error);
+    SpreadsheetApp.getUi().alert('❌ เกิดข้อผิดพลาดในการเปิดเมนู: ' + error.toString());
+  }
+}
+
+/**
+ * เปิด Custom Menu แบบ Sidebar (เหมาะสำหรับ iPad)
+ */
+function openCustomMenuSidebar() {
+  try {
+    const htmlOutput = HtmlService.createHtmlOutput(getCustomMenuHTML())
+      .setWidth(400)
+      .setHeight(600);
+    
+    SpreadsheetApp.getUi().showSidebar(htmlOutput);
+  } catch (error) {
+    console.error('Error opening custom menu sidebar:', error);
+    SpreadsheetApp.getUi().alert('❌ เกิดข้อผิดพลาดในการเปิดเมนู: ' + error.toString());
+  }
+}
+
+/**
+ * ตรวจสอบว่าอยู่ในโหมด Mobile หรือไม่
+ */
+function isMobileDevice() {
+  try {
+    const userAgent = Session.getActiveUser().getEmail();
+    // ตรวจสอบจาก User Agent หรือใช้วิธีอื่น
+    return false; // ปล่อยให้ HTML ตรวจสอบเอง
+  } catch (error) {
+    return false;
+  }
+}
+
+/**
+ * เปิดเมนูที่เหมาะสมกับอุปกรณ์
+ */
+function openSmartMenu() {
+  try {
+    // ตรวจสอบขนาดหน้าจอและเลือกเมนูที่เหมาะสม
+    const htmlOutput = HtmlService.createHtmlOutput(getCustomMenuHTML())
+      .setWidth(1200)
+      .setHeight(800)
+      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+    
+    SpreadsheetApp.getUi().showModalDialog(htmlOutput, '🏆 Tournament Management Menu');
+  } catch (error) {
+    console.error('Error opening smart menu:', error);
+    SpreadsheetApp.getUi().alert('❌ เกิดข้อผิดพลาดในการเปิดเมนู: ' + error.toString());
+  }
+}
+
+/**
+ * ฟังก์ชันสำหรับทดสอบการเชื่อมต่อ
+ */
+function testConnection() {
+  try {
+    return {
+      success: true,
+      message: 'การเชื่อมต่อสำเร็จ!',
+      timestamp: new Date().toLocaleString('th-TH')
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: 'เกิดข้อผิดพลาด: ' + error.toString(),
+      timestamp: new Date().toLocaleString('th-TH')
+    };
+  }
+}
+
+/**
+ * ฟังก์ชันสำหรับตรวจสอบสถานะระบบ
+ */
+function getSystemStatus() {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheets = ss.getSheets();
+    const sheetNames = sheets.map(sheet => sheet.getName());
+    
+    return {
+      success: true,
+      spreadsheetName: ss.getName(),
+      sheetCount: sheets.length,
+      sheetNames: sheetNames,
+      timestamp: new Date().toLocaleString('th-TH')
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: 'เกิดข้อผิดพลาดในการตรวจสอบสถานะ: ' + error.toString(),
+      timestamp: new Date().toLocaleString('th-TH')
+    };
+  }
+}
+
+/**
+ * ลบชีท Menu เก่า (ถ้ามี)
+ */
+function removeOldMenuSheet() {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const menuSheet = ss.getSheetByName('Menu');
+    
+    if (menuSheet) {
+      ss.deleteSheet(menuSheet);
+      console.log('Old Menu sheet removed successfully');
+    }
+  } catch (error) {
+    console.error('Error removing old menu sheet:', error);
+  }
+}
+
+/**
+ * สร้างเว็บแอปสำหรับ iPad
+ */
+function createIPadWebApp() {
+  try {
+    const htmlOutput = HtmlService.createHtmlOutput(getIPadMenuHTML())
+      .setTitle('🏆 Tournament Management - iPad')
+      .setWidth(800)
+      .setHeight(600)
+      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+    
+    SpreadsheetApp.getUi().showModalDialog(htmlOutput, '🏆 Tournament Management - iPad');
+  } catch (error) {
+    console.error('Error creating iPad web app:', error);
+    SpreadsheetApp.getUi().alert('❌ เกิดข้อผิดพลาดในการสร้างเว็บแอป: ' + error.toString());
+  }
+}
+
+/**
+ * สร้างเว็บแอปแบบ Sidebar สำหรับ iPad
+ */
+function createIPadSidebar() {
+  try {
+    const htmlOutput = HtmlService.createHtmlOutput(getIPadMenuHTML())
+      .setWidth(400)
+      .setHeight(600);
+    
+    SpreadsheetApp.getUi().showSidebar(htmlOutput);
+  } catch (error) {
+    console.error('Error creating iPad sidebar:', error);
+    SpreadsheetApp.getUi().alert('❌ เกิดข้อผิดพลาดในการสร้าง Sidebar: ' + error.toString());
+  }
+}
+
+/**
+ * สร้าง HTML สำหรับ iPad Menu
+ */
+function getIPadMenuHTML() {
+  return `
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Tournament Management - iPad</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 10px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+            padding: 20px;
+        }
+
+        .menu-section {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .menu-section:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+            border-color: #667eea;
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .menu-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .menu-button {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 18px 20px;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+            position: relative;
+            overflow: hidden;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            touch-action: manipulation;
+        }
+
+        .menu-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .menu-button:active {
+            transform: scale(0.98);
+        }
+
+        .menu-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .menu-button .icon {
+            font-size: 1.3rem;
+            min-width: 28px;
+        }
+
+        .menu-button .text {
+            flex: 1;
+            line-height: 1.3;
+        }
+
+        .loading {
+            position: relative;
+        }
+
+        .loading::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            right: 15px;
+            width: 20px;
+            height: 20px;
+            border: 2px solid transparent;
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            transform: translateY(-50%);
+        }
+
+        @keyframes spin {
+            0% { transform: translateY(-50%) rotate(0deg); }
+            100% { transform: translateY(-50%) rotate(360deg); }
+        }
+
+        .status-message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 10px;
+            color: white;
+            font-weight: 500;
+            z-index: 1000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            max-width: 300px;
+        }
+
+        .status-message.show {
+            transform: translateX(0);
+        }
+
+        .status-message.success {
+            background: linear-gradient(135deg, #00b894, #00a085);
+        }
+
+        .status-message.error {
+            background: linear-gradient(135deg, #e17055, #d63031);
+        }
+
+        .status-message.info {
+            background: linear-gradient(135deg, #74b9ff, #0984e3);
+        }
+
+        /* iPad specific styles */
+        @media (max-width: 1024px) {
+            .menu-grid {
+                grid-template-columns: 1fr;
+                padding: 15px;
+            }
+
+            .menu-section {
+                padding: 15px;
+            }
+
+            .menu-button {
+                padding: 20px;
+                font-size: 1.1rem;
+                min-height: 65px;
+            }
+
+            .section-title {
+                font-size: 1.2rem;
+            }
+        }
+
+        /* Landscape orientation for iPad */
+        @media (max-width: 1024px) and (orientation: landscape) {
+            .menu-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* Prevent zoom on double tap */
+        * {
+            touch-action: manipulation;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏆 Tournament Management</h1>
+            <p>ระบบจัดการการแข่งขัน - สำหรับ iPad</p>
+        </div>
+
+        <div class="menu-grid">
+            <!-- Tournament Management Section -->
+            <div class="menu-section">
+                <div class="section-title">
+                    <span>🏆</span>
+                    <span>Tournament</span>
+                </div>
+                <div class="menu-buttons">
+                    <button class="menu-button" onclick="executeFunction('generatePlayerIDs')">
+                        <span class="icon">🆔</span>
+                        <span class="text">สร้าง Player ID อัตโนมัติ</span>
+                    </button>
+                    <button class="menu-button" onclick="executeFunction('fixPhoneNumbers')">
+                        <span class="icon">📞</span>
+                        <span class="text">แก้ไขเบอร์โทรให้มี 0 นำหน้า</span>
+                    </button>
+                    <button class="menu-button" onclick="executeFunction('pairFirstRound')">
+                        <span class="icon">🎲</span>
+                        <span class="text">จับคู่รอบแรก</span>
+                    </button>
+                    <button class="menu-button" onclick="executeFunction('pairNextRound')">
+                        <span class="icon">➡️</span>
+                        <span class="text">จับคู่รอบถัดไป</span>
+                    </button>
+                    <button class="menu-button" onclick="executeFunction('updateStandings')">
+                        <span class="icon">🔁</span>
+                        <span class="text">อัปเดต Standings</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Round Robin Section -->
+            <div class="menu-section">
+                <div class="section-title">
+                    <span>🔄</span>
+                    <span>Round Robin</span>
+                </div>
+                <div class="menu-buttons">
+                    <button class="menu-button" onclick="executeFunction('createRoundRobinTournament')">
+                        <span class="icon">🔄</span>
+                        <span class="text">สร้าง Round Robin</span>
+                    </button>
+                    <button class="menu-button" onclick="executeFunction('updateRoundRobinResults')">
+                        <span class="icon">📊</span>
+                        <span class="text">อัปเดตผล Round Robin</span>
+                    </button>
+                    <button class="menu-button" onclick="executeFunction('autoUpdateRoundRobinResults')">
+                        <span class="icon">🔄</span>
+                        <span class="text">อัปเดตผลและ Standings อัตโนมัติ</span>
+                    </button>
+                    <button class="menu-button" onclick="executeFunction('createRoundRobinStanding')">
+                        <span class="icon">🏆</span>
+                        <span class="text">สร้างสรุปผล Round Robin</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Data Management Section -->
+            <div class="menu-section">
+                <div class="section-title">
+                    <span>🛠️</span>
+                    <span>Data Management</span>
+                </div>
+                <div class="menu-buttons">
+                    <button class="menu-button" onclick="executeFunction('clearAllData')">
+                        <span class="icon">🧹</span>
+                        <span class="text">เคลียร์ทั้งหมด (เริ่มใหม่)</span>
+                    </button>
+                    <button class="menu-button" onclick="executeFunction('showStandingCheckResult')">
+                        <span class="icon">🔍</span>
+                        <span class="text">ตรวจสอบ Standing แบบเร็ว</span>
+                    </button>
+                    <button class="menu-button" onclick="executeFunction('forceUpdateAllStatus')">
+                        <span class="icon">🔄</span>
+                        <span class="text">บังคับอัปเดต Status ทั้งหมด</span>
+                    </button>
+                    <button class="menu-button" onclick="executeFunction('fixPlayerDataIssues')">
+                        <span class="icon">🔧</span>
+                        <span class="text">แก้ไขปัญหาข้อมูล Player</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Formatting Section -->
+            <div class="menu-section">
+                <div class="section-title">
+                    <span>🎨</span>
+                    <span>Formatting</span>
+                </div>
+                <div class="menu-buttons">
+                    <button class="menu-button" onclick="executeFunction('createPairingHeader')">
+                        <span class="icon">📋</span>
+                        <span class="text">สร้างหัวตาราง Pairing</span>
+                    </button>
+                    <button class="menu-button" onclick="executeFunction('formatPairingSheet')">
+                        <span class="icon">🎨</span>
+                        <span class="text">จัดรูปแบบชีท</span>
+                    </button>
+                    <button class="menu-button" onclick="executeFunction('improveVisualFormatting')">
+                        <span class="icon">✨</span>
+                        <span class="text">ปรับแต่งการแสดงผล</span>
+                    </button>
+                    <button class="menu-button" onclick="executeFunction('fixTextOverlap')">
+                        <span class="icon">🔧</span>
+                        <span class="text">แก้ไขการทับชื่อ</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="statusMessage" class="status-message"></div>
+
+    <script>
+        // Function to execute Google Apps Script functions
+        function executeFunction(functionName) {
+            const button = event.target.closest('.menu-button');
+            
+            // Show loading state
+            button.classList.add('loading');
+            button.disabled = true;
+            
+            // Show status message
+            showStatus('กำลังดำเนินการ...', 'info');
+            
+            try {
+                // Execute the function using Google Apps Script
+                google.script.run
+                    .withSuccessHandler(function(result) {
+                        button.classList.remove('loading');
+                        button.disabled = false;
+                        showStatus('ดำเนินการเสร็จสิ้น!', 'success');
+                    })
+                    .withFailureHandler(function(error) {
+                        button.classList.remove('loading');
+                        button.disabled = false;
+                        showStatus('เกิดข้อผิดพลาด: ' + error.message, 'error');
+                        console.error('Error executing function:', error);
+                    })
+                    [functionName]();
+            } catch (error) {
+                button.classList.remove('loading');
+                button.disabled = false;
+                showStatus('เกิดข้อผิดพลาด: ' + error.message, 'error');
+                console.error('Error:', error);
+            }
+        }
+
+        // Function to show status messages
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('statusMessage');
+            statusDiv.textContent = message;
+            statusDiv.className = \`status-message \${type} show\`;
+            
+            setTimeout(() => {
+                statusDiv.classList.remove('show');
+            }, 3000);
+        }
+
+        // Add touch event listeners for better mobile support
+        document.addEventListener('DOMContentLoaded', function() {
+            const buttons = document.querySelectorAll('.menu-button');
+            
+            buttons.forEach(button => {
+                // Add touch feedback
+                button.addEventListener('touchstart', function() {
+                    this.style.transform = 'scale(0.98)';
+                });
+                
+                button.addEventListener('touchend', function() {
+                    this.style.transform = '';
+                });
+            });
+        });
+
+        // Prevent zoom on double tap for iPad
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function (event) {
+            const now = (new Date()).getTime();
+            if (now - lastTouchEnd <= 300) {
+                event.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
+    </script>
+</body>
+</html>
+  `;
 }

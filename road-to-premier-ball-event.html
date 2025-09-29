@@ -492,9 +492,8 @@
       { bg: "#FFF3E0", border: "#FFB74D", th: "#FFB74D" }
     ];
 
-    // API สำหรับ Road to Premier Ball (จะต้องอัปเดต URL หลังจาก Deploy)
-    // const roadToPremierApi = "https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec";
-    const roadToPremierApi = null; // ปิดการใช้งานชั่วคราวจนกว่า API จะพร้อม
+    // API สำหรับ Road to Premier Ball
+    const roadToPremierApi = "https://script.google.com/macros/s/AKfycbyRImCXj09sIztWDmKrn-LxisZeCdiXV279cQu097CxFPux6Sc2ofFI8eu6aFDHnJui/exec";
     
     // ดึงข้อมูลสมาชิกจาก Member Dashboard (สำหรับ codename และ rank)
     const memberDashboardApi = "https://script.google.com/macros/s/AKfycbxtjsDwHI6nJU4OIHExUxMaZwUn3qwakvdkzwbQO7C8Trzz5Gh84SX6F1gqb4BOFQcn/exec?func=getMemberDashboardData";
@@ -570,6 +569,9 @@
         }) : 
         Promise.resolve({ participants: [] })
     ]).then(([members, roadToPremierData]) => {
+      console.log('Road to Premier Ball Data:', roadToPremierData);
+      console.log('Participants:', roadToPremierData.participants);
+      
       const phoneMap = {};
       if (members && Array.isArray(members)) {
         members.forEach(m => {
@@ -583,9 +585,14 @@
       today.setHours(0,0,0,0);
 
       roadToPremierDates.forEach((date, idx) => {
-        // ดึงข้อมูลผู้สมัครจาก API
+        // ดึงข้อมูลผู้สมัครจาก API - ใช้ข้อมูลทั้งหมดก่อน
         const players = roadToPremierData.participants ? 
-          roadToPremierData.participants.filter(p => p.registrationDate === date) : [];
+          roadToPremierData.participants.filter(p => {
+            console.log('Checking participant:', p.registrationDate, 'against date:', date);
+            return p.registrationDate === date;
+          }) : [];
+        
+        console.log(`Players for ${date}:`, players);
 
         const color = pastelColors[idx % pastelColors.length];
         const dateObj = parseThaiDate(date);
@@ -612,45 +619,28 @@
           </tr></thead><tbody>`;
         
         if (players.length === 0) {
-          html += `<tr><td colspan="3">ยังไม่มีผู้สมัคร</td></tr>`;
+          // แสดงข้อมูลผู้สมัครทั้งหมดถ้าไม่มีข้อมูลในวันที่นี้
+          const allPlayers = roadToPremierData.participants || [];
+          if (allPlayers.length > 0 && idx === 0) {
+            html += `<tr><td colspan="3" style="background: #fff3cd; color: #856404; padding: 10px;">📊 ข้อมูลผู้สมัครทั้งหมด (${allPlayers.length} คน):</td></tr>`;
+            allPlayers.forEach((player, idx3) => {
+              let displayName = player.nickname;
+              let phone = String(player.phone || '').replace(/[^\d]/g, "");
+              const profile = phoneMap[phone];
+              if (profile && profile.codename && profile.rank) {
+                const emoji = getRankEmoji(profile.rank);
+                const codenameHtml = renderCodenameEffect(profile.codename, profile.rank);
+                displayName += `<br><span class="codename-rank" data-rank="${profile.rank}"><span>${emoji}</span> ${codenameHtml} <span>${emoji}</span></span>`;
+              }
+              const pointsDisplay = player.points ? ` (${player.points} แต้ม)` : '';
+              html += `<tr><td>${idx3 + 1}</td><td>${displayName}</td><td>${player.playLevel || player.level}${pointsDisplay}</td></tr>`;
+            });
+          } else {
+            html += `<tr><td colspan="3">ยังไม่มีผู้สมัคร</td></tr>`;
+          }
         } else {
           players.forEach((player, idx2) => {
             let displayName = player.nickname;
             let phone = String(player.phone || '').replace(/[^\d]/g, "");
             const profile = phoneMap[phone];
-            if (profile && profile.codename && profile.rank) {
-              const emoji = getRankEmoji(profile.rank);
-              const codenameHtml = renderCodenameEffect(profile.codename, profile.rank);
-              displayName += `<br><span class="codename-rank" data-rank="${profile.rank}"><span>${emoji}</span> ${codenameHtml} <span>${emoji}</span></span>`;
-            }
-            // แสดงแต้มสะสมด้วย
-            const pointsDisplay = player.points ? ` (${player.points} แต้ม)` : '';
-            html += `<tr><td>${idx2 + 1}</td><td>${displayName}</td><td>${player.playLevel || player.level}${pointsDisplay}</td></tr>`;
-          });
-        }
-        html += `</tbody></table>`;
-      });
-
-      document.getElementById('gymbattle-list').innerHTML = html;
-
-      // เพิ่ม event listener ให้ปุ่ม toggle
-      document.querySelectorAll('.toggle-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-          const groupId = this.getAttribute('data-group');
-          const table = document.getElementById(groupId);
-          if (table.style.display === "none") {
-            table.style.display = "";
-            this.textContent = "ซ่อน";
-          } else {
-            table.style.display = "none";
-            this.textContent = "แสดง";
-          }
-        });
-      });
-    }).catch(err => {
-      console.error('Error loading data:', err);
-      document.getElementById('gymbattle-list').innerHTML = '<div>เกิดข้อผิดพลาดในการโหลดข้อมูล</div>';
-    });
-  </script>
-</body>
-</html>
+            if (profile && p
