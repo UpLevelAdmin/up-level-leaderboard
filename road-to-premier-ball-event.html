@@ -640,10 +640,12 @@
 
       roadToPremierDates.forEach((date, idx) => {
         // ดึงข้อมูลผู้สมัครจาก API - ใช้ข้อมูลทั้งหมดก่อน
+        // แยกเฉพาะวันที่หลักจากชื่อวันที่ (ไม่รวมข้อความเพิ่มเติม เช่น "(วันยิม + การ์ดโปรโม)")
+        const mainDate = date.split(' (')[0]; // เอาเฉพาะส่วนหน้าวงเล็บ
         const players = roadToPremierData.participants ? 
           roadToPremierData.participants.filter(p => {
-            console.log('Checking participant:', p.registrationDate, 'against date:', date);
-            return p.registrationDate === date;
+            console.log('Checking participant:', p.registrationDate, 'against mainDate:', mainDate);
+            return p.registrationDate === mainDate || p.registrationDate === date;
           }) : [];
         
         console.log(`Players for ${date}:`, players);
@@ -767,7 +769,8 @@
       today.setHours(0,0,0,0);
 
       roadToPremierDates.forEach((date, idx) => {
-        const players = fallbackData.participants.filter(p => p.registrationDate === date);
+        const mainDate = date.split(' (')[0]; // เอาเฉพาะส่วนหน้าวงเล็บ
+        const players = fallbackData.participants.filter(p => p.registrationDate === mainDate || p.registrationDate === date);
         const color = pastelColors[idx % pastelColors.length];
         const dateObj = parseThaiDate(date);
         let isPast = false;
