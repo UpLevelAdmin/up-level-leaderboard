@@ -576,8 +576,12 @@
         return [];
       }),
       roadToPremierApi ? 
-        fetch(`${roadToPremierApi}?func=getParticipants`).then(res => {
+        fetch(`${roadToPremierApi}?func=getParticipants`, {
+          method: 'GET',
+          redirect: 'follow'
+        }).then(res => {
           console.log('API Response status:', res.status);
+          console.log('API Response URL:', res.url);
           if (!res.ok) {
             throw new Error(`HTTP ${res.status}: ${res.statusText}`);
           }
