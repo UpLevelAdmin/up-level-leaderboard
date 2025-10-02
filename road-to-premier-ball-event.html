@@ -680,7 +680,7 @@
           if (allPlayers.length > 0 && idx === 0) {
             html += `<tr><td colspan="3" style="background: #fff3cd; color: #856404; padding: 10px;">📊 ข้อมูลผู้สมัครทั้งหมด (${allPlayers.length} คน):</td></tr>`;
             allPlayers.forEach((player, idx3) => {
-              let displayName = `${player.fullName || player.nickname || ''}`;
+              let displayName = `${player.nickname || player.fullName || ''}`;
               let phone = String(player.phone || '').replace(/[^\d]/g, "");
               const profile = phoneMap[phone];
               if (profile && profile.codename && profile.rank) {
@@ -696,7 +696,7 @@
           }
         } else {
           players.forEach((player, idx2) => {
-            let displayName = `${player.fullName || player.nickname || ''}`;
+            let displayName = `${player.nickname || player.fullName || ''}`;
             let phone = String(player.phone || '').replace(/[^\d]/g, "");
             const profile = phoneMap[phone];
             if (profile && profile.codename && profile.rank) {
@@ -798,7 +798,7 @@
           html += `<tr><td colspan="3">ยังไม่มีผู้สมัคร</td></tr>`;
         } else {
           players.forEach((player, idx2) => {
-            let displayName = player.nickname;
+            let displayName = player.nickname || player.fullName || '';
             let phone = String(player.phone || '').replace(/[^\d]/g, "");
             const profile = phoneMap[phone];
             if (profile && profile.codename && profile.rank) {
