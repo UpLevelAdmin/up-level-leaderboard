@@ -448,11 +448,12 @@
       }
       let html = '';
       if (data && data.participants && data.participants.length > 0) {
-        html += `<table><thead><tr><th>ลำดับ</th><th>ชื่อ-สกุล / Codename</th><th>เบอร์โทร</th></tr></thead><tbody>`;
+        html += `<table><thead><tr><th>ลำดับ</th><th>ชื่อ-สกุล / Codename</th><th>ระดับการเล่น</th></tr></thead><tbody>`;
         data.participants.forEach((p, idx) => {
-          // col B: ชื่อ - นามสกุล, col E: เบอร์โทร (index 4)
+          // col B: ชื่อ - นามสกุล, col E: เบอร์โทร (index 4), col F: ระดับการเล่น (index 5)
           let fullname = p[Object.keys(p)[1]] || '';
           let phone = String(p[Object.keys(p)[4]] || '').replace(/[^\d]/g, "");
+          let playLevel = p[Object.keys(p)[5]] || '';
           let codename = '';
           let rank = '';
           if (phoneMap[phone]) {
@@ -460,8 +461,8 @@
             rank = phoneMap[phone].rank || '';
           }
           let codenameHtml = codename ? `<span class="codename-rank" data-rank="${rank}">${getRankEmoji(rank)} ${renderCodenameEffect(codename, rank)} ${getRankEmoji(rank)}</span>` : '-';
-          let phoneDisplay = phone ? phone.substring(0, 3) + '-' + phone.substring(3, 6) + '-' + phone.substring(6) : '-';
-          html += `<tr><td>${idx+1}</td><td>${fullname}<br>${codenameHtml}</td><td>${phoneDisplay}</td></tr>`;
+          let rankDisplay = playLevel || '-';
+          html += `<tr><td>${idx+1}</td><td>${fullname}<br>${codenameHtml}</td><td>${rankDisplay}</td></tr>`;
         });
         html += `</tbody></table>`;
       } else {
