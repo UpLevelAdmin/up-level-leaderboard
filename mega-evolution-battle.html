@@ -450,9 +450,9 @@
       if (data && data.participants && data.participants.length > 0) {
         html += `<table><thead><tr><th>ลำดับ</th><th>ชื่อ-สกุล / Codename</th><th>เบอร์โทร</th></tr></thead><tbody>`;
         data.participants.forEach((p, idx) => {
-          // col B: ชื่อ - นามสกุล, col C: เบอร์โทร
+          // col B: ชื่อ - นามสกุล, col E: เบอร์โทร (index 4)
           let fullname = p[Object.keys(p)[1]] || '';
-          let phone = String(p[Object.keys(p)[2]] || '').replace(/[^\d]/g, "");
+          let phone = String(p[Object.keys(p)[4]] || '').replace(/[^\d]/g, "");
           let codename = '';
           let rank = '';
           if (phoneMap[phone]) {
