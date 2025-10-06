@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="th">
+  <head>
+    <meta charset="UTF-8">
+    <title>รายชื่อผู้สมัคร Mega Evolution Battle</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Mitr:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    .gbl-container {
+      max-width: 900px;
+      margin: 32px auto;
+      padding: 0 8px 32px 8px;
+      background: linear-gradient(135deg, #7c3aed 0%, #a855f7 50%, #9333ea 100%);
+      border-radius: 16px;
+      box-shadow: 0 8px 25px rgba(124, 58, 237, 0.3);
+      color: white;
+      font-family: 'Mitr', sans-serif;
+    }
+    .logo {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 16px;
+      width: 100%;
+    }
+    .logo img {
+      max-width: 120px;
+      display: block;
+      margin: 0 auto;
+    }
+    h2 {
+      color: #ffffff;
+      text-align: center;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+      font-weight: 600;
+      font-size: 1.8em;
+    }
+    .register-btn {
+      display: block;
+      width: 100%;
+      margin: 24px auto 0 auto;
+      padding: 12px 0;
+      background: linear-gradient(45deg, #dc2626, #ef4444);
+      color: #fff;
+      font-size: 1.1em;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      text-decoration: none;
+      text-align: center;
+      transition: background 0.2s, transform 0.18s, box-shadow 0.18s;
+      max-width: 350px;
+      box-shadow: 0 4px 15px rgba(220, 38, 38, 0.4);
+    }
+    .register-btn:hover {
+      background: linear-gradient(45deg, #ef4444, #f87171);
+      color: #fff;
+      transform: scale(1.07);
+      box-shadow: 0 0 20px #ef4444, 0 0 40px #ef4444;
+    }
+    .spinner {
+      margin: 24px auto 8px auto;
+      border: 6px solid rgba(255,255,255,0.3);
+      border-top: 6px solid #fbbf24;
+      border-radius: 50%;
+      width: 48px;
+      height: 48px;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg);}
+      100% { transform: rotate(360deg);}
+    }
+    /* ... (คัดลอก CSS codename-rank, wave, blink, สี, ขนาด ฯลฯ จาก gymbattle.html) ... */
+    .codename-rank[data-rank="Rookie"]      .codename { color: #1e3a8a; font-size: 1.05em; font-weight: 500; }
+    .codename-rank[data-rank="Bronze"]      .codename { color: #1e40af; font-size: 1.08em; font-weight: 500; }
+    .codename-rank[data-rank="Silver"]      .codename { color: #3b82f6; font-size: 1.12em; font-weight: 500; }
+    .codename-rank[data-rank="Gold"]        .codename { color: #fbbf24; font-size: 1.18em; font-weight: 600; }
+    .codename-rank[data-rank="Platinum"]    .codename { color: #e5e7eb; font-size: 1.22em; font-weight: 600; }
+    .codename-rank[data-rank="Diamond"]     .codename { color: #60a5fa; font-size: 1.28em; font-weight: 600; }
+    .codename-rank[data-rank="Grandmaster"] .codename { color: #f59e0b; font-size: 1.35em; font-weight: 600; }
+    .codename-rank[data-rank="Legend"]      .codename { color: #ef4444; font-size: 1.45em; font-weight: 600; }
+    .codename-rank[data-rank="Gold"]        .codename,
+    .codename-rank[data-rank="Platinum"]    .codename,
+    .codename-rank[data-rank="Diamond"]     .codename,
+    .codename-rank[data-rank="Grandmaster"] .codename,
+    .codename-rank[data-rank="Legend"]      .codename {
+      animation: blink 1s step-end infinite alternate;
+    }
+    @keyframes blink {
+      0%   { opacity: 1;   text-shadow: 0 0 8px #fff, 0 0 16px currentColor; }
+      100% { opacity: 0.6; text-shadow: 0 0 2px #fff, 0 0 4px currentColor; }
+    }
+    @keyframes wave {
+      0%, 100% { transform: translateY(0);}
+      20%      { transform: translateY(-5px);}
+      40%      { transform: translateY(-10px);}
+      60%      { transform: translateY(-5px);}
+      80%      { transform: translateY(0);}
+    }
+    .codename.wave span {
+      display: inline-block;
+      animation: wave 1.2s cubic-bezier(0.4,0,0.2,1) infinite;
+    }
+    .codename.wave.gold span { animation-duration: 1.2s; }
+    .codename.wave.platinum span { animation-duration: 1s; }
+    .codename.wave.diamond span { animation-duration: 0.85s; }
+    .codename.wave.grandmaster span { animation-duration: 0.7s; }
+    .codename.wave.legend span { animation-duration: 0.6s; }
+    .codename.wave span:nth-child(1) { animation-delay: 0s; }
+    .codename.wave span:nth-child(2) { animation-delay: 0.08s; }
+    .codename.wave span:nth-child(3) { animation-delay: 0.16s; }
+    .codename.wave span:nth-child(4) { animation-delay: 0.24s; }
+    .codename.wave span:nth-child(5) { animation-delay: 0.32s; }
+    .codename.wave span:nth-child(6) { animation-delay: 0.40s; }
+    .codename.wave span:nth-child(7) { animation-delay: 0.48s; }
+    .codename.wave span:nth-child(8) { animation-delay: 0.56s; }
+    .codename.wave span:nth-child(9) { animation-delay: 0.64s; }
+    .codename.wave span:nth-child(10){ animation-delay: 0.72s; }
+    
+    .logo-section {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    
+    .logo-section img {
+      max-width: 120px;
+      height: auto;
+    }
+    
+    .event-details {
+      margin-top: 24px;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 12px;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      color: #1e3a8a;
+    }
+    
+    .event-details h3 {
+      color: #7c3aed;
+      text-align: center;
+      font-size: 1.5em;
+      font-weight: 700;
+      margin-bottom: 20px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .event-details p {
+      margin: 12px 0;
+      line-height: 1.8;
+      font-size: 1.05em;
+      color: #374151;
+      font-weight: 500;
+    }
+    
+    .event-details strong {
+      color: #7c3aed;
+      font-weight: 600;
+    }
+    
+    .details-btn {
+      background: linear-gradient(45deg, #7c3aed, #a855f7);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 1.1em;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+    }
+    
+    .details-btn:hover {
+      background: linear-gradient(45deg, #a855f7, #c084fc);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4);
+    }
+    
+    .prizes-section {
+      margin-top: 32px;
+      padding: 24px;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 12px;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+    }
+    
+    .prizes-title {
+      color: #7c3aed;
+      text-align: center;
+      font-size: 1.8em;
+      font-weight: 700;
+      margin-bottom: 30px;
+      text-shadow: 
+        -1px -1px 0 #ffffff,
+        1px -1px 0 #ffffff,
+        -1px 1px 0 #ffffff,
+        1px 1px 0 #ffffff,
+        2px 2px 4px rgba(0,0,0,0.3);
+    }
+    
+    .prizes-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+      margin-top: 20px;
+    }
+    
+    /* Modal for image zoom */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+    }
+    
+    .modal.show {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .modal-content {
+      max-width: 90%;
+      max-height: 90vh;
+      object-fit: contain;
+      cursor: pointer;
+      user-select: none;
+    }
+    
+    .modal-content:active {
+      cursor: grabbing;
+    }
+    
+    .close {
+      position: absolute;
+      top: 20px;
+      right: 30px;
+      color: #ffffff;
+      font-size: 50px;
+      font-weight: bold;
+      cursor: pointer;
+      z-index: 1001;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+      background: rgba(255,255,255,0.2);
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(5px);
+    }
+    
+    .close:hover,
+    .close:focus {
+      color: #ffffff;
+      background: rgba(255,255,255,0.3);
+      transform: scale(1.1);
+    }
+    
+    .prize-item {
+      text-align: center;
+      padding: 0;
+      background: transparent;
+      border-radius: 0;
+      border: none;
+      box-shadow: none;
+      width: 100%;
+    }
+    
+    .prize-item img {
+      width: 100%;
+      height: auto;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+      min-height: 200px;
+      object-fit: cover;
+    }
+    
+    .prize-item img:hover {
+      transform: scale(1.05);
+    }
+    
+    .prize-item h4 {
+      color: #7c3aed;
+      margin: 8px 0 4px 0;
+      font-size: 1.4em;
+      font-weight: 600;
+      text-shadow: 
+        -1px -1px 0 #ffffff,
+        1px -1px 0 #ffffff,
+        -1px 1px 0 #ffffff,
+        1px 1px 0 #ffffff;
+    }
+    
+    .prize-item p {
+      color: #374151;
+      font-size: 1em;
+      margin: 0;
+      line-height: 1.4;
+      font-weight: 400;
+      text-shadow: 
+        -1px -1px 0 #ffffff,
+        1px -1px 0 #ffffff,
+        -1px 1px 0 #ffffff,
+        1px 1px 0 #ffffff;
+    }
+    
+    table {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 8px;
+      overflow: hidden;
+      margin-top: 20px;
+      border: 2px solid rgba(124, 58, 237, 0.2);
+    }
+    
+    th {
+      background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+      color: #374151;
+      font-weight: 600;
+      font-size: 1.1em;
+      padding: 12px 8px;
+      border-bottom: 2px solid #d1d5db;
+    }
+    
+    td {
+      color: #1f2937;
+      border-bottom: 1px solid #e5e7eb;
+      padding: 12px 8px;
+      font-weight: 500;
+      background: rgba(255, 255, 255, 0.8);
+    }
+    
+    tr:nth-child(even) td {
+      background: rgba(249, 250, 251, 0.9);
+    }
+    
+    tr:hover td {
+      background: rgba(124, 58, 237, 0.05);
+      transition: background 0.2s ease;
+    }
+  </style>
+</head>
+<body>
+  <a href="index.html" class="home-button" title="กลับหน้าหลัก"></a>
+  <div class="gbl-container">
+    <div class="logo-section">
+      <img src="https://i.postimg.cc/wjzpnxjB/Up-Level-01-1.png" alt="Up Level Logo">
+    </div>
+    <h2 style="text-align:center; margin-bottom: 12px;">🔥 แบตเทิลวิวัฒนาการเมก้า 🔥</h2>
+    <p style="text-align:center; font-size: 1.2em; margin-bottom: 24px;">Mega Evolution Battle ครั้งที่ 1</p>
+    
+    <!-- ปุ่มสมัคร -->
+    <div style="display: flex; justify-content: center; margin: 24px 0;">
+      <a class="register-btn" href="https://forms.gle/c3sTmL2DpTQDgXR1A" target="_blank" style="text-align: center;">สมัครแข่งขัน Mega Evolution Battle</a>
+    </div>
+    
+    <!-- ปุ่มดูรายละเอียด -->
+    <div style="text-align: center; margin: 20px 0;">
+      <button id="toggleDetails" class="details-btn">📋 ดูรายละเอียดการแข่งขัน</button>
+    </div>
+    
+    <!-- รายละเอียดการแข่งขัน (ซ่อนไว้) -->
+    <div class="event-details" id="eventDetails" style="display: none;">
+      <h3>📋 รายละเอียดการแข่งขัน</h3>
+      <p>ต้อนรับซีรีส์ใหม่ "โปเกมอนเทรดดิ้งการ์ดเกม วิวัฒนาการเมก้า"</p>
+      <p>จัดเด็คด้วย "โปเกมอนวิวัฒนาการเมก้าex" แล้วมาแบตเทิลเพื่อชิงรางวัลเพลย์แมทลายสุดพิเศษกัน!</p>
+      
+      <p><strong>📅 วันอาทิตย์ที่ 12 ตุลาคม 2568 เวลา 10:00–17:30 น.</strong></p>
+      <p><strong>📍 สถานที่:</strong> ร้าน Up Level Academy (ใกล้ MRT บางแค)</p>
+      <p><strong>💸 ค่าสมัคร:</strong> 100 บาท | <strong>👥 รับสูงสุด:</strong> 64 คน</p>
+      
+      <p><strong>⚔️ กติกาพิเศษ:</strong> ทุกเด็คต้องมีการ์ด Mega Pokémon อย่างน้อย 2 ใบ</p>
+      
+      <p><strong>🎁 ของที่ระลึก:</strong> ซองสุ่ม Promo 1 ซอง + Booster pack 2 ซอง</p>
+      
+      <p><strong>🏆 รางวัล:</strong> เพลย์แมทลาย Original Mega Evolution Battle (สำหรับ Top1-8)</p>
+      
+      <p><strong>🃏 รูปแบบ:</strong> Standard Format, Swiss Round 6 รอบ, BO1, รอบละ 25 นาที</p>
+    </div>
+    
+    <h2 style="font-size: 1.5em; margin-top: 32px; margin-bottom: 16px;">รายชื่อผู้สมัคร</h2>
+    <div id="gbl-list" style="text-align:center;">
+      <div class="spinner"></div>
+      <div>กำลังโหลด...</div>
+    </div>
+  </div>
+  <script>
+    const apiUrl = "https://script.google.com/macros/s/AKfycbw1fbRUM93UBCiiEKGNklPxepFMUGgMenT9DQocR7F41KobXbQyusvlXFt2PrF_1kO9oQ/exec";
+    const memberDashboardApi = "https://script.google.com/macros/s/AKfycbxtjsDwHI6nJU4OIHExUxMaZwUn3qwakvdkzwbQO7C8Trzz5Gh84SX6F1gqb4BOFQcn/exec?func=getMemberDashboardData";
+    // Codename effect rendering (copy from gymbattle.html)
+    function renderCodenameEffect(codename, rank) {
+      const chars = ['[', ...codename.split(''), ']'];
+      const waveRanks = ['Gold', 'Platinum', 'Diamond', 'Grandmaster', 'Legend'];
+      if (waveRanks.includes(rank)) {
+        return `<span class="codename wave ${rank.toLowerCase()}">${chars.map((ch,i)=>`<span>${ch}</span>`).join('')}</span>`;
+      } else {
+        return `<span class="codename" style="color: #7c3aed;">[${codename}]</span>`;
+      }
+    }
+    // Rank emoji map (copy from gymbattle.html)
+    const rankEmojis = {
+      "Rookie": "🐣", "Rookie II": "🐣", "Rookie III": "🐣", "Rookie IV": "🐣", "Rookie V": "🐣",
+      "Bronze": "🛡️", "Bronze II": "🛡️", "Bronze III": "🛡️", "Bronze IV": "🛡️", "Bronze V": "🛡️",
+      "Silver": "⚔️", "Silver II": "⚔️", "Silver III": "⚔️", "Silver IV": "⚔️", "Silver V": "⚔️",
+      "Gold": "🥇", "Gold II": "🥇", "Gold III": "🥇", "Gold IV": "🥇", "Gold V": "🥇",
+      "Platinum": "✨", "Platinum II": "✨", "Platinum III": "✨", "Platinum IV": "✨", "Platinum V": "✨",
+      "Diamond": "💎", "Diamond II": "💎", "Diamond III": "💎", "Diamond IV": "💎", "Diamond V": "💎",
+      "Grandmaster": "👑", "Grandmaster II": "👑", "Grandmaster III": "👑", "Grandmaster IV": "👑", "Grandmaster V": "👑",
+      "Legend": "🐉", "Legend II": "🐉", "Legend III": "🐉", "Legend IV": "🐉", "Legend V": "🐉"
+    };
+    function getBaseRank(rank) {
+      if (!rank) return "Rookie";
+      const baseRank = rank.replace(/\s+(II|III|IV|V|VI|VII|VIII|IX|X|\d+)$/, '');
+      return baseRank || "Rookie";
+    }
+    function getRankEmoji(rank) {
+      if (!rank) return rankEmojis["Rookie"] || "🐣";
+      if (rankEmojis[rank]) return rankEmojis[rank];
+      const baseRank = getBaseRank(rank);
+      return rankEmojis[baseRank] || rankEmojis["Rookie"] || "🐣";
+    }
+    Promise.all([
+      fetch(apiUrl).then(res => res.json()),
+      fetch(memberDashboardApi).then(res => res.json())
+    ]).then(([data, members]) => {
+      // สร้าง map เบอร์โทร -> { codename, rank }
+      const phoneMap = {};
+      if (members && Array.isArray(members)) {
+        members.forEach(m => {
+          const phone = String(m.phone).replace(/[^\d]/g, "");
+          phoneMap[phone] = { codename: m.codename, rank: m.rank };
+        });
+      }
+      let html = '';
+      if (data && data.participants && data.participants.length > 0) {
+        html += `<table><thead><tr><th>ลำดับ</th><th>ชื่อ-สกุล / Codename</th><th>เบอร์โทร</th></tr></thead><tbody>`;
+        data.participants.forEach((p, idx) => {
+          // col B: ชื่อ - นามสกุล, col C: เบอร์โทร
+          let fullname = p[Object.keys(p)[1]] || '';
+          let phone = String(p[Object.keys(p)[2]] || '').replace(/[^\d]/g, "");
+          let codename = '';
+          let rank = '';
+          if (phoneMap[phone]) {
+            codename = phoneMap[phone].codename || '';
+            rank = phoneMap[phone].rank || '';
+          }
+          let codenameHtml = codename ? `<span class="codename-rank" data-rank="${rank}">${getRankEmoji(rank)} ${renderCodenameEffect(codename, rank)} ${getRankEmoji(rank)}</span>` : '-';
+          let phoneDisplay = phone ? phone.substring(0, 3) + '-' + phone.substring(3, 6) + '-' + phone.substring(6) : '-';
+          html += `<tr><td>${idx+1}</td><td>${fullname}<br>${codenameHtml}</td><td>${phoneDisplay}</td></tr>`;
+        });
+        html += `</tbody></table>`;
+      } else {
+        html = '<div>ยังไม่มีผู้สมัคร</div>';
+      }
+      document.getElementById('gbl-list').innerHTML = html;
+    }).catch(err => {
+      console.error('Fetch error:', err);
+      document.getElementById('gbl-list').innerHTML = '<div>เกิดข้อผิดพลาดในการโหลดข้อมูล</div>';
+    });
+    
+    // Simple modal function
+    function openModal(imgSrc) {
+      const modal = document.getElementById('imageModal');
+      const modalImg = document.getElementById('modalImage');
+      modal.classList.add('show');
+      modalImg.src = imgSrc;
+    }
+    
+    function closeModal() {
+      const modal = document.getElementById('imageModal');
+      modal.classList.remove('show');
+    }
+    
+    // Close modal when clicking outside the image
+    const modalEl = document.getElementById('imageModal');
+    if (modalEl) {
+      modalEl.addEventListener('click', function(e) {
+        if (e.target === this) {
+          closeModal();
+        }
+      });
+    }
+    
+    // Close modal with Escape key
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        closeModal();
+      }
+    });
+    
+    // Toggle event details
+    document.getElementById('toggleDetails').addEventListener('click', function() {
+      const details = document.getElementById('eventDetails');
+      const button = document.getElementById('toggleDetails');
+      
+      if (details.style.display === 'none') {
+        details.style.display = 'block';
+        button.textContent = '📋 ซ่อนรายละเอียด';
+      } else {
+        details.style.display = 'none';
+        button.textContent = '📋 ดูรายละเอียดการแข่งขัน';
+      }
+    });
+  </script>
+  
+  <!-- Modal for image zoom -->
+  <div id="imageModal" class="modal">
+    <span class="close" onclick="closeModal()">&times;</span>
+    <img class="modal-content" id="modalImage">
+  </div>
+</body>
+</html>
+
