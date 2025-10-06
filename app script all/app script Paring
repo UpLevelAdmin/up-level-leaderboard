@@ -145,6 +145,20 @@ function notifyInfo(message) {
 function onOpen() {
   const ui = SpreadsheetApp.getUi();
   
+    // 🎯 Custom Menu - เมนูแบบใหม่ที่ใช้งานได้ทั้ง Desktop และ iPad
+  ui.createMenu('🎯 Custom Menu')
+    .addItem('🖥️ เปิดเมนูแบบ Desktop', 'openCustomMenu')
+    .addItem('📱 เปิดเมนูแบบ iPad/Sidebar', 'openCustomMenuSidebar')
+    .addItem('🤖 เปิดเมนูอัตโนมัติ (แนะนำ)', 'openSmartMenu')
+    .addSeparator()
+    .addItem('🌐 เปิดเว็บแอปสำหรับ iPad', 'createIPadWebApp')
+    .addItem('📱 เปิด Sidebar สำหรับ iPad', 'createIPadSidebar')
+    .addSeparator()
+    .addItem('🔍 ทดสอบการเชื่อมต่อ', 'testConnection')
+    .addItem('📊 ตรวจสอบสถานะระบบ', 'getSystemStatus')
+    .addToUi();
+
+
   // 🏆 Tournament Management - จัดการการแข่งขันหลัก
   ui.createMenu('🏆 Tournament')
     .addItem('🆔 สร้าง Player ID อัตโนมัติ', 'generatePlayerIDs')
@@ -231,18 +245,6 @@ function onOpen() {
     .addItem('🏋️ สร้าง Gym Standing for fill', 'createGymStandingForFill')
     .addToUi();
 
-  // 🎯 Custom Menu - เมนูแบบใหม่ที่ใช้งานได้ทั้ง Desktop และ iPad
-  ui.createMenu('🎯 Custom Menu')
-    .addItem('🖥️ เปิดเมนูแบบ Desktop', 'openCustomMenu')
-    .addItem('📱 เปิดเมนูแบบ iPad/Sidebar', 'openCustomMenuSidebar')
-    .addItem('🤖 เปิดเมนูอัตโนมัติ (แนะนำ)', 'openSmartMenu')
-    .addSeparator()
-    .addItem('🌐 เปิดเว็บแอปสำหรับ iPad', 'createIPadWebApp')
-    .addItem('📱 เปิด Sidebar สำหรับ iPad', 'createIPadSidebar')
-    .addSeparator()
-    .addItem('🔍 ทดสอบการเชื่อมต่อ', 'testConnection')
-    .addItem('📊 ตรวจสอบสถานะระบบ', 'getSystemStatus')
-    .addToUi();
 
 
   // ตั้งค่า Hide Standing controls ในชีท Pairing เท่านั้น
@@ -617,8 +619,8 @@ function pairNextRound() {
       if (b.points !== a.points) {
         return b.points - a.points;
       }
-      // ถ้าคะแนนเท่ากัน ให้เรียงตาม ID เพื่อความเสถียร
-      return a.id.localeCompare(b.id);
+      // ถ้าคะแนนเท่ากัน ให้สุ่มแทนการเรียงตาม ID เพื่อความยุติธรรม
+      return Math.random() - 0.5;
     });
 
   // ⚡ ลบ debug logging ที่ไม่จำเป็น - เก็บเฉพาะ log ที่สำคัญ
@@ -656,27 +658,29 @@ function pairNextRound() {
   // ⚡ ลบ debug logging ที่ไม่จำเป็น
   // console.log('Player Brackets:', playerBrackets);
 
-  // 2. แจกบายถ้าคนคี่ - เลือกผู้เล่นที่ยังไม่เคยได้ BYE และมีคะแนนต่ำที่สุด
+  // 2. แจกบายถ้าคนคี่ - เลือกผู้เล่นที่ยังไม่เคยได้ BYE และมีคะแนนต่ำที่สุด (สุ่มในกลุ่มคะแนนเดียวกัน)
   let byePlayer = null;
   if (activePlayers.length % 2 === 1) {
     const sortedPoints = Object.keys(playerBrackets).map(Number).sort((a, b) => a - b);
     
     for (let points of sortedPoints) {
       const playersInBracket = playerBrackets[points];
-      for (let player of playersInBracket) {
-        if (!byeList.includes(player.id)) {
-          byePlayer = player;
-          playerBrackets[points] = playerBrackets[points].filter(p => p.id !== player.id);
-          if (playerBrackets[points].length === 0) {
-            delete playerBrackets[points];
-          }
-          break;
+      // กรองเฉพาะคนที่ยังไม่เคยได้ BYE
+      const eligiblePlayers = playersInBracket.filter(p => !byeList.includes(p.id));
+      
+      if (eligiblePlayers.length > 0) {
+        // สุ่มเลือกจากคนที่มีสิทธิ์ในกลุ่มคะแนนนี้
+        const randomIndex = Math.floor(Math.random() * eligiblePlayers.length);
+        byePlayer = eligiblePlayers[randomIndex];
+        playerBrackets[points] = playerBrackets[points].filter(p => p.id !== byePlayer.id);
+        if (playerBrackets[points].length === 0) {
+          delete playerBrackets[points];
         }
+        break;
       }
-      if (byePlayer) break;
     }
     
-    // ถ้าไม่เจอคนที่ยังไม่เคยได้ BYE ให้เลือกคนที่มีคะแนนต่ำที่สุด
+    // ถ้าไม่เจอคนที่ยังไม่เคยได้ BYE ให้เลือกคนที่มีคะแนนต่ำที่สุด (สุ่มในกลุ่ม)
     if (!byePlayer) {
       const availablePoints = Object.keys(playerBrackets).map(Number).filter(points => 
         playerBrackets[points] && Array.isArray(playerBrackets[points]) && playerBrackets[points].length > 0
@@ -684,7 +688,11 @@ function pairNextRound() {
       
       if (availablePoints.length > 0) {
         const lowestPoints = Math.min(...availablePoints);
-        byePlayer = playerBrackets[lowestPoints].pop();
+        const lowestBracket = playerBrackets[lowestPoints];
+        // สุ่มเลือกจากกลุ่มคะแนนต่ำสุด
+        const randomIndex = Math.floor(Math.random() * lowestBracket.length);
+        byePlayer = lowestBracket[randomIndex];
+        playerBrackets[lowestPoints] = lowestBracket.filter((p, i) => i !== randomIndex);
         if (playerBrackets[lowestPoints].length === 0) {
           delete playerBrackets[lowestPoints];
         }
@@ -694,6 +702,8 @@ function pairNextRound() {
 
   // 3. สร้าง pairing แบบ backtracking - ป้องกันการซ้ำ 100%
   const paired = [];
+  // ป้องกันผู้เล่นถูกจับซ้ำภายในรอบเดียวกัน
+  const usedPlayers = new Set();
   
   // ⚡ เพิ่ม: timeout เพื่อป้องกันการค้าง
   const startTime = Date.now();
@@ -705,7 +715,7 @@ function pairNextRound() {
     availablePlayers.forEach(p2 => {
       if (p1.id !== p2.id) {
         const hasPlayed = matchHistory[p1.id] && matchHistory[p1.id].includes(p2.id);
-        if (!hasPlayed) {
+        if (!hasPlayed && !usedPlayers.has(p2.id) && !usedPlayers.has(p1.id)) {
           eligible.push(p2);
         }
       }
@@ -734,141 +744,58 @@ function pairNextRound() {
     }
   }
 
-  // ฟังก์ชันจับคู่แบบ Swiss Tournament ที่ถูกต้อง
+  // ฟังก์ชันจับคู่แบบ backtracking ที่เรียบง่ายและเสถียร (เรียงตามคะแนน ใกล้เคียงก่อน)
   function pairPlayers(players, matchHistory) {
-    // ⚡ เพิ่ม: ตรวจสอบ timeout
     if (Date.now() - startTime > MAX_TIME) {
       console.log('⏰ Timeout - ใช้เวลานานเกินไป');
       return false;
     }
-    
     if (players.length === 0) return true;
     if (players.length === 1) return false;
 
-    // --- หลักการ Swiss Tournament ที่ถูกต้อง ---
-    // 1. จัดกลุ่มผู้เล่นตามคะแนน (จากสูงไปต่ำ)
-    // 2. จับคู่ภายในกลุ่มคะแนนเดียวกันก่อน
-    // 3. ถ้าเหลือคี่ ให้จับคู่กับกลุ่มถัดไป (pair down)
-    // 4. หลีกเลี่ยงการซ้ำ 100%
-
-    // จัดกลุ่มผู้เล่นตามคะแนน
-    const pointsGroups = {};
-    players.forEach(player => {
-      if (!pointsGroups[player.points]) pointsGroups[player.points] = [];
-      pointsGroups[player.points].push(player);
+    // เลือกผู้เล่นที่ยังไม่ถูกใช้ โดยเรียงตามคะแนนจากมากไปน้อย แล้วสุ่มในกลุ่มคะแนนเดียวกัน
+    const remaining = players.filter(p => !usedPlayers.has(p.id));
+    if (remaining.length === 0) return true;
+    
+    // เรียงตามคะแนน และสุ่มในกลุ่มคะแนนเดียวกัน
+    remaining.sort((a, b) => {
+      if (b.points !== a.points) return b.points - a.points;
+      return Math.random() - 0.5; // สุ่มในกลุ่มคะแนนเดียวกัน
     });
-    
-    const sortedPoints = Object.keys(pointsGroups).map(Number).sort((a, b) => b - a);
-    
-    // จับคู่แบบ Swiss ที่ถูกต้อง
-    console.log(`🎯 เริ่มจับคู่แบบ Swiss - กลุ่มคะแนน: ${sortedPoints.join(', ')}`);
-    
-    for (let i = 0; i < sortedPoints.length; i++) {
-      const currentPoints = sortedPoints[i];
-      const currentGroup = pointsGroups[currentPoints];
-      
-      if (currentGroup.length === 0) continue;
-      
-      console.log(`📊 กลุ่ม ${currentPoints} คะแนน: ${currentGroup.length} คน`);
-      
-      // จับคู่ภายในกลุ่มเดียวกัน
-      const pairsInGroup = [];
-      const remainingInGroup = [...currentGroup];
-      
-      // หาคู่ที่ยังไม่เคยเจอกันภายในกลุ่ม
-      for (let j = 0; j < remainingInGroup.length; j++) {
-        for (let k = j + 1; k < remainingInGroup.length; k++) {
-          const p1 = remainingInGroup[j];
-          const p2 = remainingInGroup[k];
-          
-          const hasPlayed = matchHistory[p1.id] && matchHistory[p1.id].includes(p2.id);
-          
-          if (!hasPlayed) {
-            pairsInGroup.push([p1, p2]);
-            console.log(`✅ จับคู่ภายในกลุ่ม: ${p1.name} (${p1.points}) vs ${p2.name} (${p2.points})`);
-            remainingInGroup.splice(k, 1);
-            remainingInGroup.splice(j, 1);
-            j--; // ปรับ index หลังลบ
-            break;
-          }
-        }
+    const p1 = remaining[0];
+
+    // สร้างรายชื่อคู่ต่อสู้ที่ยังไม่เคยเจอกัน และยังไม่ถูกใช้ในรอบนี้
+    let candidates = players.filter(p => p.id !== p1.id && !usedPlayers.has(p.id));
+    candidates = candidates.filter(p2 => !(matchHistory[p1.id] && matchHistory[p1.id].includes(p2.id)));
+
+    // จัดลำดับคู่ต่อสู้ตามส่วนต่างคะแนน (ใกล้ก่อน) แล้วสุ่มในกลุ่มที่มีส่วนต่างเท่ากัน
+    candidates.sort((a, b) => {
+      const da = Math.abs(p1.points - a.points);
+      const db = Math.abs(p1.points - b.points);
+      if (da !== db) return da - db;
+      // ถ้าส่วนต่างคะแนนเท่ากัน ให้สุ่มแทนที่จะเลือกคนที่คะแนนสูงกว่าเสมอ
+      return Math.random() - 0.5;
+    });
+
+    for (const p2 of candidates) {
+      // จอง
+      usedPlayers.add(p1.id);
+      usedPlayers.add(p2.id);
+      paired.push([p1, p2]);
+
+      // สร้างรายการถัดไปโดยตัด p1/p2 ออก
+      const nextPlayers = players.filter(p => p.id !== p1.id && p.id !== p2.id);
+      if (pairPlayers(nextPlayers, matchHistory)) {
+        return true;
       }
-      
-      // เพิ่มคู่ที่จับได้
-      paired.push(...pairsInGroup);
-      
-      // ถ้าเหลือคนในกลุ่ม (คี่) ให้จับคู่กับกลุ่มถัดไป
-      if (remainingInGroup.length > 0) {
-        const remainingPlayer = remainingInGroup[0];
-        
-        // หาคู่จากกลุ่มถัดไป (คะแนนต่ำกว่า)
-        let foundPair = false;
-        for (let nextGroupIndex = i + 1; nextGroupIndex < sortedPoints.length; nextGroupIndex++) {
-          const nextPoints = sortedPoints[nextGroupIndex];
-          const nextGroup = pointsGroups[nextPoints];
-          
-          if (nextGroup.length === 0) continue;
-          
-          // หาคู่ที่ยังไม่เคยเจอกัน
-          for (let k = 0; k < nextGroup.length; k++) {
-            const opponent = nextGroup[k];
-            const hasPlayed = matchHistory[remainingPlayer.id] && matchHistory[remainingPlayer.id].includes(opponent.id);
-            
-            if (!hasPlayed) {
-              paired.push([remainingPlayer, opponent]);
-              console.log(`🔗 จับคู่ข้ามกลุ่ม: ${remainingPlayer.name} (${remainingPlayer.points}) vs ${opponent.name} (${opponent.points})`);
-              pointsGroups[nextPoints].splice(k, 1); // ลบคนที่จับคู่แล้ว
-              foundPair = true;
-              break;
-            }
-          }
-          
-          if (foundPair) break;
-        }
-        
-        // ถ้าไม่เจอคู่ ให้ลอง backtrack
-        if (!foundPair) {
-          // ลบคู่ที่เพิ่งเพิ่ม
-          paired.splice(paired.length - pairsInGroup.length, pairsInGroup.length);
-          
-          // ลองวิธีอื่น
-          const p1 = currentGroup[0];
-          const eligibleOpponents = getEligibleOpponents(p1, players.filter(p => p.id !== p1.id), matchHistory);
-          
-          if (eligibleOpponents.length === 0) {
-            return false;
-          }
-          
-          // เรียงตามความเหมาะสม (คะแนนใกล้เคียงก่อน)
-          eligibleOpponents.sort((a, b) => {
-            const diffA = Math.abs(p1.points - a.points);
-            const diffB = Math.abs(p1.points - b.points);
-            
-            if (diffA !== diffB) {
-              return diffA - diffB; // คะแนนใกล้เคียงก่อน
-            }
-            
-            return b.points - a.points; // คะแนนสูงก่อน
-          });
-          
-          // ลองจับคู่กับคนที่เหมาะสมที่สุด
-          for (let p2 of eligibleOpponents) {
-            const remainingPlayers = players.filter(p => p.id !== p1.id && p.id !== p2.id);
-            paired.push([p1, p2]);
-            
-            if (pairPlayers(remainingPlayers, matchHistory)) {
-              return true;
-            }
-            
-            paired.pop(); // backtrack
-          }
-          
-          return false;
-        }
-      }
+
+      // ย้อนกลับ
+      paired.pop();
+      usedPlayers.delete(p1.id);
+      usedPlayers.delete(p2.id);
     }
-    
-    return true;
+
+    return false;
   }
 
   // ลองจับคู่แบบ backtracking

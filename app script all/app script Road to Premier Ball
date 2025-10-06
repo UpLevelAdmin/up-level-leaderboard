@@ -770,4 +770,53 @@ function getParticipantsByDate(date) {
     }
   }
   
-  retu
+  return ContentService
+    .createTextOutput(JSON.stringify({
+      status: "success",
+      date: date,
+      participants: participants,
+      count: participants.length
+    }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+// ✅ ดึงข้อมูลสรุป
+function getSummaryData() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const participantsSheet = ss.getSheetByName("Participants");
+  
+  if (!participantsSheet) {
+    return ContentService
+      .createTextOutput(JSON.stringify({
+        status: "error",
+        message: "Participants sheet not found"
+      }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+  
+  const data = participantsSheet.getDataRange().getValues();
+  const totalParticipants = data.length - 1;
+  const uniqueParticipants = new Set(data.slice(1).map(row => normalizePhone(row[5]))).size;
+  const duplicateEntries = totalParticipants - uniqueParticipants;
+  
+  // สรุปตามวันที่
+  const dateSummary = {};
+  data.slice(1).forEach(row => {
+    const date = row[1];
+    if (date) {
+      dateSummary[date] = (dateSummary[date] || 0) + 1;
+    }
+  });
+  
+  return ContentService
+    .createTextOutput(JSON.stringify({
+      status: "success",
+      summary: {
+        totalParticipants: totalParticipants,
+        uniqueParticipants: uniqueParticipants,
+        duplicateEntries: duplicateEntries,
+        dateSummary: dateSummary
+      }
+    }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
