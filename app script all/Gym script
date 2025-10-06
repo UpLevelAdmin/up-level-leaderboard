@@ -1,18 +1,16 @@
 function doGet(e) {
   var dates = [
-    "วันอังคารที่ 2 กันยายน 2568",
-    "วันศุกร์ที่ 5 กันยายน 2568",
-    "วันเสาร์ที่ 6 กันยายน 2568",
-    "วันอังคารที่ 9 กันยายน 2568",
-    "วันศุกร์ที่ 12 กันยายน 2568",
-    "วันเสาร์ที่ 13 กันยายน 2568",
-    "วันอังคารที่ 16 กันยายน 2568",
-    "วันศุกร์ที่ 19 กันยายน 2568",
-    "วันเสาร์ที่ 20 กันยายน 2568",
-    "วันอังคารที่ 23 กันยายน 2568",
-    "วันศุกร์ที่ 26 กันยายน 2568",
-    "วันเสาร์ที่ 27 กันยายน 2568",
-    "วันอังคารที่ 30 กันยายน 2568"
+    "วันอังคารที่ 7 ตุลาคม 2568",
+    "วันศุกร์ที่ 10 ตุลาคม 2568",
+    "วันเสาร์ที่ 11 ตุลาคม 2568",
+    "วันอังคารที่ 14 ตุลาคม 2568",
+    "วันศุกร์ที่ 17 ตุลาคม 2568",
+    "วันเสาร์ที่ 18 ตุลาคม 2568",
+    "วันอังคารที่ 21 ตุลาคม 2568",
+    "วันศุกร์ที่ 24 ตุลาคม 2568",
+    "วันเสาร์ที่ 25 ตุลาคม 2568",
+    "วันอังคารที่ 28 ตุลาคม 2568",
+    "วันศุกร์ที่ 31 ตุลาคม 2568"
   ];
 
   var pastelColors = [
@@ -38,32 +36,21 @@ function doGet(e) {
   var data = sheet.getDataRange().getValues();
   var groupedData = {};
   
-  // สร้าง groupedData สำหรับทั้งวันที่ปกติและวันที่ที่มี "*ไม่ได้รับ PROMO GYM*" ต่อท้าย
+  // สร้าง groupedData สำหรับวันที่ปกติ
   dates.forEach(date => {
     groupedData[date] = [];
-    // เพิ่มวันที่ที่มี "*ไม่ได้รับ PROMO GYM*" ต่อท้ายสำหรับ 4 วันแรก
-    if (date === "วันอังคารที่ 2 กันยายน 2568" || 
-        date === "วันศุกร์ที่ 5 กันยายน 2568" || 
-        date === "วันเสาร์ที่ 6 กันยายน 2568" || 
-        date === "วันอังคารที่ 9 กันยายน 2568") {
-      groupedData[date + " *ไม่ได้รับ PROMO GYM*"] = [];
-      // เพิ่มรูปแบบที่ไม่มีช่องว่างระหว่าง "กันยายน" กับ "2568"
-      var dateNoSpace = date.replace("กันยายน 2568", "กันยายน2568");
-      groupedData[dateNoSpace + " *ไม่ได้รับ PROMO GYM*"] = [];
-    }
   });
   
   // เพิ่มรูปแบบวันที่ที่อาจแตกต่างกัน (เช่น 2568 vs 2025)
   var alternativeDates = [
-    "วันอังคารที่ 2 กันยายน 2025",
-    "วันศุกร์ที่ 5 กันยายน 2025", 
-    "วันเสาร์ที่ 6 กันยายน 2025",
-    "วันอังคารที่ 9 กันยายน 2025"
+    "วันอังคารที่ 7 ตุลาคม 2025",
+    "วันศุกร์ที่ 10 ตุลาคม 2025", 
+    "วันเสาร์ที่ 11 ตุลาคม 2025",
+    "วันอังคารที่ 14 ตุลาคม 2025"
   ];
   
   alternativeDates.forEach(date => {
     groupedData[date] = [];
-    groupedData[date + " *ไม่ได้รับ PROMO GYM*"] = [];
   });
 
   for (var i = 1; i < data.length; i++) {
@@ -76,44 +63,23 @@ function doGet(e) {
     if (groupedData[date]) {
       groupedData[date].push({ nickname: nickname, level: level, phone: phone });
     } else {
-      // ถ้าไม่เจอ ลองลบ "*ไม่ได้รับ PROMO GYM*" ออกแล้วค้นหา
-      var cleanDate = date.replace(/\s*\*ไม่ได้รับ PROMO GYM\*$/, '');
-      if (groupedData[cleanDate]) {
-        groupedData[cleanDate].push({ nickname: nickname, level: level, phone: phone });
-      } else {
-        // ถ้ายังไม่เจอ ลองเพิ่ม "*ไม่ได้รับ PROMO GYM*" ต่อท้ายแล้วค้นหา
-        var dateWithPromo = cleanDate + " *ไม่ได้รับ PROMO GYM*";
-        if (groupedData[dateWithPromo]) {
-          groupedData[dateWithPromo].push({ nickname: nickname, level: level, phone: phone });
-        } else {
-          // ลองแปลงปี 2568 เป็น 2025 หรือกลับกัน
-          var convertedDate = cleanDate.replace('2568', '2025');
-          if (groupedData[convertedDate]) {
-            groupedData[convertedDate].push({ nickname: nickname, level: level, phone: phone });
-          } else {
-            var convertedDateWithPromo = convertedDate + " *ไม่ได้รับ PROMO GYM*";
-            if (groupedData[convertedDateWithPromo]) {
-              groupedData[convertedDateWithPromo].push({ nickname: nickname, level: level, phone: phone });
-            }
-          }
-        }
+      // ลองแปลงปี 2568 เป็น 2025 หรือกลับกัน
+      var convertedDate = date.replace('2568', '2025');
+      if (groupedData[convertedDate]) {
+        groupedData[convertedDate].push({ nickname: nickname, level: level, phone: phone });
       }
     }
   }
   
   // Debug: แสดงข้อมูลที่สร้างขึ้น
   console.log("Debug - groupedData keys:", Object.keys(groupedData));
-  console.log("Debug - Sample data:", groupedData["วันอังคารที่ 2 กันยายน 2568"]);
-  console.log("Debug - Sample data with PROMO:", groupedData["วันอังคารที่ 2 กันยายน 2568 *ไม่ได้รับ PROMO GYM*"]);
-  console.log("Debug - วันที่ 5 กันยายน:", groupedData["วันศุกร์ที่ 5 กันยายน 2568"]);
-  console.log("Debug - วันที่ 5 กันยายน with PROMO:", groupedData["วันศุกร์ที่ 5 กันยายน 2568 *ไม่ได้รับ PROMO GYM*"]);
+  console.log("Debug - Sample data:", groupedData["วันอังคารที่ 7 ตุลาคม 2568"]);
+  console.log("Debug - วันที่ 10 ตุลาคม:", groupedData["วันศุกร์ที่ 10 ตุลาคม 2568"]);
   
-  // Debug: เปรียบเทียบวันที่ 2 และ 5
-  console.log("=== เปรียบเทียบวันที่ 2 และ 5 ===");
-  console.log("วันที่ 2 ปกติ:", groupedData["วันอังคารที่ 2 กันยายน 2568"].length);
-  console.log("วันที่ 2 with PROMO:", groupedData["วันอังคารที่ 2 กันยายน 2568 *ไม่ได้รับ PROMO GYM*"].length);
-  console.log("วันที่ 5 ปกติ:", groupedData["วันศุกร์ที่ 5 กันยายน 2568"].length);
-  console.log("วันที่ 5 with PROMO:", groupedData["วันศุกร์ที่ 5 กันยายน 2568 *ไม่ได้รับ PROMO GYM*"].length);
+  // Debug: เปรียบเทียบวันที่ 7 และ 10
+  console.log("=== เปรียบเทียบวันที่ 7 และ 10 ===");
+  console.log("วันที่ 7:", groupedData["วันอังคารที่ 7 ตุลาคม 2568"].length);
+  console.log("วันที่ 10:", groupedData["วันศุกร์ที่ 10 ตุลาคม 2568"].length);
   
   // Debug: แสดงข้อมูลดิบจาก Google Sheets
   console.log("Debug - Raw data from sheet:");
@@ -125,7 +91,7 @@ function doGet(e) {
   console.log("Debug - ตรวจสอบรูปแบบวันที่ที่แตกต่างกัน:");
   for (var i = 1; i < data.length; i++) {
     var date = data[i][1];
-    if (date && (date.includes("2 กันยายน") || date.includes("5 กันยายน"))) {
+    if (date && (date.includes("7 ตุลาคม") || date.includes("10 ตุลาคม"))) {
       console.log(`Row ${i}: "${date}" - Length: ${date.length}`);
       // ตรวจสอบว่ามีช่องว่างหรืออักขระพิเศษหรือไม่
       for (var j = 0; j < date.length; j++) {
@@ -136,12 +102,12 @@ function doGet(e) {
     }
   }
   
-  // Debug: ตรวจสอบข้อมูลวันที่ 5 กันยายนโดยเฉพาะ
-  console.log("Debug - ตรวจสอบข้อมูลวันที่ 5 กันยายน:");
+  // Debug: ตรวจสอบข้อมูลวันที่ 10 ตุลาคมโดยเฉพาะ
+  console.log("Debug - ตรวจสอบข้อมูลวันที่ 10 ตุลาคม:");
   for (var i = 1; i < data.length; i++) {
     var date = data[i][1];
-    if (date && date.includes("5 กันยายน")) {
-      console.log(`Found date 5: "${date}", Nickname: "${data[i][3]}"`);
+    if (date && date.includes("10 ตุลาคม")) {
+      console.log(`Found date 10: "${date}", Nickname: "${data[i][3]}"`);
       
       // ตรวจสอบรูปแบบวันที่ที่แตกต่างกัน
       if (date.includes("2568")) {
@@ -172,19 +138,16 @@ function doGet(e) {
     var finalGroupedData = {};
     dates.forEach(function(date) {
       var players = groupedData[date] || [];
-      var playersWithPromo = groupedData[date + " *ไม่ได้รับ PROMO GYM*"] || [];
       
-      // เพิ่มข้อมูลจากรูปแบบที่ไม่มีช่องว่างระหว่าง "กันยายน" กับ "2568"
-      var dateNoSpace = date.replace("กันยายน 2568", "กันยายน2568");
+      // เพิ่มข้อมูลจากรูปแบบที่ไม่มีช่องว่างระหว่าง "ตุลาคม" กับ "2568"
+      var dateNoSpace = date.replace("ตุลาคม 2568", "ตุลาคม2568");
       var playersNoSpace = groupedData[dateNoSpace] || [];
-      var playersNoSpaceWithPromo = groupedData[dateNoSpace + " *ไม่ได้รับ PROMO GYM*"] || [];
       
       // เพิ่มข้อมูลจากรูปแบบวันที่ที่แตกต่างกัน (2568 vs 2025)
       var alternativeDate = date.replace('2568', '2025');
       var altPlayers = groupedData[alternativeDate] || [];
-      var altPlayersWithPromo = groupedData[alternativeDate + " *ไม่ได้รับ PROMO GYM*"] || [];
       
-      finalGroupedData[date] = players.concat(playersWithPromo, playersNoSpace, playersNoSpaceWithPromo, altPlayers, altPlayersWithPromo);
+      finalGroupedData[date] = players.concat(playersNoSpace, altPlayers);
       
       // Debug: แสดงข้อมูลที่รวมแล้ว
       console.log(`Final data for ${date}: ${finalGroupedData[date].length} players`);
@@ -199,7 +162,7 @@ function doGet(e) {
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>รายชื่อผู้สมัคร Gym Battle กันยายน 2568</title>
+      <title>รายชื่อผู้สมัคร Gym Battle ตุลาคม 2568</title>
       <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
       <style>
         body {
@@ -254,23 +217,19 @@ function doGet(e) {
         <div class="logo">
           <img src="${logoUrl}" alt="Up Level Logo">
         </div>
-        <h2>รายชื่อผู้สมัคร Gym Battle เดือนกันยายน 2568</h2>
+        <h2>รายชื่อผู้สมัคร Gym Battle เดือนตุลาคม 2568</h2>
   `;
 
   dates.forEach(function(date, index) {
-    // รวมข้อมูลจากทั้งวันที่ปกติและวันที่ที่มี "*ไม่ได้รับ PROMO GYM*" ต่อท้าย
+    // ข้อมูลผู้เล่นสำหรับวันที่นี้
     var players = groupedData[date] || [];
-    var playersWithPromo = groupedData[date + " *ไม่ได้รับ PROMO GYM*"] || [];
-    
-    // รวมข้อมูลทั้งหมด
-    var allPlayers = players.concat(playersWithPromo);
     
     var bgColor = pastelColors[index % pastelColors.length].bg;
     var borderColor = pastelColors[index % pastelColors.length].border;
 
     html += `
       <div class="date-header" style="background-color: ${bgColor}; border-left: 6px solid ${borderColor};">
-        วันที่: ${date} (จำนวน ${allPlayers.length} คน)
+        วันที่: ${date} (จำนวน ${players.length} คน)
       </div>
       <table>
         <thead>
@@ -283,10 +242,10 @@ function doGet(e) {
         <tbody>
     `;
 
-    if (allPlayers.length === 0) {
+    if (players.length === 0) {
       html += `<tr><td colspan="3">ยังไม่มีผู้สมัคร</td></tr>`;
     } else {
-      allPlayers.forEach((player, idx) => {
+      players.forEach((player, idx) => {
         html += `<tr><td>${idx + 1}</td><td>${player.nickname}</td><td>${player.level}</td></tr>`;
       });
     }
@@ -375,7 +334,7 @@ function testTelegramNotification() {
   const testData = {
     values: [
       new Date().toLocaleString('th-TH'),
-      "วันอังคารที่ 2 กันยายน 2568",
+      "วันอังคารที่ 7 ตุลาคม 2568",
       "",
       "ผู้ทดสอบ",
       "",
