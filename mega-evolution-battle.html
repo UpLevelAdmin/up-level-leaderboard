@@ -403,11 +403,11 @@
     const apiUrl = "https://script.google.com/macros/s/AKfycbw1fbRUM93UBCiiEKGNklPxepFMUGgMenT9DQocR7F41KobXbQyusvlXFt2PrF_1kO9oQ/exec";
     const memberDashboardApi = "https://script.google.com/macros/s/AKfycbxtjsDwHI6nJU4OIHExUxMaZwUn3qwakvdkzwbQO7C8Trzz5Gh84SX6F1gqb4BOFQcn/exec?func=getMemberDashboardData";
     // Codename effect rendering (copy from gymbattle.html)
-    function renderCodenameEffect(codename, rank) {
+    function renderCodenameEffect(codename, baseRank) {
       const chars = ['[', ...codename.split(''), ']'];
       const waveRanks = ['Gold', 'Platinum', 'Diamond', 'Grandmaster', 'Legend'];
-      if (waveRanks.includes(rank)) {
-        return `<span class="codename wave ${rank.toLowerCase()}">${chars.map((ch,i)=>`<span>${ch}</span>`).join('')}</span>`;
+      if (waveRanks.includes(baseRank)) {
+        return `<span class="codename wave ${baseRank.toLowerCase()}">${chars.map((ch,i)=>`<span>${ch}</span>`).join('')}</span>`;
       } else {
         return `<span class="codename" style="color: #7c3aed;">[${codename}]</span>`;
       }
@@ -460,7 +460,8 @@
             codename = phoneMap[phone].codename || '';
             rank = phoneMap[phone].rank || '';
           }
-          let codenameHtml = codename ? `<span class="codename-rank" data-rank="${rank}">${getRankEmoji(rank)} ${renderCodenameEffect(codename, rank)} ${getRankEmoji(rank)}</span>` : '-';
+          let baseRank = getBaseRank(rank);
+          let codenameHtml = codename ? `<span class="codename-rank" data-rank="${baseRank}">${getRankEmoji(rank)} ${renderCodenameEffect(codename, baseRank)} ${getRankEmoji(rank)}</span>` : '-';
           let rankDisplay = playLevel || '-';
           html += `<tr><td>${idx+1}</td><td>${fullname}<br>${codenameHtml}</td><td>${rankDisplay}</td></tr>`;
         });
