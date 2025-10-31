@@ -480,9 +480,9 @@
     <div class="logo">
       <img src="https://i.postimg.cc/wjzpnxjB/Up-Level-01-1.png" alt="Up Level Logo">
     </div>
-    <h2 style="text-align:center; margin-bottom: 24px;">รายชื่อผู้สมัคร Gym Battle เดือนตุลาคม 2568</h2>
+    <h2 style="text-align:center; margin-bottom: 24px;">รายชื่อผู้สมัคร Gym Battle เดือนพฤศจิกายน 2568</h2>
     <div style="display: flex; justify-content: center; margin-bottom: 24px;">
-      <a class="register-btn" href="https://forms.gle/tkx2wzb6nadJoUZJ6" target="_blank" style="text-align: center;">สมัครแข่งขัน Gym Battle</a>
+      <a class="register-btn" href="https://forms.gle/bHLKm6DW6KGv9hsr6" target="_blank" style="text-align: center;">สมัครแข่งขัน Gym Battle</a>
     </div>
     <div id="gymbattle-list" style="text-align:center;">
       <div class="spinner"></div>
@@ -509,7 +509,7 @@
   </div>
   <script>
     console.log('DEBUG: version 2');
-    const apiUrl = "https://script.google.com/macros/s/AKfycbyCd3BeneQHcbJg6rQx0N5ytKWqgLeayhnbHuVx_EBA2i65l54mVyyLEWQNt4R-jdTo5w/exec?type=json";
+    const apiUrl = "https://script.google.com/macros/s/AKfycbyvf57rrZ4cQTeD3znO5vgVG00TDs_vmldtGI8BQ0ZCM_-haevAZU1M9cyRkrSjChTK/exec?type=json";
     // พาสเทล 7 สี
     const pastelColors = [
       { bg: "#E3F2FD", border: "#42A5F5", th: "#42A5F5" },
@@ -521,19 +521,20 @@
       { bg: "#E0F2F1", border: "#26A69A", th: "#26A69A" }
     ];
 
-    // วันที่แข่งขันเดือนตุลาคม 2568
-    const octoberDates = [
-      "วันอังคารที่ 7 ตุลาคม 2568",
-      "วันศุกร์ที่ 10 ตุลาคม 2568",
-      "วันเสาร์ที่ 11 ตุลาคม 2568",
-      "วันอังคารที่ 14 ตุลาคม 2568",
-      "วันศุกร์ที่ 17 ตุลาคม 2568",
-      "วันเสาร์ที่ 18 ตุลาคม 2568",
-      "วันอังคารที่ 21 ตุลาคม 2568",
-      "วันศุกร์ที่ 24 ตุลาคม 2568",
-      "วันเสาร์ที่ 25 ตุลาคม 2568",
-      "วันอังคารที่ 28 ตุลาคม 2568",
-      "วันศุกร์ที่ 31 ตุลาคม 2568"
+    // วันที่แข่งขันเดือนพฤศจิกายน 2568
+    const novemberDates = [
+      "วันเสาร์ที่ 1 พฤศจิกายน 2568",
+      "วันอังคารที่ 4 พฤศจิกายน 2568",
+      "วันศุกร์ที่ 7 พฤศจิกายน 2568",
+      "วันเสาร์ที่ 8 พฤศจิกายน 2568",
+      "วันอังคารที่ 11 พฤศจิกายน 2568",
+      "วันศุกร์ที่ 14 พฤศจิกายน 2568",
+      "วันเสาร์ที่ 15 พฤศจิกายน 2568",
+      "วันอังคารที่ 18 พฤศจิกายน 2568",
+      "วันศุกร์ที่ 21 พฤศจิกายน 2568",
+      "วันเสาร์ที่ 22 พฤศจิกายน 2568",
+      "วันอังคารที่ 25 พฤศจิกายน 2568",
+      "วันศุกร์ที่ 28 พฤศจิกายน 2568"
     ];
 
     // ดึงข้อมูลสมาชิกจาก Member Dashboard (API ใหม่)
@@ -636,14 +637,44 @@
       today.setHours(0,0,0,0);
       
       // ใช้ข้อมูลวันที่จาก API หรือ fallback ไปใช้ข้อมูลที่กำหนดไว้
-      const datesToUse = data && data.dates ? data.dates : octoberDates;
+      let datesToUse = data && data.dates ? data.dates : novemberDates;
+
+      // รวมวันที่จากระบบ (novemberDates) ก่อน เพื่อให้เริ่มที่ 1 พฤศจิกายนแน่นอน
+      // จากนั้นตามด้วยวันที่จาก API ที่ถูกแปลงเป็นพฤศจิกายน และตัดซ้ำ/จัดเรียง
+      const normalizedApiDates = (Array.isArray(datesToUse) ? datesToUse : []).map(date =>
+        date && typeof date === 'string' && date.includes('ตุลาคม') ? date.replace('ตุลาคม', 'พฤศจิกายน') : date
+      ).filter(Boolean);
+
+      // รวมและตัดซ้ำโดยคงลำดับเริ่มจาก novemberDates
+      const combinedDates = [...novemberDates, ...normalizedApiDates];
+      const seen = new Set();
+      datesToUse = combinedDates.filter(d => {
+        if (seen.has(d)) return false;
+        seen.add(d);
+        return true;
+      });
+
+      // จัดเรียงวันที่ตามลำดับเวลา เพื่อให้รายการเริ่มที่ 1 พฤศจิกายนเสมอ
+      datesToUse.sort((a, b) => {
+        const da = parseThaiDate(a);
+        const db = parseThaiDate(b);
+        if (!da || !db) return 0;
+        return da - db;
+      });
       
       datesToUse.forEach((date, idx) => {
         // หาข้อมูลผู้สมัครสำหรับวันที่นี้ (ถ้ามี)
         let players = [];
         if (data && data.groupedData) {
+          // ตรวจสอบทั้งวันที่ปัจจุบันและวันที่ตุลาคม (กรณีข้อมูลเก่า)
           if (data.groupedData[date]) {
             players = data.groupedData[date];
+          } else {
+            // ลองหาจากวันที่ตุลาคมที่ตรงกัน
+            const octoberDate = date.replace('พฤศจิกายน', 'ตุลาคม');
+            if (data.groupedData[octoberDate]) {
+              players = data.groupedData[octoberDate];
+            }
           }
         }
         
@@ -710,7 +741,7 @@
       const today = new Date();
       today.setHours(0,0,0,0);
       
-      octoberDates.forEach((date, idx) => {
+      novemberDates.forEach((date, idx) => {
         const color = pastelColors[idx % pastelColors.length];
         const dateObj = parseThaiDate(date);
         let isPast = false;
@@ -758,18 +789,18 @@
 
     // Promo Cards Data
     const promoCards = [
-      { number: "004", name: "จิโคริตา", title: "จิโคริตา", description: "การ์ดโปรโมพิเศษจาก Gym Battle" },
-      { number: "005", name: "ลาพลาส ex", title: "ลาพลาส ex", description: "การ์ดโปรโมพิเศษจาก Gym Battle" },
-      { number: "006", name: "มิว ex", title: "มิว ex", description: "การ์ดโปรโมพิเศษจาก Gym Battle" },
-      { number: "007", name: "มาคุโนชิตะ", title: "มาคุโนชิตะ", description: "การ์ดโปรโมพิเศษจาก Gym Battle" },
-      { number: "008", name: "อิคิริงโกะ ex", title: "อิคิริงโกะ ex", description: "การ์ดโปรโมพิเศษจาก Gym Battle" },
-      { number: "009", name: "พลั่วเจาะรู", title: "พลั่วเจาะรู", description: "การ์ดโปรโมพิเศษจาก Gym Battle" },
-      { number: "010", name: "ภาชนะแห่งผืนปฐพี", title: "ภาชนะแห่งผืนปฐพี", description: "การ์ดโปรโมพิเศษจาก Gym Battle" },
-      { number: "011", name: "โปฟฟินมิตรภาพ", title: "โปฟฟินมิตรภาพ", description: "การ์ดโปรโมพิเศษจาก Gym Battle" },
-      { number: "012", name: "ฆ้องต่อสู้", title: "ฆ้องต่อสู้", description: "การ์ดโปรโมพิเศษจาก Gym Battle" },
-      { number: "013", name: "ชุดจับแมลง", title: "ชุดจับแมลง", description: "การ์ดโปรโมพิเศษจาก Gym Battle" },
-      { number: "014", name: "ปณิธานของลิเลีย", title: "ปณิธานของลิเลีย", description: "การ์ดโปรโมพิเศษจาก Gym Battle" },
-      { number: "015", name: "มิสเทรีการ์เด้น", title: "มิสเทรีการ์เด้น", description: "การ์ดโปรโมพิเศษจาก Gym Battle" }
+      { number: "025", name: "การ์ดโปรโม 025", title: "การ์ดโปรโม 025", description: "การ์ดโปรโมพิเศษจาก Gym Battle" },
+      { number: "026", name: "การ์ดโปรโม 026", title: "การ์ดโปรโม 026", description: "การ์ดโปรโมพิเศษจาก Gym Battle" },
+      { number: "027", name: "การ์ดโปรโม 027", title: "การ์ดโปรโม 027", description: "การ์ดโปรโมพิเศษจาก Gym Battle" },
+      { number: "028", name: "การ์ดโปรโม 028", title: "การ์ดโปรโม 028", description: "การ์ดโปรโมพิเศษจาก Gym Battle" },
+      { number: "029", name: "การ์ดโปรโม 029", title: "การ์ดโปรโม 029", description: "การ์ดโปรโมพิเศษจาก Gym Battle" },
+      { number: "030", name: "การ์ดโปรโม 030", title: "การ์ดโปรโม 030", description: "การ์ดโปรโมพิเศษจาก Gym Battle" },
+      { number: "031", name: "การ์ดโปรโม 031", title: "การ์ดโปรโม 031", description: "การ์ดโปรโมพิเศษจาก Gym Battle" },
+      { number: "032", name: "การ์ดโปรโม 032", title: "การ์ดโปรโม 032", description: "การ์ดโปรโมพิเศษจาก Gym Battle" },
+      { number: "033", name: "การ์ดโปรโม 033", title: "การ์ดโปรโม 033", description: "การ์ดโปรโมพิเศษจาก Gym Battle" },
+      { number: "034", name: "การ์ดโปรโม 034", title: "การ์ดโปรโม 034", description: "การ์ดโปรโมพิเศษจาก Gym Battle" },
+      { number: "035", name: "การ์ดโปรโม 035", title: "การ์ดโปรโม 035", description: "การ์ดโปรโมพิเศษจาก Gym Battle" },
+      { number: "036", name: "การ์ดโปรโม 036", title: "การ์ดโปรโม 036", description: "การ์ดโปรโมพิเศษจาก Gym Battle" }
     ];
 
     // Generate promo cards HTML
@@ -779,11 +810,10 @@
 
       let html = '';
       promoCards.forEach(card => {
-        const imageUrl = `https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/08/th_news__MPromo_${card.number}.png`;
+        const imageUrl = `https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/10/th_news_MPromo_${card.number}.png`;
         html += `
           <div class="promo-card" onclick="openCardModal('${imageUrl}')">
-            <img src="${imageUrl}" alt="${card.title}" loading="lazy">
-            <div class="promo-card-title">${card.name}</div>
+            <img src="${imageUrl}" alt="" loading="lazy">
           </div>
         `;
       });
