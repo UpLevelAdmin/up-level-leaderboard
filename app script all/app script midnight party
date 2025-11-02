@@ -100,6 +100,7 @@ function doGet(e) {
   try {
     // Debug logging (ปิดใน production หรือใช้ให้เหมาะสม)
     var isDebug = e && e.parameter && e.parameter.debug === 'true';
+    var isJson = e && e.parameter && e.parameter.type === 'json';
     
     if (isDebug) console.log('doGet function called');
     
@@ -107,6 +108,12 @@ function doGet(e) {
     var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
     if (!spreadsheet) {
       if (isDebug) console.log('No active spreadsheet found');
+      if (isJson) {
+        return ContentService.createTextOutput(JSON.stringify({ 
+          participants: [],
+          error: "No active spreadsheet found"
+        })).setMimeType(ContentService.MimeType.JSON);
+      }
       return createResponse({ 
         participants: [],
         error: "No active spreadsheet found"
@@ -137,6 +144,12 @@ function doGet(e) {
     
     if (!targetSheet) {
       if (isDebug) console.log('No suitable sheet found');
+      if (isJson) {
+        return ContentService.createTextOutput(JSON.stringify({ 
+          participants: [],
+          error: "No suitable sheet found. Available sheets: " + sheets.map(s => s.getName()).join(', ')
+        })).setMimeType(ContentService.MimeType.JSON);
+      }
       return createResponse({ 
         participants: [],
         error: "No suitable sheet found. Available sheets: " + sheets.map(s => s.getName()).join(', ')
@@ -148,6 +161,12 @@ function doGet(e) {
     
     if (data.length <= 1) {
       if (isDebug) console.log('No data rows found');
+      if (isJson) {
+        return ContentService.createTextOutput(JSON.stringify({ 
+          participants: [],
+          error: "No data rows found in sheet: " + targetSheet.getName()
+        })).setMimeType(ContentService.MimeType.JSON);
+      }
       return createResponse({ 
         participants: [],
         error: "No data rows found in sheet: " + targetSheet.getName()
@@ -193,10 +212,30 @@ function doGet(e) {
     };
     
     if (isDebug) console.log('Final result - participants count:', participants.length);
+    
+    // ถ้ามี type=json ให้ใช้ ContentService ตรงๆ เหมือน Gym script
+    var isJson = e && e.parameter && e.parameter.type === 'json';
+    if (isJson) {
+      return ContentService.createTextOutput(JSON.stringify(result))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    
     return createResponse(result);
     
   } catch (error) {
     console.error('Error in doGet:', error);
+    var isJson = e && e.parameter && e.parameter.type === 'json';
+    if (isJson) {
+      return ContentService.createTextOutput(JSON.stringify({
+        participants: [],
+        error: error.toString(),
+        stack: error.stack || '',
+        debug: {
+          message: "Error occurred while processing data",
+          timestamp: new Date().toISOString()
+        }
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
     return createResponse({
       participants: [],
       error: error.toString(),
