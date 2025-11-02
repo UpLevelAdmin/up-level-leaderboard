@@ -1511,128 +1511,16 @@
       console.log('Member Dashboard API URL:', memberDashboardApi);
       console.log('Timestamp:', new Date().toISOString());
       
-      // ใช้ Promise.allSettled เพื่อให้แต่ละ API ทำงานแยกกัน
-      // ทำให้ member API ทำงานได้แม้ main API จะล้มเหลว
-      Promise.allSettled([
-        fetch(apiUrl, {
-          method: 'GET',
-          redirect: 'follow',
-          mode: 'cors'
-        }).then(res => {
-          console.log('📡 API Response Status:', res.status, res.statusText);
-          console.log('📡 API Response URL:', res.url);
-          if (res.status === 302 || res.redirected) {
-            console.warn('⚠️ API redirected, following redirect...');
-          }
-          if (!res.ok) {
-            console.error('❌ API HTTP Error:', res.status, res.statusText);
-            throw new Error(`HTTP error! status: ${res.status}`);
-          }
-          return res.json().then(json => {
-            console.log('✅ API JSON received, type:', typeof json);
-            console.log('✅ API Data keys:', Object.keys(json || {}));
-            return json;
-          });
-        }).catch(err => {
-          console.error('❌ API Fetch Error:', err);
-          console.error('❌ Error details:', {
-            message: err.message,
-            stack: err.stack,
-            name: err.name
-          });
-          // ตรวจสอบว่าเป็น CORS error หรือไม่
-          if (err.message.includes('Failed to fetch') || err.message.includes('CORS')) {
-            console.error('❌ CORS Error detected - this usually happens when opening from file:// protocol');
-            console.error('❌ Solution: Run the page through an HTTP server (e.g., VS Code Live Server)');
-          }
-          // Throw error เพื่อให้ catch block จัดการต่อ
-          throw err;
-        }),
-        fetch(memberDashboardApi, {
-          method: 'GET',
-          redirect: 'follow',
-          mode: 'cors'
-        }).then(res => {
-          console.log('👥 Member API Response Status:', res.status, res.statusText);
-          console.log('👥 Member API Response URL:', res.url);
-          if (!res.ok) {
-            console.warn('⚠️ Member API HTTP Error:', res.status, res.statusText);
-            throw new Error(`HTTP error! status: ${res.status}`);
-          }
-          return res.json().then(json => {
-            console.log('✅ Member API JSON received, type:', typeof json);
-            console.log('✅ Member API Data is Array?', Array.isArray(json));
-            console.log('✅ Member API Data length:', Array.isArray(json) ? json.length : 'N/A');
-            return json;
-          });
-        }).catch(err => {
-          console.warn('⚠️ Member dashboard API error:', err);
-          console.warn('⚠️ Returning empty array for members');
-          return []; // ส่งคืน array ว่างถ้า member API ล้มเหลว
-        })
-      ]).then((results) => {
-        console.log('=== Processing received data ===');
-        console.log('📋 Promise.allSettled results:', results);
-        
-        // แยกผลลัพธ์จาก Promise.allSettled
-        const [dataResult, membersResult] = results;
-        
-        // ตรวจสอบ main API result
-        let data = null;
-        if (dataResult.status === 'fulfilled') {
-          data = dataResult.value;
-          console.log('✅ Main API succeeded');
-        } else {
-          console.error('❌ Main API failed:', dataResult.reason);
-        }
-        
-        // ตรวจสอบ member API result
-        let members = [];
-        if (membersResult.status === 'fulfilled') {
-          members = membersResult.value;
-          console.log('✅ Member API succeeded');
-        } else {
-          console.warn('⚠️ Member API failed:', membersResult.reason);
-          console.warn('⚠️ Using empty array for members');
-          members = [];
-        }
-        
-        console.log('📦 Data object:', data);
-        console.log('📦 Data type:', typeof data);
-        console.log('📦 Data keys:', data ? Object.keys(data) : 'null/undefined');
-        console.log('👥 Members:', members);
-        console.log('👥 Members type:', typeof members);
-        console.log('👥 Members is Array?', Array.isArray(members));
-        
+      // ใช้วิธีเดียวกับ GBL.html - fetch() ธรรมดาโดยไม่มี options
+      Promise.all([
+        fetch(apiUrl).then(res => res.json()),
+        fetch(memberDashboardApi).then(res => res.json())
+      ]).then(([data, members]) => {
         // ตรวจสอบว่า data ถูกต้องหรือไม่
-        if (!data) {
-          console.error('❌ No data received - data is null/undefined');
-          console.error('❌ This could be due to CORS error when opening from file:// protocol');
-          console.error('❌');
-          console.error('✅ SOLUTION: Please run the page through an HTTP server:');
-          console.error('✅   1. VS Code: Install "Live Server" extension and click "Go Live"');
-          console.error('✅   2. Python: python3 -m http.server 8000');
-          console.error('✅   3. Node.js: npx http-server');
-          console.error('❌');
-          console.error('ℹ️ Note: Member API works fine, but main API requires HTTP server due to CORS policy');
+        if (!data || !data.participants) {
+          console.error('❌ No participants data received');
           showFallbackData(container);
           return;
-        }
-        
-        console.log('📋 data.participants exists?', !!data.participants);
-        console.log('📋 data.participants type:', typeof data.participants);
-        console.log('📋 data.participants is Array?', Array.isArray(data.participants));
-        console.log('📋 data.participants length:', data.participants ? data.participants.length : 'N/A');
-        
-        // Debug: แสดง column names ของ participants
-        if (data.participants && data.participants.length > 0) {
-          console.log('Sample participant columns:', Object.keys(data.participants[0]));
-          console.log('Sample participant data:', data.participants[0]);
-          
-          // Debug: แสดงข้อมูล Box และ Spot ของ participant แรก
-          const firstParticipant = data.participants[0];
-          console.log('First participant Box data:', firstParticipant['กรณีจอง Box:  ต้องการกี่ Box (1350/Box)?']);
-          console.log('First participant Spot data:', firstParticipant['กรณีจอง Spot: ต้องการกี่ Spot (500 บาท/Spot)?']);
         }
         
         // สร้าง map เบอร์โทร -> { codename, rank }
@@ -1795,37 +1683,9 @@
           console.log('📊 Sample converted users (first 3):', convertedData.users.slice(0, 3));
           
           displayUsers(convertedData);
-          console.log('✅ Display users completed');
-        } else {
-          console.warn('⚠️ No participants array found in data');
-          console.warn('⚠️ Data structure:', data);
-          // ถ้าไม่มีข้อมูล ให้แสดงข้อมูลตัวอย่าง
-          showFallbackData(container);
         }
-        console.log('=== loadRegisteredUsers completed ===');
       }).catch(error => {
-        console.error('❌ ========== FETCH ERROR ==========');
-        console.error('❌ Error type:', error.name);
-        console.error('❌ Error message:', error.message);
-        console.error('❌ Error stack:', error.stack);
-        console.error('❌ Full error object:', error);
-        
-        // ตรวจสอบประเภท error
-        if (error.message.includes('Failed to fetch') || error.message.includes('CORS')) {
-          console.error('❌ ========== CORS ERROR DETECTED ==========');
-          console.error('❌ This error occurs when opening HTML file directly (file:// protocol)');
-          console.error('❌ Google Apps Script APIs require HTTP server due to CORS policy');
-          console.error('❌');
-          console.error('✅ SOLUTIONS:');
-          console.error('✅ 1. Use VS Code Live Server extension');
-          console.error('✅ 2. Use Python: python -m http.server 8000');
-          console.error('✅ 3. Use Node.js: npx http-server');
-          console.error('✅ 4. Deploy to a web server');
-          console.error('❌ =========================================');
-        }
-        
-        console.error('❌ =================================');
-        // แสดงข้อมูลตัวอย่างถ้าเกิด error
+        console.error('❌ Fetch error:', error);
         showFallbackData(container);
       });
     }
