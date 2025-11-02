@@ -1712,13 +1712,20 @@
       // แสดงข้อความแจ้งเตือน
       let errorMessage = '<div class="error-message">';
       errorMessage += '⚠️ <strong>ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้</strong><br><br>';
-      errorMessage += '📌 <strong>สาเหตุ:</strong> เปิดไฟล์จาก file:// protocol ทำให้เกิด CORS error<br><br>';
-      errorMessage += '✅ <strong>วิธีแก้ไข:</strong><br>';
-      errorMessage += '   1. <strong>VS Code:</strong> ติดตั้ง "Live Server" แล้วคลิก "Go Live"<br>';
-      errorMessage += '   2. <strong>Python:</strong> รันคำสั่ง <code>python3 -m http.server 8000</code><br>';
-      errorMessage += '   3. <strong>Node.js:</strong> รันคำสั่ง <code>npx http-server</code><br><br>';
-      errorMessage += '💡 <strong>หมายเหตุ:</strong> Member API ทำงานปกติ แต่ Main API ต้องการ HTTP server<br><br>';
-      errorMessage += '🔄 กรุณากดปุ่ม "รีเฟรชข้อมูล" เพื่อลองใหม่หลังจากรันผ่าน HTTP server';
+      errorMessage += '📌 <strong>สาเหตุ:</strong> Google Apps Script ยังไม่ได้ Deploy เป็น Web App หรือตั้งค่าไม่ถูกต้อง<br><br>';
+      errorMessage += '✅ <strong>วิธีแก้ไข (สำหรับ Admin):</strong><br>';
+      errorMessage += '   1. ไปที่ <a href="https://script.google.com" target="_blank">Google Apps Script Editor</a><br>';
+      errorMessage += '   2. เปิด script "midnight party"<br>';
+      errorMessage += '   3. คลิก <strong>Deploy</strong> → <strong>Manage deployments</strong><br>';
+      errorMessage += '   4. คลิก <strong>Edit</strong> หรือ <strong>New deployment</strong><br>';
+      errorMessage += '   5. ตั้งค่า:<br>';
+      errorMessage += '      • Type: <strong>Web app</strong><br>';
+      errorMessage += '      • Execute as: <strong>Me</strong><br>';
+      errorMessage += '      • Who has access: <strong>Anyone</strong> (สำคัญมาก!)<br>';
+      errorMessage += '   6. คลิก <strong>Deploy</strong><br>';
+      errorMessage += '   7. Copy URL ใหม่ (ถ้าเปลี่ยน) และอัปเดตในโค้ด<br><br>';
+      errorMessage += '💡 <strong>หมายเหตุ:</strong> หลังจาก Deploy แล้ว รอสักครู่แล้วรีเฟรชหน้านี้<br><br>';
+      errorMessage += '🔄 <button onclick="loadRegisteredUsers()" style="background:#6bcf7f;color:#fff;border:none;padding:0.5rem 1rem;border-radius:5px;cursor:pointer;font-weight:bold;">รีเฟรชข้อมูล</button>';
       errorMessage += '</div>';
       container.innerHTML = errorMessage;
       console.log('⚠️ Fallback message displayed');
