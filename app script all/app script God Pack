@@ -1,0 +1,117 @@
+function doGet(e) {
+  try {
+    var isJson = e && e.parameter && e.parameter.type === 'json';
+    
+    // เปิด Google Sheet ที่มี ID นี้
+    // ⚠️ หมายเหตุ: ถ้า app script นี้อยู่ใน Google Sheet เดียวกันกับข้อมูล ให้ใช้ SpreadsheetApp.getActiveSpreadsheet() แทน
+    var spreadsheetId = '1Qjpp6Kp4JdUCokXM7KO7opGx7ZFBQuXaksw8ql-ZXjo';
+    var spreadsheet;
+    
+    try {
+      spreadsheet = SpreadsheetApp.openById(spreadsheetId);
+    } catch (err) {
+      // ถ้าเปิดไม่ได้ ลองใช้ active spreadsheet แทน
+      spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+    }
+    
+    // หา sheet "รายชื่อคนซื้อ God Pack"
+    var targetSheet = spreadsheet.getSheetByName('รายชื่อคนซื้อ God Pack');
+    
+    if (!targetSheet) {
+      // ถ้าไม่เจอ ลองหา sheet อื่นๆ
+      var sheetNames = ['รายชื่อคนซื้อ God Pack', 'Form Responses 1', 'Form Responses', 'Responses'];
+      for (var i = 0; i < sheetNames.length; i++) {
+        var sheet = spreadsheet.getSheetByName(sheetNames[i]);
+        if (sheet) {
+          targetSheet = sheet;
+          break;
+        }
+      }
+    }
+    
+    if (!targetSheet) {
+      var allSheets = spreadsheet.getSheets();
+      if (allSheets.length > 0) {
+        targetSheet = allSheets[0]; // ใช้ sheet แรกที่เจอ
+      }
+    }
+    
+    if (!targetSheet) {
+      if (isJson) {
+        return ContentService.createTextOutput(JSON.stringify({
+          error: "ไม่พบชีทข้อมูล",
+          participants: []
+        })).setMimeType(ContentService.MimeType.JSON);
+      }
+      return HtmlService.createHtmlOutput("ไม่พบชีทข้อมูล");
+    }
+    
+    var data = targetSheet.getDataRange().getValues();
+    
+    if (data.length <= 1) {
+      if (isJson) {
+        return ContentService.createTextOutput(JSON.stringify({
+          error: "ไม่มีข้อมูล",
+          participants: []
+        })).setMimeType(ContentService.MimeType.JSON);
+      }
+      return HtmlService.createHtmlOutput("ไม่มีข้อมูล");
+    }
+    
+    var headers = data[0];
+    var participants = [];
+    
+    // สร้าง object สำหรับแต่ละแถว
+    for (var i = 1; i < data.length; i++) {
+      var row = data[i];
+      var participant = {};
+      
+      // สร้าง object โดยใช้ชื่อ column เป็น key
+      for (var j = 0; j < headers.length; j++) {
+        var header = headers[j];
+        var value = row[j];
+        
+        // แปลงค่า null/undefined เป็น string ว่าง
+        participant[header] = (value === null || value === undefined) ? '' : value;
+      }
+      
+      // เพิ่มเฉพาะแถวที่มีข้อมูล (มีชื่อ-สกุล หรือเบอร์โทร)
+      var hasName = participant['ชื่อ-สกุล'] && String(participant['ชื่อ-สกุล']).trim() !== '';
+      var hasPhone = participant['เบอร์โทรศัพท์ติดต่อ'] && String(participant['เบอร์โทรศัพท์ติดต่อ']).trim() !== '';
+      
+      if (hasName || hasPhone) {
+        participants.push(participant);
+      }
+    }
+    
+    if (isJson) {
+      return ContentService.createTextOutput(JSON.stringify({
+        participants: participants,
+        total: participants.length
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    // ถ้าไม่ใช่ JSON ให้แสดง HTML
+    var html = '<html><body><h2>God Pack Orders</h2><ul>';
+    participants.forEach(function(p) {
+      var quantity = p['จำนวน GOD PACK ที่ซื้อ'] || p['จำนวน GOD PACK ที่ต้องการพรีออเดอร์ (ซองละ 299 บาท)'] || 0;
+      html += '<li>' + (p['ชื่อ-สกุล'] || 'ไม่มีชื่อ') + ' - ' + quantity + ' ซอง</li>';
+    });
+    html += '</ul></body></html>';
+    return HtmlService.createHtmlOutput(html);
+    
+  } catch (error) {
+    var errorMsg = 'เกิดข้อผิดพลาด: ' + error.toString();
+    console.error(errorMsg);
+    
+    if (e && e.parameter && e.parameter.type === 'json') {
+      return ContentService.createTextOutput(JSON.stringify({
+        error: errorMsg,
+        participants: []
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    return HtmlService.createHtmlOutput(errorMsg);
+  }
+}
+
