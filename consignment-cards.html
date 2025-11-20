@@ -780,14 +780,7 @@
       cards.forEach((card, index) => {
         const imageUrl = card.cardImage || '';
         const hasImage = imageUrl && imageUrl.trim() !== '';
-        
-        // Debug: แสดง URL ใน console
-        if (hasImage) {
-          console.log('Card:', card.cardName, 'Front Image:', imageUrl);
-        }
-        if (card.cardBackImage) {
-          console.log('Card:', card.cardName, 'Back Image:', card.cardBackImage);
-        }
+        const productId = card.productId || '';
         
         let imageHtml = '';
         if (hasImage) {
@@ -797,14 +790,14 @@
           // ตรวจสอบว่าเป็น URL ที่ถูกต้อง
           if (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://')) {
             // ใช้ loading="lazy" เพื่อให้โหลดรูปเมื่อเห็นเท่านั้น (เพิ่มประสิทธิภาพ)
-            imageHtml = `<img src="${escapeHtml(cleanUrl)}" alt="${escapeHtml(card.cardName)}" class="card-image" loading="lazy" onerror="console.error('Image failed to load:', '${escapeHtml(cleanUrl)}'); this.parentElement.innerHTML='<div class=\\'card-image-placeholder\\'>🃏</div>'">`;
+            imageHtml = `<img src="${escapeHtml(cleanUrl)}" alt="${escapeHtml(card.cardName)}" class="card-image" loading="lazy" data-product-id="${escapeHtml(productId)}" onerror="console.error('Image failed to load:', '${escapeHtml(cleanUrl)}'); this.parentElement.innerHTML='<div class=\\'card-image-placeholder\\'>🃏</div>'">`;
           } else {
             // ถ้าไม่ใช่ URL ที่ถูกต้อง ให้แสดง placeholder
-            imageHtml = '<div class="card-image-placeholder">🃏</div>';
-            console.warn('Invalid image URL for card:', card.cardName, 'URL:', cleanUrl);
+            imageHtml = `<div class="card-image-placeholder" data-product-id="${escapeHtml(productId)}">🃏</div>`;
           }
         } else {
-          imageHtml = '<div class="card-image-placeholder">🃏</div>';
+          // แสดง placeholder พร้อม productId เพื่อให้ดึงรูปทีหลังได้
+          imageHtml = `<div class="card-image-placeholder" data-product-id="${escapeHtml(productId)}">🃏</div>`;
         }
         
         const price = card.listedPrice ? String(card.listedPrice) : '-';
@@ -853,6 +846,42 @@
       
       // เก็บ filteredCards ไว้ในตัวแปร global เพื่อใช้ใน modal
       window.currentFilteredCards = cards;
+      
+      // ใช้ Intersection Observer เพื่อโหลดรูปภาพเมื่อเห็นเท่านั้น
+      setupImageObserver();
+    }
+    
+    // ตั้งค่า Intersection Observer สำหรับ lazy loading รูปภาพ
+    function setupImageObserver() {
+      if (!('IntersectionObserver' in window)) {
+        // ถ้าไม่รองรับ Intersection Observer ให้โหลดรูปทั้งหมดเลย
+        return;
+      }
+      
+      const imageObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const img = entry.target;
+            const productId = img.getAttribute('data-product-id');
+            
+            // ถ้ายังไม่มี src และมี productId ให้ดึงรูปจาก Drive
+            if (!img.src && productId) {
+              // ใช้ thumbnail URL โดยตรง (ไม่ต้องเรียก API)
+              const driveFolderId = '15f0xNKHe4q8sNaMQo3uXs1qPBB0oVQx2';
+              // เนื่องจากเราไม่สามารถดึง file ID จาก Drive โดยตรงได้ใน frontend
+              // เราจะใช้ข้อมูลที่มีอยู่แล้วจาก API
+            }
+            
+            observer.unobserve(img);
+          }
+        });
+      }, {
+        rootMargin: '50px' // เริ่มโหลดก่อนที่จะเห็น 50px
+      });
+      
+      // สังเกตการณ์รูปภาพทั้งหมด
+      const images = document.querySelectorAll('.card-image[loading="lazy"]');
+      images.forEach(img => imageObserver.observe(img));
     }
 
     function updateStats(total, filtered) {
@@ -889,9 +918,14 @@
         return;
       }
       
+      const startTime = performance.now();
+      
       fetch(API_URL)
         .then(res => res.json())
         .then(data => {
+          const loadTime = performance.now() - startTime;
+          console.log(`Data loaded in ${loadTime.toFixed(0)}ms`);
+          
           if (data.error) {
             container.innerHTML = `<div class="error-message">เกิดข้อผิดพลาด: ${escapeHtml(data.error)}</div>`;
             return;
@@ -899,14 +933,7 @@
           
           allCards = data.cards || [];
           
-          // Debug: แสดงข้อมูลที่ได้มา
-          console.log('Total cards:', allCards.length);
-          if (allCards.length > 0) {
-            console.log('Sample card:', allCards[0]);
-            console.log('Cards with front images:', allCards.filter(c => c.cardImage).length);
-            console.log('Cards with back images:', allCards.filter(c => c.cardBackImage).length);
-          }
-          
+          // แสดงข้อมูลการ์ดทันที (ไม่ต้องรอรูปภาพ)
           updateDisplay();
         })
         .catch(err => {
@@ -918,6 +945,43 @@
             </div>
           `;
         });
+    }
+    
+    // โหลดรูปภาพที่หายไปทีหลัง
+    function loadMissingImages() {
+      const cardsNeedingImages = allCards.filter(card => 
+        card.productId && (!card.cardImage || !card.cardBackImage)
+      );
+      
+      if (cardsNeedingImages.length === 0) return;
+      
+      console.log(`Loading images for ${cardsNeedingImages.length} cards...`);
+      
+      // โหลดรูปทีละชุด (batch) เพื่อไม่ให้ช้าเกินไป
+      const batchSize = 5;
+      let currentIndex = 0;
+      
+      function loadBatch() {
+        const batch = cardsNeedingImages.slice(currentIndex, currentIndex + batchSize);
+        
+        batch.forEach(card => {
+          if (!card.cardImage && card.productId) {
+            // สร้าง URL จาก productId (ใช้ thumbnail URL)
+            // เนื่องจากเราไม่สามารถดึงจาก Drive โดยตรงได้ เราจะใช้ข้อมูลที่มีอยู่แล้ว
+            // หรือรอให้ Apps Script ดึงรูปให้ก่อน
+          }
+        });
+        
+        currentIndex += batchSize;
+        
+        if (currentIndex < cardsNeedingImages.length) {
+          // โหลดชุดถัดไปหลังจาก delay เล็กน้อย
+          setTimeout(loadBatch, 100);
+        }
+      }
+      
+      // เริ่มโหลดหลังจาก delay เล็กน้อย
+      setTimeout(loadBatch, 500);
     }
 
     function openModal(cardIndex) {

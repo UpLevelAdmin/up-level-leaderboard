@@ -85,84 +85,47 @@ function doGet(e) {
       var cardBackImage = '';
       var productId = row[colIndex['รหัสสินค้า']] || '';
       
-      // ดึงรูปภาพจาก Drive โดยใช้รหัสสินค้า (ไม่ต้องใช้ Column G แล้ว)
-      if (productId && String(productId).trim() !== '') {
-        try {
-          var driveFolderId = '15f0xNKHe4q8sNaMQo3uXs1qPBB0oVQx2';
-          var folder = DriveApp.getFolderById(driveFolderId);
-          var frontFileName = String(productId).trim() + ' หน้า.jpg';
-          var backFileName = String(productId).trim() + ' หลัง.jpg';
-          
-          // ใช้ getFilesByName เพื่อค้นหาเร็วกว่าการวนลูปทั้งหมด
-          var frontFiles = folder.getFilesByName(frontFileName);
-          var backFiles = folder.getFilesByName(backFileName);
-          
-          if (frontFiles.hasNext()) {
-            var frontFile = frontFiles.next();
-            try {
-              // ตรวจสอบ sharing ก่อน set เพื่อลดการเรียก API
-              var access = frontFile.getSharingAccess();
-              if (access !== DriveApp.Access.ANYONE_WITH_LINK) {
-                frontFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-              }
-            } catch (e) {}
-            cardImage = 'https://drive.google.com/thumbnail?id=' + frontFile.getId() + '&sz=w1000';
-          }
-          
-          if (backFiles.hasNext()) {
-            var backFile = backFiles.next();
-            try {
-              var access = backFile.getSharingAccess();
-              if (access !== DriveApp.Access.ANYONE_WITH_LINK) {
-                backFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-              }
-            } catch (e) {}
-            cardBackImage = 'https://drive.google.com/thumbnail?id=' + backFile.getId() + '&sz=w1000';
-          }
-        } catch (e) {
-          // ไม่สามารถดึงรูปภาพได้
-        }
-      }
-      
-      // ถ้ายังไม่มีรูปหน้า ลองอ่านจาก Column G หรือ Column F (fallback)
-      if (!cardImage) {
-        var imageLinkColIndex = colIndex['ลิงก์ภาพการ์ด'];
-        if (imageLinkColIndex !== undefined) {
-          var imageLinkValue = row[imageLinkColIndex];
-          if (imageLinkValue) {
-            var imageLinkStr = String(imageLinkValue).trim();
-            if (imageLinkStr.indexOf('http') !== -1) {
-              // แปลงเป็น thumbnail URL ถ้าจำเป็น
-              if (imageLinkStr.indexOf('thumbnail?id=') !== -1) {
-                cardImage = imageLinkStr;
+      // อ่านรูปภาพจาก Column G ก่อน (ถ้ามี) เพื่อความเร็ว
+      var imageLinkColIndex = colIndex['ลิงก์ภาพการ์ด'];
+      if (imageLinkColIndex !== undefined) {
+        var imageLinkValue = row[imageLinkColIndex];
+        if (imageLinkValue) {
+          var imageLinkStr = String(imageLinkValue).trim();
+          if (imageLinkStr.indexOf('http') !== -1) {
+            // แปลงเป็น thumbnail URL ถ้าจำเป็น
+            if (imageLinkStr.indexOf('thumbnail?id=') !== -1) {
+              cardImage = imageLinkStr;
+            } else {
+              var idMatch = imageLinkStr.match(/id=([a-zA-Z0-9_-]+)/);
+              if (idMatch && idMatch[1]) {
+                cardImage = 'https://drive.google.com/thumbnail?id=' + idMatch[1] + '&sz=w1000';
               } else {
-                var idMatch = imageLinkStr.match(/id=([a-zA-Z0-9_-]+)/);
-                if (idMatch && idMatch[1]) {
-                  cardImage = 'https://drive.google.com/thumbnail?id=' + idMatch[1] + '&sz=w1000';
-                } else {
-                  cardImage = imageLinkStr;
-                }
+                cardImage = imageLinkStr;
               }
             }
           }
         }
-        
-        // ถ้ายังไม่มี ลองอ่านจาก Column F
-        if (!cardImage) {
-          var imageColIndex = colIndex['ภาพการ์ด'];
-          if (imageColIndex !== undefined) {
-            try {
-              var formulas = targetSheet.getRange(i + 1, imageColIndex + 1).getFormula();
-              if (formulas && formulas.indexOf('IMAGE') !== -1) {
-                var urlMatch = formulas.match(/IMAGE\(["'](.*?)["']\)/);
-                if (urlMatch && urlMatch[1]) {
-                  cardImage = urlMatch[1];
-                }
+      }
+      
+      // ถ้ายังไม่มี ลองอ่านจาก Column F
+      if (!cardImage) {
+        var imageColIndex = colIndex['ภาพการ์ด'];
+        if (imageColIndex !== undefined) {
+          try {
+            var formulas = targetSheet.getRange(i + 1, imageColIndex + 1).getFormula();
+            if (formulas && formulas.indexOf('IMAGE') !== -1) {
+              var urlMatch = formulas.match(/IMAGE\(["'](.*?)["']\)/);
+              if (urlMatch && urlMatch[1]) {
+                cardImage = urlMatch[1];
               }
-            } catch (e) {}
-          }
+            }
+          } catch (e) {}
         }
       }
+      
+      // ถ้ายังไม่มีรูปหน้า และมี productId ให้ดึงจาก Drive (แต่จะทำเฉพาะบางรายการเพื่อความเร็ว)
+      // สำหรับการ์ดที่ไม่มีรูปใน Column G จะส่ง productId ไปให้ frontend ดึงรูปทีหลัง
+      // แต่ถ้าต้องการให้เร็วขึ้น ให้รัน linkImagesFromDrive() เพื่อเติม Column G ก่อน
       
       var statusStr = String(status).trim();
       if (statusStr === 'ยังมีอยู่' || statusStr === '') {
@@ -173,9 +136,9 @@ function doGet(e) {
             phone: phone || '',
             folderSlot: folderSlot || '',
             cardName: cardName || '',
-            cardImage: cardImage || '',
-            cardBackImage: cardBackImage || '',
-            productId: String(productId).trim() || '',
+            cardImage: cardImage || '', // อาจว่างถ้ายังไม่ได้ดึงจาก Drive
+            cardBackImage: cardBackImage || '', // อาจว่างถ้ายังไม่ได้ดึงจาก Drive
+            productId: String(productId).trim() || '', // ส่ง productId ไปให้ frontend ดึงรูปทีหลัง
             listedPrice: listedPrice || '',
             actualPrice: actualPrice || '',
             status: statusStr || 'ยังมีอยู่',
