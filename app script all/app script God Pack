@@ -46,6 +46,7 @@ function doGet(e) {
       return HtmlService.createHtmlOutput("ไม่พบชีทข้อมูล");
     }
     
+    // ดึงข้อมูลทั้งหมดมาในครั้งเดียว (เร็วกว่า)
     var data = targetSheet.getDataRange().getValues();
     
     if (data.length <= 1) {
@@ -61,27 +62,63 @@ function doGet(e) {
     var headers = data[0];
     var participants = [];
     
-    // สร้าง object สำหรับแต่ละแถว
-    for (var i = 1; i < data.length; i++) {
-      var row = data[i];
-      var participant = {};
+    // สร้าง colIndex แบบเร็ว
+    var colIndex = {};
+    var headerCount = headers.length;
+    for (var h = 0; h < headerCount; h++) {
+      colIndex[headers[h]] = h;
+    }
+    
+    // Cache column indices
+    var idxName = colIndex['ชื่อ-สกุล'];
+    var idxPhone = colIndex['เบอร์โทรศัพท์ติดต่อ'];
+    var idxQuantity = colIndex['จำนวน GOD PACK ที่ซื้อ'];
+    var idxQuantityOld = colIndex['จำนวน GOD PACK ที่ต้องการพรีออเดอร์ (ซองละ 299 บาท)'];
+    var idxNickname = colIndex['ชื่อเล่น, ฉายา'];
+    
+    // ประมวลผลข้อมูลทั้งหมดแบบ batch (เร็วกว่า)
+    var rowCount = data.length;
+    var participant, row, name, phone, quantity, nickname;
+    
+    for (var i = 1; i < rowCount; i++) {
+      row = data[i];
       
-      // สร้าง object โดยใช้ชื่อ column เป็น key
+      // อ่านข้อมูลโดยใช้ index โดยตรง (เร็วกว่า)
+      name = idxName !== undefined ? String(row[idxName] || '').trim() : '';
+      phone = idxPhone !== undefined ? String(row[idxPhone] || '').trim() : '';
+      
+      // ข้ามถ้าไม่มีชื่อและเบอร์โทร
+      if (!name && !phone) continue;
+      
+      // อ่านจำนวนซอง
+      quantity = 0;
+      if (idxQuantity !== undefined && row[idxQuantity]) {
+        quantity = parseInt(row[idxQuantity]) || 0;
+      } else if (idxQuantityOld !== undefined && row[idxQuantityOld]) {
+        quantity = parseInt(row[idxQuantityOld]) || 0;
+      }
+      
+      nickname = idxNickname !== undefined ? String(row[idxNickname] || '').trim() : '';
+      
+      // สร้าง object แบบเร็ว (ใช้เฉพาะข้อมูลที่จำเป็น)
+      participant = {};
+      
+      // เพิ่มเฉพาะข้อมูลที่จำเป็น
+      if (idxName !== undefined) participant['ชื่อ-สกุล'] = name;
+      if (idxPhone !== undefined) participant['เบอร์โทรศัพท์ติดต่อ'] = phone;
+      if (idxQuantity !== undefined) participant['จำนวน GOD PACK ที่ซื้อ'] = quantity;
+      if (idxQuantityOld !== undefined) participant['จำนวน GOD PACK ที่ต้องการพรีออเดอร์ (ซองละ 299 บาท)'] = quantity;
+      if (idxNickname !== undefined) participant['ชื่อเล่น, ฉายา'] = nickname;
+      
+      // เพิ่มข้อมูลอื่นๆ ถ้ามี
       for (var j = 0; j < headers.length; j++) {
-        var header = headers[j];
-        var value = row[j];
-        
-        // แปลงค่า null/undefined เป็น string ว่าง
-        participant[header] = (value === null || value === undefined) ? '' : value;
+        if (participant[headers[j]] === undefined) {
+          var value = row[j];
+          participant[headers[j]] = (value === null || value === undefined) ? '' : value;
+        }
       }
       
-      // เพิ่มเฉพาะแถวที่มีข้อมูล (มีชื่อ-สกุล หรือเบอร์โทร)
-      var hasName = participant['ชื่อ-สกุล'] && String(participant['ชื่อ-สกุล']).trim() !== '';
-      var hasPhone = participant['เบอร์โทรศัพท์ติดต่อ'] && String(participant['เบอร์โทรศัพท์ติดต่อ']).trim() !== '';
-      
-      if (hasName || hasPhone) {
-        participants.push(participant);
-      }
+      participants.push(participant);
     }
     
     if (isJson) {
