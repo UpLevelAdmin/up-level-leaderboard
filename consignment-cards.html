@@ -76,16 +76,20 @@
       padding: 16px;
       background: #f5f5f5;
       border-radius: 12px;
+      box-sizing: border-box;
     }
 
     .search-box {
       flex: 1;
-      min-width: 250px;
+      min-width: 200px;
+      max-width: 100%;
       padding: 12px 16px;
       border: 2px solid #ddd;
       border-radius: 8px;
       font-size: 1em;
       transition: border-color 0.3s;
+      box-sizing: border-box;
+      width: 100%;
     }
 
     .search-box:focus {
@@ -100,6 +104,9 @@
       font-size: 1em;
       background: white;
       cursor: pointer;
+      box-sizing: border-box;
+      min-width: 200px;
+      max-width: 100%;
     }
 
     .stats {
@@ -506,10 +513,21 @@
       .filter-section {
         flex-direction: column;
         padding: 12px;
+        margin: 0 8px 16px 8px;
       }
 
       .search-box {
         min-width: 100%;
+        max-width: 100%;
+        width: 100%;
+        box-sizing: border-box;
+      }
+
+      .sort-select {
+        min-width: 100%;
+        max-width: 100%;
+        width: 100%;
+        box-sizing: border-box;
       }
 
       .info-box {
@@ -619,12 +637,12 @@
       <div class="modal-images">
         <div class="modal-image-container">
           <h4>ด้านหน้า</h4>
-          <img id="modal-front-image" class="modal-image" src="" alt="ด้านหน้า" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+          <img id="modal-front-image" class="modal-image" src="" alt="ด้านหน้า" loading="eager" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
           <div style="display:none; color: white; padding: 20px;">ไม่มีรูปภาพด้านหน้า</div>
         </div>
         <div class="modal-image-container">
           <h4>ด้านหลัง</h4>
-          <img id="modal-back-image" class="modal-image" src="" alt="ด้านหลัง" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+          <img id="modal-back-image" class="modal-image" src="" alt="ด้านหลัง" loading="eager" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
           <div style="display:none; color: white; padding: 20px;">ไม่มีรูปภาพด้านหลัง</div>
         </div>
       </div>
@@ -778,7 +796,8 @@
           
           // ตรวจสอบว่าเป็น URL ที่ถูกต้อง
           if (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://')) {
-            imageHtml = `<img src="${escapeHtml(cleanUrl)}" alt="${escapeHtml(card.cardName)}" class="card-image" onerror="console.error('Image failed to load:', '${escapeHtml(cleanUrl)}'); this.parentElement.innerHTML='<div class=\\'card-image-placeholder\\'>🃏</div>'">`;
+            // ใช้ loading="lazy" เพื่อให้โหลดรูปเมื่อเห็นเท่านั้น (เพิ่มประสิทธิภาพ)
+            imageHtml = `<img src="${escapeHtml(cleanUrl)}" alt="${escapeHtml(card.cardName)}" class="card-image" loading="lazy" onerror="console.error('Image failed to load:', '${escapeHtml(cleanUrl)}'); this.parentElement.innerHTML='<div class=\\'card-image-placeholder\\'>🃏</div>'">`;
           } else {
             // ถ้าไม่ใช่ URL ที่ถูกต้อง ให้แสดง placeholder
             imageHtml = '<div class="card-image-placeholder">🃏</div>';

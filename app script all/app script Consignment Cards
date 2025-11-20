@@ -90,33 +90,34 @@ function doGet(e) {
         try {
           var driveFolderId = '15f0xNKHe4q8sNaMQo3uXs1qPBB0oVQx2';
           var folder = DriveApp.getFolderById(driveFolderId);
-          var files = folder.getFiles();
           var frontFileName = String(productId).trim() + ' หน้า.jpg';
           var backFileName = String(productId).trim() + ' หลัง.jpg';
           
-          // หาไฟล์หน้าและหลัง
-          while (files.hasNext()) {
-            var file = files.next();
-            var fileName = file.getName();
-            
-            if (fileName === frontFileName) {
-              try {
-                file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-              } catch (e) {}
-              var fileId = file.getId();
-              cardImage = 'https://drive.google.com/thumbnail?id=' + fileId + '&sz=w1000';
-            } else if (fileName === backFileName) {
-              try {
-                file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-              } catch (e) {}
-              var fileId = file.getId();
-              cardBackImage = 'https://drive.google.com/thumbnail?id=' + fileId + '&sz=w1000';
-            }
-            
-            // ถ้าเจอทั้งสองแล้ว ให้หยุดค้นหา
-            if (cardImage && cardBackImage) {
-              break;
-            }
+          // ใช้ getFilesByName เพื่อค้นหาเร็วกว่าการวนลูปทั้งหมด
+          var frontFiles = folder.getFilesByName(frontFileName);
+          var backFiles = folder.getFilesByName(backFileName);
+          
+          if (frontFiles.hasNext()) {
+            var frontFile = frontFiles.next();
+            try {
+              // ตรวจสอบ sharing ก่อน set เพื่อลดการเรียก API
+              var access = frontFile.getSharingAccess();
+              if (access !== DriveApp.Access.ANYONE_WITH_LINK) {
+                frontFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+              }
+            } catch (e) {}
+            cardImage = 'https://drive.google.com/thumbnail?id=' + frontFile.getId() + '&sz=w1000';
+          }
+          
+          if (backFiles.hasNext()) {
+            var backFile = backFiles.next();
+            try {
+              var access = backFile.getSharingAccess();
+              if (access !== DriveApp.Access.ANYONE_WITH_LINK) {
+                backFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+              }
+            } catch (e) {}
+            cardBackImage = 'https://drive.google.com/thumbnail?id=' + backFile.getId() + '&sz=w1000';
           }
         } catch (e) {
           // ไม่สามารถดึงรูปภาพได้
