@@ -998,10 +998,10 @@
       const container = document.getElementById('cards-container');
       let html = '<div class="cards-grid">';
       
-      // แสดง skeleton 9 การ์ด
+      // แสดง skeleton 9 การ์ด (ไม่สามารถคลิกได้)
       for (let i = 0; i < 9; i++) {
         html += `
-          <div class="card-item skeleton-card">
+          <div class="card-item skeleton-card" style="cursor: default; pointer-events: none;">
             <div class="card-image-container">
               <div class="skeleton-image"></div>
             </div>
