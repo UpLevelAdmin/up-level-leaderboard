@@ -26,6 +26,7 @@ function doGet(e) {
       return HtmlService.createHtmlOutput("ไม่พบชีทข้อมูล");
     }
     
+    // ดึงข้อมูลทั้งหมดมาในครั้งเดียว (เร็วกว่าการดึงทีละแถว)
     var data = targetSheet.getDataRange().getValues();
     
     if (data.length <= 1) {
@@ -63,29 +64,32 @@ function doGet(e) {
     var idxProductId = colIndex['รหัสสินค้า'];
     var idxImageLink = colIndex['ลิงก์ภาพการ์ด'];
     
+    // ประมวลผลข้อมูลทั้งหมดแบบ batch (เร็วกว่าการประมวลผลทีละแถว)
     var rowCount = data.length;
+    var cardImage, imageLink, imageLinkStr, idMatch, cardName, status;
+    
     for (var i = 1; i < rowCount; i++) {
       var row = data[i];
       
       // อ่านข้อมูลโดยใช้ index โดยตรง (เร็วกว่า)
-      var cardName = row[idxCardName];
+      cardName = row[idxCardName];
       if (!cardName) continue; // ข้ามถ้าไม่มีชื่อการ์ด
       
-      var status = row[idxStatus];
+      status = row[idxStatus];
       // ตรวจสอบสถานะแบบเร็ว (ไม่ต้อง String() ถ้าไม่จำเป็น)
       if (status && status !== 'ยังมีอยู่') continue;
       
       // อ่านรูปภาพจาก Column G แบบเร็ว
-      var cardImage = '';
+      cardImage = '';
       if (idxImageLink !== undefined) {
-        var imageLink = row[idxImageLink];
+        imageLink = row[idxImageLink];
         if (imageLink) {
-          var imageLinkStr = String(imageLink);
+          imageLinkStr = String(imageLink);
           if (imageLinkStr.indexOf('http') !== -1) {
             if (imageLinkStr.indexOf('thumbnail?id=') !== -1) {
               cardImage = imageLinkStr;
             } else {
-              var idMatch = imageLinkStr.match(/id=([a-zA-Z0-9_-]+)/);
+              idMatch = imageLinkStr.match(/id=([a-zA-Z0-9_-]+)/);
               if (idMatch && idMatch[1]) {
                 cardImage = 'https://drive.google.com/thumbnail?id=' + idMatch[1] + '&sz=w1000';
               } else {
@@ -96,7 +100,7 @@ function doGet(e) {
         }
       }
       
-      // สร้าง object แบบเร็ว
+      // สร้าง object แบบเร็ว (ใช้ตัวแปรที่ประกาศไว้แล้ว)
       cards.push({
         depositDate: row[idxDate] || '',
         consignorName: row[idxConsignor] || '',
