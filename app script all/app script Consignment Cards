@@ -127,52 +127,9 @@ function doGet(e) {
         }
       }
       
-      // ถ้ายังไม่มีรูปหน้า และมี productId ให้ดึงจาก Drive โดยใช้ getFilesByName (เร็ว)
-      if (!cardImage && productId && String(productId).trim() !== '') {
-        var driveStart = new Date().getTime();
-        try {
-          var driveFolderId = '15f0xNKHe4q8sNaMQo3uXs1qPBB0oVQx2';
-          var folder = DriveApp.getFolderById(driveFolderId);
-          var frontFileName = String(productId).trim() + ' หน้า.jpg';
-          
-          var frontFiles = folder.getFilesByName(frontFileName);
-          if (frontFiles.hasNext()) {
-            driveImageCount++;
-            var frontFile = frontFiles.next();
-            try {
-              var access = frontFile.getSharingAccess();
-              if (access !== DriveApp.Access.ANYONE_WITH_LINK) {
-                frontFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-              }
-            } catch (e) {}
-            cardImage = 'https://drive.google.com/thumbnail?id=' + frontFile.getId() + '&sz=w1000';
-          }
-        } catch (e) {}
-        driveImageTime += (new Date().getTime() - driveStart);
-      }
-      
-      // ดึงรูปหลัง (ถ้ามี productId)
-      if (productId && String(productId).trim() !== '') {
-        var driveStart = new Date().getTime();
-        try {
-          var driveFolderId = '15f0xNKHe4q8sNaMQo3uXs1qPBB0oVQx2';
-          var folder = DriveApp.getFolderById(driveFolderId);
-          var backFileName = String(productId).trim() + ' หลัง.jpg';
-          
-          var backFiles = folder.getFilesByName(backFileName);
-          if (backFiles.hasNext()) {
-            var backFile = backFiles.next();
-            try {
-              var access = backFile.getSharingAccess();
-              if (access !== DriveApp.Access.ANYONE_WITH_LINK) {
-                backFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-              }
-            } catch (e) {}
-            cardBackImage = 'https://drive.google.com/thumbnail?id=' + backFile.getId() + '&sz=w1000';
-          }
-        } catch (e) {}
-        driveImageTime += (new Date().getTime() - driveStart);
-      }
+      // ไม่ดึงรูปจาก Drive ใน doGet() เพื่อความเร็ว
+      // ถ้าต้องการดึงรูปจาก Drive ให้รัน linkImagesFromDrive() เพื่อเติม Column G ก่อน
+      // หรือใช้ endpoint แยกสำหรับดึงรูปทีหลัง
       
       var statusStr = String(status).trim();
       if (statusStr === 'ยังมีอยู่' || statusStr === '') {
@@ -201,10 +158,11 @@ function doGet(e) {
     
     var totalTime = new Date().getTime() - startTime;
     debugLog.push('ประมวลผลการ์ดทั้งหมด: ' + (new Date().getTime() - stepStart) + 'ms');
-    debugLog.push('ดึงรูปจาก Drive: ' + driveImageCount + ' รูป, ใช้เวลา: ' + driveImageTime + 'ms');
     debugLog.push('ใช้รูปจาก Column G: ' + columnGImageCount + ' รูป');
+    debugLog.push('การ์ดที่ไม่มีรูป: ' + (cards.length - columnGImageCount) + ' การ์ด');
     debugLog.push('เวลาทั้งหมด: ' + totalTime + 'ms');
     debugLog.push('จำนวนการ์ด: ' + cards.length);
+    debugLog.push('💡 คำแนะนำ: รัน linkImagesFromDrive() เพื่อเติม Column G ให้ครบ');
     
     if (isJson) {
       return ContentService.createTextOutput(JSON.stringify({
