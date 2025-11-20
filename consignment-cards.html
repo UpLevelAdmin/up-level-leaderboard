@@ -188,6 +188,49 @@
       100% { transform: rotate(360deg); }
     }
 
+    .skeleton-card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      overflow: hidden;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+
+    .skeleton-image {
+      width: 100%;
+      height: 300px;
+      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+
+    .skeleton-text {
+      height: 20px;
+      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 4px;
+      margin-bottom: 8px;
+    }
+
+    .skeleton-text.short {
+      width: 60%;
+    }
+
+    .skeleton-text.medium {
+      width: 80%;
+    }
+
     .card-info {
       padding: 16px;
       flex-grow: 1;
@@ -950,12 +993,40 @@
       updateStats(allCards.length, filteredCards.length);
     }
 
-    function loadCards() {
+    // แสดง skeleton cards ทันที
+    function showSkeletonCards() {
       const container = document.getElementById('cards-container');
-      container.innerHTML = '<div class="spinner"></div><div class="loading-text">กำลังโหลดการ์ด...</div>';
+      let html = '<div class="cards-grid">';
+      
+      // แสดง skeleton 9 การ์ด
+      for (let i = 0; i < 9; i++) {
+        html += `
+          <div class="card-item skeleton-card">
+            <div class="card-image-container">
+              <div class="skeleton-image"></div>
+            </div>
+            <div class="card-info">
+              <div class="skeleton-text medium"></div>
+              <div class="skeleton-text short" style="margin-top: 12px;"></div>
+              <div class="skeleton-text" style="margin-top: 16px;"></div>
+              <div class="skeleton-text" style="margin-top: 8px;"></div>
+              <div class="skeleton-text" style="margin-top: 8px;"></div>
+            </div>
+          </div>
+        `;
+      }
+      
+      html += '</div>';
+      container.innerHTML = html;
+      console.log('⚡ แสดง skeleton cards ทันที');
+    }
+
+    function loadCards() {
+      // แสดง skeleton cards ทันที (ไม่ต้องรอ API)
+      showSkeletonCards();
       
       if (API_URL.includes('YOUR_APPS_SCRIPT_WEB_APP_URL')) {
-        container.innerHTML = `
+        document.getElementById('cards-container').innerHTML = `
           <div class="error-message">
             <h3>⚠️ ยังไม่ได้ตั้งค่า API URL</h3>
             <p>กรุณา deploy Apps Script และใส่ URL ในไฟล์ consignment-cards.html</p>
@@ -965,7 +1036,7 @@
       }
       
       const startTime = performance.now();
-      console.log('🚀 เริ่มโหลดข้อมูล...');
+      console.log('🚀 เริ่มโหลดข้อมูลจาก API...');
       
       fetch(API_URL)
         .then(res => {
