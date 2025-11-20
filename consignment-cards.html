@@ -768,6 +768,7 @@
     }
 
     function renderCards(cards) {
+      const renderStart = performance.now();
       const container = document.getElementById('cards-container');
       
       if (cards.length === 0) {
@@ -776,6 +777,8 @@
       }
 
       let html = '<div class="cards-grid">';
+      let imageCount = 0;
+      let placeholderCount = 0;
       
       cards.forEach((card, index) => {
         const imageUrl = card.cardImage || '';
@@ -784,6 +787,7 @@
         
         let imageHtml = '';
         if (hasImage) {
+          imageCount++;
           // ลบ quotes และ spaces ที่ไม่จำเป็น
           let cleanUrl = imageUrl.trim().replace(/^["']|["']$/g, '');
           
@@ -792,9 +796,11 @@
             // ใช้ loading="lazy" เพื่อให้โหลดรูปเมื่อเห็นเท่านั้น
             imageHtml = `<img src="${escapeHtml(cleanUrl)}" alt="${escapeHtml(card.cardName)}" class="card-image" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\\'card-image-placeholder\\'>🃏</div>'">`;
           } else {
+            placeholderCount++;
             imageHtml = '<div class="card-image-placeholder">🃏</div>';
           }
         } else {
+          placeholderCount++;
           imageHtml = '<div class="card-image-placeholder">🃏</div>';
         }
         
@@ -840,7 +846,15 @@
       });
       
       html += '</div>';
+      
+      const beforeInnerHTML = performance.now();
       container.innerHTML = html;
+      const innerHTMLTime = performance.now() - beforeInnerHTML;
+      
+      const renderTime = performance.now() - renderStart;
+      console.log(`  📝 สร้าง HTML: ${(renderTime - innerHTMLTime).toFixed(0)}ms`);
+      console.log(`  💾 innerHTML: ${innerHTMLTime.toFixed(0)}ms`);
+      console.log(`  🖼️ มีรูปภาพ: ${imageCount}, Placeholder: ${placeholderCount}`);
       
       // เก็บ filteredCards ไว้ในตัวแปร global เพื่อใช้ใน modal
       window.currentFilteredCards = cards;
@@ -881,20 +895,41 @@
       }
       
       const startTime = performance.now();
+      console.log('🚀 เริ่มโหลดข้อมูล...');
       
       fetch(API_URL)
-        .then(res => res.json())
+        .then(res => {
+          const fetchTime = performance.now() - startTime;
+          console.log(`📡 Fetch API เสร็จ: ${fetchTime.toFixed(0)}ms`);
+          return res.json();
+        })
         .then(data => {
-          const loadTime = performance.now() - startTime;
-          console.log(`Data loaded in ${loadTime.toFixed(0)}ms`);
+          const parseTime = performance.now() - startTime;
+          console.log(`📦 Parse JSON เสร็จ: ${parseTime.toFixed(0)}ms`);
+          
+          // แสดง debug info จาก Apps Script
+          if (data.debug && Array.isArray(data.debug)) {
+            console.log('🔍 Debug จาก Apps Script:');
+            data.debug.forEach(log => console.log('  - ' + log));
+          }
           
           if (data.error) {
             container.innerHTML = `<div class="error-message">เกิดข้อผิดพลาด: ${escapeHtml(data.error)}</div>`;
             return;
           }
           
+          const beforeProcessTime = performance.now();
           allCards = data.cards || [];
+          console.log(`📊 ได้ข้อมูล ${allCards.length} การ์ด`);
+          
+          const renderStart = performance.now();
           updateDisplay();
+          const renderTime = performance.now() - renderStart;
+          console.log(`🎨 Render HTML เสร็จ: ${renderTime.toFixed(0)}ms`);
+          
+          const totalTime = performance.now() - startTime;
+          console.log(`✅ โหลดเสร็จทั้งหมด: ${totalTime.toFixed(0)}ms`);
+          console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
         })
         .catch(err => {
           console.error('Error loading cards:', err);

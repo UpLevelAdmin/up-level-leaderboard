@@ -1,22 +1,29 @@
 function doGet(e) {
+  var startTime = new Date().getTime();
+  var debugLog = [];
+  
   try {
     var isJson = e && e.parameter && e.parameter.type === 'json';
     
+    var stepStart = new Date().getTime();
     var spreadsheetId = '1JvVCVxxXBS-2lpnT-IOrYBf2rF-OBRVFCW6MZEvpqxE';
     var spreadsheet;
     
     try {
       spreadsheet = SpreadsheetApp.openById(spreadsheetId);
+      debugLog.push('เปิด Spreadsheet: ' + (new Date().getTime() - stepStart) + 'ms');
     } catch (err) {
       if (isJson) {
         return ContentService.createTextOutput(JSON.stringify({
           error: "ไม่สามารถเปิด Google Sheet ได้: " + err.toString(),
-          cards: []
+          cards: [],
+          debug: debugLog
         })).setMimeType(ContentService.MimeType.JSON);
       }
       return HtmlService.createHtmlOutput("ไม่สามารถเปิด Google Sheet ได้");
     }
     
+    stepStart = new Date().getTime();
     var targetSheet = null;
     var sheetNames = ['ฝากขายการ์ด', 'Sheet1'];
     
@@ -39,24 +46,30 @@ function doGet(e) {
       if (isJson) {
         return ContentService.createTextOutput(JSON.stringify({
           error: "ไม่พบชีทข้อมูล",
-          cards: []
+          cards: [],
+          debug: debugLog
         })).setMimeType(ContentService.MimeType.JSON);
       }
       return HtmlService.createHtmlOutput("ไม่พบชีทข้อมูล");
     }
+    debugLog.push('หา Sheet: ' + (new Date().getTime() - stepStart) + 'ms');
     
+    stepStart = new Date().getTime();
     var data = targetSheet.getDataRange().getValues();
+    debugLog.push('อ่านข้อมูลจาก Sheet: ' + (new Date().getTime() - stepStart) + 'ms (แถว: ' + data.length + ')');
     
     if (data.length <= 1) {
       if (isJson) {
         return ContentService.createTextOutput(JSON.stringify({
           error: "ไม่มีข้อมูล",
-          cards: []
+          cards: [],
+          debug: debugLog
         })).setMimeType(ContentService.MimeType.JSON);
       }
       return HtmlService.createHtmlOutput("ไม่มีข้อมูล");
     }
     
+    stepStart = new Date().getTime();
     var headers = data[0];
     var cards = [];
     
@@ -65,6 +78,12 @@ function doGet(e) {
       var header = String(headers[h]).trim();
       colIndex[header] = h;
     }
+    debugLog.push('สร้าง colIndex: ' + (new Date().getTime() - stepStart) + 'ms');
+    
+    stepStart = new Date().getTime();
+    var driveImageCount = 0;
+    var driveImageTime = 0;
+    var columnGImageCount = 0;
     
     for (var i = 1; i < data.length; i++) {
       var row = data[i];
@@ -92,6 +111,7 @@ function doGet(e) {
         if (imageLinkValue) {
           var imageLinkStr = String(imageLinkValue).trim();
           if (imageLinkStr.indexOf('http') !== -1) {
+            columnGImageCount++;
             // แปลงเป็น thumbnail URL ถ้าจำเป็น
             if (imageLinkStr.indexOf('thumbnail?id=') !== -1) {
               cardImage = imageLinkStr;
@@ -109,6 +129,7 @@ function doGet(e) {
       
       // ถ้ายังไม่มีรูปหน้า และมี productId ให้ดึงจาก Drive โดยใช้ getFilesByName (เร็ว)
       if (!cardImage && productId && String(productId).trim() !== '') {
+        var driveStart = new Date().getTime();
         try {
           var driveFolderId = '15f0xNKHe4q8sNaMQo3uXs1qPBB0oVQx2';
           var folder = DriveApp.getFolderById(driveFolderId);
@@ -116,6 +137,7 @@ function doGet(e) {
           
           var frontFiles = folder.getFilesByName(frontFileName);
           if (frontFiles.hasNext()) {
+            driveImageCount++;
             var frontFile = frontFiles.next();
             try {
               var access = frontFile.getSharingAccess();
@@ -126,10 +148,12 @@ function doGet(e) {
             cardImage = 'https://drive.google.com/thumbnail?id=' + frontFile.getId() + '&sz=w1000';
           }
         } catch (e) {}
+        driveImageTime += (new Date().getTime() - driveStart);
       }
       
       // ดึงรูปหลัง (ถ้ามี productId)
       if (productId && String(productId).trim() !== '') {
+        var driveStart = new Date().getTime();
         try {
           var driveFolderId = '15f0xNKHe4q8sNaMQo3uXs1qPBB0oVQx2';
           var folder = DriveApp.getFolderById(driveFolderId);
@@ -147,6 +171,7 @@ function doGet(e) {
             cardBackImage = 'https://drive.google.com/thumbnail?id=' + backFile.getId() + '&sz=w1000';
           }
         } catch (e) {}
+        driveImageTime += (new Date().getTime() - driveStart);
       }
       
       var statusStr = String(status).trim();
