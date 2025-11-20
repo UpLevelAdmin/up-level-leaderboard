@@ -843,14 +843,15 @@
       
       cards.forEach((card, index) => {
         const imageUrl = card.cardImage || '';
-        const hasImage = imageUrl && String(imageUrl).trim() !== '' && imageUrl !== 'มี';
+        const hasImage = imageUrl && String(imageUrl).trim() !== '' && String(imageUrl).trim().startsWith('http');
         const productId = card.productId || '';
         
-        // Debug: แสดงข้อมูลการ์ดแต่ละใบ
+        // Debug: แสดงข้อมูลการ์ดแต่ละใบ (เฉพาะการ์ดแรก)
         if (index === 0) {
-          console.log('🔍 Debug การ์ดแรก:', {
+          console.log('🔍 Debug การ์ดแรกใน renderCards:', {
             cardName: card.cardName,
             imageUrl: imageUrl,
+            imageUrlSubstring: String(imageUrl).substring(0, 50),
             hasImage: hasImage,
             imageUrlType: typeof imageUrl,
             imageUrlLength: String(imageUrl).length
