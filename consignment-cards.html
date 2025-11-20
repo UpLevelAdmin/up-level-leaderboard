@@ -1063,6 +1063,16 @@
           allCards = data.cards || [];
           console.log(`📊 ได้ข้อมูล ${allCards.length} การ์ด`);
           
+          // Debug: แสดงตัวอย่างข้อมูลการ์ดแรก
+          if (allCards.length > 0) {
+            console.log('🔍 ตัวอย่างข้อมูลการ์ดแรก:', {
+              cardName: allCards[0].cardName,
+              listedPrice: allCards[0].listedPrice,
+              cardImage: allCards[0].cardImage ? 'มี' : 'ไม่มี',
+              productId: allCards[0].productId
+            });
+          }
+          
           const renderStart = performance.now();
           updateDisplay();
           const renderTime = performance.now() - renderStart;
