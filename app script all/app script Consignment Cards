@@ -41,71 +41,78 @@ function doGet(e) {
     var headers = data[0];
     var cards = [];
     
-    // สร้าง colIndex แบบเร็ว (ไม่ต้อง trim ทุกตัว)
+    // สร้าง colIndex แบบเร็ว (ใช้ index โดยตรง)
     var colIndex = {};
-    for (var h = 0; h < headers.length; h++) {
+    var headerCount = headers.length;
+    for (var h = 0; h < headerCount; h++) {
       colIndex[headers[h]] = h;
     }
     
-    var columnGImageCount = 0;
+    // Cache column indices เพื่อลดการค้นหา
+    var idxDate = colIndex['วันที่ฝาก'];
+    var idxConsignor = colIndex['ชื่อผู้ฝากขาย'];
+    var idxPhone = colIndex['เบอร์โทร'];
+    var idxSlot = colIndex['ช่องในแฟ้ม'];
+    var idxCardName = colIndex['ชื่อการ์ด'];
+    var idxPrice = colIndex['ราคาป้าย'];
+    var idxActualPrice = colIndex['ราคาขายจริง'];
+    var idxStatus = colIndex['สถานะ'];
+    var idxSaleDate = colIndex['วันที่ขาย/คืน'];
+    var idxRefund = colIndex['ยอดคืนลูกค้า (90%)'];
+    var idxNotes = colIndex['หมายเหตุ'];
+    var idxProductId = colIndex['รหัสสินค้า'];
+    var idxImageLink = colIndex['ลิงก์ภาพการ์ด'];
     
-    for (var i = 1; i < data.length; i++) {
+    var rowCount = data.length;
+    for (var i = 1; i < rowCount; i++) {
       var row = data[i];
       
-      // อ่านข้อมูลแบบเร็ว (ไม่ต้อง trim ทุกตัว)
-      var depositDate = row[colIndex['วันที่ฝาก']] || '';
-      var consignorName = row[colIndex['ชื่อผู้ฝากขาย']] || '';
-      var phone = row[colIndex['เบอร์โทร']] || '';
-      var folderSlot = row[colIndex['ช่องในแฟ้ม']] || '';
-      var cardName = row[colIndex['ชื่อการ์ด']] || '';
-      var listedPrice = row[colIndex['ราคาป้าย']] || '';
-      var actualPrice = row[colIndex['ราคาขายจริง']] || '';
-      var status = row[colIndex['สถานะ']] || '';
-      var saleDate = row[colIndex['วันที่ขาย/คืน']] || '';
-      var refundAmount = row[colIndex['ยอดคืนลูกค้า (90%)']] || '';
-      var notes = row[colIndex['หมายเหตุ']] || '';
-      var productId = row[colIndex['รหัสสินค้า']] || '';
+      // อ่านข้อมูลโดยใช้ index โดยตรง (เร็วกว่า)
+      var cardName = row[idxCardName];
+      if (!cardName) continue; // ข้ามถ้าไม่มีชื่อการ์ด
+      
+      var status = row[idxStatus];
+      // ตรวจสอบสถานะแบบเร็ว (ไม่ต้อง String() ถ้าไม่จำเป็น)
+      if (status && status !== 'ยังมีอยู่') continue;
       
       // อ่านรูปภาพจาก Column G แบบเร็ว
       var cardImage = '';
-      var imageLinkColIndex = colIndex['ลิงก์ภาพการ์ด'];
-      if (imageLinkColIndex !== undefined && row[imageLinkColIndex]) {
-        var imageLinkStr = String(row[imageLinkColIndex]);
-        if (imageLinkStr.indexOf('http') !== -1) {
-          columnGImageCount++;
-          if (imageLinkStr.indexOf('thumbnail?id=') !== -1) {
-            cardImage = imageLinkStr;
-          } else {
-            var idMatch = imageLinkStr.match(/id=([a-zA-Z0-9_-]+)/);
-            if (idMatch && idMatch[1]) {
-              cardImage = 'https://drive.google.com/thumbnail?id=' + idMatch[1] + '&sz=w1000';
-            } else {
+      if (idxImageLink !== undefined) {
+        var imageLink = row[idxImageLink];
+        if (imageLink) {
+          var imageLinkStr = String(imageLink);
+          if (imageLinkStr.indexOf('http') !== -1) {
+            if (imageLinkStr.indexOf('thumbnail?id=') !== -1) {
               cardImage = imageLinkStr;
+            } else {
+              var idMatch = imageLinkStr.match(/id=([a-zA-Z0-9_-]+)/);
+              if (idMatch && idMatch[1]) {
+                cardImage = 'https://drive.google.com/thumbnail?id=' + idMatch[1] + '&sz=w1000';
+              } else {
+                cardImage = imageLinkStr;
+              }
             }
           }
         }
       }
       
-      // ตรวจสอบสถานะแบบเร็ว
-      var statusStr = String(status);
-      if ((statusStr === 'ยังมีอยู่' || statusStr === '') && cardName) {
-        cards.push({
-          depositDate: depositDate,
-          consignorName: consignorName,
-          phone: phone,
-          folderSlot: folderSlot,
-          cardName: cardName,
-          cardImage: cardImage,
-          cardBackImage: '', // ไม่ดึงรูปหลังใน doGet() เพื่อความเร็ว
-          productId: String(productId),
-          listedPrice: listedPrice,
-          actualPrice: actualPrice,
-          status: statusStr || 'ยังมีอยู่',
-          saleDate: saleDate,
-          refundAmount: refundAmount,
-          notes: notes
-        });
-      }
+      // สร้าง object แบบเร็ว
+      cards.push({
+        depositDate: row[idxDate] || '',
+        consignorName: row[idxConsignor] || '',
+        phone: row[idxPhone] || '',
+        folderSlot: row[idxSlot] || '',
+        cardName: cardName,
+        cardImage: cardImage,
+        cardBackImage: '',
+        productId: String(row[idxProductId] || ''),
+        listedPrice: row[idxPrice] || '',
+        actualPrice: row[idxActualPrice] || '',
+        status: 'ยังมีอยู่',
+        saleDate: row[idxSaleDate] || '',
+        refundAmount: row[idxRefund] || '',
+        notes: row[idxNotes] || ''
+      });
     }
     
     if (isJson) {
