@@ -1,40 +1,14 @@
 function doGet(e) {
-  var startTime = new Date().getTime();
-  var debugLog = [];
-  
   try {
     var isJson = e && e.parameter && e.parameter.type === 'json';
     
-    var stepStart = new Date().getTime();
     var spreadsheetId = '1JvVCVxxXBS-2lpnT-IOrYBf2rF-OBRVFCW6MZEvpqxE';
-    var spreadsheet;
+    var spreadsheet = SpreadsheetApp.openById(spreadsheetId);
     
-    try {
-      spreadsheet = SpreadsheetApp.openById(spreadsheetId);
-      debugLog.push('เปิด Spreadsheet: ' + (new Date().getTime() - stepStart) + 'ms');
-    } catch (err) {
-      if (isJson) {
-        return ContentService.createTextOutput(JSON.stringify({
-          error: "ไม่สามารถเปิด Google Sheet ได้: " + err.toString(),
-          cards: [],
-          debug: debugLog
-        })).setMimeType(ContentService.MimeType.JSON);
-      }
-      return HtmlService.createHtmlOutput("ไม่สามารถเปิด Google Sheet ได้");
+    var targetSheet = spreadsheet.getSheetByName('ฝากขายการ์ด');
+    if (!targetSheet) {
+      targetSheet = spreadsheet.getSheetByName('Sheet1');
     }
-    
-    stepStart = new Date().getTime();
-    var targetSheet = null;
-    var sheetNames = ['ฝากขายการ์ด', 'Sheet1'];
-    
-    for (var i = 0; i < sheetNames.length; i++) {
-      var sheet = spreadsheet.getSheetByName(sheetNames[i]);
-      if (sheet) {
-        targetSheet = sheet;
-        break;
-      }
-    }
-    
     if (!targetSheet) {
       var allSheets = spreadsheet.getSheets();
       if (allSheets.length > 0) {
@@ -46,48 +20,39 @@ function doGet(e) {
       if (isJson) {
         return ContentService.createTextOutput(JSON.stringify({
           error: "ไม่พบชีทข้อมูล",
-          cards: [],
-          debug: debugLog
+          cards: []
         })).setMimeType(ContentService.MimeType.JSON);
       }
       return HtmlService.createHtmlOutput("ไม่พบชีทข้อมูล");
     }
-    debugLog.push('หา Sheet: ' + (new Date().getTime() - stepStart) + 'ms');
     
-    stepStart = new Date().getTime();
     var data = targetSheet.getDataRange().getValues();
-    debugLog.push('อ่านข้อมูลจาก Sheet: ' + (new Date().getTime() - stepStart) + 'ms (แถว: ' + data.length + ')');
     
     if (data.length <= 1) {
       if (isJson) {
         return ContentService.createTextOutput(JSON.stringify({
           error: "ไม่มีข้อมูล",
-          cards: [],
-          debug: debugLog
+          cards: []
         })).setMimeType(ContentService.MimeType.JSON);
       }
       return HtmlService.createHtmlOutput("ไม่มีข้อมูล");
     }
     
-    stepStart = new Date().getTime();
     var headers = data[0];
     var cards = [];
     
+    // สร้าง colIndex แบบเร็ว (ไม่ต้อง trim ทุกตัว)
     var colIndex = {};
     for (var h = 0; h < headers.length; h++) {
-      var header = String(headers[h]).trim();
-      colIndex[header] = h;
+      colIndex[headers[h]] = h;
     }
-    debugLog.push('สร้าง colIndex: ' + (new Date().getTime() - stepStart) + 'ms');
     
-    stepStart = new Date().getTime();
-    var driveImageCount = 0;
-    var driveImageTime = 0;
     var columnGImageCount = 0;
     
     for (var i = 1; i < data.length; i++) {
       var row = data[i];
       
+      // อ่านข้อมูลแบบเร็ว (ไม่ต้อง trim ทุกตัว)
       var depositDate = row[colIndex['วันที่ฝาก']] || '';
       var consignorName = row[colIndex['ชื่อผู้ฝากขาย']] || '';
       var phone = row[colIndex['เบอร์โทร']] || '';
@@ -99,76 +64,54 @@ function doGet(e) {
       var saleDate = row[colIndex['วันที่ขาย/คืน']] || '';
       var refundAmount = row[colIndex['ยอดคืนลูกค้า (90%)']] || '';
       var notes = row[colIndex['หมายเหตุ']] || '';
-      
-      var cardImage = '';
-      var cardBackImage = '';
       var productId = row[colIndex['รหัสสินค้า']] || '';
       
-      // อ่านรูปภาพจาก Column G ก่อน (ถ้ามี) เพื่อความเร็ว
+      // อ่านรูปภาพจาก Column G แบบเร็ว
+      var cardImage = '';
       var imageLinkColIndex = colIndex['ลิงก์ภาพการ์ด'];
-      if (imageLinkColIndex !== undefined) {
-        var imageLinkValue = row[imageLinkColIndex];
-        if (imageLinkValue) {
-          var imageLinkStr = String(imageLinkValue).trim();
-          if (imageLinkStr.indexOf('http') !== -1) {
-            columnGImageCount++;
-            // แปลงเป็น thumbnail URL ถ้าจำเป็น
-            if (imageLinkStr.indexOf('thumbnail?id=') !== -1) {
-              cardImage = imageLinkStr;
+      if (imageLinkColIndex !== undefined && row[imageLinkColIndex]) {
+        var imageLinkStr = String(row[imageLinkColIndex]);
+        if (imageLinkStr.indexOf('http') !== -1) {
+          columnGImageCount++;
+          if (imageLinkStr.indexOf('thumbnail?id=') !== -1) {
+            cardImage = imageLinkStr;
+          } else {
+            var idMatch = imageLinkStr.match(/id=([a-zA-Z0-9_-]+)/);
+            if (idMatch && idMatch[1]) {
+              cardImage = 'https://drive.google.com/thumbnail?id=' + idMatch[1] + '&sz=w1000';
             } else {
-              var idMatch = imageLinkStr.match(/id=([a-zA-Z0-9_-]+)/);
-              if (idMatch && idMatch[1]) {
-                cardImage = 'https://drive.google.com/thumbnail?id=' + idMatch[1] + '&sz=w1000';
-              } else {
-                cardImage = imageLinkStr;
-              }
+              cardImage = imageLinkStr;
             }
           }
         }
       }
       
-      // ไม่ดึงรูปจาก Drive ใน doGet() เพื่อความเร็ว
-      // ถ้าต้องการดึงรูปจาก Drive ให้รัน linkImagesFromDrive() เพื่อเติม Column G ก่อน
-      // หรือใช้ endpoint แยกสำหรับดึงรูปทีหลัง
-      
-      var statusStr = String(status).trim();
-      if (statusStr === 'ยังมีอยู่' || statusStr === '') {
-        if (cardName && String(cardName).trim() !== '') {
-          var card = {
-            depositDate: depositDate || '',
-            consignorName: consignorName || '',
-            phone: phone || '',
-            folderSlot: folderSlot || '',
-            cardName: cardName || '',
-            cardImage: cardImage || '', // อาจว่างถ้ายังไม่ได้ดึงจาก Drive
-            cardBackImage: cardBackImage || '', // อาจว่างถ้ายังไม่ได้ดึงจาก Drive
-            productId: String(productId).trim() || '', // ส่ง productId ไปให้ frontend ดึงรูปทีหลัง
-            listedPrice: listedPrice || '',
-            actualPrice: actualPrice || '',
-            status: statusStr || 'ยังมีอยู่',
-            saleDate: saleDate || '',
-            refundAmount: refundAmount || '',
-            notes: notes || ''
-          };
-          
-          cards.push(card);
-        }
+      // ตรวจสอบสถานะแบบเร็ว
+      var statusStr = String(status);
+      if ((statusStr === 'ยังมีอยู่' || statusStr === '') && cardName) {
+        cards.push({
+          depositDate: depositDate,
+          consignorName: consignorName,
+          phone: phone,
+          folderSlot: folderSlot,
+          cardName: cardName,
+          cardImage: cardImage,
+          cardBackImage: '', // ไม่ดึงรูปหลังใน doGet() เพื่อความเร็ว
+          productId: String(productId),
+          listedPrice: listedPrice,
+          actualPrice: actualPrice,
+          status: statusStr || 'ยังมีอยู่',
+          saleDate: saleDate,
+          refundAmount: refundAmount,
+          notes: notes
+        });
       }
     }
-    
-    var totalTime = new Date().getTime() - startTime;
-    debugLog.push('ประมวลผลการ์ดทั้งหมด: ' + (new Date().getTime() - stepStart) + 'ms');
-    debugLog.push('ใช้รูปจาก Column G: ' + columnGImageCount + ' รูป');
-    debugLog.push('การ์ดที่ไม่มีรูป: ' + (cards.length - columnGImageCount) + ' การ์ด');
-    debugLog.push('เวลาทั้งหมด: ' + totalTime + 'ms');
-    debugLog.push('จำนวนการ์ด: ' + cards.length);
-    debugLog.push('💡 คำแนะนำ: รัน linkImagesFromDrive() เพื่อเติม Column G ให้ครบ');
     
     if (isJson) {
       return ContentService.createTextOutput(JSON.stringify({
         cards: cards,
-        total: cards.length,
-        debug: debugLog
+        total: cards.length
       })).setMimeType(ContentService.MimeType.JSON);
     }
     
