@@ -908,10 +908,6 @@
                   <span class="card-detail-label">ผู้ฝากขาย:</span>
                   <span class="card-detail-value">${escapeHtml(consignorName)}</span>
                 </div>
-                <div class="card-detail-row">
-                  <span class="card-detail-label">วันที่ฝาก:</span>
-                  <span class="card-detail-value">${escapeHtml(depositDate)}</span>
-                </div>
                 ${card.notes ? `
                 <div class="card-detail-row">
                   <span class="card-detail-label">หมายเหตุ:</span>
@@ -1076,18 +1072,10 @@
           allCards = data.cards || [];
           console.log(`📊 ได้ข้อมูล ${allCards.length} การ์ด`);
           
-          // Debug: แสดงตัวอย่างข้อมูลการ์ดแรก
-          if (allCards.length > 0) {
-            console.log('🔍 ตัวอย่างข้อมูลการ์ดแรก:', {
-              cardName: allCards[0].cardName,
-              listedPrice: allCards[0].listedPrice,
-              cardImage: allCards[0].cardImage,
-              cardImageType: typeof allCards[0].cardImage,
-              cardImageLength: String(allCards[0].cardImage || '').length,
-              productId: allCards[0].productId
-            });
-          }
+          // แสดงชื่อการ์ดและราคาทันที (ไม่ต้องรอ renderCards ทั้งหมด)
+          showCardsImmediately(allCards);
           
+          // แล้วค่อย render ทั้งหมดทีหลัง
           const renderStart = performance.now();
           updateDisplay();
           const renderTime = performance.now() - renderStart;
