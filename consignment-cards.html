@@ -843,16 +843,28 @@
       
       cards.forEach((card, index) => {
         const imageUrl = card.cardImage || '';
-        const hasImage = imageUrl && imageUrl.trim() !== '';
+        const hasImage = imageUrl && String(imageUrl).trim() !== '' && imageUrl !== 'มี';
         const productId = card.productId || '';
+        
+        // Debug: แสดงข้อมูลการ์ดแต่ละใบ
+        if (index === 0) {
+          console.log('🔍 Debug การ์ดแรก:', {
+            cardName: card.cardName,
+            imageUrl: imageUrl,
+            hasImage: hasImage,
+            imageUrlType: typeof imageUrl,
+            imageUrlLength: String(imageUrl).length
+          });
+        }
         
         // แสดง spinner ก่อน แล้วค่อยโหลดรูปทีหลัง
         let imageHtml = '';
         let imageUrlToLoad = '';
         
         if (hasImage) {
+          imageCount++;
           // ลบ quotes และ spaces ที่ไม่จำเป็น
-          let cleanUrl = imageUrl.trim().replace(/^["']|["']$/g, '');
+          let cleanUrl = String(imageUrl).trim().replace(/^["']|["']$/g, '');
           
           // ตรวจสอบว่าเป็น URL ที่ถูกต้อง
           if (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://')) {
@@ -1068,7 +1080,9 @@
             console.log('🔍 ตัวอย่างข้อมูลการ์ดแรก:', {
               cardName: allCards[0].cardName,
               listedPrice: allCards[0].listedPrice,
-              cardImage: allCards[0].cardImage ? 'มี' : 'ไม่มี',
+              cardImage: allCards[0].cardImage,
+              cardImageType: typeof allCards[0].cardImage,
+              cardImageLength: String(allCards[0].cardImage || '').length,
               productId: allCards[0].productId
             });
           }
