@@ -996,9 +996,11 @@
           updateDisplay();
           const renderTime = performance.now() - renderStart;
           console.log(`🎨 Render HTML เสร็จ: ${renderTime.toFixed(0)}ms`);
+          console.log(`⚡ แสดงข้อมูลการ์ดแล้ว (ไม่ต้องรอรูปภาพ)`);
           
           const totalTime = performance.now() - startTime;
-          console.log(`✅ โหลดเสร็จทั้งหมด: ${totalTime.toFixed(0)}ms`);
+          console.log(`✅ โหลดข้อมูลเสร็จ: ${totalTime.toFixed(0)}ms`);
+          console.log(`🖼️ กำลังโหลดรูปภาพทีละรูป...`);
           console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
         })
         .catch(err => {
