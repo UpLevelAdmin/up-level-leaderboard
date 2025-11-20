@@ -1029,6 +1029,63 @@
       container.innerHTML = html;
       console.log('⚡ แสดง skeleton cards ทันที');
     }
+    
+    // แสดงชื่อการ์ดและราคาทันที (ไม่ต้องรอ renderCards ทั้งหมด)
+    function showCardsImmediately(cards) {
+      const container = document.getElementById('cards-container');
+      if (!container || cards.length === 0) return;
+      
+      let html = '<div class="cards-grid">';
+      
+      cards.forEach((card, index) => {
+        const price = card.listedPrice ? String(card.listedPrice) : '-';
+        const cardName = card.cardName || 'ไม่ระบุชื่อ';
+        
+        // แสดงชื่อการ์ดและราคาทันที (ไม่ต้องรอรูปภาพ)
+        html += `
+          <div class="card-item" onclick="openModal(${index})">
+            <div class="card-image-container">
+              <div class="card-image-placeholder" data-image-url="${escapeHtml(card.cardImage || '')}">
+                <div class="image-loading-spinner"></div>
+              </div>
+            </div>
+            <div class="card-info">
+              <div class="card-name">${escapeHtml(cardName)}</div>
+              <div class="card-price">
+                ${escapeHtml(price)} <span class="card-price-label">บาท</span>
+              </div>
+              <div class="card-details">
+                <div class="card-detail-row">
+                  <span class="card-detail-label">ช่องในแฟ้ม:</span>
+                  <span class="card-detail-value">${escapeHtml(card.folderSlot ? `ช่อง ${card.folderSlot}` : '-')}</span>
+                </div>
+                <div class="card-detail-row">
+                  <span class="card-detail-label">ผู้ฝากขาย:</span>
+                  <span class="card-detail-value">${escapeHtml(card.consignorName || '-')}</span>
+                </div>
+                ${card.notes ? `
+                <div class="card-detail-row">
+                  <span class="card-detail-label">หมายเหตุ:</span>
+                  <span class="card-detail-value">${escapeHtml(card.notes)}</span>
+                </div>
+                ` : ''}
+                <span class="status-badge">✓ ยังมีอยู่</span>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+      
+      html += '</div>';
+      container.innerHTML = html;
+      console.log(`⚡ แสดงชื่อการ์ดและราคาทันที (${cards.length} การ์ด)`);
+      
+      // เก็บ filteredCards ไว้ในตัวแปร global เพื่อใช้ใน modal
+      window.currentFilteredCards = cards;
+      
+      // โหลดรูปภาพทีละรูปหลังจากแสดงข้อมูลแล้ว
+      loadImagesProgressively();
+    }
 
     function loadCards() {
       // แสดง skeleton cards ทันที (ไม่ต้องรอ API)
