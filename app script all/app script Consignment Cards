@@ -199,10 +199,18 @@ function doGet(e) {
       }
     }
     
+    var totalTime = new Date().getTime() - startTime;
+    debugLog.push('ประมวลผลการ์ดทั้งหมด: ' + (new Date().getTime() - stepStart) + 'ms');
+    debugLog.push('ดึงรูปจาก Drive: ' + driveImageCount + ' รูป, ใช้เวลา: ' + driveImageTime + 'ms');
+    debugLog.push('ใช้รูปจาก Column G: ' + columnGImageCount + ' รูป');
+    debugLog.push('เวลาทั้งหมด: ' + totalTime + 'ms');
+    debugLog.push('จำนวนการ์ด: ' + cards.length);
+    
     if (isJson) {
       return ContentService.createTextOutput(JSON.stringify({
         cards: cards,
-        total: cards.length
+        total: cards.length,
+        debug: debugLog
       })).setMimeType(ContentService.MimeType.JSON);
     }
     
