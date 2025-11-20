@@ -52,6 +52,7 @@ function onOpen() {
     .addItem("🎯 อัปเดต Rank (ปกติ)", "updateRanks")
     .addItem("🏆 อัปเดต Leaderboard", "updateLeaderboard")
     .addItem("🔍 ตรวจสอบการซิงค์ข้อมูลฟอร์ม", "checkAndFixFormDataSync")
+    .addItem("➕ ตรวจสอบและเพิ่มสมาชิกที่ตกหล่น", "checkMissingMembers")
     .addItem("🗑️ ลบข้อมูลซ้ำ", "clearDuplicateEntriesDebug")
     .addItem("❌ ลบข้อมูลสมาชิก", "removeMember")
     .addItem("🔑 เพิ่มแอดมิน", "addAdminEmail")

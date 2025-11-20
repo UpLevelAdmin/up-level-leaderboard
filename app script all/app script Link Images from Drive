@@ -1,0 +1,118 @@
+function linkImagesFromDrive() {
+  var spreadsheetId = '1JvVCVxxXBS-2lpnT-IOrYBf2rF-OBRVFCW6MZEvpqxE';
+  var sheetName = 'ฝากขายการ์ด';
+  var driveFolderId = '15f0xNKHe4q8sNaMQo3uXs1qPBB0oVQx2';
+  
+  var productIdCol = 13;
+  var imageLinkCol = 6;
+  var imageCol = 5;
+  
+  try {
+    var spreadsheet = SpreadsheetApp.openById(spreadsheetId);
+    var sheet = spreadsheet.getSheetByName(sheetName);
+    
+    if (!sheet) {
+      SpreadsheetApp.getUi().alert('ไม่พบ sheet: ' + sheetName);
+      return;
+    }
+    
+    var folder;
+    try {
+      folder = DriveApp.getFolderById(driveFolderId);
+    } catch (e) {
+      SpreadsheetApp.getUi().alert('ไม่พบโฟลเดอร์ใน Drive');
+      return;
+    }
+    
+    var files = folder.getFiles();
+    var fileMap = {};
+    
+    while (files.hasNext()) {
+      var file = files.next();
+      var fileName = file.getName();
+      fileMap[fileName] = file;
+    }
+    
+    Logger.log('พบไฟล์ทั้งหมด: ' + Object.keys(fileMap).length + ' ไฟล์');
+    
+    var data = sheet.getDataRange().getValues();
+    var updatedCount = 0;
+    var notFoundCount = 0;
+    
+    for (var i = 1; i < data.length; i++) {
+      var row = data[i];
+      var productId = String(row[productIdCol] || '').trim();
+      
+      if (!productId) {
+        continue;
+      }
+      
+      var frontFileName = productId + ' หน้า.jpg';
+      var backFileName = productId + ' หลัง.jpg';
+      
+      var frontFile = fileMap[frontFileName];
+      var backFile = fileMap[backFileName];
+      
+      var imageUrl = '';
+      
+      if (frontFile) {
+        try {
+          frontFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+        } catch (e) {
+        }
+        
+        var fileId = frontFile.getId();
+        imageUrl = 'https://drive.google.com/uc?export=view&id=' + fileId;
+        
+        sheet.getRange(i + 1, imageLinkCol + 1).setValue(imageUrl);
+        
+        updatedCount++;
+        Logger.log('Row ' + (i + 1) + ': ' + productId + ' -> ' + imageUrl);
+      } else {
+        notFoundCount++;
+        Logger.log('Row ' + (i + 1) + ': ไม่พบไฟล์ ' + frontFileName);
+      }
+    }
+    
+    var message = 'เสร็จสิ้น!\n\n' +
+                  'อัพเดทแล้ว: ' + updatedCount + ' แถว\n' +
+                  'ไม่พบไฟล์: ' + notFoundCount + ' แถว';
+    
+    Logger.log(message);
+    SpreadsheetApp.getUi().alert(message);
+    
+  } catch (error) {
+    Logger.log('Error: ' + error.toString());
+    SpreadsheetApp.getUi().alert('เกิดข้อผิดพลาด: ' + error.toString());
+  }
+}
+
+function updateImageColumn() {
+  var spreadsheetId = '1JvVCVxxXBS-2lpnT-IOrYBf2rF-OBRVFCW6MZEvpqxE';
+  var sheetName = 'ฝากขายการ์ด';
+  var imageLinkCol = 6;
+  var imageCol = 5;
+  
+  try {
+    var spreadsheet = SpreadsheetApp.openById(spreadsheetId);
+    var sheet = spreadsheet.getSheetByName(sheetName);
+    var data = sheet.getDataRange().getValues();
+    
+    var updatedCount = 0;
+    
+    for (var i = 1; i < data.length; i++) {
+      var imageUrl = String(data[i][imageLinkCol] || '').trim();
+      
+      if (imageUrl && imageUrl.indexOf('http') !== -1) {
+        sheet.getRange(i + 1, imageCol + 1).setValue('=IMAGE("' + imageUrl + '")');
+        updatedCount++;
+      }
+    }
+    
+    SpreadsheetApp.getUi().alert('อัพเดท Column F แล้ว: ' + updatedCount + ' แถว');
+    
+  } catch (error) {
+    Logger.log('Error: ' + error.toString());
+    SpreadsheetApp.getUi().alert('เกิดข้อผิดพลาด: ' + error.toString());
+  }
+}

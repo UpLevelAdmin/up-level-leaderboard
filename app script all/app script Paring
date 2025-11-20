@@ -145,17 +145,9 @@ function notifyInfo(message) {
 function onOpen() {
   const ui = SpreadsheetApp.getUi();
   
-    // 🎯 Custom Menu - เมนูแบบใหม่ที่ใช้งานได้ทั้ง Desktop และ iPad
+    // 🎯 Custom Menu - เมนูแบบใหม่สำหรับ Desktop
   ui.createMenu('🎯 Custom Menu')
-    .addItem('🖥️ เปิดเมนูแบบ Desktop', 'openCustomMenu')
-    .addItem('📱 เปิดเมนูแบบ iPad/Sidebar', 'openCustomMenuSidebar')
     .addItem('🤖 เปิดเมนูอัตโนมัติ (แนะนำ)', 'openSmartMenu')
-    .addSeparator()
-    .addItem('🌐 เปิดเว็บแอปสำหรับ iPad', 'createIPadWebApp')
-    .addItem('📱 เปิด Sidebar สำหรับ iPad', 'createIPadSidebar')
-    .addSeparator()
-    .addItem('🔍 ทดสอบการเชื่อมต่อ', 'testConnection')
-    .addItem('📊 ตรวจสอบสถานะระบบ', 'getSystemStatus')
     .addToUi();
 
 
@@ -168,7 +160,6 @@ function onOpen() {
     .addItem('➡️ จับคู่รอบถัดไป', 'pairNextRound')
     .addItem('🔁 อัปเดต Standings', 'updateStandings')
     .addItem('↩️ ย้อนจับคู่รอบล่าสุด', 'undoLastPairing')
-    .addItem('↩️ ย้อนจับคู่หลายรอบ', 'undoMultipleRounds')
     .addSeparator()
     .addItem('🚫 Drop ผู้เล่น (เลือกจากรายชื่อ)', 'dropPlayerFromList')
     .addItem('✅ ยกเลิก Drop ผู้เล่น', 'cancelPlayerDrop')
@@ -190,58 +181,27 @@ function onOpen() {
   ui.createMenu('📊 Analysis')
     .addItem('🔍 ตรวจสอบการจับคู่', 'showPairingValidation')
     .addItem('📊 สถิติการแข่งขัน', 'showPairingStats')
-    .addItem('💡 คำแนะนำการจัดการ', 'showTournamentAdvice')
-    .addItem('📊 แสดง Bracket Pairing', 'showBracketPairing')
     .addToUi();
   
   // 🛠️ Data Management - จัดการข้อมูล
   ui.createMenu('🛠️ Data Management')
     .addItem('🧹 เคลียร์ทั้งหมด (เริ่มใหม่)', 'clearAllData')
-    .addItem('🪣 เคลียร์ Bucket (ความยาวชื่อ)', 'clearBucketData')
-    .addItem('📏 บังคับปรับขนาดคอลัมน์ L (H2H)', 'forceResizeH2HColumn')
     .addItem('🔍 ตรวจสอบ Standing แบบเร็ว', 'showStandingCheckResult')
     .addItem('🔄 บังคับอัปเดต Status ทั้งหมด', 'forceUpdateAllStatus')
-    .addItem('⚡ อัปเดต Status เป็น OK (สำหรับผลที่กรอกแล้ว)', 'updatePendingStatusToOK')
-    .addItem('🔍 ตรวจสอบความสมบูรณ์ของรอบล่าสุด', 'checkRoundCompletion')
-    .addItem('🔍 ตรวจสอบความสมบูรณ์ของ Standing', 'checkStandingCompleteness')
-    .addItem('🔄 รีเซ็ตสถานะการอัปเดต Standings', 'resetStandingsUpdateFlags')
-    
     .addItem('🔧 แก้ไขปัญหาข้อมูล Player', 'fixPlayerDataIssues')
-    .addSeparator()
-    .addItem('🗑️ ลบ Checkbox ที่ไม่ต้องการ (N,O)', 'removeUnwantedCheckboxes')
-    .addItem('🔧 แก้ไข FALSE ในคอลัมน์ N,O', 'fixFalseInColumnsNO')
-    .addSeparator()
-    .addItem('🗑️ ลบตาราง Standings', 'removeStandingsTable')
-    .addItem('🔄 สร้างตาราง Standings ใหม่', 'recreateStandingsTable')
-    .addSeparator()
-    .addItem('📏 ปรับขนาดคอลัมน์ชื่อผู้เล่น', 'adjustPairingColumns')
-    .addItem('🔄 รีเซ็ต Hide Standing Controls', 'resetHideStandingControls')
-    .addItem('🧹 ลบ Hide Standing ที่ซ้ำกัน', 'removeDuplicateHideStanding')
-    .addSeparator()
-    .addItem('⚡ รีเซ็ต Controls ทันที', 'forceResetControls')
-    .addSeparator()
-    .addItem('🧠 ปรับขนาดคอลัมน์แบบ Smart', 'smartResizeAllSheets')
-    .addSeparator()
-    .addItem('🪣 อัปเดต Bucket Cache', 'updateBucketCacheManual')
-    .addItem('🪣 ล้าง Bucket Cache', 'clearBucketCache')
-    .addItem('🪣 สร้าง Bucket Sheet ใหม่', 'createBucketSheet')
     .addToUi();
   
   // 🎨 Formatting & Display - จัดรูปแบบและการแสดงผล
   ui.createMenu('🎨 Formatting')
     .addItem('📋 สร้างหัวตาราง Pairing', 'createPairingHeader')
-    .addItem('🎨 จัดรูปแบบชีท', 'formatPairingSheet')
     .addItem('✨ ปรับแต่งการแสดงผล', 'improveVisualFormatting')
     .addItem('🔧 แก้ไขการทับชื่อ', 'fixTextOverlap')
-    .addSeparator()
-    .addItem('📊 แยกรอบการแข่งขัน', 'separateRoundsVisually')
     .addToUi();
   
   // 📊 Export & Reports - ส่งออกและรายงาน
   ui.createMenu('📊 Export & Reports')
-    .addItem('📊 Export Standings to CSV', 'exportStandingsToCSV')
-    .addItem('🎮 Export Pairing Results to CSV', 'exportPairingResultsToCSV')
     .addItem('📋 Export Complete Tournament Data', 'exportCompleteTournamentData')
+    .addItem('🏆 Export Official Standings to CSV', 'exportOfficialStandingsToCSV')
     .addItem('🏋️ สร้าง Gym Standing for fill', 'createGymStandingForFill')
     .addToUi();
 
@@ -2720,42 +2680,154 @@ function generatePlayerIDs() {
   // หาแถวที่มีข้อมูลชื่อและเบอร์โทร
   const data = playersSheet.getDataRange().getValues();
   let playerCount = 0;
+  let errorRows = [];
+  let errorMessages = [];
   
-  // ตรวจสอบว่ามีข้อมูลในคอลัมน์ Name และ Tel หรือไม่
+  // ตรวจสอบข้อมูลและเก็บรายการแถวที่มีปัญหา
+  const trIdSet = new Set(); // เก็บ TR_ID ที่พบแล้ว
+  const playerIdSet = new Set(); // เก็บ Player ID ที่พบแล้ว
+  
   for (let i = 1; i < data.length; i++) {
     const name = data[i][1]; // Column B (Name)
-    const tel = data[i][3];  // Column D (Tel) - แก้ไขจาก C เป็น D
+    const trId = data[i][2]; // Column C (TR_ID)
+    const tel = data[i][3];  // Column D (Tel)
+    const existingPlayerId = data[i][0]; // Column A (Player_id) ที่มีอยู่แล้ว
     
-    if (name && name.toString().trim() !== '' && tel && tel.toString().trim() !== '') {
+    let hasError = false;
+    let rowErrors = [];
+    
+    // ตรวจสอบชื่อ
+    if (!name || name.toString().trim() === '') {
+      hasError = true;
+      rowErrors.push('ไม่มีชื่อ');
+    }
+    
+    // ตรวจสอบ TR_ID
+    if (!trId || trId.toString().trim() === '') {
+      hasError = true;
+      rowErrors.push('ไม่มี TR_ID');
+    } else {
+      // ตรวจสอบรูปแบบ TR_ID (th/Th + 8 หลัก) - รองรับทั้งพิมพ์เล็กและใหญ่
+      const trIdStr = trId.toString().trim();
+      if (!/^[Tt][Hh]\d{8}$/.test(trIdStr)) {
+        hasError = true;
+        rowErrors.push('TR_ID รูปแบบไม่ถูกต้อง (ต้องเป็น th/Th + เลข 8 หลัก)');
+      } else {
+        // แปลงเป็นพิมพ์เล็กเพื่อตรวจสอบซ้ำกัน
+        const trIdLower = trIdStr.toLowerCase();
+        if (trIdSet.has(trIdLower)) {
+          hasError = true;
+          rowErrors.push('TR_ID ซ้ำกัน');
+        } else {
+          trIdSet.add(trIdLower);
+        }
+      }
+    }
+    
+    // ตรวจสอบเบอร์โทร
+    if (!tel || tel.toString().trim() === '') {
+      hasError = true;
+      rowErrors.push('ไม่มีเบอร์โทร');
+    } else {
+      // ตรวจสอบรูปแบบเบอร์โทร (10 หลัก)
+      const telStr = tel.toString().trim().replace(/[^\d]/g, '');
+      if (telStr.length !== 10) {
+        hasError = true;
+        rowErrors.push('เบอร์โทรไม่ถูกต้อง (ต้องเป็น 10 หลัก)');
+      }
+    }
+    
+    // ตรวจสอบ Player ID ซ้ำกัน (ถ้ามีอยู่แล้ว)
+    if (existingPlayerId && existingPlayerId.toString().trim() !== '') {
+      const playerIdStr = existingPlayerId.toString().trim();
+      if (playerIdSet.has(playerIdStr)) {
+        hasError = true;
+        rowErrors.push('Player ID ซ้ำกัน');
+      } else {
+        playerIdSet.add(playerIdStr);
+      }
+    }
+    
+    if (hasError) {
+      errorRows.push(i + 1); // แถวที่ 1-based
+      errorMessages.push(`แถว ${i + 1}: ${rowErrors.join(', ')}`);
+    } else {
       playerCount++;
     }
   }
   
-  if (playerCount === 0) {
+  // แสดงข้อผิดพลาดถ้ามี
+  if (errorRows.length > 0) {
+    // Highlight แถวที่มีปัญหา
+    errorRows.forEach(rowNum => {
+      const range = playersSheet.getRange(rowNum, 1, 1, 4); // A-D
+      range.setBackground('#ffebee'); // สีแดงอ่อน
+    });
+    
     SpreadsheetApp.getUi().alert(
-      '❌ ไม่พบข้อมูลผู้เล่น',
-      'กรุณาใส่ชื่อในคอลัมน์ Name และเบอร์โทรในคอลัมน์ Tel ก่อน',
+      '❌ พบข้อมูลไม่ครบถ้วน',
+      `พบปัญหาใน ${errorRows.length} แถว:\n\n${errorMessages.join('\n')}\n\nกรุณาแก้ไขข้อมูลให้ครบถ้วนก่อนดำเนินการต่อ`,
       SpreadsheetApp.getUi().ButtonSet.OK
     );
     return;
   }
   
+  if (playerCount === 0) {
+    SpreadsheetApp.getUi().alert(
+      '❌ ไม่พบข้อมูลผู้เล่น',
+      'กรุณาใส่ชื่อในคอลัมน์ Name, TR_ID ในคอลัมน์ TR_ID และเบอร์โทรในคอลัมน์ Tel ก่อน',
+      SpreadsheetApp.getUi().ButtonSet.OK
+    );
+    return;
+  }
+  
+  // ตรวจสอบว่ามี Player ID อยู่แล้วหรือไม่
+  let hasExistingPlayerIds = false;
+  for (let i = 1; i < data.length; i++) {
+    const existingPlayerId = data[i][0];
+    if (existingPlayerId && existingPlayerId.toString().trim() !== '') {
+      hasExistingPlayerIds = true;
+      break;
+    }
+  }
+  
+  // ถ้ามี Player ID อยู่แล้ว ให้ถามว่าจะเขียนทับหรือไม่
+  if (hasExistingPlayerIds) {
+    const overwriteResponse = SpreadsheetApp.getUi().alert(
+      '⚠️ พบ Player ID อยู่แล้ว',
+      'พบ Player ID ที่มีอยู่แล้วในตาราง\n\n' +
+      '• กด "ใช่" = เขียนทับ Player ID และชื่อเดิม\n' +
+      '• กด "ไม่" = ยกเลิกการดำเนินการ\n\n' +
+      'ต้องการเขียนทับข้อมูลเดิมหรือไม่?',
+      SpreadsheetApp.getUi().ButtonSet.YES_NO
+    );
+    
+    if (overwriteResponse === SpreadsheetApp.getUi().Button.NO) {
+      return;
+    }
+  }
+  
   const response = SpreadsheetApp.getUi().alert(
-    '🆔 สร้าง Player ID และ TR_ID อัตโนมัติ',
+    '🆔 สร้าง Player ID และจัดรูปแบบชื่ออัตโนมัติ',
     'พบผู้เล่น ' + playerCount + ' คน\n\n' +
     'Player ID จะถูกสร้างเป็น:\n' +
     '• P001, P002, P003, ... (สำหรับผู้เล่น 1-9 คน)\n' +
     '• P01, P02, P03, ... (สำหรับผู้เล่น 10-99 คน)\n' +
     '• P1, P2, P3, ... (สำหรับผู้เล่น 100+ คน)\n\n' +
-    'TR_ID จะถูกสร้างเป็น:\n' +
-    '• th + เลข 8 หลัก (เช่น th12345678)\n\n' +
-    'ชื่อผู้เล่นจะถูกจัดรูปแบบเป็น: TR_ID_ชื่อ (เช่น th34294245_Visthisidh L.)\n\n' +
+    'TR_ID จะใช้ที่มีอยู่แล้วใน Column C เท่านั้น\n' +
+    '• ไม่มีการสร้าง TR_ID ใหม่\n' +
+    '• รองรับทั้ง th และ Th (พิมพ์เล็ก-ใหญ่)\n\n' +
+    'ชื่อผู้เล่นจะถูกจัดรูปแบบเป็น: TR_ID_ชื่อ (เช่น th50079594_Issara I.)\n\n' +
     'เบอร์โทรจะถูกจัดรูปแบบให้มี 0 นำหน้า (เช่น 0957780151)\n\n' +
-    'ต้องการสร้าง Player ID และ TR_ID หรือไม่?',
+    'ต้องการสร้าง Player ID และจัดรูปแบบชื่อหรือไม่?',
     SpreadsheetApp.getUi().ButtonSet.YES_NO
   );
   
   if (response === SpreadsheetApp.getUi().Button.YES) {
+    // ลบ highlight สีแดงออกก่อน
+    const allDataRange = playersSheet.getRange(2, 1, playersSheet.getLastRow() - 1, 4);
+    allDataRange.setBackground(null);
+    
     // สร้าง Player ID, TR_ID และจัดรูปแบบชื่อ
     let idCounter = 1;
     const idFormat = playerCount < 10 ? 'P00' : 'P0';
@@ -2766,9 +2838,14 @@ function generatePlayerIDs() {
     
     for (let i = 1; i < data.length; i++) {
       const name = data[i][1]; // Column B (Name)
-      const tel = data[i][3];  // Column D (Tel) - แก้ไขจาก C เป็น D
+      const tel = data[i][3];  // Column D (Tel)
+      const trId = data[i][2]; // Column C (TR_ID) ที่มีอยู่แล้ว
       
-      if (name && name.toString().trim() !== '' && tel && tel.toString().trim() !== '') {
+      // ตรวจสอบว่าข้อมูลครบถ้วน (ผ่านการตรวจสอบแล้ว)
+      if (name && name.toString().trim() !== '' && 
+          tel && tel.toString().trim() !== '' && 
+          trId && trId.toString().trim() !== '') {
+        
         // สร้าง Player ID
         let playerID;
         if (playerCount < 10) {
@@ -2783,12 +2860,11 @@ function generatePlayerIDs() {
         }
         playersSheet.getRange(i + 1, 1).setValue(playerID); // Column A (Player_id)
         
-        // สร้าง TR_ID (th + เลข 8 หลัก)
-        const trId = 'th' + Math.floor(Math.random() * 90000000 + 10000000); // เลข 8 หลัก
-        playersSheet.getRange(i + 1, 3).setValue(trId); // Column C (TR_ID)
+        // ใช้ TR_ID ที่มีอยู่แล้วเท่านั้น (ไม่มีการสร้างใหม่)
+        const trIdStr = trId.toString().trim().toLowerCase(); // แปลงเป็นพิมพ์เล็ก
         
         // จัดรูปแบบชื่อ: TR_ID_ชื่อ
-        const formattedName = formatPlayerNameWithTRID(trId, name.toString().trim());
+        const formattedName = formatPlayerNameWithTRID(trIdStr, name.toString().trim());
         playersSheet.getRange(i + 1, 2).setValue(formattedName); // Column B (Name)
         
         // เก็บความยาวชื่อสูงสุด
@@ -2879,13 +2955,169 @@ function generatePlayerIDs() {
     }
     
     SpreadsheetApp.getUi().alert(
-      '✅ สร้าง Player ID และ TR_ID เรียบร้อยแล้ว',
-      'สร้าง Player ID และ TR_ID สำหรับผู้เล่น ' + playerCount + ' คนเรียบร้อยแล้ว\n\n' +
+      '✅ สร้าง Player ID และจัดรูปแบบชื่อเรียบร้อยแล้ว',
+      'สร้าง Player ID และจัดรูปแบบชื่อสำหรับผู้เล่น ' + playerCount + ' คนเรียบร้อยแล้ว\n\n' +
       'Player ID จะไม่ซ้ำกับเลขโต๊ะและรอบการแข่งขัน\n' +
-      'TR_ID เป็นเลข 8 หลักที่ไม่ซ้ำกัน\n' +
+      'TR_ID ใช้ที่มีอยู่แล้วใน Column C เท่านั้น (ไม่มีการสร้างใหม่)\n' +
+      'รองรับทั้ง th และ Th (พิมพ์เล็ก-ใหญ่)\n' +
       'ชื่อผู้เล่นถูกจัดรูปแบบเป็น: TR_ID_ชื่อ\n' +
       'เบอร์โทรถูกจัดรูปแบบให้มี 0 นำหน้า (เช่น 0957780151)\n\n' +
       '📝 หมายเหตุ: Player ID จะมีเลข 0 นำหน้าตามจำนวนผู้เล่น',
+      SpreadsheetApp.getUi().ButtonSet.OK
+    );
+  }
+}
+
+// 🔄 อัปเดตข้อมูลผู้เล่น (สำหรับการแก้ไขข้อมูล)
+function updatePlayerData() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const playersSheet = ss.getSheetByName('Players');
+  
+  // หาแถวที่มีข้อมูลชื่อและเบอร์โทร
+  const data = playersSheet.getDataRange().getValues();
+  let updateCount = 0;
+  let errorRows = [];
+  let errorMessages = [];
+  
+  // ตรวจสอบข้อมูลและเก็บรายการแถวที่มีปัญหา
+  const trIdSet = new Set(); // เก็บ TR_ID ที่พบแล้ว
+  
+  for (let i = 1; i < data.length; i++) {
+    const name = data[i][1]; // Column B (Name)
+    const trId = data[i][2]; // Column C (TR_ID)
+    const tel = data[i][3];  // Column D (Tel)
+    const existingPlayerId = data[i][0]; // Column A (Player_id) ที่มีอยู่แล้ว
+    
+    let hasError = false;
+    let rowErrors = [];
+    
+    // ตรวจสอบชื่อ
+    if (!name || name.toString().trim() === '') {
+      hasError = true;
+      rowErrors.push('ไม่มีชื่อ');
+    }
+    
+    // ตรวจสอบ TR_ID
+    if (!trId || trId.toString().trim() === '') {
+      hasError = true;
+      rowErrors.push('ไม่มี TR_ID');
+    } else {
+      // ตรวจสอบรูปแบบ TR_ID (th/Th + 8 หลัก) - รองรับทั้งพิมพ์เล็กและใหญ่
+      const trIdStr = trId.toString().trim();
+      if (!/^[Tt][Hh]\d{8}$/.test(trIdStr)) {
+        hasError = true;
+        rowErrors.push('TR_ID รูปแบบไม่ถูกต้อง (ต้องเป็น th/Th + เลข 8 หลัก)');
+      } else {
+        // แปลงเป็นพิมพ์เล็กเพื่อตรวจสอบซ้ำกัน
+        const trIdLower = trIdStr.toLowerCase();
+        if (trIdSet.has(trIdLower)) {
+          hasError = true;
+          rowErrors.push('TR_ID ซ้ำกัน');
+        } else {
+          trIdSet.add(trIdLower);
+        }
+      }
+    }
+    
+    // ตรวจสอบเบอร์โทร
+    if (!tel || tel.toString().trim() === '') {
+      hasError = true;
+      rowErrors.push('ไม่มีเบอร์โทร');
+    } else {
+      // ตรวจสอบรูปแบบเบอร์โทร (10 หลัก)
+      const telStr = tel.toString().trim().replace(/[^\d]/g, '');
+      if (telStr.length !== 10) {
+        hasError = true;
+        rowErrors.push('เบอร์โทรไม่ถูกต้อง (ต้องเป็น 10 หลัก)');
+      }
+    }
+    
+    if (hasError) {
+      errorRows.push(i + 1); // แถวที่ 1-based
+      errorMessages.push(`แถว ${i + 1}: ${rowErrors.join(', ')}`);
+    } else {
+      updateCount++;
+    }
+  }
+  
+  // แสดงข้อผิดพลาดถ้ามี
+  if (errorRows.length > 0) {
+    // Highlight แถวที่มีปัญหา
+    errorRows.forEach(rowNum => {
+      const range = playersSheet.getRange(rowNum, 1, 1, 4); // A-D
+      range.setBackground('#ffebee'); // สีแดงอ่อน
+    });
+    
+    SpreadsheetApp.getUi().alert(
+      '❌ พบข้อมูลไม่ครบถ้วน',
+      `พบปัญหาใน ${errorRows.length} แถว:\n\n${errorMessages.join('\n')}\n\nกรุณาแก้ไขข้อมูลให้ครบถ้วนก่อนดำเนินการต่อ`,
+      SpreadsheetApp.getUi().ButtonSet.OK
+    );
+    return;
+  }
+  
+  if (updateCount === 0) {
+    SpreadsheetApp.getUi().alert(
+      '❌ ไม่พบข้อมูลผู้เล่น',
+      'กรุณาใส่ชื่อในคอลัมน์ Name, TR_ID ในคอลัมน์ TR_ID และเบอร์โทรในคอลัมน์ Tel ก่อน',
+      SpreadsheetApp.getUi().ButtonSet.OK
+    );
+    return;
+  }
+  
+  const response = SpreadsheetApp.getUi().alert(
+    '🔄 อัปเดตข้อมูลผู้เล่น',
+    'พบผู้เล่น ' + updateCount + ' คน\n\n' +
+    'จะอัปเดตเฉพาะ:\n' +
+    '• ชื่อผู้เล่น (จัดรูปแบบเป็น: TR_ID_ชื่อ)\n' +
+    '• เบอร์โทร (จัดรูปแบบให้มี 0 นำหน้า)\n\n' +
+    'Player ID จะไม่เปลี่ยนแปลง\n\n' +
+    'ต้องการอัปเดตข้อมูลหรือไม่?',
+    SpreadsheetApp.getUi().ButtonSet.YES_NO
+  );
+  
+  if (response === SpreadsheetApp.getUi().Button.YES) {
+    // ลบ highlight สีแดงออกก่อน
+    const allDataRange = playersSheet.getRange(2, 1, playersSheet.getLastRow() - 1, 4);
+    allDataRange.setBackground(null);
+    
+    // อัปเดตข้อมูล
+    for (let i = 1; i < data.length; i++) {
+      const name = data[i][1]; // Column B (Name)
+      const trId = data[i][2]; // Column C (TR_ID)
+      const tel = data[i][3];  // Column D (Tel)
+      
+      // ตรวจสอบว่าข้อมูลครบถ้วน (ผ่านการตรวจสอบแล้ว)
+      if (name && name.toString().trim() !== '' && 
+          tel && tel.toString().trim() !== '' && 
+          trId && trId.toString().trim() !== '') {
+        
+        // ใช้ TR_ID ที่มีอยู่แล้ว
+        const trIdStr = trId.toString().trim().toLowerCase(); // แปลงเป็นพิมพ์เล็ก
+        
+        // จัดรูปแบบชื่อ: TR_ID_ชื่อ
+        const formattedName = formatPlayerNameWithTRID(trIdStr, name.toString().trim());
+        playersSheet.getRange(i + 1, 2).setValue(formattedName); // Column B (Name)
+        
+        // จัดรูปแบบเบอร์โทรให้มี 0 นำหน้า
+        let formattedTel = tel.toString().trim();
+        if (!formattedTel.startsWith('0')) {
+          formattedTel = '0' + formattedTel;
+        }
+        
+        // ตั้งค่าเป็น text format เพื่อรักษา 0 นำหน้า
+        const telCell = playersSheet.getRange(i + 1, 4); // Column D (Tel)
+        telCell.setNumberFormat('@'); // @ = text format
+        telCell.setValue(formattedTel);
+      }
+    }
+    
+    SpreadsheetApp.getUi().alert(
+      '✅ อัปเดตข้อมูลผู้เล่นเรียบร้อยแล้ว',
+      'อัปเดตข้อมูลสำหรับผู้เล่น ' + updateCount + ' คนเรียบร้อยแล้ว\n\n' +
+      '• ชื่อผู้เล่นถูกจัดรูปแบบเป็น: TR_ID_ชื่อ\n' +
+      '• เบอร์โทรถูกจัดรูปแบบให้มี 0 นำหน้า\n' +
+      '• Player ID ไม่เปลี่ยนแปลง',
       SpreadsheetApp.getUi().ButtonSet.OK
     );
   }
@@ -6280,6 +6512,184 @@ function exportCompleteTournamentData() {
   }
 }
 
+// 📋 Export Official Standings to CSV (สำหรับส่งให้ Official)
+function exportOfficialStandingsToCSV() {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const standingSheet = ss.getSheetByName('Standing');
+    
+    if (!standingSheet) {
+      SpreadsheetApp.getUi().alert('❌ ไม่พบชีท Standing', 'กรุณาตรวจสอบว่ามีชีท Standing หรือไม่');
+      return;
+    }
+    
+    // ดึงข้อมูลทั้งหมดจากชีท Standing
+    const dataRange = standingSheet.getDataRange();
+    const values = dataRange.getValues();
+    
+    if (!values || values.length <= 1) {
+      SpreadsheetApp.getUi().alert('❌ ไม่มีข้อมูลใน Standing', 'ชีท Standing ยังไม่มีข้อมูล');
+      return;
+    }
+    
+    // สร้างข้อมูลสำหรับ CSV ในรูปแบบ: Ranking, Player ID, Alphabet Name, Match Point
+    const csvRows = [];
+    
+    // เพิ่ม header
+    csvRows.push(['Ranking', 'Player ID', 'Alphabet Name', 'Match Point']);
+    
+    // ดึงข้อมูลจากแถวที่ 2 เป็นต้นไป (ข้าม header)
+    const dataRows = values.slice(1);
+    
+    // แปลงข้อมูลและเรียงลำดับตาม Match Point (มากไปน้อย) แล้วตาม Ranking (น้อยไปมาก)
+    const formattedData = dataRows
+      .filter(row => row[0] && row[2] && row[3]) // กรองแถวที่มี Rank, Player Name, และ TR_ID
+      .map(row => {
+        const ranking = row[0]; // Rank (column 0)
+        const trId = String(row[3] || '').trim(); // TR_ID (column 3) - ใช้ TR_ID แทน Player ID
+        let alphabetName = String(row[2] || '').trim(); // Player Name (column 2)
+        const matchPoint = row[8] || 0; // Points (column 8)
+        
+        // ทำความสะอาดชื่อ: ลบ TR_ID, _ และเครื่องหมายพิเศษ
+        if (trId) {
+          // ลบ TR_ID ที่อยู่หน้าชื่อ (เช่น th55751042_Saksit T.)
+          const trIdPattern = new RegExp('^' + trId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '[_\\s]*', 'i');
+          alphabetName = alphabetName.replace(trIdPattern, '');
+          
+          // ลบ TR_ID ที่อยู่หลังชื่อ
+          const trIdPatternEnd = new RegExp('[_\\s]*' + trId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', 'i');
+          alphabetName = alphabetName.replace(trIdPatternEnd, '');
+          
+          // ลบ TR_ID ที่อยู่กลางชื่อ (กรณีที่ TR_ID อยู่ระหว่างชื่อ)
+          alphabetName = alphabetName.replace(new RegExp(trId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), '');
+        }
+        
+        // ลบ _ หน้าชื่อและหลังชื่อ
+        alphabetName = alphabetName.replace(/^_+|_+$/g, '');
+        
+        // ลบ _ ที่อยู่ระหว่างชื่อ (แต่เก็บช่องว่างไว้)
+        alphabetName = alphabetName.replace(/_+/g, ' ');
+        
+        // ทำความสะอาดช่องว่างและเครื่องหมายพิเศษ
+        alphabetName = alphabetName.replace(/\s+/g, ' ').trim();
+        
+        return {
+          ranking: parseInt(ranking) || 0,
+          playerId: String(trId || '').trim(), // ใช้ TR_ID แทน Player ID
+          alphabetName: alphabetName, // ชื่อล้วนๆ ไม่มี TR_ID
+          matchPoint: parseInt(matchPoint) || 0
+        };
+      })
+      .filter(row => row.playerId && row.alphabetName) // กรองแถวที่ไม่มี TR_ID หรือ Name
+      .sort((a, b) => {
+        // เรียงตาม Match Point (มากไปน้อย)
+        if (b.matchPoint !== a.matchPoint) {
+          return b.matchPoint - a.matchPoint;
+        }
+        // ถ้า Match Point เท่ากัน เรียงตาม Ranking (น้อยไปมาก)
+        return a.ranking - b.ranking;
+      });
+    
+    // เพิ่มข้อมูลลงใน CSV
+    formattedData.forEach(row => {
+      csvRows.push([
+        row.ranking,
+        row.playerId,
+        row.alphabetName,
+        row.matchPoint
+      ]);
+    });
+    
+    if (csvRows.length <= 1) {
+      SpreadsheetApp.getUi().alert('❌ ไม่มีข้อมูลที่สามารถส่งออกได้', 'ไม่พบข้อมูลผู้เล่นใน Standing');
+      return;
+    }
+    
+    // แปลงข้อมูลเป็น CSV format
+    let csvContent = '';
+    csvRows.forEach((row, index) => {
+      const csvRow = row.map(cell => {
+        // Handle cells that contain commas, quotes, or newlines
+        const cellValue = cell !== null && cell !== undefined ? String(cell) : '';
+        if (cellValue.includes(',') || cellValue.includes('"') || cellValue.includes('\n')) {
+          return '"' + cellValue.replace(/"/g, '""') + '"';
+        }
+        return cellValue;
+      }).join(',');
+      csvContent += csvRow;
+      if (index < csvRows.length - 1) {
+        csvContent += '\n';
+      }
+    });
+    
+    // สร้างไฟล์ CSV
+    const fileName = `Official_Standings_${new Date().toISOString().slice(0, 10)}.csv`;
+    const blob = Utilities.newBlob(csvContent, 'text/csv', fileName);
+    
+    // ส่งออกไฟล์
+    const file = DriveApp.createFile(blob);
+    const fileUrl = file.getDownloadUrl().replace('export=download', 'export=download&format=csv');
+    
+    console.log('✅ Export Official Standings CSV สำเร็จ:', fileName);
+    
+    // แสดง alert และเปิดลิงก์อัตโนมัติพร้อมกัน
+    const html = HtmlService.createHtmlOutput(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <base target="_top">
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            text-align: center;
+          }
+          .message {
+            margin: 20px 0;
+            color: #333;
+          }
+          .success {
+            color: #28a745;
+            font-weight: bold;
+            font-size: 16px;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="message success">✅ ส่งออก CSV สำหรับ Official สำเร็จ</div>
+        <div class="message">ไฟล์ ${fileName} ถูกสร้างเรียบร้อยแล้ว</div>
+        <div class="message">จำนวนผู้เล่น: ${formattedData.length} คน</div>
+        <div class="message">กำลังเปิดลิงก์ดาวน์โหลด...</div>
+        <script>
+          // เปิดลิงก์อัตโนมัติทันที
+          window.open('${fileUrl}', '_blank');
+          
+          // ปิด dialog หลังจาก 1 วินาที
+          setTimeout(function() {
+            google.script.host.close();
+          }, 1000);
+        </script>
+      </body>
+      </html>
+    `)
+    .setWidth(400)
+    .setHeight(250);
+    
+    SpreadsheetApp.getUi().showModalDialog(html, '✅ ส่งออก CSV สำเร็จ');
+    
+    // ส่งข้อมูลกลับสำหรับกรณีกดจากหน้าเว็บ เพื่อให้เปิดลิงก์ได้ทันที
+    return {
+      fileName,
+      csvContent,
+      fileUrl
+    };
+  } catch (error) {
+    console.log('❌ เกิดข้อผิดพลาดในการส่งออก CSV สำหรับ Official:', error);
+    SpreadsheetApp.getUi().alert('❌ เกิดข้อผิดพลาดในการส่งออก CSV สำหรับ Official: ' + error.message);
+    return null;
+  }
+}
+
 // 🪣 ฟังก์ชัน updateBucketCache
 function updateBucketCache(standings, dropSet, playerTrIdMap) {
   try {
@@ -7337,7 +7747,7 @@ function createBucketSheet() {
 }
 
 // ========================================
-// 🎯 Custom Menu System for Desktop & iPad
+// 🎯 Custom Menu System for Desktop
 // ========================================
 
 /**
@@ -7540,42 +7950,6 @@ function getCustomMenuHTML() {
             background: linear-gradient(135deg, #74b9ff, #0984e3);
         }
 
-        /* Touch-friendly styles for iPad */
-        @media (max-width: 768px) {
-            body {
-                padding: 10px;
-            }
-
-            .menu-header h1 {
-                font-size: 2rem;
-            }
-
-            .menu-grid {
-                grid-template-columns: 1fr;
-                padding: 20px;
-            }
-
-            .menu-section {
-                padding: 20px;
-            }
-
-            .menu-button {
-                padding: 18px 20px;
-                font-size: 1.1rem;
-                min-height: 60px;
-            }
-
-            .section-title {
-                font-size: 1.3rem;
-            }
-        }
-
-        /* Landscape orientation for iPad */
-        @media (max-width: 1024px) and (orientation: landscape) {
-            .menu-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
 
         /* Dark mode support */
         @media (prefers-color-scheme: dark) {
@@ -7599,7 +7973,7 @@ function getCustomMenuHTML() {
     <div class="menu-container">
         <div class="menu-header">
             <h1>🏆 Tournament Management</h1>
-            <p>ระบบจัดการการแข่งขัน - ใช้งานได้ทั้งคอมพิวเตอร์และ iPad</p>
+            <p>ระบบจัดการการแข่งขัน</p>
         </div>
 
         <div class="menu-grid">
@@ -7633,10 +8007,6 @@ function getCustomMenuHTML() {
                     <button class="menu-button" onclick="executeFunction('undoLastPairing')">
                         <span class="icon">↩️</span>
                         <span class="text">ย้อนจับคู่รอบล่าสุด</span>
-                    </button>
-                    <button class="menu-button" onclick="executeFunction('undoMultipleRounds')">
-                        <span class="icon">↩️</span>
-                        <span class="text">ย้อนจับคู่หลายรอบ</span>
                     </button>
                     <button class="menu-button" onclick="executeFunction('dropPlayerFromList')">
                         <span class="icon">🚫</span>
@@ -7702,14 +8072,6 @@ function getCustomMenuHTML() {
                         <span class="icon">📊</span>
                         <span class="text">สถิติการแข่งขัน</span>
                     </button>
-                    <button class="menu-button" onclick="executeFunction('showTournamentAdvice')">
-                        <span class="icon">💡</span>
-                        <span class="text">คำแนะนำการจัดการ</span>
-                    </button>
-                    <button class="menu-button" onclick="executeFunction('showBracketPairing')">
-                        <span class="icon">📊</span>
-                        <span class="text">แสดง Bracket Pairing</span>
-                    </button>
                 </div>
             </div>
 
@@ -7724,14 +8086,6 @@ function getCustomMenuHTML() {
                         <span class="icon">🧹</span>
                         <span class="text">เคลียร์ทั้งหมด (เริ่มใหม่)</span>
                     </button>
-                    <button class="menu-button" onclick="executeFunction('clearBucketData')">
-                        <span class="icon">🪣</span>
-                        <span class="text">เคลียร์ Bucket (ความยาวชื่อ)</span>
-                    </button>
-                    <button class="menu-button" onclick="executeFunction('forceResizeH2HColumn')">
-                        <span class="icon">📏</span>
-                        <span class="text">บังคับปรับขนาดคอลัมน์ L (H2H)</span>
-                    </button>
                     <button class="menu-button" onclick="executeFunction('showStandingCheckResult')">
                         <span class="icon">🔍</span>
                         <span class="text">ตรวจสอบ Standing แบบเร็ว</span>
@@ -7739,22 +8093,6 @@ function getCustomMenuHTML() {
                     <button class="menu-button" onclick="executeFunction('forceUpdateAllStatus')">
                         <span class="icon">🔄</span>
                         <span class="text">บังคับอัปเดต Status ทั้งหมด</span>
-                    </button>
-                    <button class="menu-button" onclick="executeFunction('updatePendingStatusToOK')">
-                        <span class="icon">⚡</span>
-                        <span class="text">อัปเดต Status เป็น OK (สำหรับผลที่กรอกแล้ว)</span>
-                    </button>
-                    <button class="menu-button" onclick="executeFunction('checkRoundCompletion')">
-                        <span class="icon">🔍</span>
-                        <span class="text">ตรวจสอบความสมบูรณ์ของรอบล่าสุด</span>
-                    </button>
-                    <button class="menu-button" onclick="executeFunction('checkStandingCompleteness')">
-                        <span class="icon">🔍</span>
-                        <span class="text">ตรวจสอบความสมบูรณ์ของ Standing</span>
-                    </button>
-                    <button class="menu-button" onclick="executeFunction('resetStandingsUpdateFlags')">
-                        <span class="icon">🔄</span>
-                        <span class="text">รีเซ็ตสถานะการอัปเดต Standings</span>
                     </button>
                     <button class="menu-button" onclick="executeFunction('fixPlayerDataIssues')">
                         <span class="icon">🔧</span>
@@ -7774,10 +8112,6 @@ function getCustomMenuHTML() {
                         <span class="icon">📋</span>
                         <span class="text">สร้างหัวตาราง Pairing</span>
                     </button>
-                    <button class="menu-button" onclick="executeFunction('formatPairingSheet')">
-                        <span class="icon">🎨</span>
-                        <span class="text">จัดรูปแบบชีท</span>
-                    </button>
                     <button class="menu-button" onclick="executeFunction('improveVisualFormatting')">
                         <span class="icon">✨</span>
                         <span class="text">ปรับแต่งการแสดงผล</span>
@@ -7785,10 +8119,6 @@ function getCustomMenuHTML() {
                     <button class="menu-button" onclick="executeFunction('fixTextOverlap')">
                         <span class="icon">🔧</span>
                         <span class="text">แก้ไขการทับชื่อ</span>
-                    </button>
-                    <button class="menu-button" onclick="executeFunction('separateRoundsVisually')">
-                        <span class="icon">📊</span>
-                        <span class="text">แยกรอบการแข่งขัน</span>
                     </button>
                 </div>
             </div>
@@ -7800,17 +8130,13 @@ function getCustomMenuHTML() {
                     <span>Export & Reports</span>
                 </div>
                 <div class="menu-buttons">
-                    <button class="menu-button" onclick="executeFunction('exportStandingsToCSV')">
-                        <span class="icon">📊</span>
-                        <span class="text">Export Standings to CSV</span>
-                    </button>
-                    <button class="menu-button" onclick="executeFunction('exportPairingResultsToCSV')">
-                        <span class="icon">🎮</span>
-                        <span class="text">Export Pairing Results to CSV</span>
-                    </button>
                     <button class="menu-button" onclick="executeFunction('exportCompleteTournamentData')">
                         <span class="icon">📋</span>
                         <span class="text">Export Complete Tournament Data</span>
+                    </button>
+                    <button class="menu-button" onclick="executeFunction('exportOfficialStandingsToCSV')">
+                        <span class="icon">🏆</span>
+                        <span class="text">Export Official Standings to CSV</span>
                     </button>
                     <button class="menu-button" onclick="executeFunction('createGymStandingForFill')">
                         <span class="icon">🏋️</span>
@@ -7842,7 +8168,10 @@ function getCustomMenuHTML() {
                     .withSuccessHandler(function(result) {
                         button.classList.remove('loading');
                         button.disabled = false;
-                        showStatus('ดำเนินการเสร็จสิ้น!', 'success');
+                        const handled = handleFunctionResult(functionName, result);
+                        if (!handled) {
+                            showStatus('ดำเนินการเสร็จสิ้น!', 'success');
+                        }
                     })
                     .withFailureHandler(function(error) {
                         button.classList.remove('loading');
@@ -7870,6 +8199,16 @@ function getCustomMenuHTML() {
             }, 3000);
         }
 
+        function handleFunctionResult(functionName, result) {
+            if (functionName === 'exportOfficialStandingsToCSV' && result && result.fileUrl) {
+                // เปิดลิงก์ดาวน์โหลดในแท็บใหม่
+                window.open(result.fileUrl, '_blank');
+                showStatus('กำลังเปิดลิงก์ดาวน์โหลด...', 'success');
+                return true;
+            }
+            return false;
+        }
+
         // Add touch event listeners for better mobile support
         document.addEventListener('DOMContentLoaded', function() {
             const buttons = document.querySelectorAll('.menu-button');
@@ -7886,15 +8225,6 @@ function getCustomMenuHTML() {
             });
         });
 
-        // Prevent zoom on double tap for iPad
-        let lastTouchEnd = 0;
-        document.addEventListener('touchend', function (event) {
-            const now = (new Date()).getTime();
-            if (now - lastTouchEnd <= 300) {
-                event.preventDefault();
-            }
-            lastTouchEnd = now;
-        }, false);
     </script>
 </body>
 </html>
@@ -7902,7 +8232,7 @@ function getCustomMenuHTML() {
 }
 
 /**
- * เปิด Custom Menu สำหรับใช้งานบน Desktop และ iPad
+ * เปิด Custom Menu สำหรับใช้งานบน Desktop
  */
 function openCustomMenu() {
   try {
@@ -7914,22 +8244,6 @@ function openCustomMenu() {
     SpreadsheetApp.getUi().showModalDialog(htmlOutput, '🏆 Tournament Management Menu');
   } catch (error) {
     console.error('Error opening custom menu:', error);
-    SpreadsheetApp.getUi().alert('❌ เกิดข้อผิดพลาดในการเปิดเมนู: ' + error.toString());
-  }
-}
-
-/**
- * เปิด Custom Menu แบบ Sidebar (เหมาะสำหรับ iPad)
- */
-function openCustomMenuSidebar() {
-  try {
-    const htmlOutput = HtmlService.createHtmlOutput(getCustomMenuHTML())
-      .setWidth(400)
-      .setHeight(600);
-    
-    SpreadsheetApp.getUi().showSidebar(htmlOutput);
-  } catch (error) {
-    console.error('Error opening custom menu sidebar:', error);
     SpreadsheetApp.getUi().alert('❌ เกิดข้อผิดพลาดในการเปิดเมนู: ' + error.toString());
   }
 }
@@ -8024,460 +8338,4 @@ function removeOldMenuSheet() {
   } catch (error) {
     console.error('Error removing old menu sheet:', error);
   }
-}
-
-/**
- * สร้างเว็บแอปสำหรับ iPad
- */
-function createIPadWebApp() {
-  try {
-    const htmlOutput = HtmlService.createHtmlOutput(getIPadMenuHTML())
-      .setTitle('🏆 Tournament Management - iPad')
-      .setWidth(800)
-      .setHeight(600)
-      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
-    
-    SpreadsheetApp.getUi().showModalDialog(htmlOutput, '🏆 Tournament Management - iPad');
-  } catch (error) {
-    console.error('Error creating iPad web app:', error);
-    SpreadsheetApp.getUi().alert('❌ เกิดข้อผิดพลาดในการสร้างเว็บแอป: ' + error.toString());
-  }
-}
-
-/**
- * สร้างเว็บแอปแบบ Sidebar สำหรับ iPad
- */
-function createIPadSidebar() {
-  try {
-    const htmlOutput = HtmlService.createHtmlOutput(getIPadMenuHTML())
-      .setWidth(400)
-      .setHeight(600);
-    
-    SpreadsheetApp.getUi().showSidebar(htmlOutput);
-  } catch (error) {
-    console.error('Error creating iPad sidebar:', error);
-    SpreadsheetApp.getUi().alert('❌ เกิดข้อผิดพลาดในการสร้าง Sidebar: ' + error.toString());
-  }
-}
-
-/**
- * สร้าง HTML สำหรับ iPad Menu
- */
-function getIPadMenuHTML() {
-  return `
-<!DOCTYPE html>
-<html lang="th">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Tournament Management - iPad</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 10px;
-            overflow-x: hidden;
-        }
-
-        .container {
-            max-width: 100%;
-            margin: 0 auto;
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-            backdrop-filter: blur(10px);
-        }
-
-        .header {
-            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
-            color: white;
-            padding: 20px;
-            text-align: center;
-        }
-
-        .header h1 {
-            font-size: 2rem;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-        }
-
-        .header p {
-            font-size: 1rem;
-            opacity: 0.9;
-        }
-
-        .menu-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 15px;
-            padding: 20px;
-        }
-
-        .menu-section {
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            border: 2px solid transparent;
-            transition: all 0.3s ease;
-        }
-
-        .menu-section:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
-            border-color: #667eea;
-        }
-
-        .section-title {
-            font-size: 1.3rem;
-            font-weight: bold;
-            margin-bottom: 15px;
-            color: #333;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .menu-buttons {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .menu-button {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            border: none;
-            padding: 18px 20px;
-            border-radius: 12px;
-            font-size: 1rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-align: left;
-            position: relative;
-            overflow: hidden;
-            min-height: 60px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            touch-action: manipulation;
-        }
-
-        .menu-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
-        }
-
-        .menu-button:active {
-            transform: scale(0.98);
-        }
-
-        .menu-button:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .menu-button .icon {
-            font-size: 1.3rem;
-            min-width: 28px;
-        }
-
-        .menu-button .text {
-            flex: 1;
-            line-height: 1.3;
-        }
-
-        .loading {
-            position: relative;
-        }
-
-        .loading::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            right: 15px;
-            width: 20px;
-            height: 20px;
-            border: 2px solid transparent;
-            border-top: 2px solid white;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            transform: translateY(-50%);
-        }
-
-        @keyframes spin {
-            0% { transform: translateY(-50%) rotate(0deg); }
-            100% { transform: translateY(-50%) rotate(360deg); }
-        }
-
-        .status-message {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 15px 20px;
-            border-radius: 10px;
-            color: white;
-            font-weight: 500;
-            z-index: 1000;
-            transform: translateX(400px);
-            transition: transform 0.3s ease;
-            max-width: 300px;
-        }
-
-        .status-message.show {
-            transform: translateX(0);
-        }
-
-        .status-message.success {
-            background: linear-gradient(135deg, #00b894, #00a085);
-        }
-
-        .status-message.error {
-            background: linear-gradient(135deg, #e17055, #d63031);
-        }
-
-        .status-message.info {
-            background: linear-gradient(135deg, #74b9ff, #0984e3);
-        }
-
-        /* iPad specific styles */
-        @media (max-width: 1024px) {
-            .menu-grid {
-                grid-template-columns: 1fr;
-                padding: 15px;
-            }
-
-            .menu-section {
-                padding: 15px;
-            }
-
-            .menu-button {
-                padding: 20px;
-                font-size: 1.1rem;
-                min-height: 65px;
-            }
-
-            .section-title {
-                font-size: 1.2rem;
-            }
-        }
-
-        /* Landscape orientation for iPad */
-        @media (max-width: 1024px) and (orientation: landscape) {
-            .menu-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-
-        /* Prevent zoom on double tap */
-        * {
-            touch-action: manipulation;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>🏆 Tournament Management</h1>
-            <p>ระบบจัดการการแข่งขัน - สำหรับ iPad</p>
-        </div>
-
-        <div class="menu-grid">
-            <!-- Tournament Management Section -->
-            <div class="menu-section">
-                <div class="section-title">
-                    <span>🏆</span>
-                    <span>Tournament</span>
-                </div>
-                <div class="menu-buttons">
-                    <button class="menu-button" onclick="executeFunction('generatePlayerIDs')">
-                        <span class="icon">🆔</span>
-                        <span class="text">สร้าง Player ID อัตโนมัติ</span>
-                    </button>
-                    <button class="menu-button" onclick="executeFunction('fixPhoneNumbers')">
-                        <span class="icon">📞</span>
-                        <span class="text">แก้ไขเบอร์โทรให้มี 0 นำหน้า</span>
-                    </button>
-                    <button class="menu-button" onclick="executeFunction('pairFirstRound')">
-                        <span class="icon">🎲</span>
-                        <span class="text">จับคู่รอบแรก</span>
-                    </button>
-                    <button class="menu-button" onclick="executeFunction('pairNextRound')">
-                        <span class="icon">➡️</span>
-                        <span class="text">จับคู่รอบถัดไป</span>
-                    </button>
-                    <button class="menu-button" onclick="executeFunction('updateStandings')">
-                        <span class="icon">🔁</span>
-                        <span class="text">อัปเดต Standings</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Round Robin Section -->
-            <div class="menu-section">
-                <div class="section-title">
-                    <span>🔄</span>
-                    <span>Round Robin</span>
-                </div>
-                <div class="menu-buttons">
-                    <button class="menu-button" onclick="executeFunction('createRoundRobinTournament')">
-                        <span class="icon">🔄</span>
-                        <span class="text">สร้าง Round Robin</span>
-                    </button>
-                    <button class="menu-button" onclick="executeFunction('updateRoundRobinResults')">
-                        <span class="icon">📊</span>
-                        <span class="text">อัปเดตผล Round Robin</span>
-                    </button>
-                    <button class="menu-button" onclick="executeFunction('autoUpdateRoundRobinResults')">
-                        <span class="icon">🔄</span>
-                        <span class="text">อัปเดตผลและ Standings อัตโนมัติ</span>
-                    </button>
-                    <button class="menu-button" onclick="executeFunction('createRoundRobinStanding')">
-                        <span class="icon">🏆</span>
-                        <span class="text">สร้างสรุปผล Round Robin</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Data Management Section -->
-            <div class="menu-section">
-                <div class="section-title">
-                    <span>🛠️</span>
-                    <span>Data Management</span>
-                </div>
-                <div class="menu-buttons">
-                    <button class="menu-button" onclick="executeFunction('clearAllData')">
-                        <span class="icon">🧹</span>
-                        <span class="text">เคลียร์ทั้งหมด (เริ่มใหม่)</span>
-                    </button>
-                    <button class="menu-button" onclick="executeFunction('showStandingCheckResult')">
-                        <span class="icon">🔍</span>
-                        <span class="text">ตรวจสอบ Standing แบบเร็ว</span>
-                    </button>
-                    <button class="menu-button" onclick="executeFunction('forceUpdateAllStatus')">
-                        <span class="icon">🔄</span>
-                        <span class="text">บังคับอัปเดต Status ทั้งหมด</span>
-                    </button>
-                    <button class="menu-button" onclick="executeFunction('fixPlayerDataIssues')">
-                        <span class="icon">🔧</span>
-                        <span class="text">แก้ไขปัญหาข้อมูล Player</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Formatting Section -->
-            <div class="menu-section">
-                <div class="section-title">
-                    <span>🎨</span>
-                    <span>Formatting</span>
-                </div>
-                <div class="menu-buttons">
-                    <button class="menu-button" onclick="executeFunction('createPairingHeader')">
-                        <span class="icon">📋</span>
-                        <span class="text">สร้างหัวตาราง Pairing</span>
-                    </button>
-                    <button class="menu-button" onclick="executeFunction('formatPairingSheet')">
-                        <span class="icon">🎨</span>
-                        <span class="text">จัดรูปแบบชีท</span>
-                    </button>
-                    <button class="menu-button" onclick="executeFunction('improveVisualFormatting')">
-                        <span class="icon">✨</span>
-                        <span class="text">ปรับแต่งการแสดงผล</span>
-                    </button>
-                    <button class="menu-button" onclick="executeFunction('fixTextOverlap')">
-                        <span class="icon">🔧</span>
-                        <span class="text">แก้ไขการทับชื่อ</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="statusMessage" class="status-message"></div>
-
-    <script>
-        // Function to execute Google Apps Script functions
-        function executeFunction(functionName) {
-            const button = event.target.closest('.menu-button');
-            
-            // Show loading state
-            button.classList.add('loading');
-            button.disabled = true;
-            
-            // Show status message
-            showStatus('กำลังดำเนินการ...', 'info');
-            
-            try {
-                // Execute the function using Google Apps Script
-                google.script.run
-                    .withSuccessHandler(function(result) {
-                        button.classList.remove('loading');
-                        button.disabled = false;
-                        showStatus('ดำเนินการเสร็จสิ้น!', 'success');
-                    })
-                    .withFailureHandler(function(error) {
-                        button.classList.remove('loading');
-                        button.disabled = false;
-                        showStatus('เกิดข้อผิดพลาด: ' + error.message, 'error');
-                        console.error('Error executing function:', error);
-                    })
-                    [functionName]();
-            } catch (error) {
-                button.classList.remove('loading');
-                button.disabled = false;
-                showStatus('เกิดข้อผิดพลาด: ' + error.message, 'error');
-                console.error('Error:', error);
-            }
-        }
-
-        // Function to show status messages
-        function showStatus(message, type) {
-            const statusDiv = document.getElementById('statusMessage');
-            statusDiv.textContent = message;
-            statusDiv.className = \`status-message \${type} show\`;
-            
-            setTimeout(() => {
-                statusDiv.classList.remove('show');
-            }, 3000);
-        }
-
-        // Add touch event listeners for better mobile support
-        document.addEventListener('DOMContentLoaded', function() {
-            const buttons = document.querySelectorAll('.menu-button');
-            
-            buttons.forEach(button => {
-                // Add touch feedback
-                button.addEventListener('touchstart', function() {
-                    this.style.transform = 'scale(0.98)';
-                });
-                
-                button.addEventListener('touchend', function() {
-                    this.style.transform = '';
-                });
-            });
-        });
-
-        // Prevent zoom on double tap for iPad
-        let lastTouchEnd = 0;
-        document.addEventListener('touchend', function (event) {
-            const now = (new Date()).getTime();
-            if (now - lastTouchEnd <= 300) {
-                event.preventDefault();
-            }
-            lastTouchEnd = now;
-        }, false);
-    </script>
-</body>
-</html>
-  `;
 }

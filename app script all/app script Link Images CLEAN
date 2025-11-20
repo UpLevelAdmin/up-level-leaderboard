@@ -1,0 +1,81 @@
+function linkImagesFromDrive() {
+  var spreadsheetId = '1JvVCVxxXBS-2lpnT-IOrYBf2rF-OBRVFCW6MZEvpqxE';
+  var sheetName = 'ฝากขายการ์ด';
+  var driveFolderId = '15f0xNKHe4q8sNaMQo3uXs1qPBB0oVQx2';
+  var productIdCol = 13; // Column N = index 13
+  var imageLinkCol = 6; // Column G = index 6 (A=0, B=1, C=2, D=3, E=4, F=5, G=6)
+  
+  try {
+    var spreadsheet = SpreadsheetApp.openById(spreadsheetId);
+    var sheet = spreadsheet.getSheetByName(sheetName);
+    if (!sheet) {
+      SpreadsheetApp.getUi().alert('ไม่พบ sheet');
+      return;
+    }
+    
+    var folder = DriveApp.getFolderById(driveFolderId);
+    var files = folder.getFiles();
+    var fileMap = {};
+    
+    while (files.hasNext()) {
+      var file = files.next();
+      fileMap[file.getName()] = file;
+    }
+    
+    var data = sheet.getDataRange().getValues();
+    var updatedCount = 0;
+    var notFoundCount = 0;
+    
+    for (var i = 1; i < data.length; i++) {
+      var productId = String(data[i][productIdCol] || '').trim();
+      if (!productId) continue;
+      
+      var frontFileName = productId + ' หน้า.jpg';
+      var frontFile = fileMap[frontFileName];
+      
+      if (frontFile) {
+        try {
+          frontFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+        } catch (e) {}
+        
+        var fileId = frontFile.getId();
+        var imageUrl = 'https://drive.google.com/uc?export=view&id=' + fileId;
+        sheet.getRange(i + 1, imageLinkCol + 1).setValue(imageUrl);
+        updatedCount++;
+      } else {
+        notFoundCount++;
+      }
+    }
+    
+    SpreadsheetApp.getUi().alert('เสร็จสิ้น! อัพเดท ' + updatedCount + ' แถว, ไม่พบ ' + notFoundCount + ' แถว');
+  } catch (error) {
+    SpreadsheetApp.getUi().alert('Error: ' + error.toString());
+  }
+}
+
+function updateImageColumn() {
+  var spreadsheetId = '1JvVCVxxXBS-2lpnT-IOrYBf2rF-OBRVFCW6MZEvpqxE';
+  var sheetName = 'ฝากขายการ์ด';
+  var imageLinkCol = 6; // Column G
+  var imageCol = 5; // Column F
+  
+  try {
+    var spreadsheet = SpreadsheetApp.openById(spreadsheetId);
+    var sheet = spreadsheet.getSheetByName(sheetName);
+    var data = sheet.getDataRange().getValues();
+    var updatedCount = 0;
+    
+    for (var i = 1; i < data.length; i++) {
+      var imageUrl = String(data[i][imageLinkCol] || '').trim();
+      if (imageUrl && imageUrl.indexOf('http') !== -1) {
+        sheet.getRange(i + 1, imageCol + 1).setValue('=IMAGE("' + imageUrl + '")');
+        updatedCount++;
+      }
+    }
+    
+    SpreadsheetApp.getUi().alert('อัพเดท Column F แล้ว: ' + updatedCount + ' แถว');
+  } catch (error) {
+    SpreadsheetApp.getUi().alert('Error: ' + error.toString());
+  }
+}
+
