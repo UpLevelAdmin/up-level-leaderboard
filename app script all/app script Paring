@@ -2189,39 +2189,55 @@ function fixMissingPlayerIDs() {
 function doGet(e) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   
-  // Swiss Tournament Data
+  // ดึง sheet ทั้งหมดในครั้งเดียว (เร็วกว่า)
   const pairingSheet = ss.getSheetByName('Pairing');
   const playersSheet = ss.getSheetByName('Players');
   const standingSheet = ss.getSheetByName('Standing');
-  
-  // Round Robin Tournament Data
   const roundRobinSheet = ss.getSheetByName('Round Robin');
   const roundRobinStandingSheet = ss.getSheetByName('Round Robin Standing');
   
-  // ดึงข้อมูล Swiss Tournament
-  const pairingData = pairingSheet.getDataRange().getValues();
-  const playersData = playersSheet.getDataRange().getValues();
-  const standingsData = standingSheet.getLastRow() > 1 ? standingSheet.getRange(1, 1, standingSheet.getLastRow(), standingSheet.getLastColumn()).getValues() : [];
+  // ดึงข้อมูลทั้งหมดแบบ batch (เร็วกว่าการดึงทีละ sheet)
+  var pairingData = [];
+  var playersData = [];
+  var standingsData = [];
+  var roundRobinData = [];
+  var roundRobinStandingData = [];
+  var hideStandingStatus = { hideStanding: false };
   
-  // ดึงข้อมูล Round Robin Tournament
-  const roundRobinData = roundRobinSheet.getLastRow() > 1 ? roundRobinSheet.getDataRange().getValues() : [];
-  const roundRobinStandingData = roundRobinStandingSheet.getLastRow() > 1 ? roundRobinStandingSheet.getDataRange().getValues() : [];
+  if (pairingSheet) {
+    pairingData = pairingSheet.getDataRange().getValues();
+  }
   
-  // ตรวจสอบสถานะ Hide Standing
-  const hideStandingStatus = checkHideStandingStatus();
+  if (playersSheet) {
+    playersData = playersSheet.getDataRange().getValues();
+  }
+  
+  if (standingSheet && standingSheet.getLastRow() > 1) {
+    standingsData = standingSheet.getRange(1, 1, standingSheet.getLastRow(), standingSheet.getLastColumn()).getValues();
+  }
+  
+  if (roundRobinSheet && roundRobinSheet.getLastRow() > 1) {
+    roundRobinData = roundRobinSheet.getDataRange().getValues();
+  }
+  
+  if (roundRobinStandingSheet && roundRobinStandingSheet.getLastRow() > 1) {
+    roundRobinStandingData = roundRobinStandingSheet.getDataRange().getValues();
+  }
+  
+  // ตรวจสอบสถานะ Hide Standing (ทำหลังสุดเพื่อไม่ให้ช้า)
+  try {
+    hideStandingStatus = checkHideStandingStatus();
+  } catch (e) {
+    hideStandingStatus = { hideStanding: false };
+  }
 
   return ContentService.createTextOutput(
     JSON.stringify({
-      // Swiss Tournament
       pairing: pairingData,
       players: playersData,
       standings: standingsData,
-      
-      // Round Robin Tournament
       roundRobin: roundRobinData,
       roundRobinStandings: roundRobinStandingData,
-      
-      // Hide Standing Status
       hideStanding: hideStandingStatus
     })
   ).setMimeType(ContentService.MimeType.JSON);

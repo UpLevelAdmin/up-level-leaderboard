@@ -2079,6 +2079,25 @@
   <script>
     const API_URL = 'https://script.google.com/macros/s/AKfycbwVoGEvUEmeIkC-e2aPSrF7T82HqOpMwByW-SSbv7EohQ_zG2EbA2uv5TyPnqhuy5rmrg/exec';
     const MEMBER_API = "https://script.google.com/macros/s/AKfycbxtjsDwHI6nJU4OIHExUxMaZwUn3qwakvdkzwbQO7C8Trzz5Gh84SX6F1gqb4BOFQcn/exec?func=getMemberDashboardData";
+    
+    // แสดง skeleton/loading state ทันที
+    function showSkeletonState() {
+      const skeletonHtml = `
+        <div style="text-align:center;padding:2rem;">
+          <div class="spinner"></div>
+          <p style="margin-top:1rem;color:#6B7280;">กำลังโหลดข้อมูล...</p>
+        </div>
+      `;
+      
+      document.getElementById('swiss-pairing').innerHTML = skeletonHtml;
+      document.getElementById('swiss-standings').innerHTML = skeletonHtml;
+      document.getElementById('roundrobin-pairing').innerHTML = skeletonHtml;
+      document.getElementById('roundrobin-standings').innerHTML = skeletonHtml;
+      document.getElementById('swiss-summary').innerHTML = skeletonHtml;
+      document.getElementById('roundrobin-summary').innerHTML = skeletonHtml;
+      
+      console.log('⚡ แสดง skeleton state ทันที');
+    }
 
     const rankEmojis = {
       "Rookie": "🐣",
@@ -3229,13 +3248,13 @@
     }
 
     async function loadData() {
-      document.getElementById('loading').style.display = 'block';
+      const startTime = performance.now();
+      console.log('🚀 เริ่มโหลดข้อมูล...');
+      
+      // แสดง skeleton/loading state ทันที
+      showSkeletonState();
+      
       try {
-        console.log('Fetching data from:', API_URL);
-        console.log('Fetching member data from:', MEMBER_API);
-        
-        console.log('=== DEBUG: LOADING DATA ===');
-        
         const [pairingRes, memberRes] = await Promise.all([
           fetch(API_URL).catch(e => {
             console.error('Error fetching pairing data:', e);
@@ -3247,6 +3266,9 @@
           })
         ]);
         
+        const fetchTime = performance.now() - startTime;
+        console.log(`📡 Fetch API เสร็จ: ${fetchTime.toFixed(0)}ms`);
+        
         if (!pairingRes.ok) {
           throw new Error(`Pairing API error: ${pairingRes.status}`);
         }
@@ -3255,8 +3277,12 @@
           throw new Error(`Member API error: ${memberRes.status}`);
         }
         
+        const parseStart = performance.now();
         const pairingData = await pairingRes.json();
         const members = await memberRes.json();
+        const parseTime = performance.now() - parseStart;
+        console.log(`📦 Parse JSON เสร็จ: ${parseTime.toFixed(0)}ms`);
+        
         const phoneMap = buildPhoneMap(members);
         
         // กำหนดค่า global variables
@@ -3264,62 +3290,39 @@
         window.phoneMap = phoneMap;
         window.hideStandingStatus = pairingData.hideStanding;
         
-        console.log('Loaded data:', pairingData);
-        console.log('phoneMap:', phoneMap);
-        console.log('playersData:', pairingData.players);
-        console.log('Standings data:', pairingData.standings);
-        console.log('Round Robin data:', pairingData.roundRobin);
-        console.log('Round Robin data length:', pairingData.roundRobin ? pairingData.roundRobin.length : 'null');
-        if (pairingData.roundRobin && pairingData.roundRobin.length > 1) {
-          console.log('Round Robin first row:', pairingData.roundRobin[0]);
-          console.log('Round Robin second row:', pairingData.roundRobin[1]);
-          console.log('Round Robin - Column structure check:');
-          console.log('  P1_ID (index 2):', pairingData.roundRobin[1][2]);
-          console.log('  PLAYER 1 (index 3):', pairingData.roundRobin[1][3]);
-          console.log('  P2_ID (index 10):', pairingData.roundRobin[1][10]);
-          console.log('  PLAYER 2 (index 11):', pairingData.roundRobin[1][11]);
+        console.log(`📊 ได้ข้อมูล: Pairing ${pairingData.pairing?.length || 0} แถว, Players ${pairingData.players?.length || 0} คน`);
+        
+        // Render ทันทีเมื่อได้ข้อมูล (ไม่ต้องรอทั้งหมด)
+        const renderStart = performance.now();
+        
+        // Render Swiss Tournament ทันที
+        if (pairingData.pairing && pairingData.players) {
+          document.getElementById('swiss-pairing').innerHTML = renderSwissPairing(pairingData.pairing, pairingData.players, phoneMap);
+          console.log('⚡ แสดง Swiss Pairing แล้ว');
         }
-        console.log('Round Robin Standings data:', pairingData.roundRobinStandings);
-        console.log('Hide Standing Status:', pairingData.hideStanding);
-        console.log('Hide Standing raw value:', pairingData.hideStanding);
-        
-        // ตรวจสอบสถานะ Hide Standing
-        const shouldHideStanding = pairingData.hideStanding && pairingData.hideStanding.hideStanding === true;
-        console.log('Should hide standing:', shouldHideStanding);
-        
-        // Render Swiss Tournament
-        document.getElementById('swiss-pairing').innerHTML = renderSwissPairing(pairingData.pairing, pairingData.players, phoneMap);
         
         // Render Standings ตามสถานะ Hide Standing
+        const shouldHideStanding = pairingData.hideStanding && pairingData.hideStanding.hideStanding === true;
         if (shouldHideStanding) {
-          // ซ่อน standings
           document.getElementById('swiss-standings').innerHTML = `
             <div style="text-align:center;padding:2rem;background:#fef3c7;border:1px solid #fcd34d;border-radius:12px;margin:1rem;">
               <h3>👁️ ยังไม่เปิดเผย Standing</h3>
             </div>
           `;
-        } else {
-          const swissStandingsHtml = renderSwissStandings(pairingData.standings);
-          console.log('*** PUTTING SWISS STANDINGS HTML INTO DOM ***:', swissStandingsHtml);
-          console.log('*** HTML LENGTH ***:', swissStandingsHtml.length);
-          console.log('*** DROPPED PLAYERS IN HTML ***:', (swissStandingsHtml.match(/class="dropped-player"/g) || []).length);
-          document.getElementById('swiss-standings').innerHTML = swissStandingsHtml;
-          
-          // Debug: ตรวจสอบว่า dropped players อยู่ใน DOM จริงหรือไม่
-          const droppedPlayers = document.querySelectorAll('.dropped-player');
-          console.log('*** DROPPED PLAYERS IN DOM ***:', droppedPlayers.length);
-          droppedPlayers.forEach((player, index) => {
-            console.log(`*** DROPPED PLAYER ${index + 1} ***:`, player.textContent.trim());
-          });
+        } else if (pairingData.standings) {
+          document.getElementById('swiss-standings').innerHTML = renderSwissStandings(pairingData.standings);
+          console.log('⚡ แสดง Swiss Standings แล้ว');
         }
         
-        document.getElementById('swiss-summary').innerHTML = renderSwissSummary(pairingData.pairing, pairingData.standings);
+        if (pairingData.pairing && pairingData.standings) {
+          document.getElementById('swiss-summary').innerHTML = renderSwissSummary(pairingData.pairing, pairingData.standings);
+        }
         
         // Render Round Robin Tournament
-        console.log('=== RENDERING ROUND ROBIN PAIRING ===');
-        const roundRobinHtml = renderRoundRobinPairing(pairingData.roundRobin, pairingData.players, phoneMap);
-        console.log('Round Robin HTML generated:', roundRobinHtml.substring(0, 500) + '...');
-        document.getElementById('roundrobin-pairing').innerHTML = roundRobinHtml;
+        if (pairingData.roundRobin && pairingData.players) {
+          document.getElementById('roundrobin-pairing').innerHTML = renderRoundRobinPairing(pairingData.roundRobin, pairingData.players, phoneMap);
+          console.log('⚡ แสดง Round Robin Pairing แล้ว');
+        }
         
         // เพิ่มคำแนะนำสำหรับการแก้ไขปัญหา
         if (pairingData.roundRobin && pairingData.roundRobin.length > 1) {
