@@ -168,6 +168,24 @@
     .card-image-placeholder {
       color: #999;
       font-size: 3em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+    }
+
+    .image-loading-spinner {
+      width: 48px;
+      height: 48px;
+      border: 4px solid #e0e0e0;
+      border-top: 4px solid #42A5F5;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
 
     .card-info {
@@ -785,23 +803,29 @@
         const hasImage = imageUrl && imageUrl.trim() !== '';
         const productId = card.productId || '';
         
+        // แสดง spinner ก่อน แล้วค่อยโหลดรูปทีหลัง
         let imageHtml = '';
+        let imageUrlToLoad = '';
+        
         if (hasImage) {
-          imageCount++;
           // ลบ quotes และ spaces ที่ไม่จำเป็น
           let cleanUrl = imageUrl.trim().replace(/^["']|["']$/g, '');
           
           // ตรวจสอบว่าเป็น URL ที่ถูกต้อง
           if (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://')) {
-            // ใช้ loading="lazy" เพื่อให้โหลดรูปเมื่อเห็นเท่านั้น
-            imageHtml = `<img src="${escapeHtml(cleanUrl)}" alt="${escapeHtml(card.cardName)}" class="card-image" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\\'card-image-placeholder\\'>🃏</div>'">`;
-          } else {
+            imageUrlToLoad = cleanUrl;
+            // แสดง spinner ก่อน
+            imageHtml = `<div class="card-image-placeholder" data-image-url="${escapeHtml(cleanUrl)}" data-card-index="${index}">
+              <div class="image-loading-spinner"></div>
+            </div>`;
             placeholderCount++;
+          } else {
             imageHtml = '<div class="card-image-placeholder">🃏</div>';
+            placeholderCount++;
           }
         } else {
-          placeholderCount++;
           imageHtml = '<div class="card-image-placeholder">🃏</div>';
+          placeholderCount++;
         }
         
         const price = card.listedPrice ? String(card.listedPrice) : '-';
@@ -858,6 +882,52 @@
       
       // เก็บ filteredCards ไว้ในตัวแปร global เพื่อใช้ใน modal
       window.currentFilteredCards = cards;
+      
+      // โหลดรูปภาพทีละรูปหลังจากแสดงข้อมูลแล้ว
+      loadImagesProgressively();
+    }
+    
+    // โหลดรูปภาพทีละรูปแบบ progressive
+    function loadImagesProgressively() {
+      const imagePlaceholders = document.querySelectorAll('.card-image-placeholder[data-image-url]');
+      console.log(`🖼️ เริ่มโหลดรูปภาพ ${imagePlaceholders.length} รูป...`);
+      
+      let loadedCount = 0;
+      
+      imagePlaceholders.forEach((placeholder, index) => {
+        const imageUrl = placeholder.getAttribute('data-image-url');
+        if (!imageUrl) return;
+        
+        // โหลดรูปทีละรูปด้วย delay เล็กน้อยเพื่อไม่ให้ช้าเกินไป
+        setTimeout(() => {
+          const img = new Image();
+          
+          img.onload = function() {
+            // แทนที่ spinner ด้วยรูปภาพ
+            placeholder.innerHTML = '';
+            placeholder.classList.remove('card-image-placeholder');
+            placeholder.classList.add('card-image-container');
+            img.className = 'card-image';
+            img.alt = 'Card image';
+            img.loading = 'lazy';
+            placeholder.appendChild(img);
+            
+            loadedCount++;
+            console.log(`✅ โหลดรูปภาพ ${loadedCount}/${imagePlaceholders.length} เสร็จ`);
+          };
+          
+          img.onerror = function() {
+            // ถ้าโหลดไม่ได้ ให้แสดง placeholder
+            placeholder.innerHTML = '<div class="card-image-placeholder">🃏</div>';
+            placeholder.removeAttribute('data-image-url');
+            
+            loadedCount++;
+            console.log(`❌ โหลดรูปภาพ ${loadedCount}/${imagePlaceholders.length} ล้มเหลว`);
+          };
+          
+          img.src = imageUrl;
+        }, index * 50); // delay 50ms ต่อรูป เพื่อไม่ให้โหลดพร้อมกันทั้งหมด
+      });
     }
 
     function updateStats(total, filtered) {
