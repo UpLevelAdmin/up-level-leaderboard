@@ -100,6 +100,29 @@ function doGet(e) {
         }
       }
       
+      // ดึงรูปหลังจาก Drive โดยใช้ productId
+      var cardBackImage = '';
+      var productId = String(row[idxProductId] || '').trim();
+      if (productId) {
+        try {
+          var driveFolderId = '15f0xNKHe4q8sNaMQo3uXs1qPBB0oVQx2';
+          var folder = DriveApp.getFolderById(driveFolderId);
+          var backFileName = productId + ' หลัง.jpg';
+          var backFiles = folder.getFilesByName(backFileName);
+          
+          if (backFiles.hasNext()) {
+            var backFile = backFiles.next();
+            try {
+              backFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+            } catch (e) {}
+            var backFileId = backFile.getId();
+            cardBackImage = 'https://drive.google.com/thumbnail?id=' + backFileId + '&sz=w1000';
+          }
+        } catch (e) {
+          // ถ้าเกิด error ให้ข้ามไป (ไม่ต้องแสดง error)
+        }
+      }
+      
       // สร้าง object แบบเร็ว (ใช้ตัวแปรที่ประกาศไว้แล้ว)
       cards.push({
         depositDate: row[idxDate] || '',
@@ -108,8 +131,8 @@ function doGet(e) {
         folderSlot: row[idxSlot] || '',
         cardName: cardName,
         cardImage: cardImage,
-        cardBackImage: '',
-        productId: String(row[idxProductId] || ''),
+        cardBackImage: cardBackImage,
+        productId: productId,
         listedPrice: row[idxPrice] || '',
         actualPrice: row[idxActualPrice] || '',
         status: 'ยังมีอยู่',
