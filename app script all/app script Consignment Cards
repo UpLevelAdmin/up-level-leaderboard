@@ -107,25 +107,47 @@ function doGet(e) {
         }
       }
       
-      // ถ้ายังไม่มี ลองอ่านจาก Column F
-      if (!cardImage) {
-        var imageColIndex = colIndex['ภาพการ์ด'];
-        if (imageColIndex !== undefined) {
-          try {
-            var formulas = targetSheet.getRange(i + 1, imageColIndex + 1).getFormula();
-            if (formulas && formulas.indexOf('IMAGE') !== -1) {
-              var urlMatch = formulas.match(/IMAGE\(["'](.*?)["']\)/);
-              if (urlMatch && urlMatch[1]) {
-                cardImage = urlMatch[1];
+      // ถ้ายังไม่มีรูปหน้า และมี productId ให้ดึงจาก Drive โดยใช้ getFilesByName (เร็ว)
+      if (!cardImage && productId && String(productId).trim() !== '') {
+        try {
+          var driveFolderId = '15f0xNKHe4q8sNaMQo3uXs1qPBB0oVQx2';
+          var folder = DriveApp.getFolderById(driveFolderId);
+          var frontFileName = String(productId).trim() + ' หน้า.jpg';
+          
+          var frontFiles = folder.getFilesByName(frontFileName);
+          if (frontFiles.hasNext()) {
+            var frontFile = frontFiles.next();
+            try {
+              var access = frontFile.getSharingAccess();
+              if (access !== DriveApp.Access.ANYONE_WITH_LINK) {
+                frontFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
               }
-            }
-          } catch (e) {}
-        }
+            } catch (e) {}
+            cardImage = 'https://drive.google.com/thumbnail?id=' + frontFile.getId() + '&sz=w1000';
+          }
+        } catch (e) {}
       }
       
-      // ถ้ายังไม่มีรูปหน้า และมี productId ให้ดึงจาก Drive (แต่จะทำเฉพาะบางรายการเพื่อความเร็ว)
-      // สำหรับการ์ดที่ไม่มีรูปใน Column G จะส่ง productId ไปให้ frontend ดึงรูปทีหลัง
-      // แต่ถ้าต้องการให้เร็วขึ้น ให้รัน linkImagesFromDrive() เพื่อเติม Column G ก่อน
+      // ดึงรูปหลัง (ถ้ามี productId)
+      if (productId && String(productId).trim() !== '') {
+        try {
+          var driveFolderId = '15f0xNKHe4q8sNaMQo3uXs1qPBB0oVQx2';
+          var folder = DriveApp.getFolderById(driveFolderId);
+          var backFileName = String(productId).trim() + ' หลัง.jpg';
+          
+          var backFiles = folder.getFilesByName(backFileName);
+          if (backFiles.hasNext()) {
+            var backFile = backFiles.next();
+            try {
+              var access = backFile.getSharingAccess();
+              if (access !== DriveApp.Access.ANYONE_WITH_LINK) {
+                backFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+              }
+            } catch (e) {}
+            cardBackImage = 'https://drive.google.com/thumbnail?id=' + backFile.getId() + '&sz=w1000';
+          }
+        } catch (e) {}
+      }
       
       var statusStr = String(status).trim();
       if (statusStr === 'ยังมีอยู่' || statusStr === '') {

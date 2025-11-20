@@ -789,15 +789,13 @@
           
           // ตรวจสอบว่าเป็น URL ที่ถูกต้อง
           if (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://')) {
-            // ใช้ loading="lazy" เพื่อให้โหลดรูปเมื่อเห็นเท่านั้น (เพิ่มประสิทธิภาพ)
-            imageHtml = `<img src="${escapeHtml(cleanUrl)}" alt="${escapeHtml(card.cardName)}" class="card-image" loading="lazy" data-product-id="${escapeHtml(productId)}" onerror="console.error('Image failed to load:', '${escapeHtml(cleanUrl)}'); this.parentElement.innerHTML='<div class=\\'card-image-placeholder\\'>🃏</div>'">`;
+            // ใช้ loading="lazy" เพื่อให้โหลดรูปเมื่อเห็นเท่านั้น
+            imageHtml = `<img src="${escapeHtml(cleanUrl)}" alt="${escapeHtml(card.cardName)}" class="card-image" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\\'card-image-placeholder\\'>🃏</div>'">`;
           } else {
-            // ถ้าไม่ใช่ URL ที่ถูกต้อง ให้แสดง placeholder
-            imageHtml = `<div class="card-image-placeholder" data-product-id="${escapeHtml(productId)}">🃏</div>`;
+            imageHtml = '<div class="card-image-placeholder">🃏</div>';
           }
         } else {
-          // แสดง placeholder พร้อม productId เพื่อให้ดึงรูปทีหลังได้
-          imageHtml = `<div class="card-image-placeholder" data-product-id="${escapeHtml(productId)}">🃏</div>`;
+          imageHtml = '<div class="card-image-placeholder">🃏</div>';
         }
         
         const price = card.listedPrice ? String(card.listedPrice) : '-';
@@ -846,42 +844,6 @@
       
       // เก็บ filteredCards ไว้ในตัวแปร global เพื่อใช้ใน modal
       window.currentFilteredCards = cards;
-      
-      // ใช้ Intersection Observer เพื่อโหลดรูปภาพเมื่อเห็นเท่านั้น
-      setupImageObserver();
-    }
-    
-    // ตั้งค่า Intersection Observer สำหรับ lazy loading รูปภาพ
-    function setupImageObserver() {
-      if (!('IntersectionObserver' in window)) {
-        // ถ้าไม่รองรับ Intersection Observer ให้โหลดรูปทั้งหมดเลย
-        return;
-      }
-      
-      const imageObserver = new IntersectionObserver((entries, observer) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            const img = entry.target;
-            const productId = img.getAttribute('data-product-id');
-            
-            // ถ้ายังไม่มี src และมี productId ให้ดึงรูปจาก Drive
-            if (!img.src && productId) {
-              // ใช้ thumbnail URL โดยตรง (ไม่ต้องเรียก API)
-              const driveFolderId = '15f0xNKHe4q8sNaMQo3uXs1qPBB0oVQx2';
-              // เนื่องจากเราไม่สามารถดึง file ID จาก Drive โดยตรงได้ใน frontend
-              // เราจะใช้ข้อมูลที่มีอยู่แล้วจาก API
-            }
-            
-            observer.unobserve(img);
-          }
-        });
-      }, {
-        rootMargin: '50px' // เริ่มโหลดก่อนที่จะเห็น 50px
-      });
-      
-      // สังเกตการณ์รูปภาพทั้งหมด
-      const images = document.querySelectorAll('.card-image[loading="lazy"]');
-      images.forEach(img => imageObserver.observe(img));
     }
 
     function updateStats(total, filtered) {
@@ -932,8 +894,6 @@
           }
           
           allCards = data.cards || [];
-          
-          // แสดงข้อมูลการ์ดทันที (ไม่ต้องรอรูปภาพ)
           updateDisplay();
         })
         .catch(err => {
