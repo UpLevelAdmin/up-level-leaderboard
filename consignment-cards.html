@@ -147,6 +147,18 @@
       border-color: #667eea;
     }
 
+    .card-item.sold {
+      opacity: 0.85;
+    }
+
+    .card-item.sold .card-image-container {
+      filter: grayscale(100%);
+    }
+
+    .card-item.sold .card-image {
+      filter: grayscale(100%);
+    }
+
     .card-image-container {
       width: 100%;
       height: 300px;
@@ -294,6 +306,11 @@
       color: white;
     }
 
+    .status-badge.sold {
+      background: #e53935;
+      color: white;
+    }
+
     .spinner {
       margin: 48px auto;
       border: 6px solid #e0e0e0;
@@ -407,6 +424,10 @@
       border-radius: 8px;
       box-shadow: 0 4px 20px rgba(0,0,0,0.5);
       object-fit: contain;
+    }
+
+    .modal.sold .modal-image {
+      filter: grayscale(100%);
     }
 
     .close-modal {
@@ -728,6 +749,10 @@
           <span class="modal-detail-label">หมายเหตุ:</span>
           <span class="modal-detail-value" id="modal-notes"></span>
         </div>
+        <div class="modal-detail-row">
+          <span class="modal-detail-label">สถานะ:</span>
+          <span class="modal-detail-value" id="modal-status"></span>
+        </div>
       </div>
     </div>
   </div>
@@ -845,6 +870,9 @@
         const imageUrl = card.cardImage || '';
         const hasImage = imageUrl && String(imageUrl).trim() !== '' && String(imageUrl).trim().startsWith('http');
         const productId = card.productId || '';
+        const status = String(card.status || 'ยังมีอยู่').trim();
+        // ตรวจสอบว่าสถานะเป็น "ยังมีอยู่" หรือไม่ (รองรับหลายรูปแบบ)
+        const isSold = status !== 'ยังมีอยู่' && status !== '' && status.toLowerCase() !== 'ยังมีอยู่';
         
         // Debug: แสดงข้อมูลการ์ดแต่ละใบ (เฉพาะการ์ดแรก)
         if (index === 0) {
@@ -854,7 +882,8 @@
             imageUrlSubstring: String(imageUrl).substring(0, 50),
             hasImage: hasImage,
             imageUrlType: typeof imageUrl,
-            imageUrlLength: String(imageUrl).length
+            imageUrlLength: String(imageUrl).length,
+            status: status
           });
         }
         
@@ -888,9 +917,12 @@
         const folderSlot = card.folderSlot ? `ช่อง ${card.folderSlot}` : '-';
         const depositDate = card.depositDate || '-';
         const consignorName = card.consignorName || '-';
+        const soldClass = isSold ? ' sold' : '';
+        const statusText = isSold ? 'ขายแล้ว' : '✓ ยังมีอยู่';
+        const statusBadgeClass = isSold ? ' sold' : '';
         
         html += `
-          <div class="card-item" onclick="openModal(${index})">
+          <div class="card-item${soldClass}" onclick="openModal(${index})">
             <div class="card-image-container">
               ${imageHtml}
             </div>
@@ -914,7 +946,7 @@
                   <span class="card-detail-value">${escapeHtml(card.notes)}</span>
                 </div>
                 ` : ''}
-                <span class="status-badge">✓ ยังมีอยู่</span>
+                <span class="status-badge${statusBadgeClass}">${escapeHtml(statusText)}</span>
               </div>
             </div>
           </div>
@@ -944,42 +976,74 @@
       const imagePlaceholders = document.querySelectorAll('.card-image-placeholder[data-image-url]');
       console.log(`🖼️ เริ่มโหลดรูปภาพ ${imagePlaceholders.length} รูป...`);
       
-      let loadedCount = 0;
+      if (imagePlaceholders.length === 0) {
+        console.log('⚠️ ไม่พบรูปภาพที่ต้องโหลด');
+        return;
+      }
       
-      imagePlaceholders.forEach((placeholder, index) => {
-        const imageUrl = placeholder.getAttribute('data-image-url');
-        if (!imageUrl) return;
+      let loadedCount = 0;
+      let currentIndex = 0;
+      
+      // โหลดรูปทีละรูปด้วย delay เพื่อไม่ให้บล็อก UI
+      function loadNextImage() {
+        if (currentIndex >= imagePlaceholders.length) {
+          console.log(`✅ โหลดรูปภาพเสร็จทั้งหมด: ${loadedCount}/${imagePlaceholders.length}`);
+          return;
+        }
         
-        // โหลดรูปทีละรูปด้วย delay เล็กน้อยเพื่อไม่ให้ช้าเกินไป
-        setTimeout(() => {
-          const img = new Image();
+        const placeholder = imagePlaceholders[currentIndex];
+        const imageUrl = placeholder.getAttribute('data-image-url');
+        currentIndex++;
+        
+        if (!imageUrl) {
+          // ถ้าไม่มี URL ให้ข้ามไป
+          loadNextImage();
+          return;
+        }
+        
+        const img = new Image();
+        
+        img.onload = function() {
+          // แทนที่ spinner ด้วยรูปภาพ
+          placeholder.innerHTML = '';
+          placeholder.classList.remove('card-image-placeholder');
+          placeholder.classList.add('card-image-container');
+          img.className = 'card-image';
+          img.alt = 'Card image';
+          img.loading = 'lazy';
+          placeholder.appendChild(img);
           
-          img.onload = function() {
-            // แทนที่ spinner ด้วยรูปภาพ
-            placeholder.innerHTML = '';
-            placeholder.classList.remove('card-image-placeholder');
-            placeholder.classList.add('card-image-container');
-            img.className = 'card-image';
-            img.alt = 'Card image';
-            img.loading = 'lazy';
-            placeholder.appendChild(img);
-            
-            loadedCount++;
-            console.log(`✅ โหลดรูปภาพ ${loadedCount}/${imagePlaceholders.length} เสร็จ`);
-          };
+          // ตรวจสอบว่าการ์ดนี้เป็น "ขายแล้ว" หรือไม่ เพื่อใช้ filter grayscale
+          const cardItem = placeholder.closest('.card-item');
+          if (cardItem && cardItem.classList.contains('sold')) {
+            // CSS จะจัดการ grayscale อัตโนมัติ
+          }
           
-          img.onerror = function() {
-            // ถ้าโหลดไม่ได้ ให้แสดง placeholder
-            placeholder.innerHTML = '<div class="card-image-placeholder">🃏</div>';
-            placeholder.removeAttribute('data-image-url');
-            
-            loadedCount++;
-            console.log(`❌ โหลดรูปภาพ ${loadedCount}/${imagePlaceholders.length} ล้มเหลว`);
-          };
+          loadedCount++;
+          console.log(`✅ โหลดรูปภาพ ${loadedCount}/${imagePlaceholders.length} เสร็จ`);
           
-          img.src = imageUrl;
-        }, index * 50); // delay 50ms ต่อรูป เพื่อไม่ให้โหลดพร้อมกันทั้งหมด
-      });
+          // โหลดรูปถัดไปหลังจาก delay เล็กน้อย
+          setTimeout(loadNextImage, 100); // delay 100ms ต่อรูป
+        };
+        
+        img.onerror = function() {
+          // ถ้าโหลดไม่ได้ ให้แสดง placeholder
+          placeholder.innerHTML = '<div class="card-image-placeholder">🃏</div>';
+          placeholder.removeAttribute('data-image-url');
+          
+          loadedCount++;
+          console.log(`❌ โหลดรูปภาพ ${loadedCount}/${imagePlaceholders.length} ล้มเหลว`);
+          
+          // โหลดรูปถัดไปแม้ว่าจะล้มเหลว
+          setTimeout(loadNextImage, 50);
+        };
+        
+        // เริ่มโหลดรูป
+        img.src = imageUrl;
+      }
+      
+      // เริ่มโหลดรูปแรก
+      loadNextImage();
     }
 
     function updateStats(total, filtered) {
@@ -1035,15 +1099,26 @@
       const container = document.getElementById('cards-container');
       if (!container || cards.length === 0) return;
       
+      // เรียงลำดับตามค่าเริ่มต้น (ชื่อ ก-ฮ) - ใช้ spread operator เพื่อไม่แก้ไข array เดิม
+      const sortedCards = sortCards([...cards], 'name-asc');
+      
+      // สร้าง HTML ทันทีโดยไม่ delay
       let html = '<div class="cards-grid">';
       
-      cards.forEach((card, index) => {
+      sortedCards.forEach((card, index) => {
         const price = card.listedPrice ? String(card.listedPrice) : '-';
         const cardName = card.cardName || 'ไม่ระบุชื่อ';
+        const status = String(card.status || 'ยังมีอยู่').trim();
+        // ตรวจสอบว่าสถานะเป็น "ยังมีอยู่" หรือไม่ (รองรับหลายรูปแบบ)
+        const isSold = status !== 'ยังมีอยู่' && status !== '' && status.toLowerCase() !== 'ยังมีอยู่';
+        const soldClass = isSold ? ' sold' : '';
+        const statusText = isSold ? 'ขายแล้ว' : '✓ ยังมีอยู่';
+        const statusBadgeClass = isSold ? ' sold' : '';
         
         // แสดงชื่อการ์ดและราคาทันที (ไม่ต้องรอรูปภาพ)
+        // ใช้ index จาก sortedCards แทน index เดิม
         html += `
-          <div class="card-item" onclick="openModal(${index})">
+          <div class="card-item${soldClass}" onclick="openModal(${index})">
             <div class="card-image-container">
               <div class="card-image-placeholder" data-image-url="${escapeHtml(card.cardImage || '')}">
                 <div class="image-loading-spinner"></div>
@@ -1069,7 +1144,7 @@
                   <span class="card-detail-value">${escapeHtml(card.notes)}</span>
                 </div>
                 ` : ''}
-                <span class="status-badge">✓ ยังมีอยู่</span>
+                <span class="status-badge${statusBadgeClass}">${escapeHtml(statusText)}</span>
               </div>
             </div>
           </div>
@@ -1077,22 +1152,28 @@
       });
       
       html += '</div>';
+      
+      // แสดงข้อความทันทีโดยไม่ต้องรอรูปภาพ - แสดงทันทีเลย
       container.innerHTML = html;
-      console.log(`⚡ แสดงชื่อการ์ดและราคาทันที (${cards.length} การ์ด)`);
       
-      // เก็บ filteredCards ไว้ในตัวแปร global เพื่อใช้ใน modal
-      window.currentFilteredCards = cards;
+      // เก็บ filteredCards ไว้ในตัวแปร global เพื่อใช้ใน modal (ใช้ sortedCards)
+      window.currentFilteredCards = sortedCards;
       
-      // โหลดรูปภาพทีละรูปหลังจากแสดงข้อมูลแล้ว
-      loadImagesProgressively();
+      // โหลดรูปภาพทีละรูปหลังจากแสดงข้อความแล้ว - ใช้ setTimeout เพื่อไม่ให้บล็อก UI
+      setTimeout(() => {
+        loadImagesProgressively();
+      }, 50); // delay เล็กน้อย (50ms) เพื่อให้ข้อความแสดงก่อน
     }
 
     function loadCards() {
+      const container = document.getElementById('cards-container');
+      if (!container) return;
+      
       // แสดง skeleton cards ทันที (ไม่ต้องรอ API)
       showSkeletonCards();
       
       if (API_URL.includes('YOUR_APPS_SCRIPT_WEB_APP_URL')) {
-        document.getElementById('cards-container').innerHTML = `
+        container.innerHTML = `
           <div class="error-message">
             <h3>⚠️ ยังไม่ได้ตั้งค่า API URL</h3>
             <p>กรุณา deploy Apps Script และใส่ URL ในไฟล์ consignment-cards.html</p>
@@ -1108,6 +1189,15 @@
         .then(res => {
           const fetchTime = performance.now() - startTime;
           console.log(`📡 Fetch API เสร็จ: ${fetchTime.toFixed(0)}ms`);
+          
+          // ตรวจสอบ HTTP status
+          if (!res.ok) {
+            if (res.status === 429) {
+              throw new Error('429: เรียก API บ่อยเกินไป กรุณารอสักครู่แล้วรีเฟรชหน้าเว็บ');
+            }
+            throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+          }
+          
           return res.json();
         })
         .then(data => {
@@ -1118,6 +1208,8 @@
           if (data.debug && Array.isArray(data.debug)) {
             console.log('🔍 Debug จาก Apps Script:');
             data.debug.forEach(log => console.log('  - ' + log));
+          } else {
+            console.log('⚠️ ไม่พบ debug info จาก Apps Script (อาจจะยังไม่ได้ deploy เวอร์ชันใหม่)');
           }
           
           if (data.error) {
@@ -1129,15 +1221,14 @@
           allCards = data.cards || [];
           console.log(`📊 ได้ข้อมูล ${allCards.length} การ์ด`);
           
-          // แสดงชื่อการ์ดและราคาทันที (ไม่ต้องรอ renderCards ทั้งหมด)
-          showCardsImmediately(allCards);
-          
-          // แล้วค่อย render ทั้งหมดทีหลัง
+          // แสดงข้อความทันที (ไม่ต้องรอรูปภาพ) - แสดงทันทีโดยไม่ delay
           const renderStart = performance.now();
-          updateDisplay();
+          showCardsImmediately(allCards);
           const renderTime = performance.now() - renderStart;
-          console.log(`🎨 Render HTML เสร็จ: ${renderTime.toFixed(0)}ms`);
-          console.log(`⚡ แสดงข้อมูลการ์ดแล้ว (ไม่ต้องรอรูปภาพ)`);
+          console.log(`⚡ แสดงข้อความทันที: ${renderTime.toFixed(0)}ms`);
+          
+          // อัพเดท stats
+          updateStats(allCards.length, allCards.length);
           
           const totalTime = performance.now() - startTime;
           console.log(`✅ โหลดข้อมูลเสร็จ: ${totalTime.toFixed(0)}ms`);
@@ -1146,10 +1237,22 @@
         })
         .catch(err => {
           console.error('Error loading cards:', err);
+          const errorMessage = err.message || err.toString();
+          let displayMessage = 'เกิดข้อผิดพลาดในการโหลดข้อมูล';
+          
+          if (errorMessage.includes('429')) {
+            displayMessage = '⚠️ เรียก API บ่อยเกินไป<br>กรุณารอสักครู่แล้วรีเฟรชหน้าเว็บ (F5)';
+          } else if (errorMessage.includes('CORS')) {
+            displayMessage = '⚠️ ปัญหา CORS<br>กรุณาเปิดไฟล์ผ่าน web server หรือ deploy Apps Script ให้ถูกต้อง';
+          } else if (errorMessage.includes('Failed to fetch')) {
+            displayMessage = '⚠️ ไม่สามารถเชื่อมต่อกับ API ได้<br>กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ต';
+          } else {
+            displayMessage += `<br>${escapeHtml(errorMessage)}`;
+          }
+          
           container.innerHTML = `
             <div class="error-message">
-              เกิดข้อผิดพลาดในการโหลดข้อมูล<br>
-              ${escapeHtml(err.toString())}
+              ${displayMessage}
             </div>
           `;
         });
@@ -1202,6 +1305,17 @@
       const frontImage = document.getElementById('modal-front-image');
       const backImage = document.getElementById('modal-back-image');
       
+      // ตรวจสอบสถานะ
+      const status = card.status || 'ยังมีอยู่';
+      const isSold = status !== 'ยังมีอยู่';
+      
+      // เพิ่ม/ลบ class "sold" จาก modal เพื่อใช้ filter grayscale
+      if (isSold) {
+        modal.classList.add('sold');
+      } else {
+        modal.classList.remove('sold');
+      }
+      
       // แสดงชื่อการ์ด
       document.getElementById('modal-card-name').textContent = card.cardName || 'ไม่ระบุชื่อ';
       
@@ -1233,6 +1347,13 @@
       
       document.getElementById('modal-consignor').textContent = card.consignorName || '-';
       document.getElementById('modal-deposit-date').textContent = card.depositDate || '-';
+      
+      // แสดงสถานะ
+      const statusText = isSold ? 'ขายแล้ว' : 'ยังมีอยู่';
+      const statusElement = document.getElementById('modal-status');
+      statusElement.textContent = statusText;
+      statusElement.style.color = isSold ? '#e53935' : '#4caf50';
+      statusElement.style.fontWeight = 'bold';
       
       if (card.notes) {
         document.getElementById('modal-notes').textContent = card.notes;

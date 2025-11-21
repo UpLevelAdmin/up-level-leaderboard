@@ -64,20 +64,59 @@ function doGet(e) {
     var idxProductId = colIndex['รหัสสินค้า'];
     var idxImageLink = colIndex['ลิงก์ภาพการ์ด'];
     
+    // Cache folder และ files เพื่อไม่ต้องเปิด folder ซ้ำ (เร็วขึ้นมาก!)
+    var driveFolderId = '15f0xNKHe4q8sNaMQo3uXs1qPBB0oVQx2';
+    var folder = null;
+    var fileMap = {}; // Cache files เพื่อไม่ต้องค้นหาซ้ำ
+    try {
+      folder = DriveApp.getFolderById(driveFolderId);
+      // ดึงไฟล์ทั้งหมดจาก folder ครั้งเดียว (เร็วกว่าการค้นหาทีละไฟล์)
+      var allFiles = folder.getFiles();
+      while (allFiles.hasNext()) {
+        var file = allFiles.next();
+        var fileName = file.getName();
+        fileMap[fileName] = {
+          id: file.getId(),
+          file: file
+        };
+      }
+    } catch (e) {
+      // ถ้าเกิด error ให้ข้ามไป (ไม่ต้องแสดง error)
+    }
+    
     // ประมวลผลข้อมูลทั้งหมดแบบ batch (เร็วกว่าการประมวลผลทีละแถว)
     var rowCount = data.length;
     var cardImage, imageLink, imageLinkStr, idMatch, cardName, status;
+    var statusCounts = {};
+    var totalProcessed = 0;
+    var skippedNoName = 0;
+    var skippedRows = [];
     
     for (var i = 1; i < rowCount; i++) {
       var row = data[i];
       
       // อ่านข้อมูลโดยใช้ index โดยตรง (เร็วกว่า)
       cardName = row[idxCardName];
-      if (!cardName) continue; // ข้ามถ้าไม่มีชื่อการ์ด
+      // ตรวจสอบว่ามีชื่อการ์ดหรือไม่ (รวมถึง whitespace)
+      if (!cardName || String(cardName).trim() === '') {
+        skippedNoName++;
+        // เก็บข้อมูลแถวที่ถูกข้ามเพื่อ debug
+        if (skippedRows.length < 5) { // เก็บแค่ 5 แถวแรกเพื่อไม่ให้ log ยาวเกินไป
+          skippedRows.push({
+            row: i + 1,
+            cardName: cardName,
+            productId: row[idxProductId] || '',
+            status: row[idxStatus] || ''
+          });
+        }
+        continue; // ข้ามถ้าไม่มีชื่อการ์ด
+      }
       
-      status = row[idxStatus];
-      // ตรวจสอบสถานะแบบเร็ว (ไม่ต้อง String() ถ้าไม่จำเป็น)
-      if (status && status !== 'ยังมีอยู่') continue;
+      status = String(row[idxStatus] || 'ยังมีอยู่').trim();
+      statusCounts[status] = (statusCounts[status] || 0) + 1;
+      totalProcessed++;
+      
+      // แสดงการ์ดทุกสถานะ (ไม่กรอง)
       
       // อ่านรูปภาพจาก Column G แบบเร็ว
       cardImage = '';
@@ -100,26 +139,22 @@ function doGet(e) {
         }
       }
       
-      // ดึงรูปหลังจาก Drive โดยใช้ productId
+      // ดึงรูปหลังจาก Drive โดยใช้ productId - ใช้ fileMap ที่ cache ไว้แล้ว (เร็วมาก!)
       var cardBackImage = '';
       var productId = String(row[idxProductId] || '').trim();
-      if (productId) {
-        try {
-          var driveFolderId = '15f0xNKHe4q8sNaMQo3uXs1qPBB0oVQx2';
-          var folder = DriveApp.getFolderById(driveFolderId);
-          var backFileName = productId + ' หลัง.jpg';
-          var backFiles = folder.getFilesByName(backFileName);
-          
-          if (backFiles.hasNext()) {
-            var backFile = backFiles.next();
-            try {
-              backFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-            } catch (e) {}
-            var backFileId = backFile.getId();
+      if (productId && fileMap) {
+        var backFileName = productId + ' หลัง.jpg';
+        var cachedFile = fileMap[backFileName];
+        if (cachedFile) {
+          try {
+            // ลดการ setSharing (ไม่จำเป็นถ้าไฟล์ share อยู่แล้ว) - ทำให้เร็วขึ้นมาก
+            // ถ้าต้องการ setSharing ให้ uncomment บรรทัดนี้
+            // cachedFile.file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+            var backFileId = cachedFile.id;
             cardBackImage = 'https://drive.google.com/thumbnail?id=' + backFileId + '&sz=w1000';
+          } catch (e) {
+            // ถ้าเกิด error ให้ข้ามไป (ไม่ต้องแสดง error)
           }
-        } catch (e) {
-          // ถ้าเกิด error ให้ข้ามไป (ไม่ต้องแสดง error)
         }
       }
       
@@ -135,7 +170,7 @@ function doGet(e) {
         productId: productId,
         listedPrice: row[idxPrice] || '',
         actualPrice: row[idxActualPrice] || '',
-        status: 'ยังมีอยู่',
+        status: status,
         saleDate: row[idxSaleDate] || '',
         refundAmount: row[idxRefund] || '',
         notes: row[idxNotes] || ''
@@ -143,9 +178,19 @@ function doGet(e) {
     }
     
     if (isJson) {
+      var debugInfo = [];
+      debugInfo.push('📊 ประมวลผลทั้งหมด: ' + totalProcessed + ' การ์ด');
+      debugInfo.push('⏭️ ข้าม (ไม่มีชื่อ): ' + skippedNoName + ' แถว');
+      debugInfo.push('✅ ส่งออก: ' + cards.length + ' การ์ด');
+      debugInfo.push('📋 สถานะ: ' + JSON.stringify(statusCounts));
+      if (skippedRows.length > 0) {
+        debugInfo.push('🔍 แถวที่ถูกข้าม (ตัวอย่าง): ' + JSON.stringify(skippedRows));
+      }
+      
       return ContentService.createTextOutput(JSON.stringify({
         cards: cards,
-        total: cards.length
+        total: cards.length,
+        debug: debugInfo
       })).setMimeType(ContentService.MimeType.JSON);
     }
     
