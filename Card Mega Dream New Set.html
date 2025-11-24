@@ -1,0 +1,2385 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>การ์ดชุดใหม่ - Pokemon Cards Collection</title>
+    <style>
+:root {
+    --bg-color: #0f172a;
+    --card-bg: rgba(255, 255, 255, 0.05);
+    --card-border: rgba(255, 255, 255, 0.1);
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --accent: #38bdf8;
+    --accent-glow: rgba(56, 189, 248, 0.3);
+    --font-main: 'Outfit', sans-serif;
+    --font-thai: 'Kanit', sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--font-main);
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+.background-animation {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    background: radial-gradient(circle at 50% 50%, #1e293b 0%, #0f172a 100%);
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 3rem;
+    padding-top: 2rem;
+}
+
+h1 {
+    font-size: 3rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(to right, #fff, #94a3b8);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.highlight {
+    color: var(--accent);
+    -webkit-text-fill-color: var(--accent);
+}
+
+header p {
+    color: var(--text-secondary);
+    font-family: var(--font-thai);
+    font-weight: 300;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 2rem;
+}
+
+.card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+    position: relative;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px -10px var(--accent-glow);
+    border-color: var(--accent);
+}
+
+.card-image {
+    width: 100%;
+    aspect-ratio: 2.5/3.5;
+    object-fit: contain;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 1rem;
+}
+
+.card-content {
+    padding: 1.5rem;
+}
+
+.card-title {
+    font-family: var(--font-thai);
+    font-size: 1.25rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+}
+
+.card-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.type-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Types */
+.type-grass {
+    background: #22c55e;
+    color: #fff;
+}
+
+.type-fire {
+    background: #ef4444;
+    color: #fff;
+}
+
+.type-water {
+    background: #3b82f6;
+    color: #fff;
+}
+
+.type-lightning {
+    background: #eab308;
+    color: #000;
+}
+
+.type-psychic {
+    background: #a855f7;
+    color: #fff;
+}
+
+.type-fighting {
+    background: #f97316;
+    color: #fff;
+}
+
+.type-darkness {
+    background: #1e293b;
+    color: #fff;
+    border: 1px solid #475569;
+}
+
+.type-metal {
+    background: #94a3b8;
+    color: #000;
+}
+
+.type-fairy {
+    background: #f472b6;
+    color: #fff;
+}
+
+.type-dragon {
+    background: linear-gradient(135deg, #f59e0b, #ef4444);
+    color: #fff;
+}
+
+.type-colorless {
+    background: #cbd5e1;
+    color: #000;
+}
+
+/* Modal */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 100;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.modal.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    position: relative;
+    background: #1e293b;
+    width: 90%;
+    max-width: 800px;
+    max-height: 90vh;
+    overflow-y: auto;
+    border-radius: 24px;
+    border: 1px solid var(--card-border);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    transform: scale(0.95);
+    transition: transform 0.3s ease;
+    z-index: 101;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal.active .modal-content {
+    transform: scale(1);
+}
+
+.close-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 2rem;
+    cursor: pointer;
+    z-index: 10;
+}
+
+.close-btn:hover {
+    color: var(--text-primary);
+}
+
+.modal-body-content {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 2rem;
+    padding: 2rem;
+}
+
+@media (max-width: 768px) {
+    .modal-body-content {
+        grid-template-columns: 1fr;
+    }
+}
+
+.modal-image {
+    width: 100%;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.modal-details h2 {
+    font-family: var(--font-thai);
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.modal-stats {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    font-size: 1.1rem;
+}
+
+.attack-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.attack-item {
+    background: rgba(255, 255, 255, 0.03);
+    padding: 1rem;
+    border-radius: 8px;
+}
+
+.attack-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.attack-name {
+    font-family: var(--font-thai);
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.attack-damage {
+    font-weight: 800;
+    font-size: 1.2rem;
+}
+
+.attack-cost {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.cost-icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: inline-block;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Energy type colors for cost icons */
+.cost-icon.type-หญ้า,
+.cost-icon.type-grass {
+    background: #22c55e;
+}
+
+.cost-icon.type-ไฟ,
+.cost-icon.type-fire {
+    background: #ef4444;
+}
+
+.cost-icon.type-น้ำ,
+.cost-icon.type-water {
+    background: #3b82f6;
+}
+
+.cost-icon.type-ไฟฟ้า,
+.cost-icon.type-lightning {
+    background: #eab308;
+}
+
+.cost-icon.type-พลังจิต,
+.cost-icon.type-psychic {
+    background: #a855f7;
+}
+
+.cost-icon.type-ต่อสู้,
+.cost-icon.type-fighting {
+    background: #f97316;
+}
+
+.cost-icon.type-ความมืด,
+.cost-icon.type-darkness {
+    background: #1e293b;
+    border: 1px solid #475569;
+}
+
+.cost-icon.type-โลหะ,
+.cost-icon.type-metal {
+    background: #94a3b8;
+}
+
+.cost-icon.type-เทพนิยาย,
+.cost-icon.type-fairy {
+    background: #f472b6;
+}
+
+.cost-icon.type-มังกร,
+.cost-icon.type-dragon {
+    background: linear-gradient(135deg, #f59e0b, #ef4444);
+}
+
+.cost-icon.type-ไร้สี,
+.cost-icon.type-colorless {
+    background: #cbd5e1;
+}
+
+.attack-effect {
+    font-family: var(--font-thai);
+    color: var(--text-secondary);
+    line-height: 1.6;
+    font-size: 0.95rem;
+}
+
+.loading {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 3rem;
+    color: var(--text-secondary);
+    font-size: 1.2rem;
+}
+
+/* Abilities */
+.ability-item {
+    background: rgba(255, 255, 255, 0.03);
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    border-left: 4px solid #ef4444;
+}
+
+.ability-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.ability-label {
+    background: #ef4444;
+    color: white;
+    padding: 0.1rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-family: var(--font-thai);
+}
+
+.ability-name {
+    font-family: var(--font-thai);
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: #ef4444;
+}
+
+.ability-effect {
+    font-family: var(--font-thai);
+    color: var(--text-secondary);
+    line-height: 1.6;
+    font-size: 0.95rem;
+}
+
+.trainer-effect {
+    background: rgba(255, 255, 255, 0.05);
+    border-left: 3px solid #3b82f6;
+    padding: 1rem;
+    border-radius: 0 0.5rem 0.5rem 0;
+    margin-bottom: 1.5rem;
+}
+
+.trainer-effect p {
+    margin: 0;
+    line-height: 1.6;
+    color: #e2e8f0;
+    font-family: var(--font-thai);
+}
+</style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;700&family=Outfit:wght@400;600;800&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <div class="background-animation"></div>
+
+    <header>
+        <div class="container">
+            <h1>การ์ดชุดใหม่ <span class="highlight">63 ใบ</span></h1>
+            <p>การ์ดใหม่จาก Mega Dream EX Full Main Set</p>
+        </div>
+    </header>
+
+    <main class="container">
+    <div style="text-align: center; margin-bottom: 2rem;">
+        <a href="Card Mega Dream Combined.html" style="display: inline-block; padding: 0.75rem 1.5rem; background: rgba(56, 189, 248, 0.2); border: 1px solid var(--accent); border-radius: 8px; color: var(--accent); text-decoration: none; font-family: var(--font-thai); transition: all 0.3s ease;">
+            ← กลับไปดูการ์ดทั้งหมด
+        </a>
+    </div>
+    
+        <div id="card-grid" class="grid">
+            <!-- Cards will be injected here -->
+            <div class="loading">Loading cards...</div>
+        </div>
+    </main>
+
+    <div id="modal" class="modal">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <button class="close-btn">&times;</button>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+
+    
+    <script>
+    const embeddedCardsData = [
+  {
+    "id": "048526",
+    "url": "https://www.pokemon-card.com/card-search/details.php/card/048526/regu/all",
+    "image": "https://www.pokemon-card.com/assets/images/card_images/large/M2a/048526_P_KEMUSSO.jpg",
+    "name": "เคมุสโซ",
+    "hp": "60",
+    "type": "หญ้า",
+    "abilities": [],
+    "attacks": [
+      {
+        "cost": [
+          "หญ้า"
+        ],
+        "damage": "20",
+        "name": "แมลงกัด",
+        "effect": ""
+      }
+    ],
+    "weakness": "ไฟ ×2",
+    "resistance": "--",
+    "retreat": 1
+  },
+  {
+    "id": "048527",
+    "url": "https://www.pokemon-card.com/card-search/details.php/card/048527/regu/all",
+    "image": "https://www.pokemon-card.com/assets/images/card_images/large/M2a/048527_P_KARASARISU.jpg",
+    "name": "คาราสาลิส",
+    "hp": "90",
+    "type": "หญ้า",
+    "abilities": [
+      {
+        "name": "รังไหมเพิ่มจำนวน",
+        "type": "Ability",
+        "effect": "เมื่อนำการ์ดนี้จากบนมือออกมาวิวัฒนาการในเทิร์นฝ่ายเรา ใช้ได้ 1 ครั้ง เลือก \"คาราสาลิส\" หรือ \"มายุลด\" 1 ใบจากสำรับการ์ดฝ่ายเรา วางบนเบนช์ แล้วสับสำรับการ์ด"
+      }
+    ],
+    "attacks": [
+      {
+        "cost": [
+          "หญ้า"
+        ],
+        "damage": "30",
+        "name": "พุ่งชน",
+        "effect": ""
+      }
+    ],
+    "weakness": "ไฟ ×2",
+    "resistance": "--",
+    "retreat": 3
+  },
+  {
+    "id": "048528",
+    "url": "https://www.pokemon-card.com/card-search/details.php/card/048528/regu/all",
+    "image": "https://www.pokemon-card.com/assets/images/card_images/large/M2a/048528_P_AGEHANTO.jpg",
+    "name": "อาเกฮันท์",
+    "hp": "130",
+    "type": "หญ้า",
+    "abilities": [],
+    "attacks": [
+      {
+        "cost": [
+          "หญ้า"
+        ],
+        "damage": "40",
+        "name": "ผงชา",
+        "effect": "ทอยเหรียญ 1 ครั้งถ้าออกหัว จะทำให้โปเกมอนบนตำแหน่งต่อสู้ของฝ่ายตรงข้ามเป็นสภาวะชา"
+      },
+      {
+        "cost": [
+          "หญ้า"
+        ],
+        "damage": "80×",
+        "name": "เอเนอร์จี้สตรอว์",
+        "effect": "ดูมือฝ่ายตรงข้าม แดเมจจะเท่ากับจำนวนการ์ดพลังงานที่เจอ x 80"
+      }
+    ],
+    "weakness": "ไฟ ×2",
+    "resistance": "--",
+    "retreat": 1
+  },
+  {
+    "id": "048529",
+    "url": "https://www.pokemon-card.com/card-search/details.php/card/048529/regu/all",
+    "image": "https://www.pokemon-card.com/assets/images/card_images/large/M2a/048529_P_MAYURUDO.jpg",
+    "name": "มายุลด",
+    "hp": "90",
+    "type": "หญ้า",
+    "abilities": [],
+    "attacks": [
+      {
+        "cost": [
+          "หญ้า"
+        ],
+        "name": "สลับตัว",
+        "effect": "สลับโปเกมอนนี้กับโปเกมอนบนเบนช์"
+      }
+    ],
+    "weakness": "ไฟ ×2",
+    "resistance": "--",
+    "retreat": 3
+  },
+  {
+    "id": "048530",
+    "url": "https://www.pokemon-card.com/card-search/details.php/card/048530/regu/all",
+    "image": "https://www.pokemon-card.com/assets/images/card_images/large/M2a/048530_P_DOKUKEIRU.jpg",
+    "name": "โดคุเคล",
+    "hp": "140",
+    "type": "หญ้า",
+    "abilities": [
+      {
+        "name": "สายลมพัดผ่าน",
+        "type": "Ability",
+        "effect": "ใช้ได้ 1 ครั้งในเทิร์นฝ่ายเรา ทอยเหรียญ 1 ครั้งถ้าออกหัว เลือกพลังงานที่ติดอยู่กับโปเกมอนบนตำแหน่งต่อสู้ของฝ่ายตรงข้าม 1 ลูก นำกลับขึ้นมือฝ่ายตรงข้าม"
+      }
+    ],
+    "attacks": [
+      {
+        "cost": [
+          "หญ้า",
+          "หญ้า"
+        ],
+        "damage": "100",
+        "name": "พิษยามค่ำ",
+        "effect": "ทำให้โปเกมอนบนตำแหน่งต่อสู้ของฝ่ายตรงข้ามเป็นสภาวะพิษและหลับ"
+      }
+    ],
+    "weakness": "ไฟ ×2",
+    "resistance": "--",
+    "retreat": 1
+  },
+  {
+    "id": "048542",
+    "url": "https://www.pokemon-card.com/card-search/details.php/card/048542/regu/all",
+    "image": "https://www.pokemon-card.com/assets/images/card_images/large/M2a/048542_P_ENTEI.jpg",
+    "name": "เอ็นเต",
+    "hp": "140",
+    "type": "ไฟ",
+    "abilities": [],
+    "attacks": [
+      {
+        "cost": [
+          "ไฟ",
+          "ไฟ"
+        ],
+        "damage": "30＋",
+        "name": "แฟลร์ฟอล",
+        "effect": "ถ้ามีพลังงานบนกระดานฝ่ายเรา 4 ลูกขึ้นไป แดเมจจะเพิ่มขึ้น 90"
+      }
+    ],
+    "weakness": "น้ำ ×2",
+    "resistance": "--",
+    "retreat": 3
+  },
+  {
+    "id": "048544",
+    "url": "https://www.pokemon-card.com/card-search/details.php/card/048544/regu/all",
+    "image": "https://www.pokemon-card.com/assets/images/card_images/large/M2a/048544_P_DONMERU.jpg",
+    "name": "ดอนเมล",
+    "hp": "80",
+    "type": "ไฟ",
+    "abilities": [
+      {
+        "name": "ร่างกายแผดเผา",
+        "type": "Ability",
+        "effect": "เมื่อโปเกมอนนี้ อยู่บนตำแหน่งต่อสู้และได้รับแดเมจของท่าต่อสู้จากโปเกมอนฝ่ายตรงข้าม จะทำให้โปเกมอนที่ใช้ท่าต่อสู้เป็นสภาวะไหม้"
+      }
+    ],
+    "attacks": [
+      {
+        "cost": [
+          "ไฟ",
+          "ไร้สี"
+        ],
+        "damage": "20",
+        "name": "เปลวไฟ",
+        "effect": ""
+      }
+    ],
+    "weakness": "น้ำ ×2",
+    "resistance": "--",
+    "retreat": 3
+  },
+  {
+    "id": "048545",
+    "url": "https://www.pokemon-card.com/card-search/details.php/card/048545/regu/all",
+    "image": "https://www.pokemon-card.com/assets/images/card_images/large/M2a/048545_P_BAKUDA.jpg",
+    "name": "บาคุ้ดา",
+    "hp": "140",
+    "type": "ไฟ",
+    "abilities": [],
+    "attacks": [
+      {
+        "cost": [
+          "ไฟ"
+        ],
+        "damage": "110",
+        "name": "ลนไฟ",
+        "effect": "ถ้าโปเกมอนบนตำแหน่งต่อสู้ของฝ่ายตรงข้ามไม่ได้เป็นสภาวะไหม้ ท่าต่อสู้นี้จะล้มเหลว"
+      },
+      {
+        "cost": [
+          "ไฟ",
+          "ไร้สี",
+          "ไร้สี",
+          "ไร้สี"
+        ],
+        "damage": "170",
+        "name": "พาวเวอร์แสตมป์",
+        "effect": "เลือกพลังงานที่ติดอยู่กับโปเกมอนนี้ 2 ลูก ทิ้งที่ตำแหน่งทิ้งการ์ด"
+      }
+    ],
+    "weakness": "น้ำ ×2",
+    "resistance": "--",
+    "retreat": 3
+  },
+  {
+    "id": "048557",
+    "url": "https://www.pokemon-card.com/card-search/details.php/card/048557/regu/all",
+    "image": "https://www.pokemon-card.com/assets/images/card_images/large/M2a/048557_P_YUKIWARASHI.jpg",
+    "name": "ยูคิวาราชิ",
+    "hp": "70",
+    "type": "น้ำ",
+    "abilities": [],
+    "attacks": [
+      {
+        "cost": [
+          "น้ำ"
+        ],
+        "damage": "10",
+        "name": "เย็นยะเยือก",
+        "effect": ""
+      }
+    ],
+    "weakness": "×2",
+    "resistance": "--",
+    "retreat": 1
+  },
+  {
+    "id": "048558",
+    "url": "https://www.pokemon-card.com/card-search/details.php/card/048558/regu/all",
+    "image": "https://www.pokemon-card.com/assets/images/card_images/large/M2a/048558_P_MYUKIMENOKOEX.jpg",
+    "name": "เมก้ายูคิเมโนโกะ ex",
+    "hp": "310",
+    "type": "น้ำ",
+    "abilities": [],
+    "attacks": [
+      {
+        "cost": [
+          "น้ำ"
+        ],
+        "damage": "50×",
+        "name": "เพลงแค้น",
+        "effect": "แดเมจจะเท่ากับจำนวนการ์ดบนมือฝ่ายตรงข้าม x 50"
+      },
+      {
+        "cost": [
+          "น้ำ",
+          "ไร้สี",
+          "ไร้สี"
+        ],
+        "damage": "150",
+        "name": "แอบโซลูทสโนว์",
+        "effect": "ทำให้โปเกมอนบนตำแหน่งต่อสู้ของฝ่ายตรงข้ามเป็นสภาวะหลับ"
+      }
+    ],
+    "weakness": "×2",
+    "resistance": "--",
+    "retreat": 1
+  },
+  {
+    "id": "048559",
+    "url": "https://www.pokemon-card.com/card-search/details.php/card/048559/regu/all",
+    "image": "https://www.pokemon-card.com/assets/images/card_images/large/M2a/048559_P_NNOBANIPUTCHI.jpg",
+    "name": "วานิปุจจิของ N",
+    "hp": "60",
+    "type": "น้ำ",
+    "abilities": [],
+    "attacks": [
+      {
+        "cost": [
+          "ไร้สี"
+        ],
+        "name": "เรียกพวก",
+        "effect": "เลือกโปเกมอนพื้นฐานได้สูงสุด 2 ใบจากสำรับการ์ดฝ่ายเรา วางบนเบนช์ แล้วสับสำรับการ์ด"
+      },
+      {
+        "cost": [
+          "น้ำ",
+          "ไร้สี"
+        ],
+        "damage": "20",
+        "name": "สโนว์ไอซ์",
+        "effect": ""
+      }
+    ],
+    "weakness": "×2",
+    "resistance": "--",
+    "retreat": 1
+  },
+  {
+    "id": "048560",
+    "url": "https://www.pokemon-card.com/card-search/details.php/card/048560/regu/all",
+    "image": "https://www.pokemon-card.com/assets/images/card_images/large/M2a/048560_P_NNOBANIRITCHI.jpg",
+    "name": "วานิริชของ N",
+    "hp": "100",
+    "type": "น้ำ",
+    "abilities": [],
+    "attacks": [
+      {
+        "cost": [
+          "ไร้สี"
+        ],
+        "damage": "20",
+        "name": "กระโดดโลดเต้น",
+        "effect": ""
+      },
+      {
+        "cost": [
+          "น้ำ",
+          "ไร้สี",
+          "ไร้สี"
+        ],
+        "damage": "60",
+        "name": "ศูนย์สัมบูรณ์",
+        "effect": "เทิร์นถัดไปของฝ่ายตรงข้าม โปเกมอนที่ได้รับท่าต่อสู้นี้ จะใช้ท่าต่อสู้ไม่ได้"
+      }
+    ],
+    "weakness": "×2",
+    "resistance": "--",
+    "retreat": 1
+  },
+  {
+    "id": "048561",
+    "url": "https://www.pokemon-card.com/card-search/details.php/card/048561/regu/all",
+    "image": "https://www.pokemon-card.com/assets/images/card_images/large/M2a/048561_P_NNOBAIBANIRA.jpg",
+    "name": "ไบวานิลลาของ N",
+    "hp": "150",
+    "type": "น้ำ",
+    "abilities": [],
+    "attacks": [
+      {
+        "cost": [
+          "ไร้สี",
+          "ไร้สี"
+        ],
+        "name": "หิมะทับถม",
+        "effect": "วางตัวนับแดเมจบนโปเกมอนฝ่ายตรงข้ามทุกตัว ให้จำนวนตัวนับแดเมจที่วางอยู่เป็น 2 เท่า"
+      },
+      {
+        "cost": [
+          "น้ำ",
+          "ไร้สี",
+          "ไร้สี"
+        ],
+        "damage": "120",
+        "name": "พายุหิมะ",
+        "effect": "ทำแดเมจตัวละ 10 กับโปเกมอนบนเบนช์ฝ่ายตรงข้ามทุกตัว [โปเกมอนบนเบนช์จะไม่นำจุดอ่อนและควาต้านทานมาคิด]"
+      }
+    ],
+    "weakness": "×2",
+    "resistance": "--",
+    "retreat": 2
+  },
+  {
+    "id": "048562",
+    "url": "https://www.pokemon-card.com/card-search/details.php/card/048562/regu/all",
+    "image": "https://www.pokemon-card.com/assets/images/card_images/large/M2a/048562_P_YUKIHAMI.jpg",
+    "name": "ยูคิฮามิ",
+    "hp": "50",
+    "type": "น้ำ",
+    "abilities": [],
+    "attacks": [
+      {
+        "cost": [
+          "น้ำ"
+        ],
+        "damage": "20",
+        "name": "แท่งน้ำแข็ง",
+        "effect": ""
+      }
+    ],
+    "weakness": "×2",
+    "resistance": "--",
+    "retreat": 1
+  },
+  {
+    "id": "048563",
+    "url": "https://www.pokemon-card.com/card-search/details.php/card/048563/regu/all",
+    "image": "https://www.pokemon-card.com/assets/images/card_images/large/M2a/048563_P_MOSUNOU.jpg",
+    "name": "มอสโนว์",
+    "hp": "110",
+    "type": "น้ำ",
+    "abilities": [
+      {
+        "name": "ขนนกเชื้อเชิญ",
+        "type": "Ability",
+        "effect": "ถ้าโปเกมอนนี้อยู่บนตำแหน่งต่อสู้ ใช้ได้ 1 ครั้งในเทิร์นฝ่ายเรา ผู้เล่นทั้งสองฝ่าย จั่วการ์ดคนละ 1 ใบจากสำรับการ์ดของตน"
+      }
+    ],
+    "attacks": [
+      {
+        "cost": [
+          "น้ำ",
+          "น้ำ"
+        ],
+        "damage": "90",
+        "name": "โคลด์ไซโคลน",
+        "effect": "เลือกพลังงานที่ติดอยู่กับโปเกมอนนี้ 1 ลูก ย้ายไปติดกับโปเกมอนบนเบนช์"
+      }
+    ],
+    "weakness": "×2",
+    "resistance": "--",
+    "retreat": 2
+  },
+  {
+    "id": "048564",
+    "url": "https://www.pokemon-card.com/card-search/details.php/card/048564/regu/all",
+    "image": "https://www.pokemon-card.com/assets/images/card_images/large/M2a/048564_P_BURIZAPOSU.jpg",
+    "name": "บริซาพอส",
+    "hp": "130",
+    "type": "น้ำ",
+    "abilities": [],
+    "attacks": [
+      {
+        "cost": [
+          "น้ำ"
+        ],
+        "damage": "20",
+        "name": "ไอซ์ช็อต",
+        "effect": "ทำแดเมจ 20 กับโปเกมอนบนเบนช์ฝ่ายตรงข้าม 1 ตัว [โปเกมอนบนเบนช์จะไม่นำจุดอ่อนและควาต้านทานมาคิด]"
+      },
+      {
+        "cost": [
+          "น้ำ",
+          "น้ำ",
+          "น้ำ"
+        ],
+        "damage": "130",
+        "name": "ฟรอสต์ไต้ฝุ่น",
+        "effect": "เทิร์นถัดไปของฝ่ายเรา โปเกมอนนี้จะใช้ \"ฟรอสต์ไต้ฝุ่น\" ไม่ได้"
+      }
+    ],
+    "weakness": "×2",
+    "resistance": "--",
+    "retreat": 2
+  },
+  {
+    "id": "048571",
+    "url": "https://www.pokemon-card.com/card-search/details.php/card/048571/regu/all",
+    "image": "https://www.pokemon-card.com/assets/images/card_images/large/M2a/048571_P_MSHIBIRUDONEX.jpg",
+    "name": "เมก้าชิบิรุดอน ex",
+    "hp": "350",
+    "type": "electric",
+    "abilities": [],
+    "attacks": [
+      {
+        "cost": [
+          "electric",
+          "electric"
+        ],
+        "name": "กระสุนระเบิด",
+        "effect": "ทำแดเมจตัวละ 60 กับโปเกมอนฝ่ายตรงข้าม 2 ตัว [โปเกมอนบนเบนช์จะไม่นำจุดอ่อนและควาต้านทานมาคิด]"
+      },
+      {
+        "cost": [
+          "electric",
+          "electric",
+          "electric"
+        ],
+        "damage": "190",
+        "name": "ดิซาสเตอร์ช็อก",
+        "effect": "หากต้องการ เลือกพลังงานที่ติดอยู่กับโปเกมอนนี้ 2 ลูก ทิ้งที่ตำแหน่งทิ้งการ์ด แล้วทำให้โปเกมอนบนตำแหน่งต่อสู้ของฝ่ายตรงข้ามเป็นสภาวะชา"
+      }
+    ],
+    "weakness": "ต่อสู้ ×2",
+    "resistance": "--",
+    "retreat": 2
+  },
+  {
+    "id": "048572",
+    "url": "https://www.pokemon-card.com/card-search/details.php/card/048572/regu/all",
+    "image": "https://www.pokemon-card.com/assets/images/card_images/large/M2a/048572_P_MAGGIXYO.jpg",
+    "name": "มักเกียว",
+    "hp": "110",
+    "type": "electric",
+    "abilities": [],
+    "attacks": [
+      {
+        "cost": [
+          "electric"
+        ],
+        "damage": "30",
+        "name": "กับดักกระโจน",
+        "effect": "เทิร์นถัดไปของฝ่ายตรงข้าม โปเกมอนที่ได้รับท่าต่อสู้นี้ จะหนีไม่ได้ เทิร์นถัดไปของฝ่ายเรา แดเมจของท่าต่อสู้ที่โปเกมอนที่ได้รับท่าต่อสู้นี้จะได้รับจะถูก \"+100\""
+      }
+    ],
+    "weakness": "ต่อสู้ ×2",
+    "resistance": "--",
+    "retreat": 2
+  },
+  {
+    "id": "048574",
+    "url": "https://www.pokemon-card.com/card-search/details.php/card/048574/regu/all",
+    "image": "https://www.pokemon-card.com/assets/images/card_images/large/M2a/048574_P_ERIKITERU.jpg",
+    "name": "เอริคิเทล",
+    "hp": "70",
+    "type": "electric",
+    "abilities": [],
+    "attacks": [
+      {
+        "cost": [
+          "electric",
+          "ไร้สี"
+        ],
+        "damage": "30",
+        "name": "อิเล็กคิก",
+        "effect": ""
+      }
+    ],
+    "weakness": "ต่อสู้ ×2",
+    "resistance": "--",
+    "retreat": 1
+  },
+  {
+    "id": "048575",
+    "url": "https://www.pokemon-card.com/card-search/details.php/card/048575/regu/all",
+    "image": "https://www.pokemon-card.com/assets/images/card_images/large/M2a/048575_P_EREZADO.jpg",
+    "name": "เอเลซาร์ด",
+    "hp": "120",
+    "type": "electric",
+    "abilities": [
+      {
+        "name": "แผงคอผลิตไฟฟ้า",
+        "type": "Ability",
+        "effect": "ในเทิร์นนี้ ถ้านำ \"คานารี\" จากบนมือออกมาใช้แล้ว ใช้ได้ 1 ครั้งในเทิร์นฝ่ายเรา เลือก \"พลังงานพื้นฐาน\" ได้สูงสุด 2 ใบจากสำรับการ์ดฝ่ายเรา ติดที่โปเกมอนนี้ แล้วสับสำรับการ์ด"
+      }
+    ],
+    "attacks": [
+      {
+        "cost": [
+          "electric",
+          "ไร้สี",
+          "ไร้สี"
+        ],
+        "damage": "70×",
+        "name": "พาวเวอร์ฟูลโบลต์",
+        "effect": "ทอยเหรียญตามจำนวนพลังงานที่ติดอยู่กับโปเกมอนนี้ แดเมจจะเท่ากับจำนวนครั้งที่ออกหัว x 70"
+      }
+    ],
+    "weakness": "ต่อสู้ ×2",
+    "resistance": "--",
+    "retreat": 1
+  },
+  {
+    "id": "048576",
+    "url": "https://www.pokemon-card.com/card-search/details.php/card/048576/regu/all",
+    "image": "https://www.pokemon-card.com/assets/images/card_images/large/M2a/048576_P_KAPUKOKEKO.jpg",
+    "name": "คาปู โคเคโค",
+    "hp": "120",
+    "type": "electric",
+    "abilities": [],
+    "attacks": [
+      {
+        "cost": [
+          "electric"
+        ],
+        "name": "ฟาสต์ไฟลท์",
+        "effect": "ท่าต่อสู้นี้ ใช้ได้แม้จะเป็นเทิร์นแรกของผู้เล่นฝ่ายเริ่มก่อน ทิ้งการ์ดบนมือฝ่ายเราทั้งหมดที่ตำแหน่งทิ้งการ์ด แล้วจั่วการ์ด 5 ใบจากสำรับการ์ด"
+      },
+      {
+        "cost": [
+          "electric",
+          "electric",
+          "ไร้สี"
+        ],
+        "damage": "130",
+        "name": "ธันเดอร์บลาสต์",
+        "effect": "เลือกพลังงานที่ติดอยู่กับโปเกมอนนี้ 2 ลูก ทิ้งที่ตำแหน่งทิ้งการ์ด"
+      }
+    ],
+    "weakness": "ต่อสู้ ×2",
+    "resistance": "--",
+    "retreat": 1
+  },
+  {
+    "id": "048583",
+    "url": "https://www.pokemon-card.com/card-search/details.php/card/048583/regu/all",
+    "image": "https://www.pokemon-card.com/assets/images/card_images/large/M2a/048583_P_ROKETTODANNOTAMATAMA.jpg",
+    "name": "ทามะทามะของแก๊งร็อคเก็ต",
+    "hp": "60",
+    "type": "พลังจิต",
+    "abilities": [],
+    "attacks": [
+      {
+        "cost": [
+          "พลังจิต"
+        ],
+        "damage": "10＋",
+        "name": "ร่ายเวท",
+        "effect": "ทอยเหรียญ 1 ครั้งถ้าออกหัว แดเมจจะเพิ่มขึ้น 20"
+      }
+    ],
+    "weakness": "×2",
+    "resistance": "ต่อสู้ －30",
+    "retreat": 1
+  },
+  {
+    "id": "048584",
+    "url": "https://www.pokemon-card.com/card-search/details.php/card/048584/regu/all",
+    "image": "https://www.pokemon-card.com/assets/images/card_images/large/M2a/048584_P_ROKETTODANNONASSHI.jpg",
+    "name": "นัชชีของแก๊งร็อคเก็ต",
+    "hp": "140",
+    "type": "พลังจิต",
+    "abilities": [],
+    "attacks": [
+      {
+        "cost": [
+          "ไร้สี",
+          "ไร้สี"
+        ],
+        "name": "ไตรคิเนซิส",
+        "effect": "ทอยเหรียญ 3 ครั้ง ถ้าออกหัวทั้งหมด เลือกโปเกมอนฝ่ายตรงข้าม 1 ตัว ทำให้หมดสภาพ"
+      },
+      {
+        "cost": [
+          "พลังจิต",
+          "ไร้สี",
+          "ไร้สี"
+        ],
+        "damage": "150",
+        "name": "พุ่งชนสุดตัว",
+        "effect": "โปเกมอนนี้ก็จะได้รับแดเมจ 30 ด้วย"
+      }
+    ],
+    "weakness": "×2",
+    "resistance": "ต่อสู้ －30",
+    "retreat": 3
+  },
+  {
+    "id": "048589",
+    "url": "https://www.pokemon-card.com/card-search/details.php/card/048589/regu/all",
+    "image": "https://www.pokemon-card.com/assets/images/card_images/large/M2a/048589_P_MUUMA.jpg",
+    "name": "มูมา",
+    "hp": "60",
+    "type": "พลังจิต",
+    "abilities": [],
+    "attacks": [
+      {
+        "cost": [
+          "พลังจิต"
+        ],
+        "name": "ตื่นรู้",
+        "effect": "เลือกการ์ดที่จะวิวัฒนาการจากโปเกมอนนี้ 1 ใบจากสำรับการ์ดฝ่ายเรา วางบนโปเกมอนนี้เพื่อวิวัฒนาการ แล้วสับสำรับการ์ด"
+      }
+    ],
+    "weakness": "×2",
+    "resistance": "ต่อสู้ －30",
+    "retreat": 1
+  },
+  {
+    "id": "048590",
+    "url": "https://www.pokemon-card.com/card-search/details.php/card/048590/regu/all",
+    "image": "https://www.pokemon-card.com/assets/images/card_images/large/M2a/048590_P_MUUMAJI.jpg",
+    "name": "มูมาจิ",
+    "hp": "110",
+    "type": "พลังจิต",
+    "abilities": [],
+    "attacks": [
+      {
+        "cost": [
+          "พลังจิต",
+          "ไร้สี"
+        ],
+        "damage": "60",
+        "name": "แอสซาซินเมจิก",
+        "effect": "ถ้าโปเกมอนบนตำแหน่งต่อสู้ของฝ่ายตรงข้ามเป็นสภาวะผิดปกติ วางตัวนับแดเมจ 6 ตัวบนโปเกมอนบนเบนช์ฝ่ายตรงข้าม 1 ตัว"
+      }
+    ],
+    "weakness": "×2",
+    "resistance": "ต่อสู้ －30",
+    "retreat": 1
+  },
+  {
+    "id": "048598",
+    "url": "https://www.pokemon-card.com/card-search/details.php/card/048598/regu/all",
+    "image": "https://www.pokemon-card.com/assets/images/card_images/large/M2a/048598_P_ROTOMU.jpg",
+    "name": "โรตอม",
+    "hp": "60",
+    "type": "พลังจิต",
+    "abilities": [],
+    "attacks": [
+      {
+        "cost": [
+          "ไร้สี"
+        ],
+        "name": "โรโตคอล",
+        "effect": "เลือกโปเกมอนที่มีชื่อว่า \"โรตอม\" ได้ตามชอบจากสำรับการ์ดฝ่ายเรา วางบนเบนช์ แล้วสับสำรับการ์ด"
+      },
+      {
+        "cost": [
+          "ไร้สี",
+          "ไร้สี"
+        ],
+        "damage": "30×",
+        "name": "แกดเจ็ตโชว์",
+        "effect": "แดเมจจะเท่ากับจำนวน \"การ์ดไอเท็มติดโปเกมอน\" ที่ติดอยู่กับโปเกมอนฝ่ายเราทุกตัว x 30"
+      }
+    ],
+    "weakness": "×2",
+    "resistance": "ต่อสู้ －30",
+    "retreat": 1
+  },
+  {
+    "id": "048599",
+    "url": "https://www.pokemon-card.com/card-search/details.php/card/048599/regu/all",
+    "image": "https://www.pokemon-card.com/assets/images/card_images/large/M2a/048599_P_HOPPUNOBOKURE.jpg",
+    "name": "โบคุเรของฮอป",
+    "hp": "70",
+    "type": "พลังจิต",
+    "abilities": [],
+    "attacks": [
+      {
+        "cost": [
+          "ไร้สี"
+        ],
+        "damage": "10",
+        "name": "กระโดดหลบ",
+        "effect": "ทอยเหรียญ 1 ครั้งถ้าออกหัว เทิร์นถัดไปของฝ่ายตรงข้าม โปเกมอนนี้จะไม่ได้รับแดเมจและเอฟเฟกต์ของท่าต่อสู้"
+      }
+    ],
+    "weakness": "×2",
+    "resistance": "ต่อสู้ －30",
+    "retreat": 2
+  },
+  {
+    "id": "048600",
+    "url": "https://www.pokemon-card.com/card-search/details.php/card/048600/regu/all",
+    "image": "https://www.pokemon-card.com/assets/images/card_images/large/M2a/048600_P_HOPPUNOOROTTO.jpg",
+    "name": "โอร็อตของฮอป",
+    "hp": "140",
+    "type": "พลังจิต",
+    "abilities": [],
+    "attacks": [
+      {
+        "cost": [
+          "ไร้สี"
+        ],
+        "damage": "30＋",
+        "name": "ฮอร์เรอร์รีเวนจ์",
+        "effect": "ในเทิร์นก่อนของฝ่ายตรงข้าม ถ้า \"โปเกมอนของฮอป\" ฝ่ายเราหมดสภาพด้วยแดเมจจากท่าต่อสู้ แดเมจจะเพิ่มขึ้น 100"
+      },
+      {
+        "cost": [
+          "พลังจิต",
+          "ไร้สี",
+          "ไร้สี"
+        ],
+        "damage": "90",
+        "name": "ไล่ต้อน",
+        "effect": "เทิร์นถัดไปของฝ่ายตรงข้าม โปเกมอนที่ได้รับท่าต่อสู้นี้ จะหนีไม่ได้"
+      }
+    ],
+    "weakness": "×2",
+    "resistance": "ต่อสู้ －30",
+    "retreat": 2
+  },
+  {
+    "id": "048602",
+    "url": "https://www.pokemon-card.com/card-search/details.php/card/048602/regu/all",
+    "image": "https://www.pokemon-card.com/assets/images/card_images/large/M2a/048602_P_REISUPOSU.jpg",
+    "name": "เรซพอส",
+    "hp": "120",
+    "type": "พลังจิต",
+    "abilities": [],
+    "attacks": [
+      {
+        "cost": [
+          "พลังจิต"
+        ],
+        "damage": "30",
+        "name": "ฮอลโลว์ช็อต",
+        "effect": ""
+      },
+      {
+        "cost": [
+          "พลังจิต",
+          "พลังจิต",
+          "ไร้สี"
+        ],
+        "name": "แฟนตอมบิต",
+        "effect": "ทิ้งพลังงานที่ติดอยู่กับโปเกมอนนี้ทั้งหมด แล้ววางตัวนับแดเมจ 12 ตัวบนโปเกมอนฝ่ายตรงข้าม 1 ตัว"
+      }
+    ],
+    "weakness": "×2",
+    "resistance": "ต่อสู้ －30",
+    "retreat": 1
+  },
+  {
+    "id": "048604",
+    "url": "https://www.pokemon-card.com/card-search/details.php/card/048604/regu/all",
+    "image": "https://www.pokemon-card.com/assets/images/card_images/large/M2a/048604_P_ROKETTODANNODEIGUDA.jpg",
+    "name": "ดิกดาของแก๊งร็อคเก็ต",
+    "hp": "60",
+    "type": "ต่อสู้",
+    "abilities": [],
+    "attacks": [
+      {
+        "cost": [
+          "ต่อสู้"
+        ],
+        "name": "มุดดินรัวๆ",
+        "effect": "ทอยเหรียญจนกว่าจะออกก้อย ทิ้งการ์ดจากด้านบนของสำรับการ์ดฝ่ายตรงข้ามตามจำนวนครั้งที่ออกหัว"
+      }
+    ],
+    "weakness": "หญ้า ×2",
+    "resistance": "--",
+    "retreat": 1
+  },
+  {
+    "id": "048605",
+    "url": "https://www.pokemon-card.com/card-search/details.php/card/048605/regu/all",
+    "image": "https://www.pokemon-card.com/assets/images/card_images/large/M2a/048605_P_ROKETTODANNODAGUTORIO.jpg",
+    "name": "ดักทริโอของแก๊งร็อคเก็ต",
+    "hp": "100",
+    "type": "ต่อสู้",
+    "abilities": [
+      {
+        "name": "หลุม",
+        "type": "Ability",
+        "effect": "ตราบเท่าที่โปเกมอนนี้ยังอยู่ ในเทิร์นฝ่ายตรงข้าม ทุกครั้งที่โปเกมอนบนตำแหน่งต่อสู้ของฝ่ายตรงข้ามกลับไปที่เบนช์ วางตัวนับแดเมจ 2 ตัวบนโปเกมอนนั้น"
+      }
+    ],
+    "attacks": [
+      {
+        "cost": [
+          "ต่อสู้",
+          "ไร้สี"
+        ],
+        "damage": "50",
+        "name": "มัดช็อต",
+        "effect": ""
+      }
+    ],
+    "weakness": "หญ้า ×2",
+    "resistance": "--",
+    "retreat": 1
+  },
+  {
+    "id": "048607",
+    "url": "https://www.pokemon-card.com/card-search/details.php/card/048607/regu/all",
+    "image": "https://www.pokemon-card.com/assets/images/card_images/large/M2a/048607_P_CHIXYAREMU.jpg",
+    "name": "ชาเรม",
+    "hp": "120",
+    "type": "ต่อสู้",
+    "abilities": [],
+    "attacks": [
+      {
+        "cost": [
+          "ต่อสู้"
+        ],
+        "damage": "150",
+        "name": "เซเว่นคิก",
+        "effect": "ถ้าการ์ดบนมือฝ่ายเราไม่ใช่ 7 ใบ ท่าต่อสู้นี้จะล้มเหลว"
+      }
+    ],
+    "weakness": "พลังจิต ×2",
+    "resistance": "--",
+    "retreat": 1
+  },
+  {
+    "id": "048608",
+    "url": "https://www.pokemon-card.com/card-search/details.php/card/048608/regu/all",
+    "image": "https://www.pokemon-card.com/assets/images/card_images/large/M2a/048608_P_RUNATON.jpg",
+    "name": "ลูนาโทน",
+    "hp": "110",
+    "type": "ต่อสู้",
+    "abilities": [
+      {
+        "name": "ลูนาร์ไซเคิล",
+        "type": "Ability",
+        "effect": "ถ้ามี \"โซลร็อก\" อยู่บนกระดานฝ่ายเรา และทิ้ง \"พลังงานพื้นฐาน\" 1 ใบจากบนมือฝ่ายเราที่ตำแหน่งทิ้งการ์ดในเทิร์นฝ่ายเรา จะใช้ได้ 1 ครั้ง จั่วการ์ด 3 ใบจากสำรับการ์ดฝ่ายเรา ความสามารถนี้จะใช้ไม่ได้ในเทิร์นที่ใช้ \"ลูนาร์ไซเคิล\" อื่นไปแล้ว"
+      }
+    ],
+    "attacks": [
+      {
+        "cost": [
+          "ต่อสู้",
+          "ต่อสู้"
+        ],
+        "damage": "50",
+        "name": "พาวเวอร์เจม",
+        "effect": ""
+      }
+    ],
+    "weakness": "หญ้า ×2",
+    "resistance": "--",
+    "retreat": 1
+  },
+  {
+    "id": "048610",
+    "url": "https://www.pokemon-card.com/card-search/details.php/card/048610/regu/all",
+    "image": "https://www.pokemon-card.com/assets/images/card_images/large/M2a/048610_P_SHIRONANOFUKAMARU.jpg",
+    "name": "ฟุคามารุของชิโรนะ",
+    "hp": "70",
+    "type": "ต่อสู้",
+    "abilities": [],
+    "attacks": [
+      {
+        "cost": [
+          "ต่อสู้"
+        ],
+        "damage": "20",
+        "name": "ขว้างหิน",
+        "effect": "แดเมจของท่าต่อสู้นี้จะไม่นำความต้านทานมาคิด"
+      }
+    ],
+    "weakness": "หญ้า ×2",
+    "resistance": "--",
+    "retreat": 1
+  },
+  {
+    "id": "048615",
+    "url": "https://www.pokemon-card.com/card-search/details.php/card/048615/regu/all",
+    "image": "https://www.pokemon-card.com/assets/images/card_images/large/M2a/048615_P_YANCHIXYAMU.jpg",
+    "name": "ยันชัม",
+    "hp": "70",
+    "type": "ต่อสู้",
+    "abilities": [],
+    "attacks": [
+      {
+        "cost": [
+          "ไร้สี"
+        ],
+        "damage": "20",
+        "name": "บุกทะลวง",
+        "effect": "โปเกมอนนี้ก็จะได้รับแดเมจ 10 ด้วย"
+      }
+    ],
+    "weakness": "พลังจิต ×2",
+    "resistance": "--",
+    "retreat": 2
+  },
+  {
+    "id": "048616",
+    "url": "https://www.pokemon-card.com/card-search/details.php/card/048616/regu/all",
+    "image": "https://www.pokemon-card.com/assets/images/card_images/large/M2a/048616_P_MRUCHIXYABURUEX.jpg",
+    "name": "เมก้าลูชาบูล ex",
+    "hp": "250",
+    "type": "ต่อสู้",
+    "abilities": [
+      {
+        "name": "ร่างกายอดทน",
+        "type": "Ability",
+        "effect": "เมื่อโปเกมอนนี้ได้รับแดเมจของท่าต่อสู้และจะหมดสภาพ ให้ทอยเหรียญ 1 ครั้ง ถ้าออกหัว โปเกมอนนี้จะไม่หมดสภาพ และเหลือ HP \"10\" อยู่บนกระดาน"
+      }
+    ],
+    "attacks": [
+      {
+        "cost": [
+          "ต่อสู้",
+          "ต่อสู้",
+          "ไร้สี"
+        ],
+        "damage": "120＋",
+        "name": "ซัมเมอร์ซอลต์ไดฟ์",
+        "effect": "ถ้ามีการ์ดสเตเดียมวางอยู่บนกระดาน แดเมจจะเพิ่มขึ้น 140 หลังจากนั้น ทิ้งการ์ดสเตเดียมนั้นที่ตำแหน่งทิ้งการ์ด"
+      }
+    ],
+    "weakness": "พลังจิต ×2",
+    "resistance": "--",
+    "retreat": 1
+  },
+  {
+    "id": "048617",
+    "url": "https://www.pokemon-card.com/card-search/details.php/card/048617/regu/all",
+    "image": "https://www.pokemon-card.com/assets/images/card_images/large/M2a/048617_P_TANDON.jpg",
+    "name": "ตันดอน",
+    "hp": "80",
+    "type": "ต่อสู้",
+    "abilities": [],
+    "attacks": [
+      {
+        "cost": [
+          "ต่อสู้"
+        ],
+        "damage": "20",
+        "name": "สาดโคลน",
+        "effect": ""
+      }
+    ],
+    "weakness": "หญ้า ×2",
+    "resistance": "--",
+    "retreat": 3
+  },
+  {
+    "id": "048618",
+    "url": "https://www.pokemon-card.com/card-search/details.php/card/048618/regu/all",
+    "image": "https://www.pokemon-card.com/assets/images/card_images/large/M2a/048618_P_TOROGGON.jpg",
+    "name": "ทรอกกอน",
+    "hp": "110",
+    "type": "ต่อสู้",
+    "abilities": [],
+    "attacks": [
+      {
+        "cost": [
+          "ต่อสู้"
+        ],
+        "damage": "20",
+        "name": "การ์ดเพรส",
+        "effect": "เทิร์นถัดไปของฝ่ายตรงข้าม แดเมจของท่าต่อสู้ที่โปเกมอนนี้จะได้รับจะถูก \"-20\""
+      },
+      {
+        "cost": [
+          "ต่อสู้",
+          "ไร้สี",
+          "ไร้สี"
+        ],
+        "damage": "60",
+        "name": "พาวเวอร์เจม",
+        "effect": ""
+      }
+    ],
+    "weakness": "หญ้า ×2",
+    "resistance": "--",
+    "retreat": 3
+  },
+  {
+    "id": "048619",
+    "url": "https://www.pokemon-card.com/card-search/details.php/card/048619/regu/all",
+    "image": "https://www.pokemon-card.com/assets/images/card_images/large/M2a/048619_P_SEKITANZAN.jpg",
+    "name": "เซคิตันซัน",
+    "hp": "180",
+    "type": "ต่อสู้",
+    "abilities": [],
+    "attacks": [
+      {
+        "cost": [
+          "ต่อสู้"
+        ],
+        "name": "ทาร์แคนนอน",
+        "effect": "ทำแดเมจ 140 กับโปเกมอนฝ่ายตรงข้าม 1 ตัว ถ้าในตำแหน่งทิ้งการ์ดฝ่ายเรามี \"พลังงานพื้นฐาน\" น้อยกว่า 10 ใบ ท่าต่อสู้นี้จะล้มเหลว [โปเกมอนบนเบนช์จะไม่นำจุดอ่อนและควาต้านทานมาคิด]"
+      },
+      {
+        "cost": [
+          "ต่อสู้",
+          "ไร้สี",
+          "ไร้สี",
+          "ไร้สี"
+        ],
+        "damage": "220",
+        "name": "พุ่งชนด้วยร่างยักษ์",
+        "effect": "เลือกพลังงานที่ติดอยู่กับโปเกมอนนี้ 3 ลูก ทิ้งที่ตำแหน่งทิ้งการ์ด"
+      }
+    ],
+    "weakness": "หญ้า ×2",
+    "resistance": "--",
+    "retreat": 4
+  },
+  {
+    "id": "048620",
+    "url": "https://www.pokemon-card.com/card-search/details.php/card/048620/regu/all",
+    "image": "https://www.pokemon-card.com/assets/images/card_images/large/M2a/048620_P_IINEINU.jpg",
+    "name": "อีเนอินุ",
+    "hp": "140",
+    "type": "ต่อสู้",
+    "abilities": [],
+    "attacks": [
+      {
+        "cost": [
+          "ต่อสู้"
+        ],
+        "damage": "20",
+        "name": "ทุบ",
+        "effect": ""
+      },
+      {
+        "cost": [
+          "ต่อสู้",
+          "ต่อสู้",
+          "ไร้สี"
+        ],
+        "damage": "80＋",
+        "name": "เยี่ยมไข้",
+        "effect": "แดเมจจะเพิ่มขึ้นตามจำนวนการ์ดรางวัลที่ฝ่ายตรงข้ามหยิบไปในเทิร์นก่อนของฝ่ายตรงข้าม x 60"
+      }
+    ],
+    "weakness": "พลังจิต ×2",
+    "resistance": "--",
+    "retreat": 3
+  },
+  {
+    "id": "048625",
+    "url": "https://www.pokemon-card.com/card-search/details.php/card/048625/regu/all",
+    "image": "https://www.pokemon-card.com/assets/images/card_images/large/M2a/048625_P_ROKETTODANNODONKARASU.jpg",
+    "name": "ดอนคาราสึของแก๊งร็อคเก็ต",
+    "hp": "130",
+    "type": "dark",
+    "abilities": [],
+    "attacks": [
+      {
+        "cost": [
+          "ไร้สี",
+          "ไร้สี"
+        ],
+        "damage": "60×",
+        "name": "ร็อคเก็ตเฟเธอร์",
+        "effect": "ทิ้งการ์ดซัพพอร์ตที่มีชื่อว่า \"แก๊งร็อคเก็ต\" จากบนมือฝ่ายเราได้ตามชอบที่ตำแหน่งทิ้งการ์ด แดเมจจะเท่ากับจำนวนที่ทิ้ง x 60"
+      },
+      {
+        "cost": [
+          "dark",
+          "ไร้สี",
+          "ไร้สี"
+        ],
+        "damage": "100",
+        "name": "กระแทกหน้า",
+        "effect": ""
+      }
+    ],
+    "weakness": "×2",
+    "resistance": "ต่อสู้ －30",
+    "retreat": 1
+  },
+  {
+    "id": "048627",
+    "url": "https://www.pokemon-card.com/card-search/details.php/card/048627/regu/all",
+    "image": "https://www.pokemon-card.com/assets/images/card_images/large/M2a/048627_P_GARARUJIGUZAGUMA.jpg",
+    "name": "กาลาร์ จิกซากุมา",
+    "hp": "70",
+    "type": "dark",
+    "abilities": [],
+    "attacks": [
+      {
+        "cost": [
+          "dark"
+        ],
+        "damage": "10",
+        "name": "แทะ",
+        "effect": ""
+      }
+    ],
+    "weakness": "หญ้า ×2",
+    "resistance": "--",
+    "retreat": 1
+  },
+  {
+    "id": "048628",
+    "url": "https://www.pokemon-card.com/card-search/details.php/card/048628/regu/all",
+    "image": "https://www.pokemon-card.com/assets/images/card_images/large/M2a/048628_P_GARARUMASSUGUMA.jpg",
+    "name": "กาลาร์ มัสสุกุมา",
+    "hp": "90",
+    "type": "dark",
+    "abilities": [],
+    "attacks": [
+      {
+        "cost": [
+          "dark"
+        ],
+        "damage": "20",
+        "name": "แทะ",
+        "effect": ""
+      },
+      {
+        "cost": [
+          "dark",
+          "ไร้สี"
+        ],
+        "damage": "50",
+        "name": "กรงเล็บฉีกกระชาก",
+        "effect": ""
+      }
+    ],
+    "weakness": "หญ้า ×2",
+    "resistance": "--",
+    "retreat": 2
+  },
+  {
+    "id": "048629",
+    "url": "https://www.pokemon-card.com/card-search/details.php/card/048629/regu/all",
+    "image": "https://www.pokemon-card.com/assets/images/card_images/large/M2a/048629_P_GARARUTACHIFUSAGUMA.jpg",
+    "name": "กาลาร์ ทาจิฟุซากุมา",
+    "hp": "170",
+    "type": "dark",
+    "abilities": [],
+    "attacks": [
+      {
+        "cost": [
+          "dark",
+          "ไร้สี"
+        ],
+        "damage": "70×",
+        "name": "สการ์เชาท์",
+        "effect": "แดเมจจะเท่ากับจำนวนตัวนับแดเมจที่วางอยู่บนโปเกมอนบนตำแหน่งต่อสู้ของฝ่ายตรงข้าม x 70"
+      },
+      {
+        "cost": [
+          "dark",
+          "ไร้สี",
+          "ไร้สี"
+        ],
+        "damage": "160",
+        "name": "พังก์สแมช",
+        "effect": "เลือกพลังงานที่ติดอยู่กับโปเกมอนนี้ 1 ลูก ทิ้งที่ตำแหน่งทิ้งการ์ด"
+      }
+    ],
+    "weakness": "หญ้า ×2",
+    "resistance": "--",
+    "retreat": 2
+  },
+  {
+    "id": "048631",
+    "url": "https://www.pokemon-card.com/card-search/details.php/card/048631/regu/all",
+    "image": "https://www.pokemon-card.com/assets/images/card_images/large/M2a/048631_P_ZURUGGU.jpg",
+    "name": "ซึรุกกุ",
+    "hp": "80",
+    "type": "dark",
+    "abilities": [],
+    "attacks": [
+      {
+        "cost": [
+          "dark",
+          "ไร้สี"
+        ],
+        "damage": "20",
+        "name": "ตบลงพื้น",
+        "effect": "เลือกการ์ด 1 ใบจากบนมือฝ่ายตรงข้ามโดยไม่ดูหน้าการ์ด ทิ้งที่ตำแหน่งทิ้งการ์ด"
+      }
+    ],
+    "weakness": "หญ้า ×2",
+    "resistance": "--",
+    "retreat": 2
+  },
+  {
+    "id": "048632",
+    "url": "https://www.pokemon-card.com/card-search/details.php/card/048632/regu/all",
+    "image": "https://www.pokemon-card.com/assets/images/card_images/large/M2a/048632_P_MZURUZUKINEX.jpg",
+    "name": "เมก้าซึรึซึคิน ex",
+    "hp": "330",
+    "type": "dark",
+    "abilities": [
+      {
+        "name": "หงอนสวนกลับ",
+        "type": "Ability",
+        "effect": "เมื่อโปเกมอนนี้ อยู่บนตำแหน่งต่อสู้และได้รับแดเมจของท่าต่อสู้จากโปเกมอนฝ่ายตรงข้าม วางตัวนับแดเมจ 5 ตัวบนโปเกมอนที่ใช้ท่าต่อสู้"
+      }
+    ],
+    "attacks": [
+      {
+        "cost": [
+          "dark",
+          "dark",
+          "ไร้สี"
+        ],
+        "damage": "160",
+        "name": "ขาเถื่อน",
+        "effect": "เลือกการ์ด 1 ใบจากบนมือฝ่ายตรงข้ามโดยไม่ดูหน้าการ์ด ทิ้งที่ตำแหน่งทิ้งการ์ด ทิ้งการ์ด 1 ใบจากด้านบนของสำรับการ์ดฝ่ายตรงข้ามที่ตำแหน่งทิ้งการ์ด"
+      }
+    ],
+    "weakness": "หญ้า ×2",
+    "resistance": "--",
+    "retreat": 2
+  },
+  {
+    "id": "048635",
+    "url": "https://www.pokemon-card.com/card-search/details.php/card/048635/regu/all",
+    "image": "https://www.pokemon-card.com/assets/images/card_images/large/M2a/048635_P_GORONDA.jpg",
+    "name": "โกรอนด้า",
+    "hp": "140",
+    "type": "dark",
+    "abilities": [],
+    "attacks": [
+      {
+        "cost": [
+          "dark"
+        ],
+        "damage": "40",
+        "name": "ตบ",
+        "effect": ""
+      },
+      {
+        "cost": [
+          "dark",
+          "dark",
+          "ไร้สี"
+        ],
+        "damage": "80＋",
+        "name": "หมัดลูกพี่",
+        "effect": "ถ้ามีตัวนับแดเมจวางอยู่บน \"ยันชัม\" บนเบนช์ฝ่ายเรา แดเมจจะเพิ่มขึ้น 120"
+      }
+    ],
+    "weakness": "หญ้า ×2",
+    "resistance": "--",
+    "retreat": 3
+  },
+  {
+    "id": "048637",
+    "url": "https://www.pokemon-card.com/card-search/details.php/card/048637/regu/all",
+    "image": "https://www.pokemon-card.com/assets/images/card_images/large/M2a/048637_P_MOMOWAROU.jpg",
+    "name": "โมโมวาโร",
+    "hp": "80",
+    "type": "dark",
+    "abilities": [
+      {
+        "name": "โซ่ตรวนสุดท้าย",
+        "type": "Ability",
+        "effect": "เมื่อโปเกมอนนี้ ได้รับแดเมจของท่าต่อสู้จากโปเกมอนฝ่ายตรงข้ามและหมดสภาพ เลือกการ์ดที่ชอบ 1 ใบจากสำรับการ์ดฝ่ายเรา นำขึ้นมือ แล้วสับสำรับการ์ด"
+      }
+    ],
+    "attacks": [
+      {
+        "cost": [
+          "dark"
+        ],
+        "damage": "20",
+        "name": "โมจิรัช",
+        "effect": "เทิร์นถัดไปของฝ่ายเรา แดเมจของ \"โมจิรัช\" ของโปเกมอนนี้จะถูก \"+50\""
+      }
+    ],
+    "weakness": "ต่อสู้ ×2",
+    "resistance": "--",
+    "retreat": 1
+  },
+  {
+    "id": "048638",
+    "url": "https://www.pokemon-card.com/card-search/details.php/card/048638/regu/all",
+    "image": "https://www.pokemon-card.com/assets/images/card_images/large/M2a/048638_P_KOMATANA.jpg",
+    "name": "โคมาทานา",
+    "hp": "70",
+    "type": "steel",
+    "abilities": [],
+    "attacks": [
+      {
+        "cost": [
+          "steel"
+        ],
+        "damage": "10",
+        "name": "ผลักกระเด็น",
+        "effect": "สลับโปเกมอนบนตำแหน่งต่อสู้ของฝ่ายตรงข้ามกับโปเกมอนบนเบนช์ [ฝ่ายตรงข้ามเลือกโปเกมอนที่จะวางบนตำแหน่งต่อสู้]"
+      }
+    ],
+    "weakness": "ไฟ ×2",
+    "resistance": "หญ้า －30",
+    "retreat": 1
+  },
+  {
+    "id": "048639",
+    "url": "https://www.pokemon-card.com/card-search/details.php/card/048639/regu/all",
+    "image": "https://www.pokemon-card.com/assets/images/card_images/large/M2a/048639_P_KIRIKIZAN.jpg",
+    "name": "คิริคิซัน",
+    "hp": "120",
+    "type": "steel",
+    "abilities": [],
+    "attacks": [
+      {
+        "cost": [
+          "steel"
+        ],
+        "damage": "50",
+        "name": "ควิกดรอว์",
+        "effect": "จั่วการ์ด 2 ใบจากสำรับการ์ดฝ่ายเรา"
+      }
+    ],
+    "weakness": "ไฟ ×2",
+    "resistance": "หญ้า －30",
+    "retreat": 1
+  },
+  {
+    "id": "048640",
+    "url": "https://www.pokemon-card.com/card-search/details.php/card/048640/regu/all",
+    "image": "https://www.pokemon-card.com/assets/images/card_images/large/M2a/048640_P_DODOGEZAN.jpg",
+    "name": "โดโดเกซัน",
+    "hp": "170",
+    "type": "steel",
+    "abilities": [
+      {
+        "name": "แม่ทัพใหญ่",
+        "type": "Ability",
+        "effect": "แดเมจของท่าต่อสู้ที่โปเกมอนนี้ใช้ ทำกับโปเกมอนบนตำแหน่งต่อสู้ของฝ่ายตรงข้าม จะถูก \"+30\" ตามจำนวนการ์ดรางวัลที่ฝ่ายตรงข้ามหยิบไปแล้ว"
+      }
+    ],
+    "attacks": [
+      {
+        "cost": [
+          "steel",
+          "steel"
+        ],
+        "damage": "180",
+        "name": "ดาบสองคม",
+        "effect": "โปเกมอนนี้ก็จะได้รับแดเมจ 50 ด้วย"
+      }
+    ],
+    "weakness": "ไฟ ×2",
+    "resistance": "หญ้า －30",
+    "retreat": 3
+  },
+  {
+    "id": "048646",
+    "url": "https://www.pokemon-card.com/card-search/details.php/card/048646/regu/all",
+    "image": "https://www.pokemon-card.com/assets/images/card_images/large/M2a/048646_P_MINIRIXYUU.jpg",
+    "name": "มินิริว",
+    "hp": "80",
+    "type": "มังกร",
+    "abilities": [],
+    "attacks": [
+      {
+        "cost": [
+          "น้ำ",
+          "electric"
+        ],
+        "damage": "30",
+        "name": "หัวโขก",
+        "effect": ""
+      }
+    ],
+    "weakness": "--",
+    "resistance": "--",
+    "retreat": 2
+  },
+  {
+    "id": "048647",
+    "url": "https://www.pokemon-card.com/card-search/details.php/card/048647/regu/all",
+    "image": "https://www.pokemon-card.com/assets/images/card_images/large/M2a/048647_P_HAKURIXYU.jpg",
+    "name": "ฮาคุริว",
+    "hp": "100",
+    "type": "มังกร",
+    "abilities": [
+      {
+        "name": "การนำทางแห่งวิวัฒนาการ",
+        "type": "Ability",
+        "effect": "ถ้าโปเกมอนนี้มีพลังงานติดอยู่ ใช้ได้ 1 ครั้งในเทิร์นฝ่ายเรา เลือกโปเกมอนวิวัฒนาการ 1 ใบจากสำรับการ์ดฝ่ายเรา ให้ฝ่ายตรงข้ามดู นำขึ้นมือ แล้วสับสำรับการ์ด"
+      }
+    ],
+    "attacks": [
+      {
+        "cost": [
+          "น้ำ",
+          "electric"
+        ],
+        "damage": "60",
+        "name": "แส้หาง",
+        "effect": ""
+      }
+    ],
+    "weakness": "--",
+    "resistance": "--",
+    "retreat": 2
+  },
+  {
+    "id": "048649",
+    "url": "https://www.pokemon-card.com/card-search/details.php/card/048649/regu/all",
+    "image": "https://www.pokemon-card.com/assets/images/card_images/large/M2a/048649_P_REKKUUZA.jpg",
+    "name": "เร็คควอซา",
+    "hp": "120",
+    "type": "มังกร",
+    "abilities": [],
+    "attacks": [
+      {
+        "cost": [
+          "electric",
+          "ไร้สี"
+        ],
+        "damage": "20＋",
+        "name": "แอสซอลต์เบรก",
+        "effect": "ในเทิร์นนี้ ถ้าโปเกมอนนี้ออกมาจากเบนช์สู่ตำแหน่งต่อสู้ แดเมจจะเพิ่มขึ้น 90"
+      },
+      {
+        "cost": [
+          "ไฟ",
+          "electric",
+          "ไร้สี"
+        ],
+        "damage": "130",
+        "name": "ดราก้อนคลอว์",
+        "effect": ""
+      }
+    ],
+    "weakness": "--",
+    "resistance": "--",
+    "retreat": 1
+  },
+  {
+    "id": "048651",
+    "url": "https://www.pokemon-card.com/card-search/details.php/card/048651/regu/all",
+    "image": "https://www.pokemon-card.com/assets/images/card_images/large/M2a/048651_P_NNOZEKUROMU.jpg",
+    "name": "เซครอมของ N",
+    "hp": "130",
+    "type": "มังกร",
+    "abilities": [],
+    "attacks": [
+      {
+        "cost": [
+          "ไร้สี",
+          "ไร้สี",
+          "ไร้สี"
+        ],
+        "damage": "70",
+        "name": "ฉีกกระชาก",
+        "effect": "แดเมจของท่าต่อสู้นี้ จะไม่นำเอฟเฟกต์ที่มีผลอยู่กับโปเกมอนบนตำแหน่งต่อสู้ของฝ่ายตรงข้ามมาคิด"
+      },
+      {
+        "cost": [
+          "ไฟ",
+          "electric",
+          "electric",
+          "ไร้สี"
+        ],
+        "damage": "250",
+        "name": "แรมเพจธันเดอร์",
+        "effect": "เทิร์นถัดไปของฝ่ายเรา โปเกมอนนี้จะใช้ท่าต่อสู้ไม่ได้"
+      }
+    ],
+    "weakness": "--",
+    "resistance": "--",
+    "retreat": 2
+  },
+  {
+    "id": "048653",
+    "url": "https://www.pokemon-card.com/card-search/details.php/card/048653/regu/all",
+    "image": "https://www.pokemon-card.com/assets/images/card_images/large/M2a/048653_P_ONBAN.jpg",
+    "name": "ออนเวิร์น",
+    "hp": "120",
+    "type": "มังกร",
+    "abilities": [],
+    "attacks": [
+      {
+        "cost": [
+          "ไร้สี",
+          "ไร้สี"
+        ],
+        "damage": "40",
+        "name": "เคลื่อนที่ความเร็วสูง",
+        "effect": "ทอยเหรียญ 1 ครั้งถ้าออกหัว เทิร์นถัดไปของฝ่ายตรงข้าม โปเกมอนนี้จะไม่ได้รับแดเมจและเอฟเฟกต์ของท่าต่อสู้"
+      },
+      {
+        "cost": [
+          "พลังจิต",
+          "dark"
+        ],
+        "damage": "70＋",
+        "name": "สแลชเสริมพลัง",
+        "effect": "ถ้าโปเกมอนนี้ติด \"ไอเท็มติดโปเกมอน\" อยู่ แดเมจจะเพิ่มขึ้น 70"
+      }
+    ],
+    "weakness": "--",
+    "resistance": "--",
+    "retreat": 0
+  },
+  {
+    "id": "048654",
+    "url": "https://www.pokemon-card.com/card-search/details.php/card/048654/regu/all",
+    "image": "https://www.pokemon-card.com/assets/images/card_images/large/M2a/048654_P_DORAMESHIYA.jpg",
+    "name": "โดราเมชิยะ",
+    "hp": "70",
+    "type": "มังกร",
+    "abilities": [],
+    "attacks": [
+      {
+        "cost": [
+          "พลังจิต"
+        ],
+        "damage": "10",
+        "name": "แค้นนิดหน่อย",
+        "effect": ""
+      },
+      {
+        "cost": [
+          "ไฟ",
+          "พลังจิต"
+        ],
+        "damage": "40",
+        "name": "กัด",
+        "effect": ""
+      }
+    ],
+    "weakness": "--",
+    "resistance": "--",
+    "retreat": 1
+  },
+  {
+    "id": "048685",
+    "url": "https://www.pokemon-card.com/card-search/details.php/card/048685/regu/all",
+    "image": "https://www.pokemon-card.com/assets/images/card_images/large/M2a/048685_T_DENKIDAMA.jpg",
+    "name": "บอลไฟฟ้า",
+    "abilities": [],
+    "attacks": [],
+    "trainer_type": "ไอเท็มติดโปเกมอน",
+    "effect": "แดเมจของท่าต่อสู้ที่ \"พิคาชู ex\" ที่ติดการ์ดนี้อยู่ใช้กับ \"โปเกมอน ex\" บนตำแหน่งต่อสู้ของฝ่ายตรงข้าม จะเพิ่มขึ้น \"+50\"\nการ์ดไอเท็มติดโปเกมอน ใช้กี่ใบก็ได้ในเทิร์นฝ่ายเรา ติดที่โปเกมอนฝ่ายเรา โปเกมอน 1 ตัวติดได้ 1 ใบ และติดค้างไว้ตลอด"
+  },
+  {
+    "id": "048686",
+    "url": "https://www.pokemon-card.com/card-search/details.php/card/048686/regu/all",
+    "image": "https://www.pokemon-card.com/assets/images/card_images/large/M2a/048686_T_BUATSUIUROKO.jpg",
+    "name": "เกล็ดหนา",
+    "abilities": [],
+    "attacks": [],
+    "trainer_type": "ไอเท็มติดโปเกมอน",
+    "effect": "แดเมจของท่าต่อสู้ที่โปเกมอนที่ติดการ์ดนี้อยู่ได้รับจากโปเกมอนฝ่ายตรงข้าม จะลดลง \"-50\"\nการ์ดไอเท็มติดโปเกมอน ใช้กี่ใบก็ได้ในเทิร์นฝ่ายเรา ติดที่โปเกมอนฝ่ายเรา โปเกมอน 1 ตัวติดได้ 1 ใบ และติดค้างไว้ตลอด"
+  },
+  {
+    "id": "048692",
+    "url": "https://www.pokemon-card.com/card-search/details.php/card/048692/regu/all",
+    "image": "https://www.pokemon-card.com/assets/images/card_images/large/M2a/048692_T_KANARII.jpg",
+    "name": "คานารี",
+    "abilities": [],
+    "attacks": [],
+    "trainer_type": "ซัพพอร์ต",
+    "effect": "การ์ดนี้ใช้ไม่ได้เว้นแต่จะทิ้งการ์ดบนมือฝ่ายเรา 1 ใบที่ตำแหน่งทิ้งการ์ด เลือกโปเกมอนได้สูงสุด 4 ใบจากสำรับการ์ดฝ่ายเรา ให้ฝ่ายตรงข้ามดู นำขึ้นมือ แล้วสับสำรับการ์ด\nการ์ดซัพพอร์ต ใช้ได้เทิร์นละ 1 ใบในเทิร์นฝ่ายเรา"
+  },
+  {
+    "id": "048693",
+    "url": "https://www.pokemon-card.com/card-search/details.php/card/048693/regu/all",
+    "image": "https://www.pokemon-card.com/assets/images/card_images/large/M2a/048693_T_SAFUA.jpg",
+    "name": "เซิร์ฟเฟอร์",
+    "abilities": [],
+    "attacks": [],
+    "trainer_type": "ซัพพอร์ต",
+    "effect": "สลับโปเกมอนบนตำแหน่งต่อสู้ฝ่ายเรากับโปเกมอนบนเบนช์ หลังจากนั้น จั่วการ์ดจากสำรับการ์ดจนได้การ์ดบนมือ 5 ใบ\nการ์ดซัพพอร์ต ใช้ได้เทิร์นละ 1 ใบในเทิร์นฝ่ายเรา"
+  },
+  {
+    "id": "048695",
+    "url": "https://www.pokemon-card.com/card-search/details.php/card/048695/regu/all",
+    "image": "https://www.pokemon-card.com/assets/images/card_images/large/M2a/048695_T_BABENATOHERENA.jpg",
+    "name": "เวอร์บีนากับเฮเลนา",
+    "abilities": [],
+    "attacks": [],
+    "trainer_type": "ซัพพอร์ต",
+    "effect": "การ์ดนี้ใช้ไม่ได้เว้นแต่บนกระดานฝ่ายเราจะมี \"ฮิฮิดารุมะของ N\" \"โซโรอาร์ค ex ของ N\" \"ไบวานิลลาของ N\" \"กิกิกิอัลของ N\" \"เรชิรามุของ N\" หรือ \"เซครอมของ N\" อยู่ ในเทิร์นนี้ ถ้าโปเกมอนบนตำแหน่งต่อสู้ของฝ่ายตรงข้ามหมดสภาพด้วยแดเมจของท่าต่อสู้ที่ \"โปเกมอนของ N\" ฝ่ายเราใช้ จะหยิบการ์ดรางวัลเพิ่ม 3 ใบ\nการ์ดซัพพอร์ต ใช้ได้เทิร์นละ 1 ใบในเทิร์นฝ่ายเรา"
+  },
+  {
+    "id": "048710",
+    "url": "https://www.pokemon-card.com/card-search/details.php/card/048710/regu/all",
+    "image": "https://www.pokemon-card.com/assets/images/card_images/large/M2a/048710_T_YORUNOKOUZAN.jpg",
+    "name": "เหมืองยามวิกาล",
+    "abilities": [],
+    "attacks": [],
+    "trainer_type": "สเตเดียม",
+    "effect": "พลังงานสำหรับใช้ท่าต่อสู้ของโปเกมอน \"เทรัสตัล\" บนกระดานของทั้งสองฝ่ายทุกตัว จะเพิ่มขึ้น 1 ลูก ตัวละ\nการ์ดสเตเดียม ใช้ได้เทิร์นละ 1 ใบ วางไว้ข้างตำแหน่งต่อสู้ ถ้ามีการ์ดสเตเดียมอื่นออกมา ให้ทิ้งการ์ดนี้ การ์ดสเตเดียมชื่อเดียวกันจะออกมาไม่ได้"
+  }
+];
+    // app.js - Pokemon Card Gallery
+
+// Map energy types to CSS classes (handles both Thai and English names)
+function getEnergyTypeClass(energyType) {
+  const typeMap = {
+    // Thai names
+    'หญ้า': 'grass',
+    'ไฟ': 'fire',
+    'น้ำ': 'water',
+    'ไฟฟ้า': 'lightning',
+    'พลังจิต': 'psychic',
+    'ต่อสู้': 'fighting',
+    'ความมืด': 'darkness',
+    'โลหะ': 'metal',
+    'เทพนิยาย': 'fairy',
+    'มังกร': 'dragon',
+    'ไร้สี': 'colorless',
+    // English names
+    'grass': 'grass',
+    'fire': 'fire',
+    'water': 'water',
+    'lightning': 'lightning',
+    'electric': 'lightning',
+    'psychic': 'psychic',
+    'fighting': 'fighting',
+    'darkness': 'darkness',
+    'metal': 'metal',
+    'fairy': 'fairy',
+    'dragon': 'dragon',
+    'colorless': 'colorless'
+  };
+  
+  const normalized = energyType.toLowerCase();
+  const mappedType = typeMap[energyType] || typeMap[normalized] || 'colorless';
+  return `type-${mappedType}`;
+}
+
+// Convert energy symbols [L], [G], [R], etc. to Thai names
+function convertEnergySymbols(text) {
+  if (!text) return text;
+  
+  const energySymbolMap = {
+    '[G]': 'หญ้า',
+    '[R]': 'ไฟ',
+    '[W]': 'น้ำ',
+    '[L]': 'ไฟฟ้า',
+    '[P]': 'พลังจิต',
+    '[F]': 'ต่อสู้',
+    '[D]': 'ความมืด',
+    '[M]': 'โลหะ',
+    '[Y]': 'เทพนิยาย',
+    '[C]': 'ไร้สี',
+    // Also handle lowercase versions
+    '[g]': 'หญ้า',
+    '[r]': 'ไฟ',
+    '[w]': 'น้ำ',
+    '[l]': 'ไฟฟ้า',
+    '[p]': 'พลังจิต',
+    '[f]': 'ต่อสู้',
+    '[d]': 'ความมืด',
+    '[m]': 'โลหะ',
+    '[y]': 'เทพนิยาย',
+    '[c]': 'ไร้สี'
+  };
+  
+  let convertedText = text;
+  for (const [symbol, thaiName] of Object.entries(energySymbolMap)) {
+    // Replace all occurrences of the symbol with Thai name
+    const regex = new RegExp(symbol.replace(/[\[\]]/g, '\\$&'), 'g');
+    convertedText = convertedText.replace(regex, thaiName);
+  }
+  
+  return convertedText;
+}
+
+// Load card data from JSON file
+Promise.resolve(embeddedCardsData)
+  
+  .then(data => {
+    window.cardsData = data; // make global for debugging if needed
+    renderCards(data);
+  })
+  .catch(err => console.error('Failed to load cards data:', err));
+
+// Render all cards into the grid
+function renderCards(cards) {
+  const grid = document.getElementById('card-grid');
+  grid.innerHTML = '';
+  cards.forEach(card => {
+    const cardEl = createCardElement(card);
+    grid.appendChild(cardEl);
+  });
+}
+
+// Create a single card element
+function createCardElement(card) {
+  const el = document.createElement('div');
+  el.className = 'card';
+
+  const imgSrc = card.image || `https://www.pokemon-card.com/assets/images/card_images/large/M2a/${card.id}_P_PLACEHOLDER.jpg`;
+  
+  // Determine card type display
+  let typeClass, typeName;
+  if (card.trainer_type) {
+    // Non-Pokemon cards
+    typeClass = 'type-colorless';
+    typeName = card.trainer_type;
+  } else {
+    // Pokemon cards
+    typeClass = card.type ? `type-${card.type.toLowerCase()}` : 'type-colorless';
+    typeName = card.type || 'Unknown';
+  }
+
+  // Only show HP for Pokemon cards (not trainer or special energy cards)
+  const hpDisplay = (card.trainer_type || !card.hp) ? '' : `<span class="hp">HP ${card.hp}</span>`;
+  
+  el.innerHTML = `
+    <img src="${imgSrc}" alt="${card.name}" class="card-image" loading="lazy" />
+    <div class="card-content">
+      <h3 class="card-title">${card.name || 'Unknown Name'}</h3>
+      <div class="card-meta">
+        ${hpDisplay}
+        <span class="type-badge ${typeClass}">${typeName}</span>
+      </div>
+    </div>
+  `;
+
+  el.addEventListener('click', () => openModal(card));
+  return el;
+}
+
+// Open modal with detailed card info
+function openModal(card) {
+  const modal = document.getElementById('modal');
+  const modalBody = document.getElementById('modal-body');
+  const imgSrc = card.image || '';
+  const typeClass = card.type ? `type-${card.type.toLowerCase()}` : 'type-colorless';
+
+  let abilitiesHtml = '';
+  if (card.abilities && card.abilities.length) {
+    abilitiesHtml = card.abilities.map(ability => {
+      const convertedEffect = convertEnergySymbols(ability.effect || '');
+      return `
+      <div class="ability-item">
+        <div class="ability-header">
+          <span class="ability-label">ความสามารถ</span>
+          <span class="ability-name">${ability.name}</span>
+        </div>
+        <p class="ability-effect">${convertedEffect}</p>
+      </div>`;
+    }).join('');
+  }
+
+  let attacksHtml = '';
+  if (card.attacks && card.attacks.length) {
+    attacksHtml = card.attacks.map(attack => {
+      const costs = attack.cost ? attack.cost.map(c => `<span class="cost-icon ${getEnergyTypeClass(c)}" title="${c}"></span>`).join('') : '';
+      const convertedEffect = convertEnergySymbols(attack.effect || '');
+      return `
+        <div class="attack-item">
+          <div class="attack-header">
+            <div class="attack-name">
+              <span class="attack-cost">${costs}</span>
+              ${attack.name}
+            </div>
+            <span class="attack-damage">${attack.damage || ''}</span>
+          </div>
+          <p class="attack-effect">${convertedEffect}</p>
+        </div>`;
+    }).join('');
+  }
+
+  let effectHtml = '';
+  if (card.effect) {
+    const convertedEffect = convertEnergySymbols(card.effect);
+    effectHtml = `<div class="trainer-effect"><p>${convertedEffect.replace(/\n/g, '<br>')}</p></div>`;
+  }
+
+  modalBody.innerHTML = `
+    <div class="modal-body-content">
+      <div class="modal-left">
+        <img src="${imgSrc}" alt="${card.name}" class="modal-image" />
+      </div>
+      <div class="modal-details">
+        <h2>${card.name}</h2>
+        <div class="modal-stats">
+          ${card.trainer_type ? `<span class="type-badge type-colorless">${card.trainer_type}</span>` :
+      `<span class="type-badge ${typeClass}">${card.type || 'Unknown'}</span>
+             ${card.hp ? `<span>HP <strong>${card.hp}</strong></span>` : ''}
+             ${card.retreat !== undefined ? `<span>Retreat: <strong>${card.retreat}</strong></span>` : ''}`
+    }
+        </div>
+        <div class="attack-list">
+          ${effectHtml}
+          ${abilitiesHtml}
+          ${attacksHtml}
+        </div>
+        ${!card.trainer_type ? `<div style="margin-top: 2rem; font-size: 0.9rem; color: #94a3b8;">
+          <p>Weakness: ${card.weakness || '--'}</p>
+          <p>Resistance: ${card.resistance || '--'}</p>
+        </div>` : ''}
+        <a href="${card.url}" target="_blank" style="display: inline-block; margin-top: 1rem; color: var(--accent); text-decoration: none;">View on Official Site &rarr;</a>
+      </div>
+    </div>
+  `;
+
+  modal.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+// Close modal
+function closeModal() {
+  const modal = document.getElementById('modal');
+  modal.classList.remove('active');
+  document.body.style.overflow = '';
+  setTimeout(() => {
+    const modalBody = document.getElementById('modal-body');
+    modalBody.innerHTML = '';
+  }, 300);
+}
+
+// Setup event listeners after DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+  const closeBtn = document.querySelector('.close-btn');
+  const overlay = document.querySelector('.modal-overlay');
+  closeBtn.addEventListener('click', closeModal);
+  overlay.addEventListener('click', closeModal);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && document.getElementById('modal').classList.contains('active')) {
+      closeModal();
+    }
+  });
+});
+
+    </script>
+    
+</body>
+
+</html>
