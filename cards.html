@@ -165,6 +165,11 @@
       padding: 16px 0;
     }
 
+    /* General Cards Grid - 4 columns on mobile */
+    #general-cards-container .cards-grid {
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    }
+
     .card-item {
       background: white;
       border-radius: 12px;
@@ -563,6 +568,32 @@
         grid-template-columns: repeat(2, 1fr);
         gap: 12px;
       }
+
+      /* General Cards - 4 columns on mobile */
+      #general-cards-container .cards-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+      }
+
+      #general-cards-container .card-info {
+        padding: 8px;
+      }
+
+      #general-cards-container .card-name {
+        font-size: 0.85em;
+        min-height: 2em;
+        margin-bottom: 4px;
+      }
+
+      #general-cards-container .card-price {
+        font-size: 1em;
+        margin-bottom: 4px;
+      }
+
+      #general-cards-container .card-details {
+        font-size: 0.7em;
+        margin-bottom: 2px;
+      }
       
       .card-image-container {
         aspect-ratio: 2.5 / 3.5;
@@ -611,6 +642,29 @@
         grid-template-columns: repeat(2, 1fr);
         gap: 8px;
       }
+
+      /* General Cards - 4 columns on small mobile */
+      #general-cards-container .cards-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 6px;
+      }
+
+      #general-cards-container .card-info {
+        padding: 6px;
+      }
+
+      #general-cards-container .card-name {
+        font-size: 0.8em;
+        min-height: 1.8em;
+      }
+
+      #general-cards-container .card-price {
+        font-size: 0.9em;
+      }
+
+      #general-cards-container .card-details {
+        font-size: 0.65em;
+      }
       
       .card-image-container {
         aspect-ratio: 2.5 / 3.5;
@@ -647,6 +701,9 @@
       </button>
       <button class="tab-button active" onclick="switchTab('shop')">
         🏪 การ์ดหน้าร้าน
+      </button>
+      <button class="tab-button" onclick="switchTab('general')">
+        🃏 การ์ดทั่วไป
       </button>
     </div>
 
@@ -690,6 +747,29 @@
 
       <div id="shop-stats" class="stats">กำลังโหลดข้อมูล...</div>
       <div id="shop-cards-container"></div>
+    </div>
+
+    <!-- General Cards Tab -->
+    <div id="general-content" class="tab-content">
+      <div class="info-box">
+        <strong>หมายเหตุ:</strong> การ์ดเหล่านี้เป็นการ์ดใช้งานและการ์ดทั่วไป<br>
+        💬 สนใจการ์ดใด สามารถติดต่อแอดมินได้ทุกช่องทาง
+      </div>
+
+      <div class="search-sort-container">
+        <input type="text" id="general-search" class="search-box" placeholder="ค้นหาชื่อการ์ด...">
+        <select id="general-sort" class="sort-select">
+          <option value="name-asc">เรียงตามชื่อ (ก-ฮ)</option>
+          <option value="name-desc">เรียงตามชื่อ (ฮ-ก)</option>
+          <option value="price-asc">เรียงตามราคา (น้อย-มาก)</option>
+          <option value="price-desc">เรียงตามราคา (มาก-น้อย)</option>
+          <option value="quantity-asc">เรียงตามจำนวน (น้อย-มาก)</option>
+          <option value="quantity-desc">เรียงตามจำนวน (มาก-น้อย)</option>
+        </select>
+      </div>
+
+      <div id="general-stats" class="stats">กำลังโหลดข้อมูล...</div>
+      <div id="general-cards-container"></div>
     </div>
 
     <!-- Modal -->
@@ -740,12 +820,15 @@
     // API URLs
     const CONSIGNMENT_API_URL = "https://script.google.com/macros/s/AKfycbzwyYf_EWp5JPHGarUHSkKXzCnwRx7k53rWhq2uwnloaO55-aQVhBbRm-N8TvPPRsRIhA/exec?type=json";
     const SHOP_API_URL = "https://script.google.com/macros/s/AKfycbxsbm12v26W8Aa0bGQOVyijD7lWoW9AWgjHQ8HDkLVwO32DJHiiC_NwUpsmiFKALAy7/exec?type=json&sheet=shop";
+    const GENERAL_API_URL = "https://script.google.com/macros/s/AKfycbzrpRfstkcyhnKV4hy4AkT_b6-ICGeU8t9v-z4ZCGghCc0NuZ0h0ikd8bDXe_tu_np2/exec?type=json";
 
     // Data storage
     let consignmentCards = [];
     let shopCards = [];
+    let generalCards = [];
     let filteredConsignmentCards = [];
     let filteredShopCards = [];
+    let filteredGeneralCards = [];
 
     // Tab switching
     function switchTab(tabName) {
@@ -761,7 +844,8 @@
 
       // Show selected tab
       document.getElementById(tabName + '-content').classList.add('active');
-      document.querySelector(`.tab-button:nth-child(${tabName === 'consignment' ? '1' : '2'})`).classList.add('active');
+      const tabIndex = tabName === 'consignment' ? 1 : tabName === 'shop' ? 2 : 3;
+      document.querySelector(`.tab-button:nth-child(${tabIndex})`).classList.add('active');
     }
 
     // Load Consignment Cards
@@ -820,6 +904,34 @@
         });
     }
 
+    // Load General Cards
+    function loadGeneralCards() {
+      const container = document.getElementById('general-cards-container');
+      const statsEl = document.getElementById('general-stats');
+      
+      showSkeletonCards(container);
+      statsEl.textContent = 'กำลังโหลดข้อมูล...';
+
+      fetch(GENERAL_API_URL)
+        .then(res => res.json())
+        .then(data => {
+          if (data.error) {
+            container.innerHTML = `<div class="error-message">${data.error}</div>`;
+            statsEl.textContent = 'เกิดข้อผิดพลาด';
+            return;
+          }
+
+          generalCards = data.cards || [];
+          filteredGeneralCards = [...generalCards];
+          renderGeneralCards(filteredGeneralCards);
+          updateStats('general', generalCards.length, filteredGeneralCards.length);
+        })
+        .catch(error => {
+          container.innerHTML = `<div class="error-message">เกิดข้อผิดพลาด: ${error.message}</div>`;
+          statsEl.textContent = 'เกิดข้อผิดพลาด';
+        });
+    }
+
     // Render Cards
     function renderCards(type, cards) {
       const container = document.getElementById(type + '-cards-container');
@@ -870,6 +982,53 @@
 
       // Load images progressively
       loadImagesProgressively(type);
+    }
+
+    // Render General Cards (simpler format)
+    function renderGeneralCards(cards) {
+      const container = document.getElementById('general-cards-container');
+      let html = '<div class="cards-grid">';
+
+      cards.forEach((card, index) => {
+        const imageUrl = card.cardImage || '';
+        const hasImage = imageUrl && String(imageUrl).trim() !== '' && String(imageUrl).trim().startsWith('http');
+
+        let imageHtml = '';
+        if (hasImage) {
+          let cleanUrl = String(imageUrl).trim().replace(/^["']|["']$/g, '');
+          if (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://')) {
+            imageHtml = `<div class="card-image-placeholder" data-image-url="${escapeHtml(cleanUrl)}" data-card-index="${index}">
+              <div class="image-loading-spinner"></div>
+            </div>`;
+          } else {
+            imageHtml = '<div class="card-image-placeholder">🃏</div>';
+          }
+        } else {
+          imageHtml = '<div class="card-image-placeholder">🃏</div>';
+        }
+
+        const price = card.price ? String(card.price) : '-';
+        const quantity = card.quantity ? String(card.quantity) : '-';
+
+        html += `
+          <div class="card-item" onclick="showGeneralModal(${index})">
+            <div class="card-image-container">
+              ${imageHtml}
+            </div>
+            <div class="card-info">
+              <div class="card-name">${escapeHtml(card.cardName || 'ไม่ระบุชื่อ')}</div>
+              <div class="card-price">${price} บาท</div>
+              <div class="card-details">จำนวน: ${quantity}</div>
+            </div>
+          </div>
+        `;
+      });
+
+      html += '</div>';
+      container.innerHTML = html;
+
+      // Load images progressively
+      loadGeneralImagesProgressively();
     }
 
     // Load Images Progressively
@@ -950,9 +1109,79 @@
       loadNextImage();
     }
 
+    // Load General Images Progressively (simpler, no conversion needed)
+    function loadGeneralImagesProgressively() {
+      const container = document.getElementById('general-cards-container');
+      const imagePlaceholders = container.querySelectorAll('.card-image-placeholder[data-image-url]');
+
+      if (imagePlaceholders.length === 0) return;
+
+      let loadedCount = 0;
+      let currentIndex = 0;
+
+      function loadNextImage() {
+        if (currentIndex >= imagePlaceholders.length) return;
+
+        const placeholder = imagePlaceholders[currentIndex];
+        const imageUrl = placeholder.getAttribute('data-image-url');
+        currentIndex++;
+
+        if (!imageUrl) {
+          loadNextImage();
+          return;
+        }
+
+        const img = new Image();
+        let finalImageUrl = imageUrl;
+
+        // Convert Google Drive URLs if needed
+        if (imageUrl.includes('drive.google.com/thumbnail')) {
+          const fileIdMatch = imageUrl.match(/id=([a-zA-Z0-9_-]+)/);
+          if (fileIdMatch && fileIdMatch[1]) {
+            finalImageUrl = `https://lh3.googleusercontent.com/d/${fileIdMatch[1]}=w1000-h1400`;
+          }
+        } else if (imageUrl.includes('drive.google.com') && !imageUrl.includes('lh3.googleusercontent.com')) {
+          const fileIdMatch = imageUrl.match(/id=([a-zA-Z0-9_-]+)/);
+          if (fileIdMatch && fileIdMatch[1]) {
+            finalImageUrl = `https://lh3.googleusercontent.com/d/${fileIdMatch[1]}=w1000-h1400`;
+          }
+        }
+
+        // Cache buster
+        const cacheBuster = Math.floor(Date.now() / (1000 * 60));
+        if (finalImageUrl.includes('lh3.googleusercontent.com')) {
+          const separator = finalImageUrl.includes('?') ? '&' : '?';
+          finalImageUrl += separator + 't=' + cacheBuster;
+        }
+
+        img.onload = function() {
+          placeholder.innerHTML = '';
+          placeholder.classList.remove('card-image-placeholder');
+          img.className = 'card-image';
+          img.alt = 'Card image';
+          img.loading = 'lazy';
+          placeholder.appendChild(img);
+          loadedCount++;
+          setTimeout(loadNextImage, 50);
+        };
+
+        img.onerror = function() {
+          placeholder.innerHTML = '<div class="card-image-placeholder">🃏</div>';
+          placeholder.removeAttribute('data-image-url');
+          loadedCount++;
+          setTimeout(loadNextImage, 30);
+        };
+
+        img.referrerPolicy = 'no-referrer';
+        img.src = finalImageUrl;
+      }
+
+      loadNextImage();
+    }
+
     // Filter Cards
     function filterCards(type, searchTerm) {
-      const cards = type === 'consignment' ? consignmentCards : shopCards;
+      const cards = type === 'consignment' ? consignmentCards : type === 'shop' ? shopCards : generalCards;
       if (!searchTerm) return cards;
 
       const term = searchTerm.toLowerCase();
@@ -981,20 +1210,34 @@
           break;
         case 'price-asc':
           sorted.sort((a, b) => {
-            const priceA = parseFloat(a.listedPrice) || 0;
-            const priceB = parseFloat(b.listedPrice) || 0;
+            const priceA = parseFloat(a.listedPrice || a.price) || 0;
+            const priceB = parseFloat(b.listedPrice || b.price) || 0;
             return priceA - priceB;
           });
           break;
         case 'price-desc':
           sorted.sort((a, b) => {
-            const priceA = parseFloat(a.listedPrice) || 0;
-            const priceB = parseFloat(b.listedPrice) || 0;
+            const priceA = parseFloat(a.listedPrice || a.price) || 0;
+            const priceB = parseFloat(b.listedPrice || b.price) || 0;
             return priceB - priceA;
           });
           break;
+        case 'quantity-asc':
+          sorted.sort((a, b) => {
+            const qtyA = parseFloat(a.quantity) || 0;
+            const qtyB = parseFloat(b.quantity) || 0;
+            return qtyA - qtyB;
+          });
+          break;
+        case 'quantity-desc':
+          sorted.sort((a, b) => {
+            const qtyA = parseFloat(a.quantity) || 0;
+            const qtyB = parseFloat(b.quantity) || 0;
+            return qtyB - qtyA;
+          });
+          break;
       }
-
+      
       return sorted;
     }
 
@@ -1012,10 +1255,14 @@
         filteredConsignmentCards = filtered;
         renderCards('consignment', filteredConsignmentCards);
         updateStats('consignment', consignmentCards.length, filteredConsignmentCards.length);
-      } else {
+      } else if (type === 'shop') {
         filteredShopCards = filtered;
         renderCards('shop', filteredShopCards);
         updateStats('shop', shopCards.length, filteredShopCards.length);
+      } else if (type === 'general') {
+        filteredGeneralCards = filtered;
+        renderGeneralCards(filteredGeneralCards);
+        updateStats('general', generalCards.length, filteredGeneralCards.length);
       }
     }
 
@@ -1049,6 +1296,60 @@
       }
       html += '</div>';
       container.innerHTML = html;
+    }
+
+    // Show General Modal
+    function showGeneralModal(index) {
+      const card = filteredGeneralCards[index];
+      if (!card) return;
+
+      const modal = document.getElementById('card-modal');
+      const frontImage = document.getElementById('modal-front-image');
+      const backImage = document.getElementById('modal-back-image');
+      const frontPlaceholder = document.getElementById('modal-front-placeholder');
+      const backPlaceholder = document.getElementById('modal-back-placeholder');
+      const cardName = document.getElementById('modal-card-name');
+      const cardDetails = document.getElementById('modal-card-details');
+
+      let imageUrl = card.cardImage || '';
+
+      // Convert Google Drive URLs
+      if (imageUrl.includes('drive.google.com/thumbnail')) {
+        const fileIdMatch = imageUrl.match(/id=([a-zA-Z0-9_-]+)/);
+        if (fileIdMatch && fileIdMatch[1]) {
+          imageUrl = `https://lh3.googleusercontent.com/d/${fileIdMatch[1]}=w1000-h1400`;
+        }
+      } else if (imageUrl.includes('lh3.googleusercontent.com') && imageUrl.includes('=w1000') && !imageUrl.includes('-h')) {
+        imageUrl = imageUrl.replace('=w1000', '=w1000-h1400');
+      }
+
+      // Cache buster
+      const cacheBuster = Math.floor(Date.now() / (1000 * 60));
+      if (imageUrl.includes('lh3.googleusercontent.com')) {
+        const separator = imageUrl.includes('?') ? '&' : '?';
+        imageUrl += separator + 't=' + cacheBuster;
+      }
+
+      if (imageUrl) {
+        frontImage.src = imageUrl;
+        frontImage.style.display = 'block';
+        frontPlaceholder.style.display = 'none';
+      } else {
+        frontImage.style.display = 'none';
+        frontPlaceholder.style.display = 'block';
+      }
+
+      backImage.style.display = 'none';
+      backPlaceholder.style.display = 'none';
+
+      cardName.textContent = card.cardName || 'ไม่ระบุชื่อ';
+      const details = [];
+      if (card.price) details.push(`ราคา: ${card.price} บาท`);
+      if (card.quantity) details.push(`จำนวน: ${card.quantity}`);
+      cardDetails.innerHTML = details.join('<br>');
+
+      modal.style.display = 'block';
+      document.body.style.overflow = 'hidden';
     }
 
     // Show Modal
@@ -1173,6 +1474,8 @@
     document.getElementById('consignment-sort').addEventListener('change', () => updateDisplay('consignment'));
     document.getElementById('shop-search').addEventListener('input', () => updateDisplay('shop'));
     document.getElementById('shop-sort').addEventListener('change', () => updateDisplay('shop'));
+    document.getElementById('general-search').addEventListener('input', () => updateDisplay('general'));
+    document.getElementById('general-sort').addEventListener('change', () => updateDisplay('general'));
     
     // ปิด modal เมื่อกด ESC
     document.addEventListener('keydown', function(event) {
@@ -1184,9 +1487,10 @@
       }
     });
 
-    // Load initial data - โหลดทั้งสอง tab พร้อมกัน
+    // Load initial data - โหลดทั้งสาม tab พร้อมกัน
     loadShopCards();
     loadConsignmentCards();
+    loadGeneralCards();
   </script>
 </body>
 </html>
