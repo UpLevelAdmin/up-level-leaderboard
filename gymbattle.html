@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>รายชื่อผู้สมัคร Gym Battle</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .gymbattle-container {
+      max-width: 900px;
+      margin: 32px auto;
+      padding: 0 8px 32px 8px;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    }
+    .logo {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 16px;
+      width: 100%;
+    }
+    .logo img {
+      max-width: 120px;
+      display: block;
+      margin: 0 auto;
+    }
+    h2 {
+      color: #388e3c;
+      text-align: center;
+    }
+    .date-header {
+      padding: 10px;
+      margin-top: 32px;
+      font-size: 1.1em;
+      font-weight: bold;
+      border-radius: 8px 8px 0 0;
+      border-left: 6px solid #42A5F5;
+      text-align: left;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 0;
+      margin-bottom: 16px;
+      background: #fff;
+      border-radius: 0 0 12px 12px;
+      overflow: hidden;
+    }
+    th, td {
+      padding: 10px 8px;
+      text-align: center;
+      border-bottom: 1px solid #ddd;
+    }
+    th {
+      font-weight: bold;
+      font-size: 1.05em;
+    }
+    tr:hover td {
+      background: #f1f1f1;
+    }
+    .register-btn {
+      display: block;
+      width: 100%;
+      margin: 24px auto 0 auto;
+      padding: 12px 0;
+      background: #1976d2;
+      color: #fff;
+      font-size: 1.1em;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      text-decoration: none;
+      text-align: center;
+      transition: background 0.2s, transform 0.18s, box-shadow 0.18s;
+      max-width: 350px;
+    }
+    .register-btn:hover {
+      background: #42A5F5;
+      color: #fff;
+      transform: scale(1.07);
+      box-shadow: 0 0 16px #42A5F5, 0 0 32px #42A5F5;
+    }
+    /* Spinner */
+    .spinner {
+      margin: 24px auto 8px auto;
+      border: 6px solid #e0e0e0;
+      border-top: 6px solid #42A5F5;
+      border-radius: 50%;
+      width: 48px;
+      height: 48px;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg);}
+      100% { transform: rotate(360deg);}
+    }
+    /* Codename สี/ขนาด/กระพริบตาม rank */
+    .codename-rank[data-rank="Rookie"]      .codename { color: #888888; font-size: 1.05em; }
+    .codename-rank[data-rank="Bronze"]      .codename { color: #b87333; font-size: 1.08em; }
+    .codename-rank[data-rank="Silver"]      .codename { color: #9e9e9e; font-size: 1.12em; }
+    .codename-rank[data-rank="Gold"]        .codename { color: #ffd700; font-size: 1.18em; font-weight: bold; }
+    .codename-rank[data-rank="Platinum"]    .codename { color: #00bcd4; font-size: 1.22em; font-weight: bold; }
+    .codename-rank[data-rank="Diamond"]     .codename { color: #00bfff; font-size: 1.28em; font-weight: bold; }
+    .codename-rank[data-rank="Grandmaster"] .codename { color: #8e24aa; font-size: 1.35em; font-weight: bold; }
+    .codename-rank[data-rank="Legend"]      .codename { color: #e53935; font-size: 1.45em; font-weight: bold; }
+    .codename-rank[data-rank="Gold"]        .codename,
+    .codename-rank[data-rank="Platinum"]    .codename,
+    .codename-rank[data-rank="Diamond"]     .codename,
+    .codename-rank[data-rank="Grandmaster"] .codename,
+    .codename-rank[data-rank="Legend"]      .codename {
+      animation: blink 1s step-end infinite alternate;
+    }
+    @keyframes blink {
+      0%   { opacity: 1;   text-shadow: 0 0 8px #fff, 0 0 16px currentColor; }
+      100% { opacity: 0.6; text-shadow: 0 0 2px #fff, 0 0 4px currentColor; }
+    }
+    /* Wave (Gold) */
+    @keyframes wave {
+      0%, 100% { transform: translateY(0);}
+      20%      { transform: translateY(-5px);}
+      40%      { transform: translateY(-10px);}
+      60%      { transform: translateY(-5px);}
+      80%      { transform: translateY(0);}
+    }
+    .codename.wave span {
+      display: inline-block;
+      animation: wave 1.2s cubic-bezier(0.4,0,0.2,1) infinite;
+    }
+    .codename.wave.gold span { animation-duration: 1.2s; }
+    .codename.wave.platinum span { animation-duration: 1s; }
+    .codename.wave.diamond span { animation-duration: 0.85s; }
+    .codename.wave.grandmaster span { animation-duration: 0.7s; }
+    .codename.wave.legend span { animation-duration: 0.6s; }
+    .codename.wave span:nth-child(1) { animation-delay: 0s; }
+    .codename.wave span:nth-child(2) { animation-delay: 0.08s; }
+    .codename.wave span:nth-child(3) { animation-delay: 0.16s; }
+    .codename.wave span:nth-child(4) { animation-delay: 0.24s; }
+    .codename.wave span:nth-child(5) { animation-delay: 0.32s; }
+    .codename.wave span:nth-child(6) { animation-delay: 0.40s; }
+    .codename.wave span:nth-child(7) { animation-delay: 0.48s; }
+    .codename.wave span:nth-child(8) { animation-delay: 0.56s; }
+    .codename.wave span:nth-child(9) { animation-delay: 0.64s; }
+    .codename.wave span:nth-child(10){ animation-delay: 0.72s; }
+    /* Bounce (Platinum) */
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50%      { transform: translateY(-18px); }
+    }
+    .codename.bounce {
+      display: inline-block;
+      animation: bounce 1s infinite;
+    }
+    /* Pulse (Diamond) */
+    @keyframes pulse {
+      0%   { transform: scale(1);   opacity: 1; }
+      50%  { transform: scale(1.18); opacity: 0.7; }
+      100% { transform: scale(1);   opacity: 1; }
+    }
+    .codename.pulse {
+      display: inline-block;
+      animation: pulse 1.2s infinite;
+    }
+    /* Shake (Grandmaster) */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-2px); }
+      40% { transform: translateX(2px); }
+      60% { transform: translateX(-2px); }
+      80% { transform: translateX(2px); }
+    }
+    .codename.shake {
+      display: inline-block;
+      animation: shake 0.7s infinite;
+    }
+    /* Rainbow Spin (Legend) */
+    @keyframes rainbow {
+      0% { filter: hue-rotate(0deg); }
+      100% { filter: hue-rotate(360deg); }
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .codename.rainbow-spin {
+      display: inline-block;
+      animation: rainbow 2s linear infinite, spin 1.5s linear infinite;
+    }
+    /* Neon Glow (Gold) */
+    .codename.neon {
+      font-size: 1.18em;
+      color: #fff;
+      text-shadow: 0 0 5px #ffd700, 0 0 10px #ffd700, 0 0 20px #ffd700, 0 0 40px #ffd700, 0 0 80px #ffd700;
+      animation: glow 1.5s infinite alternate;
+    }
+    @keyframes glow {
+      0% {
+        text-shadow: 0 0 5px #ffd700, 0 0 10px #ffd700, 0 0 20px #ffd700, 0 0 40px #ffd700, 0 0 80px #ffd700;
+      }
+    }
+
+
+    /* Typewriter (Platinum) */
+    .codename.typewriter {
+      font-family: 'Fira Mono', monospace;
+      overflow: hidden;
+      border-right: .15em solid #00bcd4;
+      white-space: nowrap;
+      animation: typing 2.5s steps(12, end) infinite, blink-caret .75s step-end infinite;
+      font-size: 1.22em;
+    }
+    @keyframes typing {
+      0% { width: 0 }
+      50% { width: 100% }
+      100% { width: 0 }
+    }
+    @keyframes blink-caret {
+      from, to { border-color: transparent }
+      50% { border-color: #00bcd4; }
+    }
+    /* Glitch (Diamond) */
+    .codename.glitch {
+      position: relative;
+      color: #fff;
+      font-size: 1.28em;
+      font-weight: bold;
+      animation: glitch 2s infinite;
+    }
+    .codename.glitch::before,
+    .codename.glitch::after {
+      content: attr(data-text);
+      position: absolute;
+      left: 0; top: 0;
+      width: 100%; height: 100%;
+      opacity: 0.7;
+    }
+    .codename.glitch::before {
+      color: #ff005e;
+      z-index: 1;
+      clip-path: polygon(0 0, 100% 0, 100% 30%, 0 30%);
+      animation: glitch 2s infinite;
+    }
+    .codename.glitch::after {
+      color: #00d4ff;
+      z-index: 2;
+      clip-path: polygon(0 70%, 100% 70%, 100% 100%, 0 100%);
+      animation: glitch 2s infinite;
+    }
+    @keyframes glitch {
+      0%, 100% { transform: translate(0);}
+      20% { transform: translate(-2px, 2px);}
+      40% { transform: translate(2px, -2px);}
+      60% { transform: translate(-1px, 1px);}
+      80% { transform: translate(1px, -1px);}
+    }
+
+    /* Promo Cards Section */
+    .promo-cards-section {
+      margin-top: 40px;
+      padding: 24px;
+      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .promo-cards-title {
+      text-align: center;
+      color: #2c3e50;
+      font-size: 1.8em;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    .promo-cards-subtitle {
+      text-align: center;
+      color: #6c757d;
+      font-size: 1.1em;
+      margin-bottom: 32px;
+    }
+
+    .promo-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 32px;
+      max-width: 100%;
+      margin: 0 auto;
+      padding: 0 20px;
+      justify-content: center;
+    }
+
+    .promo-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      transition: all 0.3s ease;
+      cursor: pointer;
+      text-align: center;
+      width: 100%;
+      position: relative;
+    }
+
+    .promo-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    }
+
+    .promo-card img {
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      aspect-ratio: 7/9;
+      object-fit: contain;
+      display: block;
+      background: #fff;
+    }
+
+    .promo-card-title {
+      font-size: 0.9em;
+      font-weight: bold;
+      color: #2c3e50;
+      margin-bottom: 4px;
+      line-height: 1.2;
+    }
+
+    .promo-card-number {
+      font-size: 0.9em;
+      color: #6c757d;
+      background: #f8f9fa;
+      padding: 4px 8px;
+      border-radius: 12px;
+      display: inline-block;
+    }
+
+    /* Modal Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.8);
+      backdrop-filter: blur(4px);
+    }
+
+    .modal-content {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      padding: 0;
+      width: auto;
+      max-width: 90vw;
+      max-height: 90vh;
+      background: transparent;
+      border-radius: 0;
+      text-align: center;
+      animation: none;
+    }
+
+    @keyframes modalSlideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-50px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .modal-close {
+      position: fixed;
+      top: 20px;
+      right: 30px;
+      font-size: 32px;
+      font-weight: bold;
+      color: #fff;
+      cursor: pointer;
+      transition: color 0.3s;
+      z-index: 1001;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    }
+
+    .modal-close:hover {
+      color: #ff6b6b;
+    }
+
+    .modal img {
+      width: auto;
+      max-width: 90vw;
+      max-height: 90vh;
+      height: auto;
+      border-radius: 12px;
+      margin: 0;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+
+    .modal-title {
+      font-size: 1.5em;
+      font-weight: bold;
+      color: #2c3e50;
+      margin-bottom: 8px;
+    }
+
+    .modal-description {
+      color: #6c757d;
+      line-height: 1.6;
+    }
+
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+      .promo-cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 24px;
+        padding: 0 16px;
+        justify-content: center;
+      }
+      
+      .promo-card {
+        padding: 8px;
+      }
+      
+      .promo-card img {
+        margin-bottom: 6px;
+      }
+      
+      .promo-card-title {
+        font-size: 0.8em;
+      }
+      
+      .modal-content {
+        margin: 10% auto;
+        width: 95%;
+        padding: 16px;
+      }
+      
+      .modal img {
+        max-width: 350px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .promo-cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+        padding: 0 12px;
+        justify-content: center;
+      }
+      
+      .promo-card {
+        padding: 6px;
+      }
+      
+      .promo-card-title {
+        font-size: 0.75em;
+      }
+      
+      .promo-cards-title {
+        font-size: 1.5em;
+      }
+      
+      .promo-cards-subtitle {
+        font-size: 1em;
+      }
+      
+      .modal img {
+        max-width: 300px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a href="index.html" class="home-button" title="กลับหน้าหลัก"></a>
+  <div class="gymbattle-container">
+    <div class="logo">
+      <img src="https://i.postimg.cc/wjzpnxjB/Up-Level-01-1.png" alt="Up Level Logo">
+    </div>
+    <h2 style="text-align:center; margin-bottom: 24px;">รายชื่อผู้สมัคร Gym Battle เดือนพฤศจิกายน 2568</h2>
+    <div style="display: flex; justify-content: center; margin-bottom: 24px;">
+      <a class="register-btn" href="https://forms.gle/bHLKm6DW6KGv9hsr6" target="_blank" style="text-align: center;">สมัครแข่งขัน Gym Battle</a>
+    </div>
+    <div id="gymbattle-list" style="text-align:center;">
+      <div class="spinner"></div>
+      <div>กำลังโหลด...</div>
+    </div>
+
+    <!-- Promo Cards Section -->
+    <div class="promo-cards-section">
+      <h3 class="promo-cards-title">การ์ดโปรโม Gym Battle</h3>
+      <p class="promo-cards-subtitle">การ์ดโปรโมที่สามารถรับได้เมื่อเข้าร่วมหรือชนะการแข่งขันยิมแบตเทิล</p>
+      
+      <div class="promo-cards-grid" id="promo-cards-grid">
+        <!-- Cards will be generated by JavaScript -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal for card details -->
+  <div id="cardModal" class="modal">
+    <div class="modal-content">
+      <span class="modal-close">&times;</span>
+      <img id="modalCardImage" src="" alt="Card Image">
+    </div>
+  </div>
+  <script>
+    console.log('DEBUG: version 2');
+    const apiUrl = "https://script.google.com/macros/s/AKfycbyvf57rrZ4cQTeD3znO5vgVG00TDs_vmldtGI8BQ0ZCM_-haevAZU1M9cyRkrSjChTK/exec?type=json";
+    // พาสเทล 7 สี
+    const pastelColors = [
+      { bg: "#E3F2FD", border: "#42A5F5", th: "#42A5F5" },
+      { bg: "#FFFDE7", border: "#FDD835", th: "#FDD835" },
+      { bg: "#F1F8E9", border: "#7CB342", th: "#7CB342" },
+      { bg: "#FCE4EC", border: "#EC407A", th: "#EC407A" },
+      { bg: "#E8EAF6", border: "#5C6BC0", th: "#5C6BC0" },
+      { bg: "#FFF3E0", border: "#FFB74D", th: "#FFB74D" },
+      { bg: "#E0F2F1", border: "#26A69A", th: "#26A69A" }
+    ];
+
+    // วันที่แข่งขันเดือนพฤศจิกายน 2568
+    const novemberDates = [
+      "วันเสาร์ที่ 1 พฤศจิกายน 2568",
+      "วันอังคารที่ 4 พฤศจิกายน 2568",
+      "วันศุกร์ที่ 7 พฤศจิกายน 2568",
+      "วันเสาร์ที่ 8 พฤศจิกายน 2568",
+      "วันอังคารที่ 11 พฤศจิกายน 2568",
+      "วันศุกร์ที่ 14 พฤศจิกายน 2568",
+      "วันเสาร์ที่ 15 พฤศจิกายน 2568",
+      "วันอังคารที่ 18 พฤศจิกายน 2568",
+      "วันศุกร์ที่ 21 พฤศจิกายน 2568",
+      "วันเสาร์ที่ 22 พฤศจิกายน 2568",
+      "วันอังคารที่ 25 พฤศจิกายน 2568",
+      "วันศุกร์ที่ 28 พฤศจิกายน 2568"
+    ];
+
+    // ดึงข้อมูลสมาชิกจาก Member Dashboard (API ใหม่)
+    const memberDashboardApi = "https://script.google.com/macros/s/AKfycbxtjsDwHI6nJU4OIHExUxMaZwUn3qwakvdkzwbQO7C8Trzz5Gh84SX6F1gqb4BOFQcn/exec?func=getMemberDashboardData";
+    const rankEmojis = {
+      "Rookie": "🐣",
+      "Rookie II": "🐣",
+      "Rookie III": "🐣",
+      "Rookie IV": "🐣",
+      "Rookie V": "🐣",
+      "Bronze": "🛡️",
+      "Bronze II": "🛡️",
+      "Bronze III": "🛡️",
+      "Bronze IV": "🛡️",
+      "Bronze V": "🛡️",
+      "Silver": "⚔️",
+      "Silver II": "⚔️",
+      "Silver III": "⚔️",
+      "Silver IV": "⚔️",
+      "Silver V": "⚔️",
+      "Gold": "🥇",
+      "Gold II": "🥇",
+      "Gold III": "🥇",
+      "Gold IV": "🥇",
+      "Gold V": "🥇",
+      "Platinum": "✨",
+      "Platinum II": "✨",
+      "Platinum III": "✨",
+      "Platinum IV": "✨",
+      "Platinum V": "✨",
+      "Diamond": "💎",
+      "Diamond II": "💎",
+      "Diamond III": "💎",
+      "Diamond IV": "💎",
+      "Diamond V": "💎",
+      "Grandmaster": "👑",
+      "Grandmaster II": "👑",
+      "Grandmaster III": "👑",
+      "Grandmaster IV": "👑",
+      "Grandmaster V": "👑",
+      "Legend": "🐉",
+      "Legend II": "🐉",
+      "Legend III": "🐉",
+      "Legend IV": "🐉",
+      "Legend V": "🐉"
+    };
+
+    // ฟังก์ชันสำหรับดึง base rank จาก rank ที่มี suffix
+    function getBaseRank(rank) {
+      if (!rank) return "Rookie";
+      
+      // ลบ suffix เช่น II, III, IV, V, VI, VII, VIII, IX, X หรือตัวเลข
+      const baseRank = rank.replace(/\s+(II|III|IV|V|VI|VII|VIII|IX|X|\d+)$/, '');
+      return baseRank || "Rookie";
+    }
+
+    // ฟังก์ชันสำหรับดึง emoji จาก rank (รองรับ rank ที่มี suffix)
+    function getRankEmoji(rank) {
+      if (!rank) return rankEmojis["Rookie"] || "🐣";
+      
+      // ลองหาจาก rankEmojis ก่อน
+      if (rankEmojis[rank]) {
+        return rankEmojis[rank];
+      }
+      
+      // ถ้าไม่มี ให้ดึง base rank แล้วหาอิโมจิ
+      const baseRank = getBaseRank(rank);
+      return rankEmojis[baseRank] || rankEmojis["Rookie"] || "🐣";
+    }
+
+    function parseThaiDate(str) {
+      // ตัวอย่าง: "วันอังคารที่ 16 กรกฎาคม 2568"
+      const months = [
+        "", "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
+        "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"
+      ];
+      const m = str.match(/(\d{1,2}) (\S+) (\d{4})/);
+      if (!m) return null;
+      const day = parseInt(m[1], 10);
+      const month = months.indexOf(m[2]);
+      const year = parseInt(m[3], 10) - 543; // พ.ศ. → ค.ศ.
+      return new Date(year, month - 1, day);
+    }
+
+    Promise.all([
+      fetch(apiUrl).then(res => res.json()).catch(err => ({ error: null, groupedData: {} })), // ข้อมูลผู้สมัคร gym battle
+      fetch(memberDashboardApi).then(res => res.json()).catch(err => []) // สมาชิกทั้งหมด
+    ]).then(([data, members]) => {
+      // สร้าง map เบอร์โทร -> { codename, rank }
+      const phoneMap = {};
+      if (members && Array.isArray(members)) {
+        members.forEach(m => {
+          const phone = String(m.phone).replace(/[^\d]/g, "");
+          phoneMap[phone] = { codename: m.codename, rank: m.rank };
+        });
+      }
+      let html = '';
+      // วันที่ปัจจุบัน (ไทย)
+      const today = new Date();
+      today.setHours(0,0,0,0);
+      
+      // ใช้ข้อมูลวันที่จาก API หรือ fallback ไปใช้ข้อมูลที่กำหนดไว้
+      let datesToUse = data && data.dates ? data.dates : novemberDates;
+
+      // รวมวันที่จากระบบ (novemberDates) ก่อน เพื่อให้เริ่มที่ 1 พฤศจิกายนแน่นอน
+      // จากนั้นตามด้วยวันที่จาก API ที่ถูกแปลงเป็นพฤศจิกายน และตัดซ้ำ/จัดเรียง
+      const normalizedApiDates = (Array.isArray(datesToUse) ? datesToUse : []).map(date =>
+        date && typeof date === 'string' && date.includes('ตุลาคม') ? date.replace('ตุลาคม', 'พฤศจิกายน') : date
+      ).filter(Boolean);
+
+      // รวมและตัดซ้ำโดยคงลำดับเริ่มจาก novemberDates
+      const combinedDates = [...novemberDates, ...normalizedApiDates];
+      const seen = new Set();
+      datesToUse = combinedDates.filter(d => {
+        if (seen.has(d)) return false;
+        seen.add(d);
+        return true;
+      });
+
+      // จัดเรียงวันที่ตามลำดับเวลา เพื่อให้รายการเริ่มที่ 1 พฤศจิกายนเสมอ
+      datesToUse.sort((a, b) => {
+        const da = parseThaiDate(a);
+        const db = parseThaiDate(b);
+        if (!da || !db) return 0;
+        return da - db;
+      });
+      
+      datesToUse.forEach((date, idx) => {
+        // หาข้อมูลผู้สมัครสำหรับวันที่นี้ (ถ้ามี)
+        let players = [];
+        if (data && data.groupedData) {
+          // ตรวจสอบทั้งวันที่ปัจจุบันและวันที่ตุลาคม (กรณีข้อมูลเก่า)
+          if (data.groupedData[date]) {
+            players = data.groupedData[date];
+          } else {
+            // ลองหาจากวันที่ตุลาคมที่ตรงกัน
+            const octoberDate = date.replace('พฤศจิกายน', 'ตุลาคม');
+            if (data.groupedData[octoberDate]) {
+              players = data.groupedData[octoberDate];
+            }
+          }
+        }
+        
+        // Debug: แสดงข้อมูลที่หาเจอ
+        console.log(`Date: ${date}`);
+        console.log(`Players found:`, players);
+        console.log(`Available keys in groupedData:`, Object.keys(data.groupedData || {}));
+        const color = pastelColors[idx % pastelColors.length];
+        const dateObj = parseThaiDate(date);
+        let isPast = false, isToday = false, isFuture = false;
+        if (dateObj) {
+          if (dateObj < today) isPast = true;
+          else if (dateObj.getTime() === today.getTime()) isToday = true;
+          else isFuture = true;
+        }
+        // id เฉพาะกลุ่มวัน
+        const groupId = `group-${idx}`;
+        // ปุ่ม toggle
+        const toggleBtn = `<button class="toggle-btn" data-group="${groupId}">${isPast ? "แสดง" : "ซ่อน"}</button>`;
+        // ซ่อน table ถ้าเป็นอดีต
+        const tableStyle = isPast ? 'style="display:none;"' : '';
+        html += `<div class="date-header" style="background:${color.bg};border-left:6px solid ${color.border};display:flex;justify-content:space-between;align-items:center;">` +
+          `<span>วันที่: ${date} (จำนวน ${players.length} คน)</span> ${toggleBtn}</div>`;
+        
+        // Debug: แสดงข้อมูลใน HTML
+        html += `<!-- Debug: Date: ${date}, Players: ${JSON.stringify(players)} -->`;
+        html += `<table id="${groupId}" ${tableStyle}><thead><tr>\n            <th style="background:${color.border};color:#fff;">ลำดับ</th><th style="background:${color.border};color:#fff;">ชื่อเล่น</th><th style="background:${color.border};color:#fff;">ระดับการเล่น</th></tr></thead><tbody>`;
+        if (players.length === 0) {
+          html += `<tr><td colspan="3">ยังไม่มีผู้สมัคร</td></tr>`;
+        } else {
+          players.forEach((player, idx2) => {
+            let displayName = player.nickname;
+            let phone = String(player.phone || '').replace(/[^\d]/g, "");
+            const profile = phoneMap[phone];
+            if (profile && profile.codename && profile.rank) {
+              const emoji = getRankEmoji(profile.rank);
+              const codenameHtml = renderCodenameEffect(profile.codename, profile.rank);
+              displayName += `<br><span class="codename-rank" data-rank="${profile.rank}"><span>${emoji}</span> ${codenameHtml} <span>${emoji}</span></span>`;
+            }
+            html += `<tr><td>${idx2 + 1}</td><td>${displayName}</td><td>${player.level}</td></tr>`;
+          });
+        }
+        html += `</tbody></table>`;
+      });
+      document.getElementById('gymbattle-list').innerHTML = html;
+      // เพิ่ม event listener ให้ปุ่ม toggle
+      document.querySelectorAll('.toggle-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const groupId = this.getAttribute('data-group');
+          const table = document.getElementById(groupId);
+          if (table.style.display === "none") {
+            table.style.display = "";
+            this.textContent = "ซ่อน";
+          } else {
+            table.style.display = "none";
+            this.textContent = "แสดง";
+          }
+        });
+      });
+    }).catch(err => {
+      console.error('Error loading data:', err);
+      // แสดงข้อมูลวันที่ทั้งหมดแม้ว่า API จะมีปัญหา
+      let html = '';
+      const today = new Date();
+      today.setHours(0,0,0,0);
+      
+      novemberDates.forEach((date, idx) => {
+        const color = pastelColors[idx % pastelColors.length];
+        const dateObj = parseThaiDate(date);
+        let isPast = false;
+        if (dateObj) {
+          if (dateObj < today) isPast = true;
+        }
+        const groupId = `group-${idx}`;
+        const toggleBtn = `<button class="toggle-btn" data-group="${groupId}">${isPast ? "แสดง" : "ซ่อน"}</button>`;
+        const tableStyle = isPast ? 'style="display:none;"' : '';
+        html += `<div class="date-header" style="background:${color.bg};border-left:6px solid ${color.border};display:flex;justify-content:space-between;align-items:center;">` +
+          `<span>วันที่: ${date} (จำนวน 0 คน)</span> ${toggleBtn}</div>`;
+        html += `<table id="${groupId}" ${tableStyle}><thead><tr>\n            <th style="background:${color.border};color:#fff;">ลำดับ</th><th style="background:${color.border};color:#fff;">ชื่อเล่น</th><th style="background:${color.border};color:#fff;">ระดับการเล่น</th></tr></thead><tbody>`;
+        html += `<tr><td colspan="3">ยังไม่มีผู้สมัคร</td></tr>`;
+        html += `</tbody></table>`;
+      });
+      document.getElementById('gymbattle-list').innerHTML = html;
+      
+      // เพิ่ม event listener ให้ปุ่ม toggle
+      document.querySelectorAll('.toggle-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const groupId = this.getAttribute('data-group');
+          const table = document.getElementById(groupId);
+          if (table.style.display === "none") {
+            table.style.display = "";
+            this.textContent = "ซ่อน";
+          } else {
+            table.style.display = "none";
+            this.textContent = "แสดง";
+          }
+        });
+      });
+    });
+
+    function renderCodenameEffect(codename, rank) {
+      const chars = ['[', ...codename.split(''), ']'];
+      const waveRanks = ['Gold', 'Platinum', 'Diamond', 'Grandmaster', 'Legend'];
+      if (waveRanks.includes(rank)) {
+        // wave + class ตาม rank, ใส่วงเล็บเหลี่ยมขยับด้วย
+        return `<span class="codename wave ${rank.toLowerCase()}">${chars.map((ch,i)=>`<span>${ch}</span>`).join('')}</span>`;
+      } else {
+        // ใส่วงเล็บเหลี่ยมธรรมดา
+        return `<span class="codename">[${codename}]</span>`;
+      }
+    }
+
+    // Promo Cards Data
+    const promoCards = [
+      { number: "025", name: "การ์ดโปรโม 025", title: "การ์ดโปรโม 025", description: "การ์ดโปรโมพิเศษจาก Gym Battle" },
+      { number: "026", name: "การ์ดโปรโม 026", title: "การ์ดโปรโม 026", description: "การ์ดโปรโมพิเศษจาก Gym Battle" },
+      { number: "027", name: "การ์ดโปรโม 027", title: "การ์ดโปรโม 027", description: "การ์ดโปรโมพิเศษจาก Gym Battle" },
+      { number: "028", name: "การ์ดโปรโม 028", title: "การ์ดโปรโม 028", description: "การ์ดโปรโมพิเศษจาก Gym Battle" },
+      { number: "029", name: "การ์ดโปรโม 029", title: "การ์ดโปรโม 029", description: "การ์ดโปรโมพิเศษจาก Gym Battle" },
+      { number: "030", name: "การ์ดโปรโม 030", title: "การ์ดโปรโม 030", description: "การ์ดโปรโมพิเศษจาก Gym Battle" },
+      { number: "031", name: "การ์ดโปรโม 031", title: "การ์ดโปรโม 031", description: "การ์ดโปรโมพิเศษจาก Gym Battle" },
+      { number: "032", name: "การ์ดโปรโม 032", title: "การ์ดโปรโม 032", description: "การ์ดโปรโมพิเศษจาก Gym Battle" },
+      { number: "033", name: "การ์ดโปรโม 033", title: "การ์ดโปรโม 033", description: "การ์ดโปรโมพิเศษจาก Gym Battle" },
+      { number: "034", name: "การ์ดโปรโม 034", title: "การ์ดโปรโม 034", description: "การ์ดโปรโมพิเศษจาก Gym Battle" },
+      { number: "035", name: "การ์ดโปรโม 035", title: "การ์ดโปรโม 035", description: "การ์ดโปรโมพิเศษจาก Gym Battle" },
+      { number: "036", name: "การ์ดโปรโม 036", title: "การ์ดโปรโม 036", description: "การ์ดโปรโมพิเศษจาก Gym Battle" }
+    ];
+
+    // Generate promo cards HTML
+    function generatePromoCards() {
+      const grid = document.getElementById('promo-cards-grid');
+      if (!grid) return;
+
+      let html = '';
+      promoCards.forEach(card => {
+        const imageUrl = `https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/10/th_news_MPromo_${card.number}.png`;
+        html += `
+          <div class="promo-card" onclick="openCardModal('${imageUrl}')">
+            <img src="${imageUrl}" alt="" loading="lazy">
+          </div>
+        `;
+      });
+      grid.innerHTML = html;
+    }
+
+    // Open card modal
+    function openCardModal(imageUrl) {
+      const modal = document.getElementById('cardModal');
+      const modalImage = document.getElementById('modalCardImage');
+
+      modalImage.src = imageUrl;
+      modal.style.display = 'block';
+    }
+
+    // Close modal
+    function closeCardModal() {
+      const modal = document.getElementById('cardModal');
+      modal.style.display = 'none';
+    }
+
+    // Modal event listeners
+    document.addEventListener('DOMContentLoaded', function() {
+      // Generate promo cards when page loads
+      generatePromoCards();
+
+      // Modal close events
+      const modal = document.getElementById('cardModal');
+      const closeBtn = document.querySelector('.modal-close');
+      
+      if (closeBtn) {
+        closeBtn.addEventListener('click', closeCardModal);
+      }
+      
+      if (modal) {
+        modal.addEventListener('click', function(event) {
+          if (event.target === modal) {
+            closeCardModal();
+          }
+        });
+      }
+
+      // Close modal with Escape key
+      document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+          closeCardModal();
+        }
+      });
+    });
+  </script>
+</body>
+</html> 

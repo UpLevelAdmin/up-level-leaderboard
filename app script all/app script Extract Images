@@ -1,0 +1,151 @@
+/**
+ * สคริปต์สำหรับดึงรูปภาพจาก Google Sheets และอัพโหลดไปที่ Google Drive
+ * 
+ * วิธีใช้:
+ * 1. เปิด Google Sheets ที่มีรูปภาพ
+ * 2. Extensions → Apps Script
+ * 3. สร้างไฟล์ใหม่และวางโค้ดนี้
+ * 4. เปลี่ยน spreadsheetId และ sheetName ให้ตรงกับของคุณ
+ * 5. รันฟังก์ชัน extractImagesToDrive()
+ * 6. ตรวจสอบโฟลเดอร์ "Extracted Images" ใน Google Drive
+ */
+
+function extractImagesToDrive() {
+  // เปลี่ยนค่าเหล่านี้ให้ตรงกับ Google Sheet ของคุณ
+  var spreadsheetId = '1JvVCVxxXBS-2lpnT-IOrYBf2rF-OBRVFCW6MZEvpqxE';
+  var sheetName = 'ฝากขายการ์ด'; // หรือชื่อ sheet อื่น
+  var imageColumn = 6; // Column F = 6 (A=1, B=2, C=3, D=4, E=5, F=6)
+  
+  try {
+    // เปิด spreadsheet
+    var spreadsheet = SpreadsheetApp.openById(spreadsheetId);
+    var sheet = spreadsheet.getSheetByName(sheetName);
+    
+    if (!sheet) {
+      Logger.log('ไม่พบ sheet: ' + sheetName);
+      return;
+    }
+    
+    // สร้างโฟลเดอร์ใน Drive (ถ้ายังไม่มี)
+    var folderName = 'Extracted Images';
+    var folders = DriveApp.getFoldersByName(folderName);
+    var folder;
+    
+    if (folders.hasNext()) {
+      folder = folders.next();
+    } else {
+      folder = DriveApp.createFolder(folderName);
+    }
+    
+    // ดึงข้อมูลทั้งหมด
+    var data = sheet.getDataRange().getValues();
+    var headers = data[0];
+    
+    // หา index ของคอลัมน์ที่ต้องการ
+    var imageColIndex = imageColumn - 1; // แปลงเป็น 0-based index
+    
+    // ดึงรูปภาพจากแต่ละแถว (เริ่มจากแถวที่ 2)
+    var extractedCount = 0;
+    
+    for (var i = 1; i < data.length; i++) {
+      var row = data[i];
+      var cardName = row[4] || 'Card_' + (i + 1); // Column E = index 4
+      
+      try {
+        var cellRange = sheet.getRange(i + 1, imageColumn);
+        var images = cellRange.getImages();
+        
+        if (images && images.length > 0) {
+          var image = images[0];
+          var blob = image.getBlob();
+          
+          // ตั้งชื่อไฟล์
+          var fileName = cardName + '_' + (i + 1) + '.png';
+          fileName = fileName.replace(/[\/\\?%*:|"<>]/g, '_'); // ลบอักขระพิเศษ
+          
+          // อัพโหลดไปที่ Drive
+          var file = folder.createFile(blob);
+          file.setName(fileName);
+          
+          // ตั้งค่าแชร์เป็น Public
+          file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+          
+          // สร้าง Direct Link
+          var fileId = file.getId();
+          var directLink = 'https://drive.google.com/uc?export=view&id=' + fileId;
+          
+          // อัพเดท URL ใน Google Sheet (คอลัมน์ถัดไป หรือคอลัมน์ที่กำหนด)
+          // ถ้าต้องการให้อัพเดทอัตโนมัติ ให้ uncomment บรรทัดนี้
+          // sheet.getRange(i + 1, imageColumn).setValue('=IMAGE("' + directLink + '")');
+          
+          Logger.log('Extracted: ' + fileName + ' -> ' + directLink);
+          extractedCount++;
+        }
+      } catch (e) {
+        Logger.log('Error extracting image from row ' + (i + 1) + ': ' + e.toString());
+      }
+    }
+    
+    Logger.log('เสร็จสิ้น! ดึงรูปภาพได้ ' + extractedCount + ' รูป');
+    Logger.log('ตรวจสอบโฟลเดอร์: ' + folder.getUrl());
+    
+    // แสดงผลลัพธ์
+    SpreadsheetApp.getUi().alert(
+      'เสร็จสิ้น!\n\n' +
+      'ดึงรูปภาพได้: ' + extractedCount + ' รูป\n' +
+      'โฟลเดอร์: ' + folderName + '\n\n' +
+      'ตรวจสอบ: ' + folder.getUrl()
+    );
+    
+  } catch (error) {
+    Logger.log('Error: ' + error.toString());
+    SpreadsheetApp.getUi().alert('เกิดข้อผิดพลาด: ' + error.toString());
+  }
+}
+
+/**
+ * ฟังก์ชันสำหรับอัพเดท URL ใน Google Sheet อัตโนมัติ
+ * ใช้หลังจาก extractImagesToDrive() แล้ว
+ */
+function updateImageUrlsInSheet() {
+  var spreadsheetId = '1JvVCVxxXBS-2lpnT-IOrYBf2rF-OBRVFCW6MZEvpqxE';
+  var sheetName = 'ฝากขายการ์ด';
+  var imageColumn = 6; // Column F
+  
+  try {
+    var spreadsheet = SpreadsheetApp.openById(spreadsheetId);
+    var sheet = spreadsheet.getSheetByName(sheetName);
+    var folder = DriveApp.getFoldersByName('Extracted Images').next();
+    var files = folder.getFiles();
+    
+    var fileMap = {};
+    while (files.hasNext()) {
+      var file = files.next();
+      var fileName = file.getName();
+      // สร้าง map จากชื่อไฟล์ (CardName_1.png) ไปยัง URL
+      fileMap[fileName] = 'https://drive.google.com/uc?export=view&id=' + file.getId();
+    }
+    
+    var data = sheet.getDataRange().getValues();
+    var updatedCount = 0;
+    
+    for (var i = 1; i < data.length; i++) {
+      var cardName = data[i][4] || 'Card_' + (i + 1);
+      var expectedFileName = cardName + '_' + (i + 1) + '.png';
+      expectedFileName = expectedFileName.replace(/[\/\\?%*:|"<>]/g, '_');
+      
+      if (fileMap[expectedFileName]) {
+        var imageUrl = fileMap[expectedFileName];
+        sheet.getRange(i + 1, imageColumn).setValue('=IMAGE("' + imageUrl + '")');
+        updatedCount++;
+      }
+    }
+    
+    Logger.log('อัพเดท URL แล้ว: ' + updatedCount + ' แถว');
+    SpreadsheetApp.getUi().alert('อัพเดท URL แล้ว: ' + updatedCount + ' แถว');
+    
+  } catch (error) {
+    Logger.log('Error: ' + error.toString());
+  }
+}
+

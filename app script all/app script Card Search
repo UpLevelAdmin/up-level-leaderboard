@@ -1,0 +1,143 @@
+/**
+ * Google Apps Script สำหรับดึงข้อมูลการ์ดจากเว็บ Pokemon Card Asia
+ * 
+ * ⚠️ คำเตือน: การใช้งานนี้อาจมีข้อจำกัดด้านลิขสิทธิ์
+ * กรุณาใช้เพื่อการศึกษาและทดสอบเท่านั้น
+ */
+
+/**
+ * ฟังก์ชันหลักสำหรับรับ request จากหน้าเว็บ
+ */
+function doGet(e) {
+  try {
+    var action = e.parameter.action || 'search';
+    var cardName = e.parameter.cardName || '';
+    var cardSet = e.parameter.cardSet || '';
+    
+    if (action === 'search') {
+      var result = searchPokemonCards(cardName, cardSet);
+      return ContentService.createTextOutput(JSON.stringify(result))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    return ContentService.createTextOutput(JSON.stringify({
+      error: 'Invalid action'
+    })).setMimeType(ContentService.MimeType.JSON);
+    
+  } catch (error) {
+    return ContentService.createTextOutput(JSON.stringify({
+      error: error.toString()
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+/**
+ * ฟังก์ชันสำหรับค้นหาการ์ดจากเว็บ Pokemon Card Asia
+ */
+function searchPokemonCards(cardName, cardSet) {
+  try {
+    // วิธีที่ 1: ใช้ Pokemon TCG API (แนะนำ - ถูกต้องตามกฎหมาย)
+    // API URL: https://api.pokemontcg.io/v2/cards
+    var apiUrl = 'https://api.pokemontcg.io/v2/cards?';
+    var params = [];
+    
+    if (cardName) {
+      params.push('q=name:"*' + encodeURIComponent(cardName) + '*"');
+    }
+    if (cardSet) {
+      params.push('q=set.name:"*' + encodeURIComponent(cardSet) + '*"');
+    }
+    params.push('pageSize=50');
+    
+    var fullUrl = apiUrl + params.join('&');
+    Logger.log('Searching: ' + fullUrl);
+    
+    var response = UrlFetchApp.fetch(fullUrl, {
+      'method': 'get',
+      'headers': {
+        'Accept': 'application/json'
+      }
+    });
+    
+    var responseCode = response.getResponseCode();
+    if (responseCode !== 200) {
+      throw new Error('API returned status ' + responseCode);
+    }
+    
+    var data = JSON.parse(response.getContentText());
+    
+    // แปลงข้อมูลให้เป็นรูปแบบที่หน้าเว็บต้องการ
+    var cards = [];
+    if (data.data && Array.isArray(data.data)) {
+      data.data.forEach(function(card) {
+        cards.push({
+          id: card.id || '',
+          name: card.name || '',
+          setName: card.set ? card.set.name : '',
+          setCode: card.set ? card.set.id : '',
+          number: card.number || '',
+          imageUrl: card.images ? (card.images.large || card.images.small) : '',
+          images: {
+            small: card.images ? card.images.small : '',
+            large: card.images ? card.images.large : ''
+          },
+          rarity: card.rarity || '',
+          types: card.types || [],
+          supertype: card.supertype || '',
+          subtypes: card.subtypes || []
+        });
+      });
+    }
+    
+    return {
+      success: true,
+      cards: cards,
+      total: cards.length
+    };
+    
+  } catch (error) {
+    Logger.log('Error: ' + error.toString());
+    return {
+      success: false,
+      error: error.toString(),
+      cards: []
+    };
+  }
+}
+
+/**
+ * ฟังก์ชันสำหรับดึงข้อมูลจากเว็บ Pokemon Card Asia โดยตรง (ต้องใช้ web scraping)
+ * ⚠️ วิธีนี้อาจมีปัญหาเรื่อง CORS และลิขสิทธิ์
+ */
+function searchPokemonCardAsiaDirect(cardName, cardSet) {
+  try {
+    // URL ของเว็บ Pokemon Card Asia
+    var baseUrl = 'https://asia.pokemon-card.com/th/deck-build/';
+    
+    // เนื่องจากเว็บนี้ใช้ JavaScript เพื่อโหลดข้อมูล
+    // เราต้องใช้วิธีอื่น เช่น:
+    // 1. ใช้ API ที่เว็บใช้ (ถ้ามี)
+    // 2. Web scraping (อาจละเมิด Terms of Service)
+    // 3. ใช้ Pokemon TCG API แทน (แนะนำ)
+    
+    // สำหรับตอนนี้เราจะใช้ Pokemon TCG API แทน
+    return searchPokemonCards(cardName, cardSet);
+    
+  } catch (error) {
+    Logger.log('Error: ' + error.toString());
+    return {
+      success: false,
+      error: error.toString(),
+      cards: []
+    };
+  }
+}
+
+/**
+ * ฟังก์ชันทดสอบ
+ */
+function testSearch() {
+  var result = searchPokemonCards('Pikachu', '');
+  Logger.log(JSON.stringify(result, null, 2));
+}
+

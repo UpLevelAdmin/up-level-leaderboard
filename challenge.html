@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ประกาศท้าทาย | Up Level Guild</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background-color: #f0f2f5;
+      text-align: center;
+      padding: 20px;
+      margin: 0;
+    }
+
+
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    img.logo {
+      width: 150px;
+      margin-bottom: 10px;
+    }
+
+    .challenge-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: white;
+      border-radius: 10px;
+      padding: 0.75rem;
+      margin: 0.75rem auto;
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.05);
+      max-width: 600px;
+      font-size: 0.95rem;
+      flex-wrap: wrap;
+    }
+
+   
+
+    .duel-ready {
+      font-weight: bold;
+      color: red;
+      font-size: 1rem;
+    }
+
+    .challenge-type {
+      font-weight: bold;
+      padding: 2px 6px;
+      border-radius: 6px;
+      color: white;
+      margin-right: 10px;
+      font-size: 0.75rem;
+      line-height: 1;
+    }
+
+    .challenge-type.open { background: #007bff; }
+    .challenge-type.direct { background: #ff4136; }
+
+    .challenge-main {
+      flex-grow: 1;
+      margin: 5px 0;
+      text-align: left;
+      min-width: 200px;
+    }
+
+    .challenge-actions {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      justify-content: flex-end;
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    .button-create {
+      background-color: #3f51b5;
+      color: white;
+      padding: 0.4rem 0.8rem;
+      font-size: 0.85rem;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 0 8px 8px 0;
+      display: inline-block;
+    }
+
+    .button-create.trainer {
+      background-color: #2196f3;
+    }
+
+    .button-create.party {
+      background-color: #43a047;
+    }
+
+    .button-verify {
+      background-color: #00bcd4;
+      color: white;
+      padding: 0.4rem 0.8rem;
+      font-size: 0.85rem;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+
+    .button-submit {
+      background-color: #4caf50;
+      color: white;
+      padding: 0.4rem 0.8rem;
+      font-size: 0.85rem;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 1rem;
+    }
+
+    .button-accept {
+      background-color: #ff9800;
+      color: white;
+      padding: 0.4rem 0.8rem;
+      font-size: 0.85rem;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 1rem;
+    }
+
+    .button-secondary {
+      background: none;
+      border: none;
+      color: #007bff;
+      cursor: pointer;
+      padding: 0;
+      font-size: 0.8rem;
+      margin-top: 4px;
+    }
+
+    .detail-section {
+      width: 100%;
+      padding: 0.5rem;
+      background: #f9f9f9;
+      border-radius: 8px;
+      margin-top: 0.5rem;
+      font-size: 0.85rem;
+      display: none;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    form {
+      max-width: 600px;
+      margin: 1rem auto;
+      padding: 1rem;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+      text-align: left;
+    }
+
+    form.hidden {
+      display: none;
+    }
+
+    form label {
+      display: block;
+      margin-top: 0.75rem;
+      font-size: 0.9rem;
+    }
+
+    form input, form select {
+      width: 100%;
+      padding: 0.4rem;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      margin-top: 0.25rem;
+    }
+ .challenge-card.ready {
+      border-left: 5px solid #ff0000;
+      background: linear-gradient(135deg, #ffe5e5 0%, #ffcccc 100%);
+      animation: readyPulse 1.5s ease-in-out infinite;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .challenge-card.ready::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+      animation: shimmer 2s infinite;
+    }
+
+    @keyframes readyPulse {
+      0% { 
+        box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7);
+        transform: scale(1);
+      }
+      50% { 
+        box-shadow: 0 0 0 15px rgba(255, 0, 0, 0.3);
+        transform: scale(1.02);
+      }
+      100% { 
+        box-shadow: 0 0 0 0 rgba(255, 0, 0, 0);
+        transform: scale(1);
+      }
+    }
+
+    @keyframes shimmer {
+      0% { left: -100%; }
+      100% { left: 100%; }
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 480px) {
+      .challenge-card {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .challenge-main {
+        width: 100%;
+        text-align: left;
+      }
+
+      .challenge-actions {
+        width: 100%;
+        justify-content: flex-end;
+        margin-top: 0.5rem;
+      }
+
+      .button-create, .button-verify, .button-submit, .button-accept, .button-secondary {
+        font-size: 0.95rem;
+        width: 100%;
+      }
+
+      .button-create {
+        display: block;
+        width: 100%;
+        margin: 0 0 10px 0;
+      }
+    }
+
+    .party-card .challenge-type.party {
+      background: #00bcd4;
+    }
+    .party-card.party-ready {
+      border-left: 5px solid #00bcd4;
+      background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);
+      animation: partyReadyPulse 1.5s ease-in-out infinite;
+      position: relative;
+      overflow: hidden;
+    }
+    .party-card.party-ready::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(0, 188, 212, 0.2), transparent);
+      animation: partyShimmer 2s infinite;
+    }
+    @keyframes partyReadyPulse {
+      0% { box-shadow: 0 0 0 0 rgba(0, 188, 212, 0.7); transform: scale(1); }
+      50% { box-shadow: 0 0 0 15px rgba(0, 188, 212, 0.3); transform: scale(1.02); }
+      100% { box-shadow: 0 0 0 0 rgba(0, 188, 212, 0); transform: scale(1); }
+    }
+    @keyframes partyShimmer {
+      0% { left: -100%; }
+      100% { left: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <a href="index.html" class="home-button" title="กลับหน้าหลัก"></a>
+  <img src="https://i.postimg.cc/wjzpnxjB/Up-Level-01-1.png" alt="Up Level Guild" class="logo" />
+  <h1>📢 ประกาศท้าทาย</h1>
+
+  <!-- รายการคำท้า -->
+  <div id="challenge-list">กำลังโหลด...</div>
+
+  <!-- Loading Spinner -->
+  <div id="loading-spinner" class="hidden" style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.6);">
+    <div style="border:8px solid #f3f3f3;border-top:8px solid #3f51b5;border-radius:50%;width:60px;height:60px;animation:spin 1s linear infinite;"></div>
+  </div>
+
+  <!-- ปุ่มแยก -->
+  <button id="show-trainer-form-btn" class="button-create trainer">+ สร้างคำท้าระหว่างเทรนเนอร์</button>
+
+  <!-- ฟอร์มสร้างคำท้าระหว่างเทรนเนอร์ (trainer challenge) -->
+  <form id="challenge-form" class="hidden">
+    <label>📱 เบอร์โทร:</label>
+    <input type="text" id="phone" pattern="\d*" placeholder="กรอกเบอร์โทร 10 หลัก" required />
+    <button type="button" id="verify-btn" class="button-verify">🔍 ตรวจสอบ</button>
+
+    <p id="codename-display" style="font-weight:bold;"></p>
+
+    <div id="form-fields" class="hidden">
+      <label>💥 ประเภทคำท้า</label>
+      <select id="type">
+        <option value="open">Open Challenge</option>
+        <option value="direct">Direct Challenge</option>
+        <option value="party">Party vs Party</option>
+      </select>
+
+      <div id="target-select-container" class="hidden">
+        <label>🎯 เลือกผู้ถูกท้า:</label>
+        <select id="target"></select>
+      </div>
+
+      <div id="party-select-container" class="hidden">
+        <label>🛡️ เลือกปาร์ตี้ที่ถูกท้า:</label>
+      </div>
+
+      <label>⚔️ รูปแบบการแข่ง:</label>
+      <select id="mode">
+        <option value="Standard BO1">Standard BO1</option>
+        <option value="Standard BO3">Standard BO3</option>
+        <option value="Standard BO5">Standard BO5</option>
+        <option value="Asia Wide BO1">Asia Wide BO1</option>
+        <option value="Asia Wide BO3">Asia Wide BO3</option>
+        <option value="Asia Wide BO5">Asia Wide BO5</option>
+      </select>
+
+      <label>🎁 เดิมพัน / เงื่อนไข:</label>
+      <input type="text" id="wager" placeholder="เช่น EXP 1, เลี้ยงน้ำ, โพสต์ชื่นชม" />
+
+      <label>📝 ชื่อคำท้า:</label>
+      <input type="text" id="title" placeholder="ถ้าไม่ตั้งจะสุ่มชื่อให้" />
+
+      <button type="submit" class="button-submit">✨ ส่งคำท้าสำหรับตรวจสอบ</button>
+    </div>
+  </form>
+
+  <!-- ฟอร์มยืนยันหัวหน้าปาร์ตี้ -->
+  <form id="party-auth-form" class="hidden">
+    <label>📱 เบอร์หัวหน้าปาร์ตี้:</label>
+    <input type="text" id="party-leader-phone" pattern="\d*" placeholder="กรอกเบอร์โทร 10 หลัก" required />
+    <label>👤 ชื่อ-นามสกุลหัวหน้าปาร์ตี้:</label>
+    <input type="text" id="party-leader-fullname" placeholder="ต้องตรงกับที่ลงทะเบียน" required />
+    <button type="button" id="verify-party-leader-btn" class="button-verify">🔍 ตรวจสอบ</button>
+  </form>
+
+  <!-- ฟอร์มสร้างคำท้า Party vs Party -->
+  <form id="party-challenge-form" class="hidden">
+    <div id="my-party-info" style="margin-bottom:10px;color:#3f51b5;"></div>
+    <label>จำนวนผู้เล่น:</label>
+    <select id="party-size">
+      <option value="2v2">2v2</option>
+      <option value="3v3">3v3</option>
+      <option value="4v4">4v4</option>
+      <option value="5v5">5v5</option>
+    </select>
+    <label>ประเภท:</label>
+    <select id="party-type">
+      <option value="Standard">Standard</option>
+      <option value="Asia Wide">Asia Wide</option>
+    </select>
+    <label>รูปแบบ:</label>
+    <select id="party-mode">
+      <option value="BO1">BO1</option>
+      <option value="BO3">BO3</option>
+      <option value="BO5">BO5</option>
+    </select>
+    <label>🛡️ เลือกปาร์ตี้ที่ถูกท้า:</label>
+    <select id="party-target"></select>
+    <label>🎁 เดิมพัน / เงื่อนไข:</label>
+    <input type="text" id="party-wager" placeholder="เช่น Party Point 5, รางวัลพิเศษ ฯลฯ" />
+    <label>📝 ชื่อคำท้า:</label>
+    <input type="text" id="party-title" placeholder="ถ้าไม่ตั้งจะสุ่มชื่อให้" />
+    <button type="submit" class="button-submit">✨ ส่งคำท้า Party vs Party</button>
+  </form>
+
+  <!-- ฟอร์มรับคำท้า -->
+  <div id="accept-form" class="hidden">
+    <form>
+      <h3>✅ รับคำท้า</h3>
+      <label>📱 เบอร์โทร:</label>
+      <input type="text" id="accept-phone" placeholder="กรอกเบอร์โทร 10 หลัก" />
+
+      <label>👤 ชื่อ-นามสกุล:</label>
+      <input type="text" id="accept-fullname" placeholder="ต้องตรงกับที่ลงทะเบียน" />
+
+      <input type="hidden" id="accept-id" />
+      <input type="hidden" id="accept-type" />
+      <input type="hidden" id="accept-target" />
+
+      <button type="button" onclick="submitAccept()" class="button-accept">ยืนยันการรับคำท้า</button>
+    </form>
+  </div>
+
+  <!-- รายการ Party vs Party Challenge -->
+  <h2>⚔️ Party vs Party Challenge</h2>
+  <div id="party-challenge-list">กำลังโหลด...</div>
+
+  <!-- ปุ่มสร้างคำท้าทายปาร์ตี้ (ย้ายมาด้านล่างสุด) -->
+  <button id="show-party-auth-btn" class="button-create party">+ สร้างคำท้าระหว่างปาร์ตี้</button>
+
+  <!-- ฟอร์มรับคำท้า Party vs Party -->
+  <div id="accept-party-form" class="hidden">
+    <form>
+      <h3>✅ รับคำท้า Party vs Party</h3>
+      <label>📱 เบอร์หัวหน้าปาร์ตี้:</label>
+      <input type="text" id="accept-party-phone" placeholder="กรอกเบอร์โทร 10 หลัก" />
+      <label>👤 ชื่อ-นามสกุลหัวหน้าปาร์ตี้:</label>
+      <input type="text" id="accept-party-fullname" placeholder="ต้องตรงกับที่ลงทะเบียน" />
+      <button type="button" id="verify-party-accept-btn" class="button-verify">🔍 ตรวจสอบ</button>
+      
+      <div id="party-accept-info" class="hidden" style="margin:10px 0;padding:10px;background:#e8f5e8;border-radius:5px;"></div>
+      
+      <input type="hidden" id="accept-party-id" />
+      <button type="button" id="confirm-accept-party-btn" class="button-accept hidden">ยืนยันการรับคำท้า</button>
+    </form>
+  </div>
+
+  <!-- ช่องทางติดต่อ -->
+  <p>📲 ติดต่อแอดมินเพื่อยืนยันคำท้า:
+    <a href="https://www.facebook.com/uplevelacademy" target="_blank">Facebook Page</a> |
+    <a href="https://lin.ee/qlM5nVG" target="_blank">LINE Official</a>
+  </p>
+<script>
+  const endpoint = "https://script.google.com/macros/s/AKfycbxtjsDwHI6nJU4OIHExUxMaZwUn3qwakvdkzwbQO7C8Trzz5Gh84SX6F1gqb4BOFQcn/exec";
+  const listDiv = document.getElementById("challenge-list");
+
+  const openPhrases = [
+    "อยากวัดฝีมือกับใครก็ได้!",
+    "เปิดรับทุกความกล้า ใครก็ได้ มาสู้กัน!",
+    "เบื่อแล้วอย่าดอง อยากลองฟอร์มาลีน!",
+    "พร้อมชนทุกคนที่กล้ารับ!",
+    "ขอท้ามาดิค้าบ ใครก็ได้!",
+    "ท้าทุกคน มากันหน่อยสิ!",
+    "พร้อมมันส์กับทุกคน!",
+    "อยากดวล ใครแน่ๆ มาดวลหน่อย!",
+    "เปิดสนาม รอท้าอยู่!",
+    "อยากบวกใครก็ได้ มาขอแค่ใจถึง!",
+    "ขอดวลกับคนกล้าสักคน!",
+    "อยากลองของแข็ง มาจัดให้หน่อยดิ๊!",
+    "เบื่อแล้วนอนหมอน อยากนอน ICU! ใครก็ได้มาดิ๊",
+    "เบื่อแล้วน้ำพริกลงเรือ อยากกินน้ำเกลือโรงบาล!",
+    "ใครคิดว่าแน่ มาลอง!",
+    "อยากลุยกับใครก็ได้!",
+    "ไม่หลับ ไม่ง่วง แต่อยากร่วงจังค้าบ!",
+    "เปิดโต๊ะรออยู่ ใครก็ได้!",
+    "พร้อมลุยไม่เลือกหน้า!",
+    "ไม่ใช่น้ำทะเล แต่ก็ซัดหน้าคนได้เหมือนกัน!"
+  ];
+
+  async function loadChallenges() {
+    listDiv.innerHTML = `<span style="display:inline-block;animation:spin 1s linear infinite;font-size:1.2em;">🔄</span> กำลังโหลดคำท้า...`;
+    try {
+      const res = await fetch(endpoint + "?func=getChallengeList");
+      const all = await res.json();
+
+      const approved = all.filter(row =>
+        row["สถานะคำท้า"] === "อนุมัติ" || row["สถานะคำท้า"] === "พร้อมดวล"
+      );
+
+      if (approved.length === 0) {
+        listDiv.innerHTML = "<p>📭 ยังไม่มีการประกาศท้าทาย<br>คุณสามารถเป็นคนแรกที่เปิดคำท้าได้เลย!</p>";
+        return;
+      }
+
+      listDiv.innerHTML = "";
+
+      approved.forEach(row => {
+        const type = row["ประเภท"] || "open";
+        const codename = row["Codename"] || "-";
+        const wager = row["เดิมพัน"] || "-";
+        const targetName = row["ผู้ถูกท้า"] || "-";
+        const title = row["ชื่อคำท้า"] || "-";
+        const mode = row["รูปแบบ"] || "-";
+        const accepted = row["ผู้ตอบรับ"];
+        const status = row["สถานะคำท้า"];
+        const detailId = `detail-${row["ID"]}`;
+
+        const description = type === "direct"
+          ? `👑 ${codename} ประกาศท้า ${targetName}`
+          : `👑 ${codename} ${openPhrases[Math.floor(Math.random() * openPhrases.length)]}`;
+
+        const card = document.createElement("div");
+        card.className = "challenge-card";
+        if (status === "พร้อมดวล") card.classList.add("ready");
+
+        const typeSpan = document.createElement("span");
+        typeSpan.className = `challenge-type ${type}`;
+        typeSpan.textContent = type.toUpperCase();
+
+        const mainDiv = document.createElement("div");
+        mainDiv.className = "challenge-main";
+
+        const descP = document.createElement("p");
+        descP.textContent = `${description} เดิมพัน: ${wager}`;
+
+        const detailBtn = document.createElement("button");
+        detailBtn.className = "button-secondary";
+        detailBtn.textContent = "🔍 ดูรายละเอียด";
+        detailBtn.addEventListener("click", () => {
+          const el = document.getElementById(detailId);
+          if (el) {
+            el.style.display = (el.style.display === "none" || !el.style.display) ? "block" : "none";
+          }
+        });
+
+        const detailDiv = document.createElement("div");
+        detailDiv.id = detailId;
+        detailDiv.className = "detail-section";
+        detailDiv.innerHTML = `
+          ${type === "direct" ? `🎯 ผู้ถูกท้า: ${targetName}<br>` : ""}
+          📝 ชื่อคำท้า: ${title}<br>
+          🎮 รูปแบบ: ${mode}<br>
+          ${accepted ? `📌 ผู้ตอบรับ: ${accepted}` : ""}
+        `;
+
+        mainDiv.appendChild(descP);
+        mainDiv.appendChild(detailBtn);
+        mainDiv.appendChild(detailDiv);
+
+        const actionDiv = document.createElement("div");
+        actionDiv.className = "challenge-actions";
+
+        if (!accepted) {
+          const acceptBtn = document.createElement("button");
+          acceptBtn.className = "button-accept";
+          acceptBtn.textContent = "✅ รับคำท้า";
+          acceptBtn.onclick = () => showAcceptForm(row["ID"], type, targetName);
+          actionDiv.appendChild(acceptBtn);
+        } else {
+          const ready = document.createElement("p");
+          ready.className = "duel-ready";
+          ready.textContent = "🔥 พร้อมดวล";
+          actionDiv.appendChild(ready);
+        }
+
+        card.appendChild(typeSpan);
+        card.appendChild(mainDiv);
+        card.appendChild(actionDiv);
+
+        listDiv.appendChild(card);
+      });
+    } catch (err) {
+      console.error("❌ โหลดข้อมูลล้มเหลว:", err);
+      listDiv.innerHTML = "<p>❌ ไม่สามารถโหลดข้อมูลคำท้าได้</p>";
+    }
+  }
+
+  window.addEventListener("DOMContentLoaded", () => {
+    console.log("📦 DOM Loaded → เรียก loadChallenges()");
+    loadChallenges();
+  });
+</script>
+<script>
+  // แสดงฟอร์มรับคำท้า
+  function showAcceptForm(id, type, target) {
+    document.getElementById("accept-id").value = id;
+    document.getElementById("accept-type").value = type;
+    document.getElementById("accept-target").value = target;
+    document.getElementById("accept-form").classList.remove("hidden");
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+  }
+
+  // ส่งข้อมูลรับคำท้า
+  async function submitAccept() {
+    const phone = document.getElementById("accept-phone").value.trim();
+    const fullname = document.getElementById("accept-fullname").value.trim();
+    const id = document.getElementById("accept-id").value;
+    const type = document.getElementById("accept-type").value;
+    const target = document.getElementById("accept-target").value;
+
+    try {
+      const res = await fetch(endpoint + "?func=acceptChallenge", {
+        method: "POST",
+        body: JSON.stringify({ phone, fullname, id, type, target })
+      });
+      const text = await res.text();
+      alert(text.includes("สำเร็จ") ? "✅ รับคำท้าเรียบร้อย พร้อมดวล !!" : text);
+      location.reload();
+    } catch {
+      alert("❌ เกิดข้อผิดพลาด");
+    }
+  }
+
+  // เปิด/ปิดฟอร์มสร้างคำท้า
+  const trainerBtn = document.getElementById("show-trainer-form-btn");
+  const trainerForm = document.getElementById("challenge-form");
+  const partyAuthForm = document.getElementById("party-auth-form");
+  const partyChallengeForm = document.getElementById("party-challenge-form");
+
+  trainerBtn.onclick = () => {
+    trainerForm.classList.remove("hidden");
+    partyAuthForm.classList.add("hidden");
+    partyChallengeForm.classList.add("hidden");
+  };
+
+  // ตรวจสอบเบอร์โทร → ดึง codename และรายชื่อ
+  document.getElementById("verify-btn").addEventListener("click", async () => {
+    let phone = document.getElementById("phone").value.trim();
+    if (phone.length === 9 && !phone.startsWith("0")) phone = "0" + phone;
+
+    const res = await fetch(endpoint + "?func=getCodename&phone=" + phone);
+    const codename = await res.text();
+    document.getElementById("codename-display").innerText = `🔎 Codename ของคุณคือ: ${codename}`;
+    document.getElementById("form-fields").classList.remove("hidden");
+
+    const resNames = await fetch(endpoint + "?func=getCodenameList");
+    const names = await resNames.json();
+    const targetSelect = document.getElementById("target");
+    const filtered = names.filter(name => name.trim().toLowerCase() !== codename.trim().toLowerCase());
+    targetSelect.innerHTML = filtered.length > 0
+      ? filtered.map(name => `<option value="${name}">${name}</option>`).join("")
+      : `<option disabled selected>ไม่พบชื่อผู้เล่นอื่น</option>`;
+  });
+
+  // เปลี่ยนการแสดงรายชื่อเมื่อเลือกประเภทคำท้า
+  document.getElementById("type").onchange = e => {
+    const type = e.target.value;
+    const showTarget = type === "direct";
+    const showParty = type === "party";
+    document.getElementById("target-select-container").classList.toggle("hidden", !showTarget);
+    document.getElementById("party-select-container").classList.toggle("hidden", !showParty);
+    if (showParty) loadPartyList();
+  };
+
+  let myCodename = "";
+  let myPartyName = "";
+
+  document.getElementById("verify-party-leader-btn").onclick = async () => {
+    const spinner = document.getElementById("loading-spinner");
+    spinner.classList.remove("hidden");
+    console.log("[DEBUG] ปุ่มตรวจสอบหัวหน้าปาร์ตี้ถูกกด");
+    const phone = document.getElementById("party-leader-phone").value.trim();
+    const fullname = document.getElementById("party-leader-fullname").value.trim();
+    if (!phone || !fullname) { 
+      spinner.classList.add("hidden"); 
+      return alert("กรุณากรอกข้อมูลให้ครบ"); 
+    }
+    
+    try {
+      // เปลี่ยนเป็นใช้ GET แบบเดียวกับ Trainer Challenge
+      const params = new URLSearchParams({
+        func: "verifyPartyLeader",
+        phone,
+        fullname
+      });
+      const res = await fetch(endpoint + "?" + params.toString());
+      const result = await res.text();
+      console.log("[DEBUG] ผลลัพธ์ verifyPartyLeader:", result);
+      
+      if (result.includes("|")) {
+        // แยกข้อมูล codename และชื่อปาร์ตี้
+        const [codename, partyName] = result.split("|");
+        myCodename = codename;
+        myPartyName = partyName;
+        
+        // แสดงข้อมูลเหมือน Trainer Challenge
+        document.getElementById("my-party-info").innerHTML = `🔎 Codename ของคุณคือ: <b>${myCodename}</b> | 🛡️ ปาร์ตี้: <b>${myPartyName}</b>`;
+        partyAuthForm.classList.add("hidden");
+        partyChallengeForm.classList.remove("hidden");
+        await loadPartyList(phone, partyName, spinner);
+      } else if (result === "not_leader") {
+        alert("❌ คุณไม่ใช่หัวหน้าปาร์ตี้");
+      } else if (result === "name_mismatch") {
+        alert("❌ ชื่อ-นามสกุลไม่ตรงกับที่ลงทะเบียน");
+      } else {
+        alert("❌ ข้อมูลไม่ถูกต้อง หรือคุณไม่ใช่หัวหน้าปาร์ตี้");
+      }
+    } catch (err) {
+      alert("เกิดข้อผิดพลาด: " + err);
+      console.error("[ERROR] verify-party-leader-btn:", err);
+    }
+    spinner.classList.add("hidden");
+  };
+
+  async function loadPartyList(myPhone = null, myParty = null, spinner = null) {
+    if (spinner) spinner.classList.remove("hidden");
+    try {
+      const res = await fetch(endpoint + "?func=getPartyList");
+      const parties = await res.json();
+      console.log("[DEBUG] party list (raw):", parties);
+      console.log("[DEBUG] myParty:", myParty);
+      let filtered = parties;
+      if (myParty) {
+        filtered = parties.filter(party => party.name.trim() !== myParty.trim());
+      }
+      console.log("[DEBUG] party list (filtered):", filtered);
+      const partySelect = document.getElementById("party-target");
+      if (filtered.length > 0) {
+        partySelect.innerHTML = filtered.map(party => `<option value="${party.name}">${party.name} (${party.memberCount} คน)</option>`).join("");
+      } else {
+        partySelect.innerHTML = `<option disabled selected>ไม่พบปาร์ตี้อื่น</option>`;
+      }
+      console.log("[DEBUG] party-target innerHTML:", partySelect.innerHTML);
+      console.log("[DEBUG] select#party-target count:", document.querySelectorAll('select#party-target').length);
+    } catch (err) {
+      const partySelect = document.getElementById("party-target");
+      partySelect.innerHTML = `<option disabled selected>เกิดข้อผิดพลาดในการโหลดปาร์ตี้</option>`;
+      console.error("❌ โหลดรายชื่อปาร์ตี้ล้มเหลว:", err);
+    }
+    if (spinner) spinner.classList.add("hidden");
+  }
+
+  // ส่งฟอร์มสร้างคำท้า
+  document.getElementById("challenge-form").onsubmit = async (e) => {
+    e.preventDefault();
+    let phone = document.getElementById("phone").value.trim();
+    if (phone.length === 9 && !phone.startsWith("0")) phone = "0" + phone;
+    const type = document.getElementById("type").value;
+    const target = type === "direct" ? document.getElementById("target").value : "";
+    const partyTarget = type === "party" ? document.getElementById("party-target").value : "";
+    const mode = document.getElementById("mode").value;
+    const wager = document.getElementById("wager").value;
+    const title = document.getElementById("title").value;
+    try {
+      let body;
+      let func;
+      if (type === "party") {
+        func = "submitPartyChallenge";
+        body = JSON.stringify({ phone, type, targetParty: partyTarget, mode, wager, title });
+      } else {
+        func = "submitChallengeRequest";
+        body = JSON.stringify({ phone, type, target, mode, wager, title });
+      }
+      const res = await fetch(endpoint + `?func=${func}` , {
+        method: "POST",
+        body
+      });
+      const text = await res.text();
+      alert(text);
+      e.target.reset();
+      location.reload();
+    } catch {
+      alert("❌ เกิดข้อผิดพลาด");
+    }
+  };
+
+  // ส่งฟอร์ม Party vs Party
+  partyChallengeForm.onsubmit = async (e) => {
+    e.preventDefault();
+    const phone = document.getElementById("party-leader-phone").value.trim();
+    const size = document.getElementById("party-size").value;
+    const type = document.getElementById("party-type").value;
+    const mode = document.getElementById("party-mode").value;
+    const targetParty = document.getElementById("party-target").value;
+    const wager = document.getElementById("party-wager").value;
+    const title = document.getElementById("party-title").value;
+    try {
+      const params = new URLSearchParams({
+        func: "submitPartyChallenge",
+        phone,
+        size,
+        type,
+        mode,
+        targetParty,
+        wager,
+        title
+      });
+      const res = await fetch(endpoint + "?" + params.toString());
+      const text = await res.text();
+      alert(text);
+      e.target.reset();
+      location.reload();
+    } catch {
+      alert("❌ เกิดข้อผิดพลาด");
+    }
+  };
+</script>
+
+<script>
+// โหลด Party vs Party Challenge
+async function loadPartyChallenges() {
+  const partyDiv = document.getElementById("party-challenge-list");
+  partyDiv.innerHTML = `<span style=\"display:inline-block;animation:spin 1s linear infinite;font-size:1.2em;\">🔄</span> กำลังโหลด...`;
+  try {
+    // ใช้ URLSearchParams เพื่อสร้าง query string
+    const params = new URLSearchParams({ func: "partyChallengeListPublic" });
+    const url = endpoint + "?" + params.toString();
+    const res = await fetch(url, { method: "GET" });
+    const all = await res.json();
+    // นับ challenge ที่รออนุมัติ (pending)
+    let pendingCount = 0;
+    if (Array.isArray(all)) {
+      pendingCount = all.filter(row => row["สถานะ"] === "รออนุมัติ").length;
+    }
+    if (!Array.isArray(all) || all.length === 0) {
+      partyDiv.innerHTML = "<p>📭 ยังไม่มี Party vs Party Challenge ที่อนุมัติ</p>";
+      if (pendingCount > 0) {
+        partyDiv.innerHTML += `<p style='color:#ff9800'>⚠️ มีคำท้า Party vs Party ที่รออนุมัติอยู่ ${pendingCount} รายการ</p>`;
+      }
+      return;
+    }
+    // ถ้ามี challenge ที่รออนุมัติแต่ไม่มีที่อนุมัติ/พร้อมดวล
+    let hasApproved = all.some(row => row["สถานะ"] === "อนุมัติ" || row["สถานะ"] === "พร้อมดวล");
+    if (!hasApproved) {
+      partyDiv.innerHTML = "<p>📭 ยังไม่มี Party vs Party Challenge ที่อนุมัติ</p>";
+      if (pendingCount > 0) {
+        partyDiv.innerHTML += `<p style='color:#ff9800'>⚠️ มีคำท้า Party vs Party ที่รออนุมัติอยู่ ${pendingCount} รายการ</p>`;
+      }
+      return;
+    }
+    partyDiv.innerHTML = "";
+    all.forEach(row => {
+      const status = row["สถานะ"];
+      const party = row["ปาร์ตี้ผู้ท้า"];
+      const target = row["ปาร์ตี้เป้าหมาย"];
+      const title = row["ชื่อคำท้า"];
+      const mode = row["รูปแบบ"];
+      const wager = row["เดิมพัน"];
+      const acceptor = row["ผู้ตอบรับ"];
+      const detailId = `party-detail-${title}`;
+      const card = document.createElement("div");
+      card.className = "challenge-card party-card";
+      if (status === "พร้อมดวล") card.classList.add("party-ready");
+      card.innerHTML = `
+        <span class="challenge-type party">PARTY</span>
+        <div class="challenge-main">
+          <p>🛡️ <b>${party}</b> <span style="color:#888">vs</span> <b>${target}</b></p>
+          <p>📝 ${title} | 🎮 ${mode} | 🎁 ${wager}</p>
+          <button class="button-secondary" onclick="document.getElementById('${detailId}').style.display = (document.getElementById('${detailId}').style.display === 'block' ? 'none' : 'block')">🔍 ดูรายละเอียด</button>
+          <div id="${detailId}" class="detail-section" style="display:none;">สถานะ: ${status}<br>ผู้ตอบรับ: ${acceptor || '-'}<br></div>
+        </div>
+        <div class="challenge-actions"></div>
+      `;
+      // ปุ่มรับคำท้า (ถ้ายังไม่มีผู้ตอบรับ)
+      const actionsDiv = card.querySelector(".challenge-actions");
+      if (status === "พร้อมดวล") {
+        const ready = document.createElement("p");
+        ready.className = "duel-ready party";
+        ready.textContent = "🔥 พร้อมดวล!!";
+        actionsDiv.appendChild(ready);
+      } else if (!acceptor) {
+        const btn = document.createElement("button");
+        btn.className = "button-accept";
+        btn.textContent = "✅ รับคำท้า (หัวหน้าปาร์ตี้เป้าหมาย)";
+        btn.onclick = () => showAcceptPartyForm(title);
+        actionsDiv.appendChild(btn);
+      } else {
+        const ready = document.createElement("p");
+        ready.className = "duel-ready party";
+        ready.textContent = "🔥 พร้อมดวล (Party)";
+        actionsDiv.appendChild(ready);
+      }
+      partyDiv.appendChild(card);
+    });
+    if (pendingCount > 0) {
+      partyDiv.innerHTML += `<p style='color:#ff9800'>⚠️ มีคำท้า Party vs Party ที่รออนุมัติอยู่ ${pendingCount} รายการ</p>`;
+    }
+  } catch (err) {
+    partyDiv.innerHTML = "<p>❌ ไม่สามารถโหลด Party Challenge ได้</p>";
+  }
+}
+
+function showAcceptPartyForm(id) {
+  document.getElementById("accept-party-id").value = id;
+  document.getElementById("accept-party-form").classList.remove("hidden");
+  // ซ่อนข้อมูลและปุ่มยืนยันเมื่อเปิดฟอร์มใหม่
+  document.getElementById("party-accept-info").classList.add("hidden");
+  document.getElementById("confirm-accept-party-btn").classList.add("hidden");
+  window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+}
+
+// เพิ่ม event listener สำหรับปุ่มตรวจสอบ
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById("verify-party-accept-btn").addEventListener("click", async () => {
+    const spinner = document.getElementById("loading-spinner");
+    spinner.classList.remove("hidden");
+    
+    const phone = document.getElementById("accept-party-phone").value.trim();
+    const fullname = document.getElementById("accept-party-fullname").value.trim();
+    
+    if (!phone || !fullname) {
+      spinner.classList.add("hidden");
+      return alert("กรุณากรอกข้อมูลให้ครบ");
+    }
+    
+    try {
+      const verifyParams = new URLSearchParams({
+        func: "verifyPartyLeader",
+        phone,
+        fullname
+      });
+      const verifyRes = await fetch(endpoint + "?" + verifyParams.toString());
+      const verifyText = await verifyRes.text();
+      
+      if (verifyText.includes("|")) {
+        const [codename, partyName] = verifyText.split("|");
+        document.getElementById("party-accept-info").innerHTML = `🔎 Codename ของคุณคือ: <b>${codename}</b> | 🛡️ ปาร์ตี้: <b>${partyName}</b>`;
+        document.getElementById("party-accept-info").classList.remove("hidden");
+        document.getElementById("confirm-accept-party-btn").classList.remove("hidden");
+      } else if (verifyText === "not_leader") {
+        alert("❌ คุณไม่ใช่หัวหน้าปาร์ตี้");
+      } else if (verifyText === "name_mismatch") {
+        alert("❌ ชื่อ-นามสกุลไม่ตรงกับที่ลงทะเบียน");
+      } else {
+        alert("❌ ข้อมูลหัวหน้าปาร์ตี้ไม่ถูกต้อง");
+      }
+    } catch (err) {
+      alert("❌ เกิดข้อผิดพลาด: " + err);
+    }
+    
+    spinner.classList.add("hidden");
+  });
+  
+  // เพิ่ม event listener สำหรับปุ่มยืนยันการรับคำท้า
+  document.getElementById("confirm-accept-party-btn").addEventListener("click", submitAcceptParty);
+});
+
+async function submitAcceptParty() {
+  const phone = document.getElementById("accept-party-phone").value.trim();
+  const fullname = document.getElementById("accept-party-fullname").value.trim();
+  const id = document.getElementById("accept-party-id").value;
+  const spinner = document.getElementById("loading-spinner");
+  spinner.classList.remove("hidden");
+  try {
+    const res = await fetch(endpoint + "?func=acceptPartyChallenge", {
+      method: "POST",
+      body: JSON.stringify({ phone, fullname, id })
+    });
+    const text = await res.text();
+    spinner.classList.add("hidden");
+    alert(text.includes("สำเร็จ") ? "✅ รับคำท้า Party vs Party เรียบร้อย พร้อมดวล !!" : text);
+    location.reload();
+  } catch (err) {
+    spinner.classList.add("hidden");
+    alert("❌ เกิดข้อผิดพลาด: " + err);
+  }
+}
+
+// โหลดทั้งเทรนเนอร์และปาร์ตี้
+window.addEventListener("DOMContentLoaded", () => {
+  loadChallenges();
+  loadPartyChallenges();
+});
+</script>
+
+<script>
+// เพิ่ม CSS animation (spin) ถ้ายังไม่มี
+const style = document.createElement('style');
+style.innerHTML = `@keyframes spin { 0% { transform: rotate(0deg);} 100% { transform: rotate(360deg);} }`;
+document.head.appendChild(style);
+</script>
+</body>
+</html>

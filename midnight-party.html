@@ -1,0 +1,2073 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Midnight Party - Up Level Academy</title>
+  
+  <!-- Add Google Font 'Kanit' -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    body {
+      font-family: 'Kanit', 'Segoe UI', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
+      background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 25%, #2d1b3d 50%, #1a1f3a 75%, #0a0e27 100%);
+      background-size: 400% 400%;
+      animation: gradientShift 15s ease infinite;
+      margin: 0;
+      padding: 1rem;
+      text-align: center;
+      min-height: 100vh;
+      color: #fff;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    @keyframes gradientShift {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    /* Card pack near logo - cute shake animation */
+    .floating-card-pack {
+      position: absolute;
+      width: 80px;
+      height: auto;
+      z-index: 5;
+      pointer-events: none;
+      opacity: 0.9;
+      animation: cuteShake 2s ease-in-out infinite;
+    }
+
+    .floating-card-pack:nth-child(1) {
+      top: 20px;
+      right: 20px;
+      animation-delay: 0s;
+    }
+
+    .floating-card-pack:nth-child(2) {
+      top: 20px;
+      left: 20px;
+      animation-delay: 0.3s;
+    }
+
+    .floating-card-pack:nth-child(3),
+    .floating-card-pack:nth-child(4) {
+      display: none;
+    }
+
+    @keyframes cuteShake {
+      0%, 100% {
+        transform: translate(0, 0) rotate(0deg) scale(1);
+      }
+      10% {
+        transform: translate(-3px, -2px) rotate(-3deg) scale(1.05);
+      }
+      20% {
+        transform: translate(3px, 2px) rotate(3deg) scale(1.02);
+      }
+      30% {
+        transform: translate(-2px, 3px) rotate(-2deg) scale(1.03);
+      }
+      40% {
+        transform: translate(2px, -3px) rotate(2deg) scale(1.04);
+      }
+      50% {
+        transform: translate(-1px, -1px) rotate(-1deg) scale(1.05);
+      }
+      60% {
+        transform: translate(1px, 2px) rotate(1deg) scale(1.03);
+      }
+      70% {
+        transform: translate(-2px, 1px) rotate(-2deg) scale(1.04);
+      }
+      80% {
+        transform: translate(2px, -2px) rotate(2deg) scale(1.02);
+      }
+      90% {
+        transform: translate(-1px, 1px) rotate(-1deg) scale(1.03);
+      }
+    }
+
+    /* Responsive for mobile - smaller cards */
+    @media (max-width: 768px) {
+      .floating-card-pack {
+        width: 60px;
+        opacity: 0.85;
+      }
+
+      .floating-card-pack:nth-child(1) {
+        top: 10px;
+        right: 10px;
+      }
+
+      .floating-card-pack:nth-child(2) {
+        top: 10px;
+        left: 10px;
+      }
+
+      .floating-card-pack:nth-child(3),
+      .floating-card-pack:nth-child(4) {
+        display: none;
+      }
+    }
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+      background: linear-gradient(135deg, rgba(20, 25, 50, 0.85) 0%, rgba(30, 20, 45, 0.85) 100%);
+      border-radius: 25px;
+      padding: 2rem;
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4), 0 0 100px rgba(0, 183, 255, 0.1);
+      backdrop-filter: blur(20px);
+      border: 2px solid rgba(0, 183, 255, 0.3);
+      position: relative;
+      z-index: 10;
+    }
+
+    .home-button {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border: none;
+      border-radius: 50%;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+    }
+
+    .home-button:hover {
+      transform: translateY(-3px) scale(1.05);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+      background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+    }
+
+    .home-button::before {
+      content: "🏠";
+      font-size: 24px;
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 2rem;
+      position: relative;
+    }
+
+    .logo {
+      width: 120px;
+      margin-bottom: 1rem;
+      filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+    }
+
+    .event-title {
+      font-size: 3rem;
+      font-weight: 700;
+      background: linear-gradient(45deg, #00bfff, #0080ff, #00ffff, #00bfff);
+      background-size: 300% 300%;
+      animation: gradientFlow 3s ease infinite, glow 2s ease-in-out infinite alternate;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+      margin-bottom: 0.5rem;
+      filter: drop-shadow(0 0 15px rgba(0, 191, 255, 0.6));
+    }
+
+    @keyframes gradientFlow {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    @keyframes glow {
+      from { filter: drop-shadow(0 0 15px rgba(0, 191, 255, 0.6)); }
+      to { filter: drop-shadow(0 0 25px rgba(0, 128, 255, 0.9)); }
+    }
+
+    .event-subtitle {
+      font-size: 1.3rem;
+      color: #00ffff;
+      margin-bottom: 1rem;
+      font-weight: 600;
+      text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+      animation: subtitlePulse 2s ease-in-out infinite;
+    }
+
+    @keyframes subtitlePulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.8; }
+    }
+
+    .event-date {
+      font-size: 1.5rem;
+      color: #00bfff;
+      margin-bottom: 2rem;
+      font-weight: 700;
+      text-shadow: 0 0 15px rgba(0, 191, 255, 0.6);
+    }
+
+    .product-showcase {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+      border-radius: 20px;
+      padding: 6px;
+      margin: 2rem 0;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .product-title {
+      font-size: 1.8rem;
+      color: #00ffff;
+      margin-bottom: 1rem;
+      font-weight: 700;
+      text-shadow: 0 0 15px rgba(0, 255, 255, 0.6);
+      animation: titleShimmer 3s ease-in-out infinite;
+    }
+
+    @keyframes titleShimmer {
+      0%, 100% { text-shadow: 0 0 15px rgba(0, 255, 255, 0.6); }
+      50% { text-shadow: 0 0 25px rgba(0, 191, 255, 0.9), 0 0 35px rgba(0, 128, 255, 0.5); }
+    }
+
+    .product-description {
+      font-size: 1.1rem;
+      color: #e0e0e0;
+      margin-bottom: 1.5rem;
+      line-height: 1.6;
+    }
+
+    .pricing-section {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin: 1.5rem 0;
+      align-items: center;
+    }
+
+    .pricing-card {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+      border-radius: 15px;
+      padding: 1rem;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      transition: all 0.3s ease;
+      width: 100%;
+      max-width: 350px;
+    }
+
+    .pricing-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+      border-color: rgba(255, 217, 61, 0.5);
+    }
+
+    .pricing-title {
+      font-size: 1.4rem;
+      color: #ffd93d;
+      margin-bottom: 1rem;
+      font-weight: 700;
+    }
+
+    .price {
+      font-size: 2rem;
+      color: #6bcf7f;
+      margin-bottom: 1rem;
+      font-weight: 700;
+    }
+
+    .price-note {
+      font-size: 0.9rem;
+      color: #b0b0b0;
+      margin-bottom: 1rem;
+    }
+
+    .benefits {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .benefits li {
+      background: rgba(255, 255, 255, 0.05);
+      margin-bottom: 0.5rem;
+      padding: 0.5rem;
+      border-radius: 8px;
+      color: #e0e0e0;
+      font-size: 0.9rem;
+    }
+
+    .spot-info {
+      background: linear-gradient(135deg, rgba(255, 107, 107, 0.1) 0%, rgba(255, 107, 107, 0.05) 100%);
+      border-radius: 20px;
+      padding: 1.5rem;
+      margin: 2rem 0;
+      border: 1px solid rgba(255, 107, 107, 0.3);
+    }
+
+    .spot-title {
+      font-size: 1.6rem;
+      color: #ff6b6b;
+      margin-bottom: 1rem;
+      font-weight: 700;
+    }
+
+    .spot-description {
+      font-size: 1.1rem;
+      color: #e0e0e0;
+      margin-bottom: 1rem;
+      line-height: 1.6;
+    }
+
+    .bonus-section {
+      background: linear-gradient(135deg, rgba(107, 207, 127, 0.1) 0%, rgba(107, 207, 127, 0.05) 100%);
+      border-radius: 20px;
+      padding: 1.5rem;
+      margin: 2rem 0;
+      border: 1px solid rgba(107, 207, 127, 0.3);
+    }
+
+    .bonus-title {
+      font-size: 1.6rem;
+      color: #6bcf7f;
+      margin-bottom: 1rem;
+      font-weight: 700;
+    }
+
+    .bonus-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .bonus-list li {
+      background: rgba(255, 255, 255, 0.05);
+      margin-bottom: 0.8rem;
+      padding: 0.8rem;
+      border-radius: 10px;
+      color: #e0e0e0;
+      font-size: 1rem;
+      border-left: 4px solid #6bcf7f;
+    }
+
+    .important-notes {
+      background: linear-gradient(135deg, rgba(255, 217, 61, 0.1) 0%, rgba(255, 217, 61, 0.05) 100%);
+      border-radius: 20px;
+      padding: 1.5rem;
+      margin: 2rem 0;
+      border: 1px solid rgba(255, 217, 61, 0.3);
+    }
+
+    .notes-title {
+      font-size: 1.6rem;
+      color: #ffd93d;
+      margin-bottom: 1rem;
+      font-weight: 700;
+    }
+
+    .notes-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .notes-list li {
+      background: rgba(255, 255, 255, 0.05);
+      margin-bottom: 0.8rem;
+      padding: 0.8rem;
+      border-radius: 10px;
+      color: #e0e0e0;
+      font-size: 1rem;
+      border-left: 4px solid #ffd93d;
+    }
+
+    .cta-section {
+      text-align: center;
+      margin: 3rem 0;
+    }
+
+    .cta-button {
+      display: inline-block;
+      background: linear-gradient(45deg, #00bfff, #0080ff, #00ffff);
+      background-size: 200% 200%;
+      animation: buttonGradient 3s ease infinite;
+      color: #0a0e27;
+      padding: 1.5rem 3rem;
+      border-radius: 50px;
+      text-decoration: none;
+      font-size: 1.3rem;
+      font-weight: 700;
+      box-shadow: 0 10px 30px rgba(0, 191, 255, 0.5), 0 0 40px rgba(0, 191, 255, 0.3);
+      transition: all 0.3s ease;
+      border: 2px solid rgba(0, 255, 255, 0.5);
+      cursor: pointer;
+    }
+
+    @keyframes buttonGradient {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    .cta-button:hover {
+      transform: translateY(-5px) scale(1.05);
+      box-shadow: 0 15px 40px rgba(0, 191, 255, 0.7), 0 0 60px rgba(0, 128, 255, 0.5);
+      border-color: rgba(0, 255, 255, 0.8);
+    }
+
+    .pokemon-cards {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 60px;
+      max-width: 100%;
+      margin: 0;
+      padding: 0 40px;
+      justify-content: center;
+    }
+
+    .card-item {
+      background: #fff;
+      border-radius: 12px;
+      padding: 6px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      transition: all 0.3s ease;
+      cursor: pointer;
+      text-align: center;
+      width: 100%;
+      position: relative;
+    }
+
+    .card-item:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    }
+
+    .card-image {
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+
+    .pokemon-card-img {
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      aspect-ratio: 6/9;
+      object-fit: contain;
+      display: block;
+      background: #fff;
+    }
+
+    .card-item:hover .pokemon-card-img {
+      transform: scale(1.02);
+    }
+
+    .card-name {
+      font-size: 0.8em;
+      font-weight: bold;
+      color: #2c3e50;
+      margin-bottom: 4px;
+      line-height: 1.2;
+      text-align: center;
+    }
+
+    .card-stats {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      padding: 0.5rem;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .hp {
+      color: #ff6b6b;
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+
+    .type {
+      color: #6bcf7f;
+      font-weight: 600;
+      font-size: 1rem;
+    }
+
+    .card-description {
+      font-size: 0.95rem;
+      color: #e0e0e0;
+      line-height: 1.5;
+      margin-bottom: 1rem;
+      text-align: left;
+    }
+
+    .card-attacks {
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 10px;
+      padding: 0.8rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .attack {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .attack:last-child {
+      border-bottom: none;
+    }
+
+    .attack-name {
+      color: #ffd93d;
+      font-weight: 600;
+      font-size: 0.9rem;
+      flex: 1;
+      text-align: left;
+    }
+
+    .attack-damage {
+      color: #ff6b6b;
+      font-weight: 700;
+      font-size: 1.1rem;
+      background: rgba(255, 107, 107, 0.1);
+      padding: 0.2rem 0.5rem;
+      border-radius: 5px;
+      border: 1px solid rgba(255, 107, 107, 0.3);
+    }
+
+    .support-cards, .item-cards {
+      margin-top: 2rem;
+      padding: 1rem;
+      background: transparent;
+      border-radius: 15px;
+      border: none;
+      text-align: center;
+    }
+
+    .support-title, .item-title {
+      font-size: 1.3rem;
+      color: #00ffff;
+      margin-bottom: 1rem;
+      font-weight: 700;
+      text-align: center;
+      text-shadow: 0 0 15px rgba(0, 255, 255, 0.6);
+      animation: titleShimmer 3s ease-in-out infinite;
+    }
+
+    .support-grid, .item-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 60px;
+      max-width: 100%;
+      margin: 0;
+      padding: 0 40px;
+      justify-content: center;
+    }
+
+    .support-item, .item-item {
+      background: #fff;
+      border-radius: 12px;
+      padding: 6px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      transition: all 0.3s ease;
+      cursor: pointer;
+      text-align: center;
+      width: 100%;
+      position: relative;
+    }
+
+    .support-item:hover, .item-item:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    }
+
+    .support-item h4, .item-item h4 {
+      font-size: 0.8em;
+      font-weight: bold;
+      color: #2c3e50;
+      margin-bottom: 4px;
+      line-height: 1.2;
+      text-align: center;
+    }
+
+    .support-item p, .item-item p {
+      font-size: 0.7em;
+      color: #6c757d;
+      line-height: 1.4;
+      margin: 0;
+      text-align: center;
+    }
+
+    .support-image, .item-image {
+      margin-bottom: 0.8rem;
+      text-align: center;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .support-card-img, .item-card-img {
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      aspect-ratio: 6/9;
+      object-fit: contain;
+      display: block;
+      background: #fff;
+    }
+
+    .support-item:hover .support-card-img, .item-item:hover .item-card-img {
+      transform: scale(1.02);
+    }
+
+    .cta-top {
+      text-align: center;
+      margin: 2rem 0;
+    }
+
+    .cta-button-top {
+      display: inline-block;
+      background: linear-gradient(45deg, #00bfff, #0080ff, #00ffff);
+      background-size: 200% 200%;
+      animation: buttonGradient 3s ease infinite;
+      color: #0a0e27;
+      padding: 1rem 2.5rem;
+      border-radius: 50px;
+      text-decoration: none;
+      font-size: 1.1rem;
+      font-weight: 700;
+      box-shadow: 0 8px 25px rgba(0, 191, 255, 0.5), 0 0 30px rgba(0, 191, 255, 0.3);
+      transition: all 0.3s ease;
+      border: 2px solid rgba(0, 255, 255, 0.5);
+      cursor: pointer;
+    }
+
+    .cta-button-top:hover {
+      transform: translateY(-3px) scale(1.05);
+      box-shadow: 0 12px 30px rgba(0, 191, 255, 0.7), 0 0 50px rgba(0, 128, 255, 0.5);
+      border-color: rgba(0, 255, 255, 0.8);
+    }
+
+    .guild-button {
+      display: inline-block;
+      background: linear-gradient(45deg, #0080ff, #0066cc);
+      color: #fff;
+      padding: 0.8rem 2rem;
+      border-radius: 50px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 0.9rem;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(0, 128, 255, 0.4), 0 0 20px rgba(0, 128, 255, 0.2);
+      border: 1px solid rgba(0, 191, 255, 0.3);
+      cursor: pointer;
+      margin-top: 1rem;
+    }
+
+    .guild-button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(0, 128, 255, 0.6), 0 0 40px rgba(0, 191, 255, 0.4);
+      background: linear-gradient(45deg, #00bfff, #0080ff);
+    }
+
+    .info-section {
+      background: transparent;
+      border-radius: 20px;
+      padding: 1.5rem;
+      margin: 2rem 0;
+      border: none;
+    }
+
+    .info-title {
+      font-size: 1.6rem;
+      color: #00ffff;
+      margin-bottom: 1.5rem;
+      font-weight: 700;
+      text-align: center;
+      text-shadow: 0 0 15px rgba(0, 255, 255, 0.6);
+      animation: titleShimmer 3s ease-in-out infinite;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .info-card {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 15px;
+      padding: 1.2rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.3s ease;
+    }
+
+    .info-card:hover {
+      transform: translateY(-3px);
+      background: rgba(255, 255, 255, 0.08);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .info-card.bonus {
+      border-color: rgba(107, 207, 127, 0.3);
+    }
+
+    .info-card.notes {
+      border-color: rgba(255, 217, 61, 0.3);
+    }
+
+    .info-card h4 {
+      color: #ffd93d;
+      font-size: 1.3rem;
+      margin-bottom: 1rem;
+      font-weight: 700;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    }
+
+    .info-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .info-list li {
+      background: rgba(255, 255, 255, 0.05);
+      margin-bottom: 0.8rem;
+      padding: 0.8rem;
+      border-radius: 10px;
+      color: #e0e0e0;
+      font-size: 1rem;
+      border-left: 4px solid #6bcf7f;
+    }
+
+    .info-card.notes .info-list li {
+      border-left-color: #ffd93d;
+    }
+
+    .footer {
+      margin-top: 3rem;
+      padding: 2rem;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .footer-title {
+      font-size: 1.4rem;
+      color: #00ffff;
+      margin-bottom: 1rem;
+      font-weight: 700;
+      text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+    }
+
+    .contact-info {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      flex-wrap: wrap;
+      margin-top: 1rem;
+    }
+
+    .contact-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #e0e0e0;
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+
+    .contact-item:hover {
+      color: #00ffff;
+      text-shadow: 0 0 10px rgba(0, 255, 255, 0.6);
+    }
+
+    /* เพิ่ม CSS สำหรับส่วนแสดงรายชื่อ */
+    .registered-users-section {
+      background: linear-gradient(135deg, rgba(107, 207, 127, 0.1) 0%, rgba(107, 207, 127, 0.05) 100%);
+      border-radius: 20px;
+      padding: 2rem;
+      margin: 2rem 0;
+      border: 1px solid rgba(107, 207, 127, 0.3);
+    }
+
+    .users-title {
+      font-size: 1.8rem;
+      color: #00bfff;
+      margin-bottom: 1.5rem;
+      font-weight: 700;
+      text-align: center;
+      text-shadow: 0 0 15px rgba(0, 191, 255, 0.6);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      animation: titleShimmer 3s ease-in-out infinite;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.8rem;
+      margin-bottom: 2rem;
+      max-width: 100%;
+      justify-content: center;
+    }
+
+    .stat-card {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 15px;
+      padding: 0.8rem;
+      text-align: center;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .stat-number {
+      font-size: 2rem;
+      color: #00ffff;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      text-shadow: 0 0 10px rgba(0, 255, 255, 0.6);
+      animation: numberPulse 2s ease-in-out infinite;
+    }
+
+    @keyframes numberPulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    .stat-label {
+      color: #e0e0e0;
+      font-size: 0.8rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.2;
+    }
+
+    .users-list {
+      max-height: 400px;
+      overflow-y: auto;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 15px;
+      padding: 1rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .user-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.8rem;
+      margin-bottom: 0.5rem;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.3s ease;
+    }
+
+    .user-item:hover {
+      background: rgba(255, 255, 255, 0.08);
+      transform: translateX(5px);
+    }
+
+    .user-info {
+      flex: 1;
+      text-align: left;
+    }
+
+    .user-name {
+      color: #00ffff;
+      font-weight: 600;
+      font-size: 1rem;
+      margin-bottom: 0.2rem;
+      text-shadow: 0 0 8px rgba(0, 255, 255, 0.4);
+    }
+
+    .user-codename {
+      color: #00bfff;
+      font-size: 0.9rem;
+      font-weight: 500;
+      text-shadow: 0 0 8px rgba(0, 191, 255, 0.3);
+    }
+
+    .user-orders {
+      text-align: right;
+      min-width: 120px;
+    }
+
+    .order-detail {
+      color: #e0e0e0;
+      font-size: 0.8rem;
+      margin-bottom: 0.2rem;
+    }
+
+    .order-highlight {
+      color: #ff6b6b;
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+
+    .refresh-button {
+      background: linear-gradient(45deg, #00bfff, #0080ff);
+      color: #fff;
+      padding: 0.8rem 1.5rem;
+      border-radius: 25px;
+      border: 1px solid rgba(0, 255, 255, 0.3);
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-bottom: 1rem;
+      box-shadow: 0 4px 15px rgba(0, 191, 255, 0.4), 0 0 20px rgba(0, 191, 255, 0.2);
+    }
+
+    .refresh-button:hover {
+      transform: translateY(-2px) scale(1.05);
+      box-shadow: 0 8px 20px rgba(0, 191, 255, 0.6), 0 0 30px rgba(0, 128, 255, 0.4);
+      border-color: rgba(0, 255, 255, 0.6);
+    }
+
+    .loading {
+      text-align: center;
+      color: #00ffff;
+      font-size: 1.1rem;
+      padding: 2rem;
+      text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+    }
+
+    /* Loading spinner */
+    .spinner {
+      margin: 24px auto 8px auto;
+      border: 6px solid #e0e0e0;
+      border-top: 6px solid #42A5F5;
+      border-radius: 50%;
+      width: 48px;
+      height: 48px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg);}
+      100% { transform: rotate(360deg);}
+    }
+
+    .error-message {
+      background: rgba(255, 107, 107, 0.1);
+      border: 1px solid rgba(255, 107, 107, 0.3);
+      border-radius: 10px;
+      padding: 1rem;
+      color: #ff6b6b;
+      text-align: center;
+      margin: 1rem 0;
+    }
+
+    /* Codename สี/ขนาด/กระพริบตาม rank (เหมือน gymbattle.html) */
+    .codename-rank[data-rank="Rookie"]      .codename { color: #888888; font-size: 1.05em; }
+    .codename-rank[data-rank="Bronze"]      .codename { color: #b87333; font-size: 1.08em; }
+    .codename-rank[data-rank="Silver"]      .codename { color: #9e9e9e; font-size: 1.12em; }
+    .codename-rank[data-rank="Gold"]        .codename { color: #ffd700; font-size: 1.18em; font-weight: bold; }
+    .codename-rank[data-rank="Platinum"]    .codename { color: #00bcd4; font-size: 1.22em; font-weight: bold; }
+    .codename-rank[data-rank="Diamond"]     .codename { color: #00bfff; font-size: 1.28em; font-weight: bold; }
+    .codename-rank[data-rank="Grandmaster"] .codename { color: #8e24aa; font-size: 1.35em; font-weight: bold; }
+    .codename-rank[data-rank="Legend"]      .codename { color: #e53935; font-size: 1.45em; font-weight: bold; }
+    .codename-rank[data-rank="Gold"]        .codename,
+    .codename-rank[data-rank="Platinum"]    .codename,
+    .codename-rank[data-rank="Diamond"]     .codename,
+    .codename-rank[data-rank="Grandmaster"] .codename,
+    .codename-rank[data-rank="Legend"]      .codename {
+      animation: blink 1s step-end infinite alternate;
+    }
+    @keyframes blink {
+      0%   { opacity: 1;   text-shadow: 0 0 8px #fff, 0 0 16px currentColor; }
+      100% { opacity: 0.6; text-shadow: 0 0 2px #fff, 0 0 4px currentColor; }
+    }
+    /* Wave (Gold) */
+    @keyframes wave {
+      0%, 100% { transform: translateY(0);}
+      20%      { transform: translateY(-5px);}
+      40%      { transform: translateY(-10px);}
+      60%      { transform: translateY(-5px);}
+      80%      { transform: translateY(0);}
+    }
+    .codename.wave span {
+      display: inline-block;
+      animation: wave 1.2s cubic-bezier(0.4,0,0.2,1) infinite;
+    }
+    .codename.wave.gold span { animation-duration: 1.2s; }
+    .codename.wave.platinum span { animation-duration: 1s; }
+    .codename.wave.diamond span { animation-duration: 0.85s; }
+    .codename.wave.grandmaster span { animation-duration: 0.7s; }
+    .codename.wave.legend span { animation-duration: 0.6s; }
+    .codename.wave span:nth-child(1) { animation-delay: 0s; }
+    .codename.wave span:nth-child(2) { animation-delay: 0.08s; }
+    .codename.wave span:nth-child(3) { animation-delay: 0.16s; }
+    .codename.wave span:nth-child(4) { animation-delay: 0.24s; }
+    .codename.wave span:nth-child(5) { animation-delay: 0.32s; }
+    .codename.wave span:nth-child(6) { animation-delay: 0.40s; }
+    .codename.wave span:nth-child(7) { animation-delay: 0.48s; }
+    .codename.wave span:nth-child(8) { animation-delay: 0.56s; }
+    .codename.wave span:nth-child(9) { animation-delay: 0.64s; }
+    .codename.wave span:nth-child(10){ animation-delay: 0.72s; }
+
+    /* Modal Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.8);
+      backdrop-filter: blur(4px);
+    }
+
+    .modal-content {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      padding: 0;
+      width: auto;
+      max-width: 90vw;
+      max-height: 90vh;
+      background: transparent;
+      border-radius: 0;
+      text-align: center;
+      animation: none;
+    }
+
+    .modal-close {
+      position: fixed;
+      top: 20px;
+      right: 30px;
+      font-size: 32px;
+      font-weight: bold;
+      color: #fff;
+      cursor: pointer;
+      transition: color 0.3s;
+      z-index: 1001;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    }
+
+    .modal-close:hover {
+      color: #ff6b6b;
+    }
+
+    .modal img {
+      width: auto;
+      max-width: 90vw;
+      max-height: 90vh;
+      height: auto;
+      border-radius: 12px;
+      margin: 0;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+
+    /* Force 2-column layout for cards on mobile */
+    @media (max-width: 768px) {
+      .pokemon-cards,
+      .support-grid,
+      .item-grid {
+        display: grid ;
+        grid-template-columns: repeat(2, 1fr) ;
+        gap: 12px ;
+        padding: 0 6px ;
+        justify-content: center ;
+      }
+      
+      .pokemon-cards .card-item,
+      .support-grid .support-item,
+      .item-grid .item-item {
+        width: 80% ;
+        max-width: none ;
+      }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .container {
+        padding: 1rem;
+        margin: 0.5rem;
+      }
+      
+      .event-title {
+        font-size: 2rem;
+      }
+      
+      .event-subtitle {
+        font-size: 1.1rem;
+      }
+      
+      .event-date {
+        font-size: 1.2rem;
+      }
+      
+      .pricing-section {
+        grid-template-columns: 1fr;
+      }
+      
+      .contact-info {
+        flex-direction: column;
+        gap: 1rem;
+      }
+      
+      .home-button {
+        top: 15px;
+        left: 15px;
+        width: 50px;
+        height: 50px;
+      }
+      
+      .home-button::before {
+        font-size: 20px;
+      }
+      
+      /* ปรับการ์ดโปเกมอนให้เป็น 2 คอลัมน์บนมือถือ */
+      .pokemon-cards {
+        display: grid ;
+        grid-template-columns: repeat(2, 1fr) ;
+        gap: 20px ;
+        padding: 0 6px;
+        justify-content: center;
+      }
+      
+      .card-item {
+        padding: 6px;
+      }
+      
+      .card-image {
+        margin-bottom: 0.2rem;
+      }
+      
+      .pokemon-card-img {
+        margin-bottom: 2px;
+      }
+      
+      .card-name {
+        font-size: 0.7em;
+        margin-bottom: 2px;
+      }
+      
+      .card-stats {
+        padding: 0.3rem;
+        margin-bottom: 0.8rem;
+      }
+      
+      .hp, .type {
+        font-size: 0.9rem;
+      }
+      
+      .card-description {
+        font-size: 0.8rem;
+        margin-bottom: 0.8rem;
+      }
+      
+      .card-attacks {
+        padding: 0.6rem;
+      }
+      
+      .attack-name {
+        font-size: 0.8rem;
+      }
+      
+      .attack-damage {
+        font-size: 0.9rem;
+        padding: 0.1rem 0.3rem;
+      }
+      
+      /* ปรับการ์ดซัพพอร์ตและไอเท็มให้เป็น 2 คอลัมน์บนมือถือ */
+      .support-grid, .item-grid {
+        display: grid ;
+        grid-template-columns: repeat(2, 1fr) ;
+        gap: 20px ;
+        padding: 0 6px;
+        justify-content: center;
+      }
+      
+      .support-item, .item-item {
+        padding: 6px;
+      }
+      
+      .support-card-img, .item-card-img {
+        margin-bottom: 2px;
+      }
+      
+      .support-item h4, .item-item h4 {
+        margin-bottom: 2px;
+      }
+      
+      .support-item p, .item-item p {
+        margin-bottom: 0;
+      }
+      
+      .support-item h4, .item-item h4 {
+        font-size: 0.7em;
+      }
+      
+      .support-item p, .item-item p {
+        font-size: 0.6em;
+        line-height: 1.3;
+      }
+      
+      /* ปรับส่วนข้อมูลสำคัญ */
+      .info-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+      
+      /* ปรับหัวข้อรายชื่อผู้ลงทะเบียนในมือถือ */
+      .users-title {
+        font-size: 1.4rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      
+      .info-card {
+        padding: 1rem;
+      }
+      
+      .info-card h4 {
+        font-size: 1.1rem;
+        margin-bottom: 0.8rem;
+      }
+      
+      .info-list li {
+        font-size: 0.9rem;
+        padding: 0.6rem;
+        margin-bottom: 0.6rem;
+      }
+      
+      /* ปรับส่วนสถิติ */
+      .stats-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.6rem;
+        padding: 0 0.5rem;
+      }
+      
+      /* ปรับสถิติให้แสดงผลในมือถือเป็นบรรทัดเดียว */
+      .stat-card {
+        padding: 0.6rem 0.4rem;
+      }
+      
+      .stat-number {
+        font-size: 1.5rem;
+      }
+      
+      .stat-label {
+        font-size: 0.7rem;
+        line-height: 1.1;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      
+      
+      .stat-number {
+        font-size: 1.5rem;
+      }
+      
+      .stat-label {
+        font-size: 0.8rem;
+      }
+      
+      /* ปรับตารางผู้ลงทะเบียน */
+      .users-list table {
+        font-size: 0.8rem;
+      }
+      
+      .users-list th,
+      .users-list td {
+        padding: 8px 4px;
+      }
+      
+      /* ปรับตารางผู้ลงทะเบียนบนมือถือ */
+      #usersContainer table {
+        font-size: 0.8em;
+      }
+      
+      #usersContainer th,
+      #usersContainer td {
+        padding: 8px 4px;
+        font-size: 0.8em;
+      }
+      
+      #usersContainer th:first-child,
+      #usersContainer td:first-child {
+        width: 40px;
+      }
+      
+      #usersContainer th:nth-child(3),
+      #usersContainer td:nth-child(3) {
+        width: 80px;
+      }
+      
+      #usersContainer th:nth-child(4),
+      #usersContainer td:nth-child(4) {
+        width: 60px;
+      }
+      
+      /* ปรับปุ่ม */
+      .cta-button {
+        padding: 1.2rem 2rem;
+        font-size: 1.1rem;
+      }
+      
+      .cta-button-top {
+        padding: 0.8rem 2rem;
+        font-size: 1rem;
+      }
+      
+      .refresh-button {
+        padding: 0.6rem 1.2rem;
+        font-size: 0.9rem;
+      }
+    }
+    
+    /* สำหรับหน้าจอเล็กมาก (iPhone SE, etc.) */
+    @media (max-width: 480px) {
+      .container {
+        padding: 0.8rem;
+        margin: 0.3rem;
+      }
+      
+      .event-title {
+        font-size: 1.8rem;
+      }
+      
+      .event-subtitle {
+        font-size: 1rem;
+      }
+      
+      .event-date {
+        font-size: 1.1rem;
+      }
+      
+      /* ปรับหัวข้อรายชื่อผู้ลงทะเบียนในหน้าจอเล็กมาก */
+      .users-title {
+        font-size: 1.2rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      
+      .pokemon-cards {
+        display: grid ;
+        grid-template-columns: repeat(2, 1fr) ;
+        gap: 12px ;
+        padding: 0 6px;
+      }
+      
+      .support-grid, .item-grid {
+        display: grid ;
+        grid-template-columns: repeat(2, 1fr) ;
+        gap: 12px ;
+        padding: 0 6px;
+      }
+      
+      .stats-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.4rem;
+        padding: 0 0.3rem;
+      }
+      
+      .stat-card {
+        padding: 0.5rem 0.3rem;
+      }
+      
+      .stat-number {
+        font-size: 1.3rem;
+      }
+      
+      .stat-label {
+        font-size: 0.65rem;
+        line-height: 1.1;
+      }
+      
+      .card-item, .support-item, .item-item {
+        max-width: 100%;
+        padding: 6px;
+      }
+      
+      .pokemon-card-img {
+        max-width: 150px;
+        aspect-ratio: 6/9;
+        object-fit: contain;
+        background: #fff;
+      }
+      
+      .support-card-img, .item-card-img {
+        max-width: 120px;
+        aspect-ratio: 6/9;
+        object-fit: contain;
+        background: #fff;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a href="index.html" class="home-button" title="กลับหน้าหลัก"></a>
+
+  <div class="container">
+    <!-- Card packs near logo - cute shake animation -->
+    <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/09/th_news_MA2_pillow_img-1.png" alt="Card Pack" class="floating-card-pack">
+    <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/09/th_news_MA2_pillow_img-1.png" alt="Card Pack" class="floating-card-pack">
+    <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/09/th_news_MA2_pillow_img-1.png" alt="Card Pack" class="floating-card-pack">
+    <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/09/th_news_MA2_pillow_img-1.png" alt="Card Pack" class="floating-card-pack">
+    <div class="header">
+      <img src="https://i.postimg.cc/wjzpnxjB/Up-Level-01-1.png" alt="Up Level Academy Logo" class="logo">
+      <h1 class="event-title">🔥 MIDNIGHT PARTY 🔥</h1>
+      <div class="event-subtitle">เปิดบ็อกซ์ใหม่ก่อนใคร! พร้อมกันตั้งแต่เที่ยงคืน</div>
+      <div class="event-date">🌙 คืนวันที่ 6 พฤศจิกายน 2568</div>
+    </div>
+
+    <div class="product-showcase">
+      <h2 class="product-title">🎁 Pokémon TCG: วิวัฒนาการเมก้า "อัคคีสีคราม"</h2>
+      <div class="product-description">
+        การแบตเทิลทวีความเข้มข้น! เมก้าลิซาร์ดอน X ex ปรากฏตัว! 
+        เปลี่ยนพลังงานไฟจำนวนมากเป็นพลังโจมตีรุนแรงราวกับระเบิดเผาผลาญให้สิ้นซาก!! 
+        ปล่อยแดเมจรุนแรง เผาผลาญทุกสิ่งให้สิ้นซากด้วยท่าต่อสู้ [อินเฟอร์โน X]!!
+      </div>
+      
+      <div class="cta-top">
+        <a href="https://forms.gle/2Y3JPRKhm5onnHpw9" target="_blank" class="cta-button-top">
+          🎯 ลงชื่อจองเลย!
+        </a>
+        <a href="https://forms.gle/5ctkLmT3FwLW9oRi6" target="_blank" class="guild-button">
+          🏰 สมัครสมาชิกกิลด์เพื่อสะสม EXP
+        </a>
+      </div>
+
+      <!-- ย้ายส่วนรายชื่อผู้ลงทะเบียนมาด้านบน -->
+      <div class="registered-users-section">
+        <h3 class="users-title">📋 รายชื่อผู้ลงทะเบียน</h3>
+        
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-number" id="totalUsers">-</div>
+            <div class="stat-label">ผู้ลงทะเบียนทั้งหมด</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number" id="totalBoxes">-</div>
+            <div class="stat-label">Box ทั้งหมด</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number" id="totalSpots">-</div>
+            <div class="stat-label">Spot ทั้งหมด</div>
+          </div>
+        </div>
+        
+        <button class="refresh-button" onclick="loadRegisteredUsers()">
+          🔄 รีเฟรชข้อมูล
+        </button>
+        
+        <div id="usersContainer">
+          <div class="spinner"></div>
+          <div class="loading">กำลังโหลดข้อมูล...</div>
+        </div>
+      </div>
+      
+      <div class="pokemon-cards">
+        <div class="card-item" onclick="openCardModal('https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/09/th_news_MA2_013_card.png')">
+          <div class="card-image">
+            <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/09/th_news_MA2_013_card.png" alt="เมก้าลิซาร์ดอน X ex" class="pokemon-card-img">
+          </div>
+          <div class="card-name">เมก้าลิซาร์ดอน X ex</div>
+        </div>
+        
+        <div class="card-item" onclick="openCardModal('https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/09/th_news_MA2_018_card.png')">
+          <div class="card-image">
+            <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/09/th_news_MA2_018_card.png" alt="โอโดริโดริ ex" class="pokemon-card-img">
+          </div>
+          <div class="card-name">โอโดริโดริ ex</div>
+        </div>
+        
+        <div class="card-item" onclick="openCardModal('https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/09/th_news_MA2_100_card.png')">
+          <div class="card-image">
+            <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/09/th_news_MA2_100_card.png" alt="เจ้าหนุ่มพ่นไฟ" class="pokemon-card-img">
+          </div>
+          <div class="card-name">เจ้าหนุ่มพ่นไฟ</div>
+        </div>
+        
+        <div class="card-item" onclick="openCardModal('https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/09/th_news_MA2_065_card.png')">
+          <div class="card-image">
+            <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/09/th_news_MA2_065_card.png" alt="เมก้าซาเมฮาเดอร์ ex" class="pokemon-card-img">
+          </div>
+          <div class="card-name">เมก้าซาเมฮาเดอร์ ex</div>
+        </div>
+      </div>
+      
+      <h3 class="support-title" style="margin-top: 2rem;">🎴 การ์ดเทรนเนอร์</h3>
+      <div class="pokemon-cards">
+        <div class="card-item" onclick="openCardModal('https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/10/th_news_MA2_097_card.png')">
+          <div class="card-image">
+            <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/10/th_news_MA2_097_card.png" alt="หมวกนิรภัยพังก์" class="pokemon-card-img">
+          </div>
+          <div class="card-name">หมวกนิรภัยพังก์</div>
+        </div>
+        
+        <div class="card-item" onclick="openCardModal('https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/10/th_news_MA2_095_card.png')">
+          <div class="card-image">
+            <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/10/th_news_MA2_095_card.png" alt="วันเดอร์แพตช์" class="pokemon-card-img">
+          </div>
+          <div class="card-name">วันเดอร์แพตช์</div>
+        </div>
+        
+        <div class="card-item" onclick="openCardModal('https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/10/th_news_MA2_103_card.png')">
+          <div class="card-image">
+            <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/10/th_news_MA2_103_card.png" alt="หุบเขาตาลาย" class="pokemon-card-img">
+          </div>
+          <div class="card-name">หุบเขาตาลาย</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pricing-section">
+      <div class="pricing-card">
+        <h3 class="pricing-title">📦 Box</h3>
+        <div class="price">💸 1,350 บาท</div>
+        <div class="price-note">(เฉพาะ Pre-Order)</div>
+        <div class="price">💸 1,400 บาท</div>
+        <div class="price-note">(ซื้อหน้างาน)</div>
+        <ul class="benefits">
+          <li>✅ ได้รับ +5 EXP ต่อ Box</li>
+        </ul>
+      </div>
+
+      <div class="pricing-card">
+        <h3 class="pricing-title">🎯 Spot 10 ซอง</h3>
+        <div class="price">💰 500 บาท / Spot</div>
+        <ul class="benefits">
+          <li>✅ ครบ 3 Spot → เปิดกล่องได้ทันที!</li>
+          <li>✅ +1 EXP ต่อ Spot</li>
+          <li>✅ สิทธิ์ร่วมเปิดกล่องแบบหาร ลุ้นพร้อมกัน</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="spot-info">
+      <h3 class="spot-title">🎯 เกี่ยวกับ Spot</h3>
+      <div class="spot-description">
+        Spot = สิทธิ์ร่วมเปิดกล่องแบบหาร ลุ้นพร้อมกัน ไม่มีใครเลือกเปิดก่อน! 
+        เมื่อครบ 3 Spot จะสามารถเปิดกล่องใหม่ได้ทันที
+      </div>
+    </div>
+
+    <div class="info-section">
+      <h3 class="info-title">📋 ข้อมูลสำคัญ</h3>
+      <div class="info-grid">
+        <div class="info-card bonus">
+          <h4>🎉 โบนัสพิเศษเฉพาะในงาน</h4>
+          <ul class="info-list">
+            <li>✅ มาร่วมงาน : +2 EXP | +2 Party Point</li>
+            <li>✅ มาครบทั้งปาร์ตี้ : +5 Party Point</li>
+            <li>✅ BUY BOX +5 EXP</li>
+            <li>✅ JOINING +2 EXP | +2 PP</li>
+            <li>✅ FULL PARTY JOINING +5 PARTY POINTS</li>
+          </ul>
+        </div>
+        <div class="info-card notes">
+          <h4>📝 ข้อกำหนดสำคัญ</h4>
+          <ul class="info-list">
+            <li>📌 จองล่วงหน้า = ต้องชำระเงินทันที</li>
+            <li>📌 แนบสลิป = การจองสมบูรณ์</li>
+            <li>📌 หาก Spot ไม่ครบ 3 → คืนเงินเต็มจำนวนหลังงาน หรือเลือกเปลี่ยนสินค้าในร้าน</li>
+            <li>📌 ไม่มีไลฟ์สด — เปิดกล่องกันเฉพาะในงานเท่านั้น</li>
+            <li>📌 เริ่มลงทะเบียน 00:01 น. (เที่ยงคืน) วันที่ 7 พฤศจิกายน 2568</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="cta-section">
+      <a href="https://forms.gle/2Y3JPRKhm5onnHpw9" target="_blank" class="cta-button">
+        🎯 ลงชื่อจองเลย!
+      </a>
+      <a href="https://forms.gle/5ctkLmT3FwLW9oRi6" target="_blank" class="guild-button">
+        🏰 สมัครสมาชิกกิลด์เพื่อสะสม EXP
+      </a>
+    </div>
+
+    <div class="footer">
+      <h3 class="footer-title">📞 ติดต่อสอบถาม</h3>
+      <div class="contact-info">
+        <a href="tel:097-115-6555" class="contact-item">
+          📞 097-115-6555
+        </a>
+        <a href="https://line.me/ti/p/@uplevelacademy" target="_blank" class="contact-item">
+          💬 @uplevelacademy
+        </a>
+        <a href="https://www.facebook.com/uplevel.acad" target="_blank" class="contact-item">
+          👍 Up Level Academy
+        </a>
+        <a href="https://www.instagram.com/uplevel.acad" target="_blank" class="contact-item">
+          📸 uplevel.acad
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal for card details -->
+  <div id="cardModal" class="modal">
+    <div class="modal-content">
+      <span class="modal-close">&times;</span>
+      <img id="modalCardImage" src="" alt="Card Image">
+    </div>
+  </div>
+
+  <script>
+    console.log('DEBUG: Midnight Party Registration System');
+    
+    // ใช้ URL ที่ถูกต้องของ Midnight Party (เพิ่ม ?type=json เหมือน gymbattle.html)
+    const apiUrl = "https://script.google.com/macros/s/AKfycbyeNs5NJgOBlmZivhTbxmhV6UwmfVn4yUvr2SmQPiUKQjD2v9CUwD1JQRFylRk4q4Qs4A/exec?type=json";
+    const memberDashboardApi = "https://script.google.com/macros/s/AKfycbxtjsDwHI6nJU4OIHExUxMaZwUn3qwakvdkzwbQO7C8Trzz5Gh84SX6F1gqb4BOFQcn/exec?func=getMemberDashboardData";
+    
+    // โหลดข้อมูลผู้ลงทะเบียนเมื่อหน้าเว็บโหลดเสร็จ
+    window.addEventListener('load', function() {
+      loadRegisteredUsers();
+    });
+
+    function loadRegisteredUsers() {
+      const container = document.getElementById('usersContainer');
+      container.innerHTML = '<div class="spinner"></div><div class="loading">กำลังโหลดข้อมูล...</div>';
+      
+      console.log('=== MIDNIGHT PARTY DEBUG: Starting loadRegisteredUsers ===');
+      console.log('API URL:', apiUrl);
+      console.log('Member Dashboard API URL:', memberDashboardApi);
+      console.log('Timestamp:', new Date().toISOString());
+      
+      // ใช้วิธีเดียวกับ GBL.html - fetch() ธรรมดาโดยไม่มี options
+      Promise.all([
+        fetch(apiUrl).then(res => res.json()),
+        fetch(memberDashboardApi).then(res => res.json())
+      ]).then(([data, members]) => {
+        // ตรวจสอบว่า data ถูกต้องหรือไม่
+        if (!data || !data.participants) {
+          console.error('❌ No participants data received');
+          showFallbackData(container);
+          return;
+        }
+        
+        // สร้าง map เบอร์โทร -> { codename, rank }
+        console.log('=== Creating phone map from members ===');
+        const phoneMap = {};
+        if (members && Array.isArray(members)) {
+          console.log('👥 Processing', members.length, 'members');
+          members.forEach((m, idx) => {
+            const phone = String(m.phone || '').replace(/[^\d]/g, "");
+            if (phone) {
+              phoneMap[phone] = { 
+                codename: m.codename || '', 
+                rank: m.rank || '' 
+              };
+            }
+            if (idx < 3) {
+              console.log(`👤 Member ${idx}:`, {
+                phone: m.phone,
+                cleaned: phone,
+                codename: m.codename,
+                rank: m.rank
+              });
+            }
+          });
+        } else {
+          console.warn('⚠️ Members is not an array:', members);
+        }
+        
+        console.log('📱 Phone map created with', Object.keys(phoneMap).length, 'entries');
+        console.log('📱 Sample phone keys:', Object.keys(phoneMap).slice(0, 5));
+        
+        // อัปเดต codename ในข้อมูลผู้ลงทะเบียน
+        if (data.participants && Array.isArray(data.participants)) {
+          console.log('=== Processing', data.participants.length, 'participants ===');
+          if (data.participants.length > 0) {
+            console.log('📝 First participant all columns:', Object.keys(data.participants[0]));
+            console.log('📝 First participant sample:', JSON.stringify(data.participants[0], null, 2).substring(0, 500));
+          }
+          
+          data.participants.forEach((participant, index) => {
+            // ใช้เบอร์โทรจาก column C (เบอร์โทรศัพท์ติดต่อ) - ลองหลาย column เหมือน gymbattle
+            // ลองหาเบอร์โทรจากหลาย column names ที่เป็นไปได้
+            const originalPhone = participant['เบอร์โทรศัพท์'] || 
+                                 participant['เบอร์โทรศัพท์ติดต่อ'] || 
+                                 participant['เบอร์โทร'] ||
+                                 participant['Phone'] ||
+                                 participant['phone'] ||
+                                 participant.phone || 
+                                 '';
+            const phone = String(originalPhone).replace(/[^\d]/g, "");
+            
+            if (index < 3) {
+              console.log(`👤 Participant ${index}:`, {
+                originalPhone: originalPhone,
+                cleanedPhone: phone,
+                foundInMap: !!phoneMap[phone],
+                codename: phoneMap[phone]?.codename || 'ไม่พบ',
+                rank: phoneMap[phone]?.rank || 'ไม่พบ',
+                allColumns: Object.keys(participant)
+              });
+            }
+            
+            if (phoneMap[phone]) {
+              participant.codename = phoneMap[phone].codename;
+              participant.rank = phoneMap[phone].rank;
+            }
+          });
+          
+          // แปลงข้อมูลให้ตรงกับที่ displayUsers คาดหวัง
+          console.log('=== Converting participants data ===');
+          const convertedData = {
+            users: data.participants.map((p, idx) => {
+              // ใช้ชื่อเล่นจาก column I ถ้าไม่มีให้ใช้ชื่อ-นามสกุลจาก column B
+              const nickname = p['ชื่อเล่น'] || p['ชื่อ-นามสกุล'] || 'ไม่ระบุชื่อ';
+              
+              // ใช้เบอร์โทรจาก column C
+              const phone = p['เบอร์โทรศัพท์'] || p['เบอร์โทรศัพท์ติดต่อ'] || p['เบอร์โทร'] || p['Phone'] || p['phone'] || p.phone || '';
+              
+              // ใช้ข้อมูล Box และ Spot จาก column E และ F
+              // Column E: 'กรณีจอง Box:  ต้องการกี่ Box (1350/Box)?' (มีช่องว่างเพิ่ม)
+              // Column F: 'กรณีจอง Spot: ต้องการกี่ Spot (500 บาท/Spot)?'
+              let boxes = 0;
+              let spots = 0;
+              
+              // แปลงข้อมูล Box จาก column E - ลองหลายรูปแบบ
+              const boxData = p['กรณีจอง Box:  ต้องการกี่ Box (1350/Box)?'] || 
+                             p['กรณีจอง Box: ต้องการที่ Box (1350/Box)?'] || 
+                             p['กรณีจอง Box: ต้องการกี่ Box (1350/Box)?'] || '';
+              
+              if (boxData && typeof boxData === 'string') {
+                const boxMatch = boxData.match(/(\d+)\s*Box/);
+                if (boxMatch) {
+                  boxes = parseInt(boxMatch[1]) || 0;
+                }
+              }
+              
+              // แปลงข้อมูล Spot จาก column F
+              const spotData = p['กรณีจอง Spot: ต้องการกี่ Spot (500 บาท/Spot)?'] || 
+                              p['กรณีจอง Spot: ต้องการที่ Spot (500 บาท/Spot)?'] || '';
+              
+              if (spotData && typeof spotData === 'string') {
+                const spotMatch = spotData.match(/(\d+)\s*Spot/);
+                if (spotMatch) {
+                  spots = parseInt(spotMatch[1]) || 0;
+                }
+              }
+              
+              // Debug logging สำหรับ 3 รายการแรก
+              if (idx < 3) {
+                console.log(`👤 Converting User ${idx} (${nickname}):`, {
+                  boxData: boxData,
+                  boxes: boxes,
+                  spotData: spotData,
+                  spots: spots,
+                  codename: p.codename || 'ไม่ระบุ',
+                  rank: p.rank || '',
+                  availableColumns: Object.keys(p).slice(0, 10)
+                });
+              }
+              
+              return {
+                nickname: nickname,
+                phone: phone,
+                boxes: boxes,
+                spots: spots,
+                codename: p.codename || 'ไม่ระบุ',
+                rank: p.rank || ''
+              };
+            }),
+            total: data.participants.length,
+            totalBoxes: data.participants.reduce((sum, p) => {
+              const boxData = p['กรณีจอง Box:  ต้องการกี่ Box (1350/Box)?'] || 
+                             p['กรณีจอง Box: ต้องการที่ Box (1350/Box)?'] || 
+                             p['กรณีจอง Box: ต้องการกี่ Box (1350/Box)?'] || '';
+              if (boxData && typeof boxData === 'string') {
+                const boxMatch = boxData.match(/(\d+)\s*Box/);
+                if (boxMatch) {
+                  return sum + (parseInt(boxMatch[1]) || 0);
+                }
+              }
+              return sum;
+            }, 0),
+            totalSpots: data.participants.reduce((sum, p) => {
+              const spotData = p['กรณีจอง Spot: ต้องการกี่ Spot (500 บาท/Spot)?'] || 
+                              p['กรณีจอง Spot: ต้องการที่ Spot (500 บาท/Spot)?'] || '';
+              if (spotData && typeof spotData === 'string') {
+                const spotMatch = spotData.match(/(\d+)\s*Spot/);
+                if (spotMatch) {
+                  return sum + (parseInt(spotMatch[1]) || 0);
+                }
+              }
+              return sum;
+            }, 0)
+          };
+          
+          console.log('=== Conversion Summary ===');
+          console.log('📊 Total users after conversion:', convertedData.users.length);
+          console.log('📊 Total boxes:', convertedData.totalBoxes);
+          console.log('📊 Total spots:', convertedData.totalSpots);
+          console.log('📊 Sample converted users (first 3):', convertedData.users.slice(0, 3));
+          
+          displayUsers(convertedData);
+        }
+      }).catch(error => {
+        console.error('❌ Fetch error:', error);
+        showFallbackData(container);
+      });
+    }
+
+    function showFallbackData(container) {
+      console.log('⚠️ ========== showFallbackData called ==========');
+      console.log('⚠️ Container element:', container);
+      console.log('⚠️ This means data could not be loaded');
+      
+      // อัปเดตสถิติเป็น 0
+      const totalUsersEl = document.getElementById('totalUsers');
+      const totalBoxesEl = document.getElementById('totalBoxes');
+      const totalSpotsEl = document.getElementById('totalSpots');
+      
+      console.log('📊 Updating stats to 0');
+      console.log('📊 totalUsers element:', totalUsersEl);
+      console.log('📊 totalBoxes element:', totalBoxesEl);
+      console.log('📊 totalSpots element:', totalSpotsEl);
+      
+      if (totalUsersEl) totalUsersEl.textContent = '0';
+      if (totalBoxesEl) totalBoxesEl.textContent = '0';
+      if (totalSpotsEl) totalSpotsEl.textContent = '0';
+      
+      // แสดงข้อความแจ้งเตือน
+      let errorMessage = '<div class="error-message">';
+      errorMessage += '⚠️ <strong>ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้</strong><br><br>';
+      errorMessage += '📌 <strong>สาเหตุ:</strong> Google Apps Script ยังไม่ได้ Deploy เป็น Web App หรือตั้งค่าไม่ถูกต้อง<br><br>';
+      errorMessage += '✅ <strong>วิธีแก้ไข (สำหรับ Admin):</strong><br>';
+      errorMessage += '   1. ไปที่ <a href="https://script.google.com" target="_blank">Google Apps Script Editor</a><br>';
+      errorMessage += '   2. เปิด script "midnight party"<br>';
+      errorMessage += '   3. คลิก <strong>Deploy</strong> → <strong>Manage deployments</strong><br>';
+      errorMessage += '   4. คลิก <strong>Edit</strong> หรือ <strong>New deployment</strong><br>';
+      errorMessage += '   5. ตั้งค่า:<br>';
+      errorMessage += '      • Type: <strong>Web app</strong><br>';
+      errorMessage += '      • Execute as: <strong>Me</strong><br>';
+      errorMessage += '      • Who has access: <strong>Anyone</strong> (สำคัญมาก!)<br>';
+      errorMessage += '   6. คลิก <strong>Deploy</strong><br>';
+      errorMessage += '   7. Copy URL ใหม่ (ถ้าเปลี่ยน) และอัปเดตในโค้ด<br><br>';
+      errorMessage += '💡 <strong>หมายเหตุ:</strong> หลังจาก Deploy แล้ว รอสักครู่แล้วรีเฟรชหน้านี้<br><br>';
+      errorMessage += '🔄 <button onclick="loadRegisteredUsers()" style="background:#6bcf7f;color:#fff;border:none;padding:0.5rem 1rem;border-radius:5px;cursor:pointer;font-weight:bold;">รีเฟรชข้อมูล</button>';
+      errorMessage += '</div>';
+      container.innerHTML = errorMessage;
+      console.log('⚠️ Fallback message displayed');
+    }
+
+    function displayUsers(data) {
+      console.log('=== displayUsers called ===');
+      console.log('📊 Input data:', data);
+      console.log('📊 data.users exists?', !!data.users);
+      console.log('📊 data.users length:', data.users ? data.users.length : 'N/A');
+      
+      const container = document.getElementById('usersContainer');
+      console.log('📦 Container element:', container);
+      
+      // อัปเดตสถิติ (จะอัปเดตใหม่หลังจากรวมข้อมูลแล้ว)
+      
+      if (!data.users || data.users.length === 0) {
+        console.log('⚠️ No users to display');
+        // อัปเดตสถิติเป็น 0
+        document.getElementById('totalUsers').textContent = '0';
+        document.getElementById('totalBoxes').textContent = '0';
+        document.getElementById('totalSpots').textContent = '0';
+        container.innerHTML = '<div class="loading">📝 ยังไม่มีผู้ลงทะเบียน</div>';
+        console.log('✅ Displayed "no users" message');
+        return;
+      }
+      
+      console.log('📊 Processing', data.users.length, 'users');
+      
+      // รวมข้อมูลของลูกค้าที่จองหลายครั้งเข้าด้วยกัน
+      const userMap = {};
+      data.users.forEach(user => {
+        const phone = String(user.phone || '').replace(/[^\d]/g, "");
+        const key = phone || user.nickname; // ใช้เบอร์โทรเป็น key หรือชื่อเล่นถ้าไม่มีเบอร์โทร
+        
+        if (userMap[key]) {
+          // รวมข้อมูลการจอง
+          userMap[key].boxes += user.boxes || 0;
+          userMap[key].spots += user.spots || 0;
+        } else {
+          // สร้างข้อมูลใหม่
+          userMap[key] = {
+            nickname: user.nickname,
+            codename: user.codename,
+            rank: user.rank,
+            boxes: user.boxes || 0,
+            spots: user.spots || 0,
+            phone: user.phone
+          };
+        }
+      });
+      
+      // แปลงเป็น array และเรียงลำดับตามชื่อ
+      const uniqueUsers = Object.values(userMap).sort((a, b) => a.nickname.localeCompare(b.nickname));
+      
+      // อัปเดตสถิติด้วยข้อมูลที่รวมแล้ว
+      const totalUniqueUsers = uniqueUsers.length;
+      const totalBoxes = uniqueUsers.reduce((sum, user) => sum + user.boxes, 0);
+      const totalSpots = uniqueUsers.reduce((sum, user) => sum + user.spots, 0);
+      
+      console.log('📊 Stats to display:');
+      console.log('📊 Unique users:', totalUniqueUsers);
+      console.log('📊 Total boxes:', totalBoxes);
+      console.log('📊 Total spots:', totalSpots);
+      
+      document.getElementById('totalUsers').textContent = totalUniqueUsers;
+      document.getElementById('totalBoxes').textContent = totalBoxes;
+      document.getElementById('totalSpots').textContent = totalSpots;
+      
+      console.log('✅ Stats updated in DOM');
+      
+      // สร้างตารางแสดงข้อมูล
+      let html = '<table style="width:100%; border-collapse:collapse; margin:1rem auto; background:#fff; border-radius:12px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.1); max-width:800px;">';
+      html += '<thead><tr style="background:#42A5F5;">';
+      html += '<th style="padding:12px 8px; text-align:center; color:#fff; font-weight:bold; font-size:1.05em; width:60px;">ลำดับ</th>';
+      html += '<th style="padding:12px 8px; text-align:center; color:#fff; font-weight:bold; font-size:1.05em;">ชื่อเล่น / Codename</th>';
+      html += '<th style="padding:12px 8px; text-align:center; color:#fff; font-weight:bold; font-size:1.05em; width:140px;">จำนวน Box/Spot</th>';
+      html += '</tr></thead><tbody>';
+      
+      uniqueUsers.forEach((user, index) => {
+        html += `<tr style="border-bottom:1px solid #ddd;">`;
+        html += `<td style="padding:10px 8px; text-align:center; color:#2c3e50; font-weight:bold;">${index + 1}</td>`;
+        
+        // แสดงชื่อเล่นและ codename ในคอลัมน์เดียวกัน
+        let displayName = user.nickname || 'ไม่ระบุชื่อ';
+        if (displayName.length > 15) {
+          displayName = displayName.substring(0, 15) + '...';
+        }
+        
+        // แสดง codename ใต้ชื่อเล่น
+        let codenameDisplay = '';
+        if (user.codename && user.codename !== 'ไม่ระบุ') {
+          const rank = user.rank || '';
+          const rankEmoji = getRankEmoji(rank);
+          let displayCodename = user.codename;
+          if (displayCodename.length > 8) {
+            displayCodename = displayCodename.substring(0, 8) + '...';
+          }
+          
+          // ใช้ renderCodenameEffect เหมือน gymbattle.html
+          const codenameHtml = renderCodenameEffect(displayCodename, rank);
+          codenameDisplay = `<br><span class="codename-rank" data-rank="${rank}" style="font-size:0.85em;"><span>${rankEmoji}</span> ${codenameHtml} <span>${rankEmoji}</span></span>`;
+        }
+        
+        html += `<td style="padding:12px 8px; text-align:center; color:#2c3e50; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:300px;">${displayName}${codenameDisplay}</td>`;
+        
+        // แสดงจำนวน Box/Spot ที่รวมแล้ว
+        let orderDetails = '';
+        if (user.boxes > 0) {
+          orderDetails += `${user.boxes} 📦`;
+        }
+        if (user.spots > 0) {
+          if (orderDetails) orderDetails += ' ';
+          orderDetails += `${user.spots} 🎯`;
+        }
+        if (user.boxes === 0 && user.spots === 0) {
+          orderDetails = '📝';
+        }
+        html += `<td style="padding:12px 8px; text-align:center; color:#2c3e50; white-space:nowrap; font-size:0.9em; font-weight:600;">${orderDetails}</td>`;
+        
+        html += '</tr>';
+      });
+      
+      html += '</tbody></table>';
+      container.innerHTML = html;
+      console.log('✅ Table HTML generated and inserted');
+      console.log('✅ displayUsers completed');
+    }
+
+    // Rank emoji map (คัดลอกจาก GBL.html)
+    const rankEmojis = {
+      "Rookie": "🐣", "Rookie II": "🐣", "Rookie III": "🐣", "Rookie IV": "🐣", "Rookie V": "🐣",
+      "Bronze": "🛡️", "Bronze II": "🛡️", "Bronze III": "🛡️", "Bronze IV": "🛡️", "Bronze V": "🛡️",
+      "Silver": "⚔️", "Silver II": "⚔️", "Silver III": "⚔️", "Silver IV": "⚔️", "Silver V": "⚔️",
+      "Gold": "🥇", "Gold II": "🥇", "Gold III": "🥇", "Gold IV": "🥇", "Gold V": "🥇",
+      "Platinum": "✨", "Platinum II": "✨", "Platinum III": "✨", "Platinum IV": "✨", "Platinum V": "✨",
+      "Diamond": "💎", "Diamond II": "💎", "Diamond III": "💎", "Diamond IV": "💎", "Diamond V": "💎",
+      "Grandmaster": "👑", "Grandmaster II": "👑", "Grandmaster III": "👑", "Grandmaster IV": "👑", "Grandmaster V": "👑",
+      "Legend": "🐉", "Legend II": "🐉", "Legend III": "🐉", "Legend IV": "🐉", "Legend V": "🐉"
+    };
+
+    function getRankEmoji(rank) {
+      if (!rank) return rankEmojis["Rookie"] || "🐣";
+      if (rankEmojis[rank]) return rankEmojis[rank];
+      const baseRank = rank.replace(/\s+(II|III|IV|V|VI|VII|VIII|IX|X|\d+)$/, '');
+      return rankEmojis[baseRank] || rankEmojis["Rookie"] || "🐣";
+    }
+
+    // ฟังก์ชัน renderCodenameEffect เหมือน gymbattle.html
+    function renderCodenameEffect(codename, rank) {
+      const chars = ['[', ...codename.split(''), ']'];
+      const waveRanks = ['Gold', 'Platinum', 'Diamond', 'Grandmaster', 'Legend'];
+      if (waveRanks.includes(rank)) {
+        // wave + class ตาม rank, ใส่วงเล็บเหลี่ยมขยับด้วย
+        return `<span class="codename wave ${rank.toLowerCase()}">${chars.map((ch,i)=>`<span>${ch}</span>`).join('')}</span>`;
+      } else {
+        // ใส่วงเล็บเหลี่ยมธรรมดา
+        return `<span class="codename">[${codename}]</span>`;
+      }
+    }
+
+    // ไม่ต้องรีเฟรชอัตโนมัติ - ให้ใช้ปุ่ม refresh ข้อมูลแทน
+
+    // Modal functions
+    function openCardModal(imageUrl) {
+      const modal = document.getElementById('cardModal');
+      const modalImage = document.getElementById('modalCardImage');
+
+      modalImage.src = imageUrl;
+      modal.style.display = 'block';
+    }
+
+    function closeCardModal() {
+      const modal = document.getElementById('cardModal');
+      modal.style.display = 'none';
+    }
+
+    // Modal event listeners
+    document.addEventListener('DOMContentLoaded', function() {
+      // Modal close events
+      const modal = document.getElementById('cardModal');
+      const closeBtn = document.querySelector('.modal-close');
+      
+      if (closeBtn) {
+        closeBtn.addEventListener('click', closeCardModal);
+      }
+      
+      if (modal) {
+        modal.addEventListener('click', function(event) {
+          if (event.target === modal) {
+            closeCardModal();
+          }
+        });
+      }
+
+      // Close modal with Escape key
+      document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+          closeCardModal();
+        }
+      });
+    });
+  </script>
+</body>
+</html>

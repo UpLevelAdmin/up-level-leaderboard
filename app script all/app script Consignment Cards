@@ -1,0 +1,366 @@
+function doGet(e) {
+  try {
+    var isJson = e && e.parameter && e.parameter.type === 'json';
+    
+    var spreadsheetId = '1JvVCVxxXBS-2lpnT-IOrYBf2rF-OBRVFCW6MZEvpqxE';
+    var spreadsheet = SpreadsheetApp.openById(spreadsheetId);
+    
+    var targetSheet = spreadsheet.getSheetByName('ฝากขายการ์ด');
+    if (!targetSheet) {
+      targetSheet = spreadsheet.getSheetByName('Sheet1');
+    }
+    if (!targetSheet) {
+      var allSheets = spreadsheet.getSheets();
+      if (allSheets.length > 0) {
+        targetSheet = allSheets[0];
+      }
+    }
+    
+    if (!targetSheet) {
+      if (isJson) {
+        return ContentService.createTextOutput(JSON.stringify({
+          error: "ไม่พบชีทข้อมูล",
+          cards: []
+        })).setMimeType(ContentService.MimeType.JSON);
+      }
+      return HtmlService.createHtmlOutput("ไม่พบชีทข้อมูล");
+    }
+    
+    // ดึงข้อมูลทั้งหมดมาในครั้งเดียว (เร็วกว่าการดึงทีละแถว)
+    var data = targetSheet.getDataRange().getValues();
+    
+    if (data.length <= 1) {
+      if (isJson) {
+        return ContentService.createTextOutput(JSON.stringify({
+          error: "ไม่มีข้อมูล",
+          cards: []
+        })).setMimeType(ContentService.MimeType.JSON);
+      }
+      return HtmlService.createHtmlOutput("ไม่มีข้อมูล");
+    }
+    
+    var headers = data[0];
+    var cards = [];
+    
+    // สร้าง colIndex แบบเร็ว (ใช้ index โดยตรง)
+    var colIndex = {};
+    var headerCount = headers.length;
+    for (var h = 0; h < headerCount; h++) {
+      colIndex[headers[h]] = h;
+    }
+    
+    // Cache column indices เพื่อลดการค้นหา
+    var idxDate = colIndex['วันที่ฝาก'];
+    var idxConsignor = colIndex['ชื่อผู้ฝากขาย'];
+    var idxPhone = colIndex['เบอร์โทร'];
+    var idxSlot = colIndex['ช่องในแฟ้ม'];
+    var idxCardName = colIndex['ชื่อการ์ด'];
+    var idxPrice = colIndex['ราคาป้าย'];
+    var idxActualPrice = colIndex['ราคาขายจริง'];
+    var idxStatus = colIndex['สถานะ'];
+    var idxSaleDate = colIndex['วันที่ขาย/คืน'];
+    var idxRefund = colIndex['ยอดคืนลูกค้า (90%)'];
+    var idxNotes = colIndex['หมายเหตุ'];
+    var idxProductId = colIndex['รหัสสินค้า'];
+    var idxImageLink = colIndex['ลิงก์ภาพการ์ด'];
+    
+    // Cache folder และ files เพื่อไม่ต้องเปิด folder ซ้ำ (เร็วขึ้นมาก!)
+    var driveFolderId = '15f0xNKHe4q8sNaMQo3uXs1qPBB0oVQx2';
+    var folder = null;
+    var fileMap = {}; // Cache files เพื่อไม่ต้องค้นหาซ้ำ
+    try {
+      folder = DriveApp.getFolderById(driveFolderId);
+      // ดึงไฟล์ทั้งหมดจาก folder ครั้งเดียว (เร็วกว่าการค้นหาทีละไฟล์)
+      var allFiles = folder.getFiles();
+      while (allFiles.hasNext()) {
+        var file = allFiles.next();
+        var fileName = file.getName();
+        fileMap[fileName] = {
+          id: file.getId(),
+          file: file
+        };
+      }
+    } catch (e) {
+      // ถ้าเกิด error ให้ข้ามไป (ไม่ต้องแสดง error)
+    }
+    
+    // ประมวลผลข้อมูลทั้งหมดแบบ batch (เร็วกว่าการประมวลผลทีละแถว)
+    var rowCount = data.length;
+    var cardImage, imageLink, imageLinkStr, idMatch, cardName, status;
+    var statusCounts = {};
+    var totalProcessed = 0;
+    var skippedNoName = 0;
+    var skippedRows = [];
+    
+    for (var i = 1; i < rowCount; i++) {
+      var row = data[i];
+      
+      // อ่านข้อมูลโดยใช้ index โดยตรง (เร็วกว่า)
+      cardName = row[idxCardName];
+      // ตรวจสอบว่ามีชื่อการ์ดหรือไม่ (รวมถึง whitespace)
+      if (!cardName || String(cardName).trim() === '') {
+        skippedNoName++;
+        // เก็บข้อมูลแถวที่ถูกข้ามเพื่อ debug
+        if (skippedRows.length < 5) { // เก็บแค่ 5 แถวแรกเพื่อไม่ให้ log ยาวเกินไป
+          skippedRows.push({
+            row: i + 1,
+            cardName: cardName,
+            productId: row[idxProductId] || '',
+            status: row[idxStatus] || ''
+          });
+        }
+        continue; // ข้ามถ้าไม่มีชื่อการ์ด
+      }
+      
+      status = String(row[idxStatus] || 'ยังมีอยู่').trim();
+      statusCounts[status] = (statusCounts[status] || 0) + 1;
+      totalProcessed++;
+      
+      // แสดงการ์ดทุกสถานะ (ไม่กรอง)
+      
+      // อ่านรูปภาพจาก Column G แบบเร็ว
+      cardImage = '';
+      if (idxImageLink !== undefined) {
+        imageLink = row[idxImageLink];
+        if (imageLink) {
+          imageLinkStr = String(imageLink);
+          if (imageLinkStr.indexOf('http') !== -1) {
+            if (imageLinkStr.indexOf('thumbnail?id=') !== -1) {
+              cardImage = imageLinkStr;
+            } else {
+              idMatch = imageLinkStr.match(/id=([a-zA-Z0-9_-]+)/);
+              if (idMatch && idMatch[1]) {
+                cardImage = 'https://drive.google.com/thumbnail?id=' + idMatch[1] + '&sz=w1000';
+              } else {
+                cardImage = imageLinkStr;
+              }
+            }
+          }
+        }
+      }
+      
+      // ดึงรูปหลังจาก Drive โดยใช้ productId - ใช้ fileMap ที่ cache ไว้แล้ว (เร็วมาก!)
+      var cardBackImage = '';
+      var productId = String(row[idxProductId] || '').trim();
+      if (productId && fileMap) {
+        var backFileName = productId + ' หลัง.jpg';
+        var cachedFile = fileMap[backFileName];
+        if (cachedFile) {
+          try {
+            // ลดการ setSharing (ไม่จำเป็นถ้าไฟล์ share อยู่แล้ว) - ทำให้เร็วขึ้นมาก
+            // ถ้าต้องการ setSharing ให้ uncomment บรรทัดนี้
+            // cachedFile.file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+            var backFileId = cachedFile.id;
+            cardBackImage = 'https://drive.google.com/thumbnail?id=' + backFileId + '&sz=w1000';
+          } catch (e) {
+            // ถ้าเกิด error ให้ข้ามไป (ไม่ต้องแสดง error)
+          }
+        }
+      }
+      
+      // สร้าง object แบบเร็ว (ใช้ตัวแปรที่ประกาศไว้แล้ว)
+      cards.push({
+        depositDate: row[idxDate] || '',
+        consignorName: row[idxConsignor] || '',
+        phone: row[idxPhone] || '',
+        folderSlot: row[idxSlot] || '',
+        cardName: cardName,
+        cardImage: cardImage,
+        cardBackImage: cardBackImage,
+        productId: productId,
+        listedPrice: row[idxPrice] || '',
+        actualPrice: row[idxActualPrice] || '',
+        status: status,
+        saleDate: row[idxSaleDate] || '',
+        refundAmount: row[idxRefund] || '',
+        notes: row[idxNotes] || ''
+      });
+    }
+    
+    if (isJson) {
+      var debugInfo = [];
+      debugInfo.push('📊 ประมวลผลทั้งหมด: ' + totalProcessed + ' การ์ด');
+      debugInfo.push('⏭️ ข้าม (ไม่มีชื่อ): ' + skippedNoName + ' แถว');
+      debugInfo.push('✅ ส่งออก: ' + cards.length + ' การ์ด');
+      debugInfo.push('📋 สถานะ: ' + JSON.stringify(statusCounts));
+      if (skippedRows.length > 0) {
+        debugInfo.push('🔍 แถวที่ถูกข้าม (ตัวอย่าง): ' + JSON.stringify(skippedRows));
+      }
+      
+      return ContentService.createTextOutput(JSON.stringify({
+        cards: cards,
+        total: cards.length,
+        debug: debugInfo
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    var html = '<html><body><h2>การ์ดฝากขาย</h2><ul>';
+    cards.forEach(function(card) {
+      html += '<li>' + card.cardName + ' - ' + card.listedPrice + ' บาท</li>';
+    });
+    html += '</ul></body></html>';
+    return HtmlService.createHtmlOutput(html);
+    
+  } catch (error) {
+    var errorMsg = 'เกิดข้อผิดพลาด: ' + error.toString();
+    
+    if (e && e.parameter && e.parameter.type === 'json') {
+      return ContentService.createTextOutput(JSON.stringify({
+        error: errorMsg,
+        cards: []
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    return HtmlService.createHtmlOutput(errorMsg);
+  }
+}
+
+function linkImagesFromDrive() {
+  var spreadsheetId = '1JvVCVxxXBS-2lpnT-IOrYBf2rF-OBRVFCW6MZEvpqxE';
+  var sheetName = 'ฝากขายการ์ด';
+  var driveFolderId = '15f0xNKHe4q8sNaMQo3uXs1qPBB0oVQx2';
+  var productIdCol = 13; // Column N = index 13
+  var imageLinkCol = 6; // Column G = index 6 (A=0, B=1, C=2, D=3, E=4, F=5, G=6)
+  
+  try {
+    var spreadsheet = SpreadsheetApp.openById(spreadsheetId);
+    var sheet = spreadsheet.getSheetByName(sheetName);
+    if (!sheet) {
+      SpreadsheetApp.getUi().alert('ไม่พบ sheet');
+      return;
+    }
+    
+    var folder = DriveApp.getFolderById(driveFolderId);
+    var files = folder.getFiles();
+    var fileMap = {};
+    
+    while (files.hasNext()) {
+      var file = files.next();
+      fileMap[file.getName()] = file;
+    }
+    
+    var data = sheet.getDataRange().getValues();
+    var updatedCount = 0;
+    var notFoundCount = 0;
+    
+    for (var i = 1; i < data.length; i++) {
+      var productId = String(data[i][productIdCol] || '').trim();
+      if (!productId) continue;
+      
+      var frontFileName = productId + ' หน้า.jpg';
+      var frontFile = fileMap[frontFileName];
+      
+      if (frontFile) {
+        try {
+          frontFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+        } catch (e) {}
+        
+        var fileId = frontFile.getId();
+        // ใช้ thumbnail URL แทน เพราะจะโหลดได้เร็วกว่าและไม่ต้องตั้งค่าแชร์
+        var imageUrl = 'https://drive.google.com/thumbnail?id=' + fileId + '&sz=w1000';
+        sheet.getRange(i + 1, imageLinkCol + 1).setValue(imageUrl);
+        updatedCount++;
+      } else {
+        notFoundCount++;
+      }
+    }
+    
+    SpreadsheetApp.getUi().alert('เสร็จสิ้น! อัพเดท ' + updatedCount + ' แถว, ไม่พบ ' + notFoundCount + ' แถว');
+  } catch (error) {
+    SpreadsheetApp.getUi().alert('Error: ' + error.toString());
+  }
+}
+
+function updateImageColumn() {
+  var spreadsheetId = '1JvVCVxxXBS-2lpnT-IOrYBf2rF-OBRVFCW6MZEvpqxE';
+  var sheetName = 'ฝากขายการ์ด';
+  var imageLinkCol = 6; // Column G
+  var imageCol = 5; // Column F
+  
+  try {
+    var spreadsheet = SpreadsheetApp.openById(spreadsheetId);
+    var sheet = spreadsheet.getSheetByName(sheetName);
+    var data = sheet.getDataRange().getValues();
+    var updatedCount = 0;
+    
+    for (var i = 1; i < data.length; i++) {
+      var imageUrl = String(data[i][imageLinkCol] || '').trim();
+      if (imageUrl && imageUrl.indexOf('http') !== -1) {
+        sheet.getRange(i + 1, imageCol + 1).setValue('=IMAGE("' + imageUrl + '")');
+        updatedCount++;
+      }
+    }
+    
+    SpreadsheetApp.getUi().alert('อัพเดท Column F แล้ว: ' + updatedCount + ' แถว');
+  } catch (error) {
+    SpreadsheetApp.getUi().alert('Error: ' + error.toString());
+  }
+}
+
+/**
+ * ฟังก์ชันสำหรับสร้างปุ่มใน Google Sheets
+ * รันครั้งเดียวเพื่อสร้างปุ่มสำหรับอัพเดท URL รูปภาพ
+ */
+function createButton() {
+  var spreadsheetId = '1JvVCVxxXBS-2lpnT-IOrYBf2rF-OBRVFCW6MZEvpqxE';
+  
+  try {
+    var spreadsheet = SpreadsheetApp.openById(spreadsheetId);
+    var sheet = spreadsheet.getSheetByName('ฝากขายการ์ด');
+    
+    if (!sheet) {
+      var allSheets = spreadsheet.getSheets();
+      if (allSheets.length > 0) {
+        sheet = allSheets[0];
+      }
+    }
+    
+    if (!sheet) {
+      SpreadsheetApp.getUi().alert('ไม่พบ sheet');
+      return;
+    }
+    
+    // ลบปุ่มเก่า (ถ้ามี)
+    var drawings = sheet.getDrawings();
+    drawings.forEach(function(drawing) {
+      var note = drawing.getOnClick();
+      if (note && note.indexOf('linkImagesFromDrive') !== -1) {
+        drawing.remove();
+      }
+    });
+    
+    // สร้างปุ่มใหม่
+    var range = sheet.getRange('O1'); // วางปุ่มที่ Column O แถว 1
+    var button = sheet.newImage()
+      .setUrl('https://www.gstatic.com/images/icons/material/system/1x/add_circle_outline_black_24dp.png')
+      .setAnchorCell(range)
+      .setWidth(100)
+      .setHeight(30)
+      .assignScript('linkImagesFromDrive');
+    
+    // หรือใช้วิธีสร้าง shape แทน
+    var buttonRange = sheet.getRange('O1');
+    buttonRange.setValue('🔄 อัพเดท URL รูปภาพ');
+    buttonRange.setBackground('#4285f4');
+    buttonRange.setFontColor('#ffffff');
+    buttonRange.setFontWeight('bold');
+    buttonRange.setFontSize(11);
+    buttonRange.setHorizontalAlignment('center');
+    
+    SpreadsheetApp.getUi().alert('สร้างปุ่มเรียบร้อยแล้ว!\n\nคลิกที่เซลล์ O1 เพื่อรันฟังก์ชัน linkImagesFromDrive()');
+  } catch (error) {
+    SpreadsheetApp.getUi().alert('Error: ' + error.toString());
+  }
+}
+
+/**
+ * ฟังก์ชันสำหรับสร้างเมนูใน Google Sheets
+ * รันครั้งเดียวเพื่อเพิ่มเมนู "การ์ดฝากขาย" ในแถบเมนู
+ */
+function onOpen() {
+  var ui = SpreadsheetApp.getUi();
+  ui.createMenu('🃏 การ์ดฝากขาย')
+    .addItem('🔄 อัพเดท URL รูปภาพ', 'linkImagesFromDrive')
+    .addItem('🖼️ อัพเดท Column F ให้แสดงรูป', 'updateImageColumn')
+    .addToUi();
+}

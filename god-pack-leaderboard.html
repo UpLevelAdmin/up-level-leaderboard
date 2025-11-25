@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>God Pack Leaderboard</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .godpack-container {
+      max-width: 900px;
+      margin: 32px auto;
+      padding: 0 8px 32px 8px;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    }
+    .logo {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 16px;
+      width: 100%;
+    }
+    .logo img {
+      max-width: 120px;
+      display: block;
+      margin: 0 auto;
+    }
+    h2 {
+      color: #388e3c;
+      text-align: center;
+      margin-bottom: 8px;
+    }
+    .subtitle {
+      text-align: center;
+      color: #666;
+      margin-bottom: 24px;
+      font-size: 1.1em;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 0;
+      margin-bottom: 16px;
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    th, td {
+      padding: 12px 8px;
+      text-align: center;
+      border-bottom: 1px solid #ddd;
+    }
+    th {
+      font-weight: bold;
+      font-size: 1.05em;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #fff;
+    }
+    tr:hover td {
+      background: #f1f1f1;
+    }
+    tr:nth-child(even) {
+      background: #f9f9f9;
+    }
+    /* Top 7 special styling */
+    tr.top-1 {
+      background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+      font-weight: bold;
+      font-size: 1.1em;
+    }
+    tr.top-1:hover td {
+      background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+    }
+    tr.top-2 {
+      background: linear-gradient(135deg, #c0c0c0 0%, #e8e8e8 100%);
+      font-weight: bold;
+    }
+    tr.top-2:hover td {
+      background: linear-gradient(135deg, #c0c0c0 0%, #e8e8e8 100%);
+    }
+    tr.top-3 {
+      background: linear-gradient(135deg, #cd7f32 0%, #e6a857 100%);
+      font-weight: bold;
+    }
+    tr.top-3:hover td {
+      background: linear-gradient(135deg, #cd7f32 0%, #e6a857 100%);
+    }
+    tr.top-4-7 {
+      background: linear-gradient(135deg, #e3f2fd 0%, #f1f8ff 100%);
+    }
+    tr.top-4-7:hover td {
+      background: linear-gradient(135deg, #e3f2fd 0%, #f1f8ff 100%);
+    }
+    .rank-badge {
+      display: inline-block;
+      width: 40px;
+      height: 40px;
+      line-height: 40px;
+      border-radius: 50%;
+      font-weight: bold;
+      font-size: 1.2em;
+      color: #fff;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+    .rank-1 {
+      background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+      box-shadow: 0 4px 12px rgba(255, 215, 0, 0.5);
+    }
+    .rank-2 {
+      background: linear-gradient(135deg, #c0c0c0 0%, #e8e8e8 100%);
+      box-shadow: 0 4px 12px rgba(192, 192, 192, 0.5);
+    }
+    .rank-3 {
+      background: linear-gradient(135deg, #cd7f32 0%, #e6a857 100%);
+      box-shadow: 0 4px 12px rgba(205, 127, 50, 0.5);
+    }
+    .rank-4-7 {
+      background: linear-gradient(135deg, #42A5F5 0%, #64b5f6 100%);
+      box-shadow: 0 4px 12px rgba(66, 165, 245, 0.5);
+    }
+    .prize-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+      color: #fff;
+      border-radius: 20px;
+      font-size: 0.9em;
+      font-weight: bold;
+      margin-left: 8px;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    /* Spinner */
+    .spinner {
+      margin: 24px auto 8px auto;
+      border: 6px solid #e0e0e0;
+      border-top: 6px solid #42A5F5;
+      border-radius: 50%;
+      width: 48px;
+      height: 48px;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg);}
+      100% { transform: rotate(360deg);}
+    }
+    /* Codename สี/ขนาด/กระพริบตาม rank */
+    .codename-rank[data-rank="Rookie"]      .codename { color: #888888; font-size: 1.05em; }
+    .codename-rank[data-rank="Bronze"]      .codename { color: #b87333; font-size: 1.08em; }
+    .codename-rank[data-rank="Silver"]      .codename { color: #9e9e9e; font-size: 1.12em; }
+    .codename-rank[data-rank="Gold"]        .codename { color: #ffd700; font-size: 1.18em; font-weight: bold; }
+    .codename-rank[data-rank="Platinum"]    .codename { color: #00bcd4; font-size: 1.22em; font-weight: bold; }
+    .codename-rank[data-rank="Diamond"]     .codename { color: #00bfff; font-size: 1.28em; font-weight: bold; }
+    .codename-rank[data-rank="Grandmaster"] .codename { color: #8e24aa; font-size: 1.35em; font-weight: bold; }
+    .codename-rank[data-rank="Legend"]      .codename { color: #e53935; font-size: 1.45em; font-weight: bold; }
+    .codename-rank[data-rank="Gold"]        .codename,
+    .codename-rank[data-rank="Platinum"]    .codename,
+    .codename-rank[data-rank="Diamond"]     .codename,
+    .codename-rank[data-rank="Grandmaster"] .codename,
+    .codename-rank[data-rank="Legend"]      .codename {
+      animation: blink 1s step-end infinite alternate;
+    }
+    @keyframes blink {
+      0%   { opacity: 1;   text-shadow: 0 0 8px #fff, 0 0 16px currentColor; }
+      100% { opacity: 0.6; text-shadow: 0 0 2px #fff, 0 0 4px currentColor; }
+    }
+    /* Wave (Gold) */
+    @keyframes wave {
+      0%, 100% { transform: translateY(0);}
+      20%      { transform: translateY(-5px);}
+      40%      { transform: translateY(-10px);}
+      60%      { transform: translateY(-5px);}
+      80%      { transform: translateY(0);}
+    }
+    .codename.wave span {
+      display: inline-block;
+      animation: wave 1.2s cubic-bezier(0.4,0,0.2,1) infinite;
+    }
+    .codename.wave.gold span { animation-duration: 1.2s; }
+    .codename.wave.platinum span { animation-duration: 1s; }
+    .codename.wave.diamond span { animation-duration: 0.85s; }
+    .codename.wave.grandmaster span { animation-duration: 0.7s; }
+    .codename.wave.legend span { animation-duration: 0.6s; }
+    .codename.wave span:nth-child(1) { animation-delay: 0s; }
+    .codename.wave span:nth-child(2) { animation-delay: 0.08s; }
+    .codename.wave span:nth-child(3) { animation-delay: 0.16s; }
+    .codename.wave span:nth-child(4) { animation-delay: 0.24s; }
+    .codename.wave span:nth-child(5) { animation-delay: 0.32s; }
+    .codename.wave span:nth-child(6) { animation-delay: 0.40s; }
+    .codename.wave span:nth-child(7) { animation-delay: 0.48s; }
+    .codename.wave span:nth-child(8) { animation-delay: 0.56s; }
+    .codename.wave span:nth-child(9) { animation-delay: 0.64s; }
+    .codename.wave span:nth-child(10){ animation-delay: 0.72s; }
+    .name-cell {
+      text-align: left;
+      padding-left: 16px;
+    }
+    .name-cell .real-name {
+      display: block;
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+    .name-cell .codename-section {
+      display: block;
+      font-size: 0.95em;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <a href="index.html" class="home-button" title="กลับหน้าหลัก"></a>
+  <div class="godpack-container">
+    <div class="logo">
+      <img src="https://i.postimg.cc/wjzpnxjB/Up-Level-01-1.png" alt="Up Level Logo">
+    </div>
+    <h2>🏆 God Pack Leaderboard</h2>
+    <div class="subtitle">อันดับผู้ซื้อ God Pack มากที่สุด</div>
+    
+    <!-- ข้อมูลเพิ่มเติมเกี่ยวกับ GOD PACK -->
+    <div style="background: linear-gradient(135deg, #fff3cd 0%, #ffe69c 100%); border-left: 4px solid #ffc107; padding: 20px; margin: 0 16px 24px 16px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+      <h3 style="margin: 0 0 12px 0; color: #856404; font-size: 1.3em;">🧧🔥 50 ซองสุดท้าย GOD PACK อัพเดตใหม่!</h3>
+      <p style="margin: 0 0 12px 0; color: #856404; line-height: 1.6; font-size: 1.05em;">
+        ยกเครื่องความเทพด้วยการ์ดจากชุด <strong>"อัคคีสีคราม MA2"</strong>! 🔥
+      </p>
+      <div style="margin: 12px 0;">
+        <p style="margin: 0 0 8px 0; color: #856404; font-weight: bold;">✨ ใหม่ล่าสุด!</p>
+        <ul style="margin: 0 0 12px 0; padding-left: 20px; color: #856404; line-height: 1.8;">
+          <li>การ์ดจาก Booster Box อัคคีสีคราม (MA2)</li>
+          <li>Up Level Coupon ลายเซ็นพี่แชมป์ ใช้แลกของภายในร้านได้จริง! ✔️</li>
+          <li>การ์ดแรร์แน่น ๆ ครบทุก Tier เช่นเดิม</li>
+        </ul>
+      </div>
+      <div style="background: rgba(255,255,255,0.5); padding: 12px; border-radius: 8px; margin: 12px 0;">
+        <p style="margin: 0 0 8px 0; color: #856404; font-weight: bold; font-size: 1.1em;">💥 พิเศษสุดของพิเศษ!</p>
+        <p style="margin: 0 0 8px 0; color: #856404; line-height: 1.6;">
+          ลูกค้าที่ <strong>ซื้อ GOD PACK มากที่สุด 7 คนแรก</strong> รับไปเลย!!
+        </p>
+        <p style="margin: 0; color: #856404; font-weight: bold; font-size: 1.05em;">
+          🌈 การ์ด SAR สุดแรร์แบบเลือกได้ ไม่ต้องลุ้น!
+        </p>
+      </div>
+      <p style="margin: 12px 0 0 0; color: #856404; font-weight: bold; text-align: center; font-size: 1.05em;">
+        ใครที่รักการ์ดโปเกมอน ห้ามพลาด… รอบนี้คือดีย์แบบไฟลุกจริง ๆ 🔥
+      </p>
+      <div style="text-align: center; margin-top: 16px;">
+        <a href="https://www.facebook.com/share/p/1MYC9nRPny/" target="_blank" style="display: inline-block; background: #1877f2; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: bold; transition: all 0.3s;">
+          📖 อ่านรายละเอียดเพิ่มเติม
+        </a>
+      </div>
+    </div>
+    
+    <div id="leaderboard-list" style="text-align:center;">
+      <div class="spinner"></div>
+      <div>กำลังโหลด...</div>
+    </div>
+  </div>
+  <script>
+    console.log('DEBUG: God Pack Leaderboard version 1');
+    const apiUrl = "https://script.google.com/macros/s/AKfycbz8CqBLwXlWDlzkWFLczZrAXhsp9x4N5D9ccFtJRNtUPduBehbF98rw6PkOKSc8P4K7/exec?type=json";
+    // ดึงข้อมูลสมาชิกจาก Member Dashboard (API ใหม่)
+    const memberDashboardApi = "https://script.google.com/macros/s/AKfycbxtjsDwHI6nJU4OIHExUxMaZwUn3qwakvdkzwbQO7C8Trzz5Gh84SX6F1gqb4BOFQcn/exec?func=getMemberDashboardData";
+    
+    // แสดง skeleton state ทันที
+    function showSkeletonState() {
+      const container = document.getElementById('leaderboard-list');
+      let html = '<table><thead><tr>';
+      html += '<th>อันดับ</th>';
+      html += '<th>ชื่อ-สกุล</th>';
+      html += '<th>จำนวนซอง</th>';
+      html += '</tr></thead><tbody>';
+      
+      // แสดง skeleton 7 แถว (Top 7)
+      for (let i = 0; i < 7; i++) {
+        html += '<tr style="opacity: 0.6; animation: pulse 1.5s ease-in-out infinite;">';
+        html += '<td><div style="width: 40px; height: 40px; background: #e0e0e0; border-radius: 50%; margin: 0 auto;"></div></td>';
+        html += '<td><div style="height: 20px; background: #e0e0e0; border-radius: 4px; width: 60%; margin: 4px 0;"></div><div style="height: 16px; background: #e0e0e0; border-radius: 4px; width: 40%; margin: 4px 0;"></div></td>';
+        html += '<td><div style="height: 20px; background: #e0e0e0; border-radius: 4px; width: 50px; margin: 0 auto;"></div></td>';
+        html += '</tr>';
+      }
+      
+      html += '</tbody></table>';
+      container.innerHTML = html;
+      console.log('⚡ แสดง skeleton state ทันที');
+    }
+    
+    // แสดง skeleton ทันที
+    showSkeletonState();
+    const rankEmojis = {
+      "Rookie": "🐣",
+      "Rookie II": "🐣",
+      "Rookie III": "🐣",
+      "Rookie IV": "🐣",
+      "Rookie V": "🐣",
+      "Bronze": "🛡️",
+      "Bronze II": "🛡️",
+      "Bronze III": "🛡️",
+      "Bronze IV": "🛡️",
+      "Bronze V": "🛡️",
+      "Silver": "⚔️",
+      "Silver II": "⚔️",
+      "Silver III": "⚔️",
+      "Silver IV": "⚔️",
+      "Silver V": "⚔️",
+      "Gold": "🥇",
+      "Gold II": "🥇",
+      "Gold III": "🥇",
+      "Gold IV": "🥇",
+      "Gold V": "🥇",
+      "Platinum": "✨",
+      "Platinum II": "✨",
+      "Platinum III": "✨",
+      "Platinum IV": "✨",
+      "Platinum V": "✨",
+      "Diamond": "💎",
+      "Diamond II": "💎",
+      "Diamond III": "💎",
+      "Diamond IV": "💎",
+      "Diamond V": "💎",
+      "Grandmaster": "👑",
+      "Grandmaster II": "👑",
+      "Grandmaster III": "👑",
+      "Grandmaster IV": "👑",
+      "Grandmaster V": "👑",
+      "Legend": "🐉",
+      "Legend II": "🐉",
+      "Legend III": "🐉",
+      "Legend IV": "🐉",
+      "Legend V": "🐉"
+    };
+
+    // ฟังก์ชันสำหรับดึง base rank จาก rank ที่มี suffix
+    function getBaseRank(rank) {
+      if (!rank) return "Rookie";
+      const baseRank = rank.replace(/\s+(II|III|IV|V|VI|VII|VIII|IX|X|\d+)$/, '');
+      return baseRank || "Rookie";
+    }
+
+    // ฟังก์ชันสำหรับดึง emoji จาก rank (รองรับ rank ที่มี suffix)
+    function getRankEmoji(rank) {
+      if (!rank) return rankEmojis["Rookie"] || "🐣";
+      if (rankEmojis[rank]) {
+        return rankEmojis[rank];
+      }
+      const baseRank = getBaseRank(rank);
+      return rankEmojis[baseRank] || rankEmojis["Rookie"] || "🐣";
+    }
+
+    function renderCodenameEffect(codename, rank) {
+      const chars = ['[', ...codename.split(''), ']'];
+      const waveRanks = ['Gold', 'Platinum', 'Diamond', 'Grandmaster', 'Legend'];
+      if (waveRanks.includes(rank)) {
+        return `<span class="codename wave ${rank.toLowerCase()}">${chars.map((ch,i)=>`<span>${ch}</span>`).join('')}</span>`;
+      } else {
+        return `<span class="codename">[${codename}]</span>`;
+      }
+    }
+
+    const startTime = performance.now();
+    console.log('🚀 เริ่มโหลดข้อมูล...');
+    
+    Promise.all([
+      fetch(apiUrl).then(res => {
+        const fetchTime = performance.now() - startTime;
+        console.log(`📡 Fetch God Pack API เสร็จ: ${fetchTime.toFixed(0)}ms`);
+        return res.json();
+      }).catch(err => {
+        console.error('Error fetching God Pack data:', err);
+        return { error: null, participants: [] };
+      }),
+      fetch(memberDashboardApi).then(res => {
+        const fetchTime = performance.now() - startTime;
+        console.log(`📡 Fetch Member API เสร็จ: ${fetchTime.toFixed(0)}ms`);
+        return res.json();
+      }).catch(err => {
+        console.error('Error fetching member data:', err);
+        return [];
+      })
+    ]).then(([data, members]) => {
+      const parseTime = performance.now() - startTime;
+      console.log(`📦 Parse JSON เสร็จ: ${parseTime.toFixed(0)}ms`);
+      // สร้าง map เบอร์โทร -> { codename, rank, realName }
+      const phoneMap = {};
+      if (members && Array.isArray(members)) {
+        members.forEach(m => {
+          const phone = String(m.phone).replace(/[^\d]/g, "");
+          phoneMap[phone] = { 
+            codename: m.codename, 
+            rank: m.rank,
+            realName: m.realName || m.name || ''
+          };
+        });
+      }
+
+      // รวมจำนวนซองที่ซื้อตามเบอร์โทร
+      const purchaseMap = {};
+      const participants = data.participants || [];
+      
+      participants.forEach(participant => {
+        const phone = String(participant['เบอร์โทรศัพท์ติดต่อ'] || '').replace(/[^\d]/g, "");
+        // รองรับทั้งชื่อคอลัมน์ใหม่และเก่า
+        const quantity = parseInt(participant['จำนวน GOD PACK ที่ซื้อ'] || participant['จำนวน GOD PACK ที่ต้องการพรีออเดอร์ (ซองละ 299 บาท)'] || 0);
+        
+        if (phone && quantity > 0) {
+          if (!purchaseMap[phone]) {
+            purchaseMap[phone] = {
+              phone: phone,
+              quantity: 0,
+              realName: participant['ชื่อ-สกุล'] || '',
+              nickname: participant['ชื่อเล่น, ฉายา'] || ''
+            };
+          }
+          purchaseMap[phone].quantity += quantity;
+          // อัพเดทชื่อถ้ายังไม่มี
+          if (!purchaseMap[phone].realName && participant['ชื่อ-สกุล']) {
+            purchaseMap[phone].realName = participant['ชื่อ-สกุล'];
+          }
+          if (!purchaseMap[phone].nickname && participant['ชื่อเล่น, ฉายา']) {
+            purchaseMap[phone].nickname = participant['ชื่อเล่น, ฉายา'];
+          }
+        }
+      });
+
+      // แปลงเป็น array และเรียงจากมากไปน้อย
+      const leaderboard = Object.values(purchaseMap)
+        .sort((a, b) => b.quantity - a.quantity)
+        .map((item, index) => ({
+          ...item,
+          rank: index + 1,
+          profile: phoneMap[item.phone] || null
+        }));
+
+      // สร้าง HTML
+      let html = '<table><thead><tr>';
+      html += '<th>อันดับ</th>';
+      html += '<th>ชื่อ-สกุล</th>';
+      html += '<th>จำนวนซอง</th>';
+      html += '</tr></thead><tbody>';
+
+      if (leaderboard.length === 0) {
+        html += '<tr><td colspan="3">ยังไม่มีข้อมูลการซื้อ</td></tr>';
+      } else {
+        leaderboard.forEach((item, index) => {
+          const rank = index + 1;
+          let rowClass = '';
+          let rankBadgeClass = '';
+          
+          if (rank === 1) {
+            rowClass = 'top-1';
+            rankBadgeClass = 'rank-1';
+          } else if (rank === 2) {
+            rowClass = 'top-2';
+            rankBadgeClass = 'rank-2';
+          } else if (rank === 3) {
+            rowClass = 'top-3';
+            rankBadgeClass = 'rank-3';
+          } else if (rank >= 4 && rank <= 7) {
+            rowClass = 'top-4-7';
+            rankBadgeClass = 'rank-4-7';
+          }
+
+          const realName = item.profile?.realName || item.realName || '';
+          const codename = item.profile?.codename || item.nickname || '';
+          const rankValue = item.profile?.rank || '';
+          
+          html += `<tr class="${rowClass}">`;
+          html += `<td><span class="rank-badge ${rankBadgeClass}">${rank}</span>`;
+          if (rank <= 7) {
+            html += `<span class="prize-badge">🎁 รางวัลพิเศษ</span>`;
+          }
+          html += `</td>`;
+          html += `<td class="name-cell">`;
+          
+          if (realName) {
+            html += `<span class="real-name">${realName}</span>`;
+          }
+          
+          if (codename && rankValue) {
+            const emoji = getRankEmoji(rankValue);
+            const codenameHtml = renderCodenameEffect(codename, rankValue);
+            html += `<span class="codename-rank" data-rank="${rankValue}"><span class="codename-section">${emoji} ${codenameHtml} ${emoji}</span></span>`;
+          } else if (codename) {
+            html += `<span class="codename-section">${codename}</span>`;
+          }
+          
+          html += `</td>`;
+          html += `<td><strong>${item.quantity} ซอง</strong></td>`;
+          html += `</tr>`;
+        });
+      }
+
+      html += '</tbody></table>';
+      
+      const renderStart = performance.now();
+      document.getElementById('leaderboard-list').innerHTML = html;
+      const renderTime = performance.now() - renderStart;
+      const totalTime = performance.now() - startTime;
+      
+      console.log(`🎨 Render HTML เสร็จ: ${renderTime.toFixed(0)}ms`);
+      console.log(`✅ โหลดเสร็จทั้งหมด: ${totalTime.toFixed(0)}ms`);
+      console.log(`📊 แสดง ${leaderboard.length} คน`);
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    }).catch(err => {
+      console.error('Error loading data:', err);
+      document.getElementById('leaderboard-list').innerHTML = '<div style="color: red; padding: 24px;">เกิดข้อผิดพลาดในการโหลดข้อมูล</div>';
+    });
+  </script>
+</body>
+</html>
+

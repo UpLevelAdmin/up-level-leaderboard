@@ -1,0 +1,1107 @@
+/**
+ * Google Apps Script สำหรับดึงข้อมูลการ์ดทั้งหมดจากเว็บ Pokemon Card Asia
+ * และเก็บไว้เป็นฐานข้อมูลใน Google Drive และ Google Sheets
+ * 
+ * ⚠️ คำเตือนเรื่องลิขสิทธิ์:
+ * - การใช้งานนี้อาจมีข้อจำกัดด้านลิขสิทธิ์และ Terms of Service
+ * - กรุณาใช้เพื่อการศึกษาและทดสอบเท่านั้น
+ * - ควรได้รับอนุญาตจากเจ้าของสิทธิ์ก่อนใช้งานเชิงพาณิชย์
+ */
+
+// ==================== การตั้งค่า ====================
+var CONFIG = {
+  // ชื่อหรือ ID ของ Google Drive Folder ที่จะเก็บรูปภาพ
+  // ถ้าใส่ ID จะใช้โฟลเดอร์นั้นโดยตรง (เช่น: '15f0xNKHe4q8sNaMQo3uXs1qPBB0oVQx2')
+  // ถ้าใส่ชื่อ จะสร้างหรือหาโฟลเดอร์ที่มีชื่อนั้น (เช่น: 'Pokemon Card Database')
+  DRIVE_FOLDER_NAME_OR_ID: 'Pokemon Card Database',
+  
+  // ชื่อหรือ ID ของ Google Spreadsheet ที่จะเก็บข้อมูล
+  // ถ้าใส่ ID จะใช้ Spreadsheet นั้นโดยตรง (เช่น: '1JvVCVxxXBS-2lpnT-IOrYBf2rF-OBRVFCW6MZEvpqxE')
+  // ถ้าใส่ชื่อ จะสร้างหรือหา Spreadsheet ที่มีชื่อนั้น (เช่น: 'Pokemon Card Database')
+  SPREADSHEET_NAME_OR_ID: 'Pokemon Card Database',
+  
+  // จำนวนการ์ดต่อหน้า (ถ้าเว็บมี pagination)
+  CARDS_PER_PAGE: 50,
+  
+  // Delay ระหว่างการ request (มิลลิวินาที) เพื่อหลีกเลี่ยง rate limiting
+  REQUEST_DELAY: 2000, // เพิ่มเป็น 2 วินาทีเพื่อหลีกเลี่ยง rate limit
+  
+  // จำนวนครั้งที่ลองใหม่เมื่อเกิด error (เช่น 504, 503, timeout)
+  MAX_RETRIES: 5 // เพิ่มเป็น 5 ครั้งเพื่อจัดการกับ server errors
+};
+
+// ==================== ฟังก์ชันหลัก ====================
+
+/**
+ * ฟังก์ชันหลักสำหรับเริ่มต้นการดึงข้อมูล
+ * รันฟังก์ชันนี้เพื่อเริ่มดึงข้อมูลการ์ดทั้งหมด
+ */
+function startScrapingAllCards() {
+  try {
+    Logger.log('🚀 เริ่มต้นการดึงข้อมูลการ์ดทั้งหมด...');
+    
+    // สร้าง/หาโฟลเดอร์ใน Drive
+    var folder = getOrCreateDriveFolder(CONFIG.DRIVE_FOLDER_NAME_OR_ID);
+    Logger.log('📁 โฟลเดอร์: ' + folder.getUrl());
+    Logger.log('📁 โฟลเดอร์ ID: ' + folder.getId());
+    
+    // สร้าง/หา Spreadsheet
+    var spreadsheet = getOrCreateSpreadsheet(CONFIG.SPREADSHEET_NAME_OR_ID);
+    Logger.log('📊 Spreadsheet: ' + spreadsheet.getUrl());
+    Logger.log('📊 Spreadsheet ID: ' + spreadsheet.getId());
+    var sheet = getOrCreateSheet(spreadsheet, 'Cards');
+    
+    // ตั้งค่า header ของ Spreadsheet
+    setupSpreadsheetHeaders(sheet);
+    
+    // ดึงข้อมูลการ์ดทั้งหมด
+    var allCards = [];
+    var page = 1;
+    var hasMore = true;
+    
+    while (hasMore) {
+      Logger.log('📄 กำลังดึงหน้า ' + page + '...');
+      
+      try {
+        var cards = fetchCardsFromPage(page);
+        
+        if (!cards || cards.length === 0) {
+          hasMore = false;
+          Logger.log('✅ ดึงข้อมูลเสร็จสิ้น (ไม่มีการ์ดในหน้านี้)');
+          break;
+        }
+        
+        Logger.log('   พบการ์ด ' + cards.length + ' ใบ');
+        allCards = allCards.concat(cards);
+        
+        // ตรวจสอบว่ามีหน้าถัดไปหรือไม่
+        if (cards.length < CONFIG.CARDS_PER_PAGE) {
+          hasMore = false;
+        }
+        
+        page++;
+        
+        // Delay เพื่อหลีกเลี่ยง rate limiting
+        Utilities.sleep(CONFIG.REQUEST_DELAY);
+        
+      } catch (error) {
+        Logger.log('❌ เกิดข้อผิดพลาดในการดึงหน้า ' + page + ': ' + error.toString());
+        hasMore = false;
+      }
+    }
+    
+    Logger.log('📊 รวมทั้งหมด ' + allCards.length + ' การ์ด');
+    
+    // ดาวน์โหลดรูปภาพและบันทึกข้อมูล
+    var successCount = 0;
+    var errorCount = 0;
+    
+    for (var i = 0; i < allCards.length; i++) {
+      var card = allCards[i];
+      
+      try {
+        Logger.log('📥 กำลังดาวน์โหลด: ' + card.name + ' (' + (i + 1) + '/' + allCards.length + ')');
+        
+        // ดาวน์โหลดรูปภาพ
+        var imageFile = downloadCardImage(card, folder);
+        
+        // บันทึกข้อมูลลง Spreadsheet
+        saveCardToSpreadsheet(sheet, card, imageFile);
+        
+        successCount++;
+        
+        // Delay เพื่อหลีกเลี่ยง rate limiting
+        Utilities.sleep(CONFIG.REQUEST_DELAY);
+        
+      } catch (error) {
+        Logger.log('❌ เกิดข้อผิดพลาดกับ: ' + card.name + ' - ' + error.toString());
+        errorCount++;
+        
+        // บันทึกข้อมูลแม้ไม่มีรูปภาพ
+        try {
+          saveCardToSpreadsheet(sheet, card, null);
+        } catch (e) {
+          Logger.log('❌ ไม่สามารถบันทึกข้อมูล: ' + e.toString());
+        }
+      }
+    }
+    
+    Logger.log('✅ เสร็จสิ้น!');
+    Logger.log('   สำเร็จ: ' + successCount + ' การ์ด');
+    Logger.log('   ผิดพลาด: ' + errorCount + ' การ์ด');
+    Logger.log('📊 Spreadsheet: ' + spreadsheet.getUrl());
+    Logger.log('📁 Drive Folder: ' + folder.getUrl());
+    
+    // แสดงผลลัพธ์ (ใช้ Logger แทน getUi() เพื่อให้รันได้จากทุก context)
+    var summary = 'เสร็จสิ้น!\n\n' +
+      'ดึงข้อมูลได้: ' + allCards.length + ' การ์ด\n' +
+      'สำเร็จ: ' + successCount + ' การ์ด\n' +
+      'ผิดพลาด: ' + errorCount + ' การ์ด\n\n' +
+      'Spreadsheet: ' + spreadsheet.getUrl() + '\n' +
+      'Drive Folder: ' + folder.getUrl();
+    
+    Logger.log(summary);
+    
+    // พยายามแสดง alert ถ้ารันจาก Spreadsheet UI
+    try {
+      SpreadsheetApp.getUi().alert(summary);
+    } catch (e) {
+      // ไม่สามารถใช้ getUi() ได้ (รันจาก Apps Script editor)
+      Logger.log('💡 ตรวจสอบ Logs เพื่อดูผลลัพธ์');
+    }
+    
+  } catch (error) {
+    Logger.log('❌ เกิดข้อผิดพลาด: ' + error.toString());
+    try {
+      SpreadsheetApp.getUi().alert('เกิดข้อผิดพลาด: ' + error.toString());
+    } catch (e) {
+      // ไม่สามารถใช้ getUi() ได้
+      Logger.log('💡 ตรวจสอบ Logs เพื่อดู error details');
+    }
+  }
+}
+
+/**
+ * ดึงข้อมูลการ์ดจากหน้าเว็บ (ต้องปรับแต่งตามโครงสร้างของเว็บ)
+ * 
+ * หมายเหตุ: เว็บ asia.pokemon-card.com อาจใช้ JavaScript เพื่อโหลดข้อมูล
+ * อาจต้องใช้วิธีอื่น เช่น:
+ * 1. หา API endpoint ที่เว็บใช้
+ * 2. ใช้ Selenium หรือ Puppeteer (ไม่สามารถใช้ใน Apps Script)
+ * 3. ใช้ Pokemon TCG API แทน (แนะนำ)
+ */
+function fetchCardsFromPage(page) {
+  try {
+    // วิธีที่ 1: ใช้ Pokemon TCG API (แนะนำ - มี API ที่ถูกต้องตามกฎหมาย)
+    return fetchCardsFromPokemonTCGAPI(page);
+    
+    // วิธีที่ 2: พยายามดึงจากเว็บโดยตรง (อาจไม่ทำงานเพราะใช้ JavaScript)
+    // return fetchCardsFromWebsite(page);
+    
+  } catch (error) {
+    Logger.log('Error fetching cards: ' + error.toString());
+    throw error;
+  }
+}
+
+/**
+ * ดึงข้อมูลการ์ดจาก Pokemon TCG API (แนะนำ)
+ * มี retry mechanism สำหรับจัดการกับ timeout และ server errors
+ */
+function fetchCardsFromPokemonTCGAPI(page) {
+  var apiUrl = 'https://api.pokemontcg.io/v2/cards?page=' + page + '&pageSize=' + CONFIG.CARDS_PER_PAGE;
+  var retries = 0;
+  var maxRetries = CONFIG.MAX_RETRIES;
+  var retryDelay = 2000; // 2 วินาที
+  
+  while (retries <= maxRetries) {
+    try {
+      Logger.log('   📡 กำลังดึงข้อมูลหน้า ' + page + ' (ลองครั้งที่ ' + (retries + 1) + ')...');
+      
+      var response = UrlFetchApp.fetch(apiUrl, {
+        'method': 'get',
+        'headers': {
+          'Accept': 'application/json',
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        },
+        'muteHttpExceptions': true, // ไม่ throw exception เมื่อ HTTP error
+        'followRedirects': true,
+        'validateHttpsCertificates': true
+      });
+      
+      var responseCode = response.getResponseCode();
+      
+      // ตรวจสอบ response code
+      if (responseCode === 200) {
+        // สำเร็จ
+        var responseText = response.getContentText();
+        
+        if (!responseText || responseText.trim() === '') {
+          throw new Error('Empty response from API');
+        }
+        
+        var data = JSON.parse(responseText);
+        var cards = [];
+        
+        if (data.data && Array.isArray(data.data)) {
+          data.data.forEach(function(card) {
+            cards.push({
+              id: card.id || '',
+              name: card.name || '',
+              setName: card.set ? card.set.name : '',
+              setCode: card.set ? card.set.id : '',
+              number: card.number || '',
+              imageUrl: card.images ? (card.images.large || card.images.small) : '',
+              imageUrlSmall: card.images ? card.images.small : '',
+              imageUrlLarge: card.images ? card.images.large : '',
+              rarity: card.rarity || '',
+              types: card.types ? card.types.join(', ') : '',
+              supertype: card.supertype || '',
+              subtypes: card.subtypes ? card.subtypes.join(', ') : '',
+              hp: card.hp || '',
+              attacks: card.attacks ? JSON.stringify(card.attacks) : '',
+              attacksText: extractAttacksText(card.attacks), // ข้อความจาก attacks สำหรับค้นหา
+              abilities: card.abilities ? JSON.stringify(card.abilities) : '',
+              abilitiesText: extractAbilitiesText(card.abilities), // ข้อความจาก abilities สำหรับค้นหา
+              text: card.text || '', // คำอธิบายการ์ด
+              weaknesses: card.weaknesses ? JSON.stringify(card.weaknesses) : '',
+              resistances: card.resistances ? JSON.stringify(card.resistances) : '',
+              retreatCost: card.retreatCost || '',
+              convertedRetreatCost: card.convertedRetreatCost || '',
+              nationalPokedexNumbers: card.nationalPokedexNumbers ? card.nationalPokedexNumbers.join(', ') : '',
+              legalities: card.legalities ? JSON.stringify(card.legalities) : '',
+              tcgplayer: card.tcgplayer ? JSON.stringify(card.tcgplayer) : '',
+              cardmarket: card.cardmarket ? JSON.stringify(card.cardmarket) : '',
+              // Tags สำหรับการค้นหา
+              tags: generateCardTags(card),
+              // รวมข้อความทั้งหมดสำหรับค้นหา
+              searchableText: generateSearchableText(card),
+              updatedAt: new Date().toISOString()
+            });
+          });
+        }
+        
+        Logger.log('   ✅ ดึงข้อมูลสำเร็จ: ' + cards.length + ' การ์ด');
+        return cards;
+        
+      } else if (responseCode === 504 || responseCode === 503 || responseCode === 502) {
+        // Gateway Timeout หรือ Server Error - ลองใหม่
+        retries++;
+        if (retries <= maxRetries) {
+          Logger.log('   ⚠️ Server error ' + responseCode + ' - จะลองใหม่ใน ' + (retryDelay / 1000) + ' วินาที...');
+          Utilities.sleep(retryDelay);
+          retryDelay *= 2; // Exponential backoff
+          continue;
+        } else {
+          throw new Error('API returned status ' + responseCode + ' after ' + maxRetries + ' retries');
+        }
+        
+      } else if (responseCode === 429) {
+        // Rate limit - รอให้นานขึ้น
+        retries++;
+        if (retries <= maxRetries) {
+          var waitTime = retryDelay * 2; // รอนานขึ้นสำหรับ rate limit
+          Logger.log('   ⚠️ Rate limit (429) - จะลองใหม่ใน ' + (waitTime / 1000) + ' วินาที...');
+          Utilities.sleep(waitTime);
+          retryDelay *= 2;
+          continue;
+        } else {
+          throw new Error('Rate limit exceeded after ' + maxRetries + ' retries');
+        }
+        
+      } else {
+        // Error อื่นๆ
+        var errorText = response.getContentText();
+        throw new Error('API returned status ' + responseCode + ': ' + errorText.substring(0, 200));
+      }
+      
+    } catch (error) {
+      retries++;
+      
+      // ตรวจสอบว่าเป็น network error หรือไม่
+      var errorMessage = error.toString();
+      if (errorMessage.indexOf('504') !== -1 || 
+          errorMessage.indexOf('503') !== -1 || 
+          errorMessage.indexOf('502') !== -1 ||
+          errorMessage.indexOf('timeout') !== -1 ||
+          errorMessage.indexOf('Timeout') !== -1) {
+        
+        if (retries <= maxRetries) {
+          Logger.log('   ⚠️ Network/Server error - จะลองใหม่ใน ' + (retryDelay / 1000) + ' วินาที...');
+          Logger.log('   Error: ' + errorMessage);
+          Utilities.sleep(retryDelay);
+          retryDelay *= 2;
+          continue;
+        }
+      }
+      
+      // ถ้าไม่ใช่ network error หรือลองครบแล้ว
+      Logger.log('   ❌ Error fetching from Pokemon TCG API: ' + errorMessage);
+      throw error;
+    }
+  }
+  
+  // ไม่ควรมาถึงจุดนี้ แต่ถ้ามาให้ throw error
+  throw new Error('Failed to fetch cards after ' + maxRetries + ' retries');
+}
+
+/**
+ * แปลง Attacks เป็นข้อความที่ค้นหาได้
+ */
+function extractAttacksText(attacks) {
+  if (!attacks || !Array.isArray(attacks)) {
+    return '';
+  }
+  
+  var texts = [];
+  attacks.forEach(function(attack) {
+    if (attack.name) texts.push(attack.name);
+    if (attack.text) texts.push(attack.text);
+    if (attack.damage) texts.push(attack.damage);
+  });
+  
+  return texts.join(' ');
+}
+
+/**
+ * แปลง Abilities เป็นข้อความที่ค้นหาได้
+ */
+function extractAbilitiesText(abilities) {
+  if (!abilities || !Array.isArray(abilities)) {
+    return '';
+  }
+  
+  var texts = [];
+  abilities.forEach(function(ability) {
+    if (ability.name) texts.push(ability.name);
+    if (ability.text) texts.push(ability.text);
+    if (ability.type) texts.push(ability.type);
+  });
+  
+  return texts.join(' ');
+}
+
+/**
+ * สร้างข้อความที่ค้นหาได้ทั้งหมด (รวมชื่อ, ความสามารถ, attacks, abilities, text)
+ */
+function generateSearchableText(card) {
+  var texts = [];
+  
+  // ชื่อการ์ด
+  if (card.name) texts.push(card.name);
+  
+  // Text (คำอธิบาย)
+  if (card.text) texts.push(card.text);
+  
+  // Attacks
+  if (card.attacks && Array.isArray(card.attacks)) {
+    card.attacks.forEach(function(attack) {
+      if (attack.name) texts.push(attack.name);
+      if (attack.text) texts.push(attack.text);
+    });
+  }
+  
+  // Abilities
+  if (card.abilities && Array.isArray(card.abilities)) {
+    card.abilities.forEach(function(ability) {
+      if (ability.name) texts.push(ability.name);
+      if (ability.text) texts.push(ability.text);
+    });
+  }
+  
+  return texts.join(' ').toLowerCase();
+}
+
+/**
+ * สร้าง Tags สำหรับการ์ดเพื่อใช้ในการค้นหา
+ * Tags จะรวมข้อมูลต่างๆ เช่น ประเภท, วิวัฒนาการ, แรร์ริตี้, การ์ดพิเศษ ฯลฯ
+ */
+function generateCardTags(card) {
+  var tags = [];
+  
+  // ประเภทหลัก (Pokemon, Trainer, Energy)
+  if (card.supertype) {
+    tags.push(card.supertype.toLowerCase());
+  }
+  
+  // ประเภทย่อย (Stage 1, Stage 2, Item, Support, Stadium, etc.)
+  if (card.subtypes && Array.isArray(card.subtypes)) {
+    card.subtypes.forEach(function(subtype) {
+      tags.push(subtype.toLowerCase());
+    });
+  }
+  
+  // ประเภทพลังงาน (Fire, Water, Grass, etc.)
+  if (card.types && Array.isArray(card.types)) {
+    card.types.forEach(function(type) {
+      tags.push(type.toLowerCase());
+    });
+  }
+  
+  // แรร์ริตี้
+  if (card.rarity) {
+    var rarity = card.rarity.toLowerCase();
+    tags.push(rarity);
+    
+    // แยกแรร์ริตี้เป็นหมวดหมู่
+    if (rarity.indexOf('common') !== -1) tags.push('common');
+    if (rarity.indexOf('uncommon') !== -1) tags.push('uncommon');
+    if (rarity.indexOf('rare') !== -1) tags.push('rare');
+    if (rarity.indexOf('ultra') !== -1) tags.push('ultra-rare');
+    if (rarity.indexOf('secret') !== -1) tags.push('secret-rare');
+    if (rarity.indexOf('holo') !== -1) tags.push('holo');
+  }
+  
+  // การ์ดพิเศษ (V, GX, ex, VMAX, VSTAR, etc.)
+  if (card.subtypes && Array.isArray(card.subtypes)) {
+    var specialTypes = ['v', 'gx', 'ex', 'vmax', 'vstar', 'v-union', 'radiant', 'ace spec'];
+    card.subtypes.forEach(function(subtype) {
+      var subtypeLower = subtype.toLowerCase();
+      if (specialTypes.indexOf(subtypeLower) !== -1) {
+        tags.push(subtypeLower);
+      }
+    });
+  }
+  
+  // วิวัฒนาการ
+  if (card.subtypes && Array.isArray(card.subtypes)) {
+    if (card.subtypes.indexOf('Basic') !== -1) {
+      tags.push('basic');
+      tags.push('พื้นฐาน');
+    }
+    if (card.subtypes.indexOf('Stage 1') !== -1) {
+      tags.push('stage1');
+      tags.push('ร่าง1');
+    }
+    if (card.subtypes.indexOf('Stage 2') !== -1) {
+      tags.push('stage2');
+      tags.push('ร่าง2');
+    }
+  }
+  
+  // เรกกูเลชัน (จาก legalities)
+  if (card.legalities) {
+    try {
+      var legalities = typeof card.legalities === 'string' ? JSON.parse(card.legalities) : card.legalities;
+      if (legalities) {
+        if (legalities.standard === 'Legal') tags.push('standard');
+        if (legalities.expanded === 'Legal') tags.push('expanded');
+        if (legalities.unlimited === 'Legal') tags.push('unlimited');
+      }
+    } catch (e) {
+      // ไม่สามารถ parse legalities ได้
+    }
+  }
+  
+  // การ์ดเทรนเนอร์ประเภทต่างๆ
+  if (card.supertype === 'Trainer') {
+    if (card.subtypes && Array.isArray(card.subtypes)) {
+      card.subtypes.forEach(function(subtype) {
+        var subtypeLower = subtype.toLowerCase();
+        if (subtypeLower === 'item') tags.push('item');
+        if (subtypeLower === 'supporter') tags.push('supporter');
+        if (subtypeLower === 'stadium') tags.push('stadium');
+        if (subtypeLower === 'tool') tags.push('tool');
+        if (subtypeLower === 'pokemon tool') tags.push('pokemon-tool');
+      });
+    }
+  }
+  
+  // รวม Tags เป็น string (คั่นด้วย comma)
+  return tags.join(', ');
+}
+
+/**
+ * พยายามดึงข้อมูลจากเว็บโดยตรง (อาจไม่ทำงานเพราะใช้ JavaScript)
+ */
+function fetchCardsFromWebsite(page) {
+  try {
+    // URL ของเว็บ (อาจต้องปรับแต่ง)
+    var baseUrl = 'https://asia.pokemon-card.com/th/deck-build/';
+    
+    // พยายามดึง HTML
+    var response = UrlFetchApp.fetch(baseUrl, {
+      'method': 'get',
+      'headers': {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      }
+    });
+    
+    var html = response.getContentText();
+    
+    // เนื่องจากเว็บใช้ JavaScript เพื่อโหลดข้อมูล
+    // การดึง HTML โดยตรงอาจไม่ได้ข้อมูลที่ต้องการ
+    // อาจต้องใช้วิธีอื่น เช่น หา API endpoint ที่เว็บใช้
+    
+    Logger.log('⚠️ การดึงข้อมูลจากเว็บโดยตรงอาจไม่ทำงานเพราะเว็บใช้ JavaScript');
+    Logger.log('แนะนำให้ใช้ Pokemon TCG API แทน');
+    
+    return [];
+    
+  } catch (error) {
+    Logger.log('Error fetching from website: ' + error.toString());
+    throw error;
+  }
+}
+
+/**
+ * ดาวน์โหลดรูปภาพการ์ดและเก็บไว้ใน Drive
+ */
+function downloadCardImage(card, folder) {
+  try {
+    var imageUrl = card.imageUrlLarge || card.imageUrl || card.imageUrlSmall;
+    
+    if (!imageUrl) {
+      throw new Error('ไม่มี URL รูปภาพ');
+    }
+    
+    // ดาวน์โหลดรูปภาพ
+    var response = UrlFetchApp.fetch(imageUrl, {
+      'method': 'get',
+      'headers': {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      }
+    });
+    
+    var blob = response.getBlob();
+    
+    // สร้างชื่อไฟล์
+    var fileName = sanitizeFileName(card.name) + '_' + 
+                   sanitizeFileName(card.setCode) + '_' + 
+                   card.number + '.jpg';
+    
+    // สร้างไฟล์ใน Drive
+    var file = folder.createFile(blob);
+    file.setName(fileName);
+    
+    // ตั้งค่าแชร์เป็น Public
+    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    
+    // สร้าง Direct Link
+    var fileId = file.getId();
+    var directLink = 'https://drive.google.com/uc?export=view&id=' + fileId;
+    
+    Logger.log('   ✅ ดาวน์โหลดสำเร็จ: ' + fileName);
+    
+    return {
+      id: fileId,
+      name: fileName,
+      url: directLink,
+      webViewLink: file.getUrl()
+    };
+    
+  } catch (error) {
+    Logger.log('   ❌ ดาวน์โหลดล้มเหลว: ' + error.toString());
+    throw error;
+  }
+}
+
+/**
+ * บันทึกข้อมูลการ์ดลง Spreadsheet
+ */
+function saveCardToSpreadsheet(sheet, card, imageFile) {
+  try {
+    var row = [
+      card.id || '',
+      card.name || '',
+      card.setName || '',
+      card.setCode || '',
+      card.number || '',
+      card.rarity || '',
+      card.types || '',
+      card.supertype || '',
+      card.subtypes || '',
+      card.hp || '',
+      card.retreatCost || '',
+      card.attacksText || '', // ข้อความจาก attacks
+      card.abilitiesText || '', // ข้อความจาก abilities
+      card.text || '', // คำอธิบายการ์ด
+      card.searchableText || '', // ข้อความที่ค้นหาได้ทั้งหมด
+      card.tags || '', // Tags
+      imageFile ? imageFile.url : '',
+      imageFile ? imageFile.name : '',
+      card.imageUrlLarge || card.imageUrl || '',
+      card.updatedAt || new Date().toISOString()
+    ];
+    
+    sheet.appendRow(row);
+    
+  } catch (error) {
+    Logger.log('Error saving to spreadsheet: ' + error.toString());
+    throw error;
+  }
+}
+
+/**
+ * ตั้งค่า header ของ Spreadsheet
+ */
+function setupSpreadsheetHeaders(sheet) {
+  // ตรวจสอบว่ามี header แล้วหรือยัง
+  var lastRow = sheet.getLastRow();
+  if (lastRow > 0) {
+    // มีข้อมูลแล้ว ไม่ต้องสร้าง header ใหม่
+    return;
+  }
+  
+  var headers = [
+    'Card ID',
+    'Card Name',
+    'Set Name',
+    'Set Code',
+    'Card Number',
+    'Rarity',
+    'Types',
+    'Supertype',
+    'Subtypes',
+    'HP',
+    'Retreat Cost',
+    'Attacks Text', // ข้อความจาก attacks
+    'Abilities Text', // ข้อความจาก abilities
+    'Card Text', // คำอธิบายการ์ด
+    'Searchable Text', // ข้อความที่ค้นหาได้ทั้งหมด
+    'Tags', // Tags สำหรับค้นหา
+    'Image URL (Drive)',
+    'Image File Name',
+    'Original Image URL',
+    'Updated At'
+  ];
+  
+  sheet.appendRow(headers);
+  
+  // ตั้งค่ารูปแบบ header
+  var headerRange = sheet.getRange(1, 1, 1, headers.length);
+  headerRange.setFontWeight('bold');
+  headerRange.setBackground('#4285f4');
+  headerRange.setFontColor('#ffffff');
+  headerRange.setHorizontalAlignment('center');
+  
+  // ตั้งค่าความกว้างของคอลัมน์
+  sheet.setColumnWidth(1, 150); // Card ID
+  sheet.setColumnWidth(2, 200); // Card Name
+  sheet.setColumnWidth(3, 150); // Set Name
+  sheet.setColumnWidth(4, 100); // Set Code
+  sheet.setColumnWidth(5, 100); // Card Number
+  sheet.setColumnWidth(11, 300); // Image URL
+  sheet.setColumnWidth(12, 200); // Image File Name
+  sheet.setColumnWidth(13, 300); // Original Image URL
+}
+
+/**
+ * สร้างหรือหาโฟลเดอร์ใน Drive
+ * รองรับทั้งชื่อโฟลเดอร์และ Folder ID
+ */
+function getOrCreateDriveFolder(folderNameOrId) {
+  // ตรวจสอบว่าเป็น ID หรือชื่อ
+  // ID มักมีความยาว 33 ตัวอักษรและมีรูปแบบเฉพาะ
+  if (folderNameOrId && folderNameOrId.length === 33 && /^[a-zA-Z0-9_-]+$/.test(folderNameOrId)) {
+    try {
+      // พยายามใช้เป็น ID
+      var folder = DriveApp.getFolderById(folderNameOrId);
+      Logger.log('✅ ใช้โฟลเดอร์ที่มีอยู่แล้ว (ID): ' + folder.getName());
+      return folder;
+    } catch (error) {
+      Logger.log('⚠️ ไม่พบโฟลเดอร์ด้วย ID: ' + folderNameOrId + ' จะสร้างใหม่ด้วยชื่อ');
+      // ถ้าไม่พบด้วย ID ให้ใช้เป็นชื่อแทน
+    }
+  }
+  
+  // ใช้เป็นชื่อโฟลเดอร์
+  var folders = DriveApp.getFoldersByName(folderNameOrId);
+  
+  if (folders.hasNext()) {
+    var folder = folders.next();
+    Logger.log('✅ ใช้โฟลเดอร์ที่มีอยู่แล้ว (ชื่อ): ' + folder.getName());
+    return folder;
+  } else {
+    var newFolder = DriveApp.createFolder(folderNameOrId);
+    Logger.log('✅ สร้างโฟลเดอร์ใหม่: ' + newFolder.getName());
+    return newFolder;
+  }
+}
+
+/**
+ * สร้างหรือหา Spreadsheet
+ * รองรับทั้งชื่อ Spreadsheet และ Spreadsheet ID
+ */
+function getOrCreateSpreadsheet(spreadsheetNameOrId) {
+  // ตรวจสอบว่าเป็น ID หรือชื่อ
+  // Spreadsheet ID มักมีความยาว 44 ตัวอักษรและมีรูปแบบเฉพาะ
+  if (spreadsheetNameOrId && spreadsheetNameOrId.length >= 40 && /^[a-zA-Z0-9_-]+$/.test(spreadsheetNameOrId)) {
+    try {
+      // พยายามใช้เป็น ID
+      var spreadsheet = SpreadsheetApp.openById(spreadsheetNameOrId);
+      Logger.log('✅ ใช้ Spreadsheet ที่มีอยู่แล้ว (ID): ' + spreadsheet.getName());
+      return spreadsheet;
+    } catch (error) {
+      Logger.log('⚠️ ไม่พบ Spreadsheet ด้วย ID: ' + spreadsheetNameOrId + ' จะสร้างใหม่ด้วยชื่อ');
+      // ถ้าไม่พบด้วย ID ให้ใช้เป็นชื่อแทน
+    }
+  }
+  
+  // ใช้เป็นชื่อ Spreadsheet
+  var files = DriveApp.getFilesByName(spreadsheetNameOrId);
+  
+  if (files.hasNext()) {
+    var spreadsheet = SpreadsheetApp.open(files.next());
+    Logger.log('✅ ใช้ Spreadsheet ที่มีอยู่แล้ว (ชื่อ): ' + spreadsheet.getName());
+    return spreadsheet;
+  } else {
+    var newSpreadsheet = SpreadsheetApp.create(spreadsheetNameOrId);
+    Logger.log('✅ สร้าง Spreadsheet ใหม่: ' + newSpreadsheet.getName());
+    return newSpreadsheet;
+  }
+}
+
+/**
+ * สร้างหรือหา Sheet ใน Spreadsheet
+ */
+function getOrCreateSheet(spreadsheet, sheetName) {
+  var sheet = spreadsheet.getSheetByName(sheetName);
+  
+  if (sheet) {
+    return sheet;
+  } else {
+    return spreadsheet.insertSheet(sheetName);
+  }
+}
+
+/**
+ * ทำความสะอาดชื่อไฟล์ (ลบอักขระพิเศษ)
+ */
+function sanitizeFileName(fileName) {
+  return fileName.replace(/[\/\\?%*:|"<>]/g, '_')
+                 .replace(/\s+/g, '_')
+                 .substring(0, 50); // จำกัดความยาว
+}
+
+/**
+ * ฟังก์ชันทดสอบ - ดึงการ์ด 1 หน้าและเซฟข้อมูล (สำหรับทดสอบ)
+ * ดึงแค่ 1 หน้า (50 การ์ด) เพื่อทดสอบการดาวน์โหลดและบันทึกข้อมูล
+ */
+function testScrapingAndSave() {
+  try {
+    Logger.log('🧪 ทดสอบการดึงข้อมูลและเซฟข้อมูล...');
+    
+    // สร้าง/หาโฟลเดอร์ใน Drive
+    var folder = getOrCreateDriveFolder(CONFIG.DRIVE_FOLDER_NAME_OR_ID);
+    Logger.log('📁 โฟลเดอร์: ' + folder.getUrl());
+    Logger.log('📁 โฟลเดอร์ ID: ' + folder.getId());
+    
+    // สร้าง/หา Spreadsheet
+    var spreadsheet = getOrCreateSpreadsheet(CONFIG.SPREADSHEET_NAME_OR_ID);
+    Logger.log('📊 Spreadsheet: ' + spreadsheet.getUrl());
+    Logger.log('📊 Spreadsheet ID: ' + spreadsheet.getId());
+    var sheet = getOrCreateSheet(spreadsheet, 'Cards');
+    
+    // ตั้งค่า header ของ Spreadsheet
+    setupSpreadsheetHeaders(sheet);
+    
+    // ดึงข้อมูลการ์ด 1 หน้า
+    Logger.log('📄 กำลังดึงหน้า 1...');
+    var cards = fetchCardsFromPage(1);
+    Logger.log('พบการ์ด: ' + cards.length + ' ใบ');
+    
+    if (cards.length === 0) {
+      Logger.log('❌ ไม่พบการ์ด');
+      return;
+    }
+    
+    // ดาวน์โหลดรูปภาพและบันทึกข้อมูล (แค่ 5 การ์ดแรกเพื่อทดสอบ)
+    var testCount = Math.min(5, cards.length);
+    Logger.log('📥 จะทดสอบดาวน์โหลด ' + testCount + ' การ์ดแรก...');
+    
+    var successCount = 0;
+    var errorCount = 0;
+    
+    for (var i = 0; i < testCount; i++) {
+      var card = cards[i];
+      
+      try {
+        Logger.log('📥 กำลังดาวน์โหลด: ' + card.name + ' (' + (i + 1) + '/' + testCount + ')');
+        
+        // ดาวน์โหลดรูปภาพ
+        var imageFile = downloadCardImage(card, folder);
+        
+        // บันทึกข้อมูลลง Spreadsheet
+        saveCardToSpreadsheet(sheet, card, imageFile);
+        
+        successCount++;
+        Logger.log('   ✅ สำเร็จ: ' + card.name);
+        
+        // Delay เพื่อหลีกเลี่ยง rate limiting
+        Utilities.sleep(CONFIG.REQUEST_DELAY);
+        
+      } catch (error) {
+        Logger.log('   ❌ เกิดข้อผิดพลาดกับ: ' + card.name + ' - ' + error.toString());
+        errorCount++;
+        
+        // บันทึกข้อมูลแม้ไม่มีรูปภาพ
+        try {
+          saveCardToSpreadsheet(sheet, card, null);
+        } catch (e) {
+          Logger.log('   ❌ ไม่สามารถบันทึกข้อมูล: ' + e.toString());
+        }
+      }
+    }
+    
+    var summary = 'ทดสอบเสร็จสิ้น!\n\n' +
+      'ทดสอบ: ' + testCount + ' การ์ด\n' +
+      'สำเร็จ: ' + successCount + ' การ์ด\n' +
+      'ผิดพลาด: ' + errorCount + ' การ์ด\n\n' +
+      'Spreadsheet: ' + spreadsheet.getUrl() + '\n' +
+      'Drive Folder: ' + folder.getUrl();
+    
+    Logger.log('✅ ' + summary);
+    
+    try {
+      SpreadsheetApp.getUi().alert(summary);
+    } catch (e) {
+      Logger.log('💡 ตรวจสอบ Logs และดู Spreadsheet/Drive เพื่อดูผลลัพธ์');
+    }
+    
+  } catch (error) {
+    Logger.log('❌ เกิดข้อผิดพลาด: ' + error.toString());
+    try {
+      SpreadsheetApp.getUi().alert('เกิดข้อผิดพลาด: ' + error.toString());
+    } catch (e) {
+      Logger.log('💡 ตรวจสอบ Logs เพื่อดู error details');
+    }
+  }
+}
+
+/**
+ * ฟังก์ชันทดสอบ - ดึงการ์ด 1 หน้าเพื่อทดสอบ (ไม่เซฟข้อมูล)
+ */
+function testScraping() {
+  try {
+    Logger.log('🧪 ทดสอบการดึงข้อมูล...');
+    
+    var cards = fetchCardsFromPage(1);
+    Logger.log('พบการ์ด: ' + cards.length + ' ใบ');
+    
+    if (cards.length > 0) {
+      Logger.log('ตัวอย่างการ์ดแรก:');
+      Logger.log(JSON.stringify(cards[0], null, 2));
+    }
+    
+    var successMessage = 'ทดสอบสำเร็จ! พบการ์ด ' + cards.length + ' ใบ\n\nตรวจสอบ Logs เพื่อดูรายละเอียด';
+    Logger.log('✅ ' + successMessage);
+    
+    // พยายามแสดง alert ถ้ารันจาก Spreadsheet UI
+    try {
+      SpreadsheetApp.getUi().alert(successMessage);
+    } catch (e) {
+      // ไม่สามารถใช้ getUi() ได้ (รันจาก Apps Script editor)
+      Logger.log('💡 ตรวจสอบ Logs เพื่อดูผลลัพธ์');
+    }
+    
+  } catch (error) {
+    Logger.log('❌ เกิดข้อผิดพลาด: ' + error.toString());
+    try {
+      SpreadsheetApp.getUi().alert('เกิดข้อผิดพลาด: ' + error.toString());
+    } catch (e) {
+      // ไม่สามารถใช้ getUi() ได้
+      Logger.log('💡 ตรวจสอบ Logs เพื่อดู error details');
+    }
+  }
+}
+
+/**
+ * ฟังก์ชันสำหรับดึงข้อมูลการ์ดตามเงื่อนไข (สำหรับใช้ในหน้าเว็บ)
+ */
+function doGet(e) {
+  try {
+    var action = e.parameter.action || 'search';
+    
+    if (action === 'search') {
+      var cardName = e.parameter.cardName || '';
+      var cardSet = e.parameter.cardSet || '';
+      var page = parseInt(e.parameter.page || '1');
+      
+      // Parse filters
+      var filters = {
+        supertype: e.parameter.supertype || '',
+        subtype: e.parameter.subtype || '',
+        type: e.parameter.type || '',
+        rarity: e.parameter.rarity || '',
+        tag: e.parameter.tag || '',
+        regulation: e.parameter.regulation || ''
+      };
+      
+      var result = searchCardsFromDatabase(cardName, cardSet, page, filters);
+      return ContentService.createTextOutput(JSON.stringify(result))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    if (action === 'getAll') {
+      var page = parseInt(e.parameter.page || '1');
+      var pageSize = parseInt(e.parameter.pageSize || '50');
+      
+      var result = getAllCardsFromDatabase(page, pageSize);
+      return ContentService.createTextOutput(JSON.stringify(result))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    return ContentService.createTextOutput(JSON.stringify({
+      success: false,
+      error: 'Invalid action'
+    })).setMimeType(ContentService.MimeType.JSON);
+    
+  } catch (error) {
+    return ContentService.createTextOutput(JSON.stringify({
+      success: false,
+      error: error.toString()
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+/**
+ * ค้นหาการ์ดจากฐานข้อมูล
+ */
+function searchCardsFromDatabase(cardName, cardSet, page) {
+  try {
+    var spreadsheet = getOrCreateSpreadsheet(CONFIG.SPREADSHEET_NAME_OR_ID);
+    var sheet = spreadsheet.getSheetByName('Cards');
+    
+    if (!sheet) {
+      return {
+        success: false,
+        error: 'Database not found. Please run startScrapingAllCards() first.'
+      };
+    }
+    
+    var data = sheet.getDataRange().getValues();
+    if (data.length <= 1) {
+      return {
+        success: true,
+        cards: [],
+        total: 0,
+        page: page,
+        totalPages: 0
+      };
+    }
+    
+    var headers = data[0];
+    var cards = [];
+    
+    for (var i = 1; i < data.length; i++) {
+      var row = data[i];
+      var name = String(row[1] || '').toLowerCase();
+      var setName = String(row[2] || '').toLowerCase();
+      
+      var matches = true;
+      
+      if (cardName && name.indexOf(cardName.toLowerCase()) === -1) {
+        matches = false;
+      }
+      
+      if (cardSet && setName.indexOf(cardSet.toLowerCase()) === -1) {
+        matches = false;
+      }
+      
+      if (matches) {
+        cards.push({
+          id: row[0] || '',
+          name: row[1] || '',
+          setName: row[2] || '',
+          setCode: row[3] || '',
+          number: row[4] || '',
+          rarity: row[5] || '',
+          types: row[6] || '',
+          supertype: row[7] || '',
+          subtypes: row[8] || '',
+          hp: row[9] || '',
+          retreatCost: row[10] || '',
+          attacksText: row[11] || '',
+          abilitiesText: row[12] || '',
+          text: row[13] || '',
+          searchableText: row[14] || '',
+          tags: row[15] || '',
+          imageUrl: row[16] || row[18] || '',
+          imageFileName: row[17] || '',
+          originalImageUrl: row[18] || ''
+        });
+      }
+    }
+    
+    // Pagination
+    var pageSize = CONFIG.CARDS_PER_PAGE;
+    var total = cards.length;
+    var totalPages = Math.ceil(total / pageSize);
+    var startIndex = (page - 1) * pageSize;
+    var endIndex = startIndex + pageSize;
+    var paginatedCards = cards.slice(startIndex, endIndex);
+    
+    return {
+      success: true,
+      cards: paginatedCards,
+      total: total,
+      page: page,
+      totalPages: totalPages
+    };
+    
+  } catch (error) {
+    return {
+      success: false,
+      error: error.toString()
+    };
+  }
+}
+
+/**
+ * ดึงการ์ดทั้งหมดจากฐานข้อมูล (พร้อม pagination)
+ */
+function getAllCardsFromDatabase(page, pageSize) {
+  try {
+    var spreadsheet = getOrCreateSpreadsheet(CONFIG.SPREADSHEET_NAME_OR_ID);
+    var sheet = spreadsheet.getSheetByName('Cards');
+    
+    if (!sheet) {
+      return {
+        success: false,
+        error: 'Database not found. Please run startScrapingAllCards() first.'
+      };
+    }
+    
+    var data = sheet.getDataRange().getValues();
+    if (data.length <= 1) {
+      return {
+        success: true,
+        cards: [],
+        total: 0,
+        page: page,
+        totalPages: 0
+      };
+    }
+    
+    var headers = data[0];
+    var cards = [];
+    
+    for (var i = 1; i < data.length; i++) {
+      var row = data[i];
+      cards.push({
+        id: row[0] || '',
+        name: row[1] || '',
+        setName: row[2] || '',
+        setCode: row[3] || '',
+        number: row[4] || '',
+        rarity: row[5] || '',
+        types: row[6] || '',
+        supertype: row[7] || '',
+        subtypes: row[8] || '',
+        hp: row[9] || '',
+        retreatCost: row[10] || '',
+        attacksText: row[11] || '',
+        abilitiesText: row[12] || '',
+        text: row[13] || '',
+        searchableText: row[14] || '',
+        tags: row[15] || '',
+        imageUrl: row[16] || row[18] || '',
+        imageFileName: row[17] || '',
+        originalImageUrl: row[18] || ''
+      });
+    }
+    
+    // Pagination
+    var total = cards.length;
+    var totalPages = Math.ceil(total / pageSize);
+    var startIndex = (page - 1) * pageSize;
+    var endIndex = startIndex + pageSize;
+    var paginatedCards = cards.slice(startIndex, endIndex);
+    
+    return {
+      success: true,
+      cards: paginatedCards,
+      total: total,
+      page: page,
+      totalPages: totalPages
+    };
+    
+  } catch (error) {
+    return {
+      success: false,
+      error: error.toString()
+    };
+  }
+}
+

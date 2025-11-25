@@ -1,0 +1,1422 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>การ์ดฝากขาย - Up Level Guild</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      font-family: 'Mitr', 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      margin: 0;
+      padding: 1rem;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 32px auto;
+      padding: 0 16px 32px 16px;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    }
+
+    .logo {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 16px;
+      padding-top: 16px;
+      width: 100%;
+    }
+
+    .logo img {
+      max-width: 120px;
+      display: block;
+      margin: 0 auto;
+    }
+
+    h2 {
+      color: #388e3c;
+      text-align: center;
+      margin-bottom: 8px;
+      font-size: 2em;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #666;
+      margin-bottom: 16px;
+      font-size: 1.1em;
+    }
+
+    .info-box {
+      background: #e3f2fd;
+      border-left: 4px solid #2196f3;
+      padding: 16px;
+      margin: 0 16px 24px 16px;
+      border-radius: 8px;
+      font-size: 0.95em;
+      line-height: 1.6;
+      color: #1565c0;
+    }
+
+    .info-box strong {
+      color: #0d47a1;
+    }
+
+    .filter-section {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
+      margin-bottom: 24px;
+      padding: 16px;
+      background: #f5f5f5;
+      border-radius: 12px;
+      box-sizing: border-box;
+    }
+
+    .search-box {
+      flex: 1;
+      min-width: 200px;
+      max-width: 100%;
+      padding: 12px 16px;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      font-size: 1em;
+      transition: border-color 0.3s;
+      box-sizing: border-box;
+      width: 100%;
+    }
+
+    .search-box:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .sort-select {
+      padding: 12px 16px;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      font-size: 1em;
+      background: white;
+      cursor: pointer;
+      box-sizing: border-box;
+      min-width: 200px;
+      max-width: 100%;
+    }
+
+    .stats {
+      text-align: center;
+      margin-bottom: 16px;
+      color: #666;
+      font-size: 1.1em;
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 24px;
+      padding: 16px 0;
+    }
+
+    @media (max-width: 768px) {
+      .cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+    }
+
+    .card-item {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      overflow: hidden;
+      transition: all 0.3s ease;
+      border: 2px solid transparent;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card-item:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+      border-color: #667eea;
+    }
+
+    .card-item.sold {
+      opacity: 0.85;
+    }
+
+    .card-item.sold .card-image-container {
+      filter: grayscale(100%);
+    }
+
+    .card-item.sold .card-image {
+      filter: grayscale(100%);
+    }
+
+    .card-image-container {
+      width: 100%;
+      height: 300px;
+      background: #f5f5f5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .card-image {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      border-radius: 8px;
+    }
+
+    .card-image-placeholder {
+      color: #999;
+      font-size: 3em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+    }
+
+    .image-loading-spinner {
+      width: 48px;
+      height: 48px;
+      border: 4px solid #e0e0e0;
+      border-top: 4px solid #42A5F5;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .skeleton-card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      overflow: hidden;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+
+    .skeleton-image {
+      width: 100%;
+      height: 300px;
+      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+
+    .skeleton-text {
+      height: 20px;
+      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 4px;
+      margin-bottom: 8px;
+    }
+
+    .skeleton-text.short {
+      width: 60%;
+    }
+
+    .skeleton-text.medium {
+      width: 80%;
+    }
+
+    .card-info {
+      padding: 16px;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card-name {
+      font-size: 1.2em;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 8px;
+      min-height: 2.4em;
+      line-height: 1.2;
+    }
+
+    .card-price {
+      font-size: 1.5em;
+      font-weight: bold;
+      color: #e53935;
+      margin-bottom: 8px;
+    }
+
+    .card-price-label {
+      font-size: 0.8em;
+      color: #666;
+      font-weight: normal;
+    }
+
+    .card-details {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: auto;
+      padding-top: 12px;
+      border-top: 1px solid #eee;
+    }
+
+    .card-detail-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 4px;
+    }
+
+    .card-detail-label {
+      color: #999;
+    }
+
+    .card-detail-value {
+      color: #333;
+      font-weight: 500;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.85em;
+      font-weight: bold;
+      margin-top: 8px;
+      background: #4caf50;
+      color: white;
+    }
+
+    .status-badge.sold {
+      background: #e53935;
+      color: white;
+    }
+
+    .spinner {
+      margin: 48px auto;
+      border: 6px solid #e0e0e0;
+      border-top: 6px solid #42A5F5;
+      border-radius: 50%;
+      width: 48px;
+      height: 48px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg);}
+      100% { transform: rotate(360deg);}
+    }
+
+    .loading-text {
+      text-align: center;
+      color: #666;
+      margin-top: 16px;
+    }
+
+    .error-message {
+      text-align: center;
+      color: #e53935;
+      padding: 24px;
+      background: #ffebee;
+      border-radius: 8px;
+      margin: 24px 0;
+    }
+
+    .no-cards {
+      text-align: center;
+      padding: 48px 24px;
+      color: #999;
+      font-size: 1.2em;
+    }
+
+    .card-item {
+      cursor: pointer;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 2000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.9);
+      animation: fadeIn 0.3s;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .modal-content {
+      position: relative;
+      margin: auto;
+      padding: 20px;
+      max-width: 90%;
+      max-height: 95vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      width: 100%;
+      text-align: center;
+      color: white;
+      margin-bottom: 16px;
+      flex-shrink: 0;
+    }
+
+    .modal-header h3 {
+      margin: 0 0 8px 0;
+      font-size: 1.5em;
+    }
+
+    .modal-images {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: flex-start;
+      max-width: 100%;
+      flex-shrink: 0;
+    }
+
+    .modal-image-container {
+      flex: 1;
+      min-width: 300px;
+      max-width: 500px;
+      text-align: center;
+    }
+
+    .modal-image-container h4 {
+      color: white;
+      margin-bottom: 10px;
+      font-size: 1.1em;
+    }
+
+    .modal-image {
+      max-width: 100%;
+      max-height: 50vh;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+      object-fit: contain;
+    }
+
+    .modal.sold .modal-image {
+      filter: grayscale(100%);
+    }
+
+    .close-modal {
+      position: absolute;
+      top: 20px;
+      right: 35px;
+      color: #f1f1f1;
+      font-size: 40px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: color 0.3s;
+    }
+
+    .close-modal:hover {
+      color: #fff;
+    }
+
+    .modal-details {
+      width: 100%;
+      max-width: 800px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 20px;
+      color: white;
+      flex-shrink: 0;
+    }
+
+    .modal-detail-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .modal-detail-label {
+      font-weight: bold;
+      color: #ffd700;
+    }
+
+    .modal-detail-value {
+      text-align: right;
+    }
+
+    @media (max-width: 768px) {
+      .modal-content {
+        padding: 10px;
+        max-width: 100%;
+        max-height: 100vh;
+      }
+
+      .modal-header {
+        margin-bottom: 12px;
+      }
+
+      .modal-header h3 {
+        font-size: 1.2em;
+        padding: 0 40px 0 10px;
+      }
+
+      .modal-images {
+        flex-direction: column;
+        gap: 16px;
+        width: 100%;
+      }
+
+      .modal-image-container {
+        min-width: 100%;
+        max-width: 100%;
+      }
+
+      .modal-image-container h4 {
+        font-size: 1em;
+        margin-bottom: 8px;
+      }
+
+      .modal-image {
+        max-height: 40vh;
+        width: 100%;
+      }
+
+      .modal-details {
+        padding: 16px;
+        margin-top: 16px;
+        font-size: 0.9em;
+      }
+
+      .modal-detail-row {
+        font-size: 0.9em;
+        padding: 6px 0;
+      }
+
+      .close-modal {
+        top: 10px;
+        right: 15px;
+        font-size: 35px;
+        z-index: 2001;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .modal-content {
+        padding: 8px;
+      }
+
+      .modal-header h3 {
+        font-size: 1.1em;
+        padding: 0 35px 0 8px;
+      }
+
+      .modal-images {
+        gap: 12px;
+      }
+
+      .modal-image {
+        max-height: 35vh;
+      }
+
+      .modal-details {
+        padding: 12px;
+        font-size: 0.85em;
+      }
+
+      .modal-detail-row {
+        flex-direction: column;
+        gap: 4px;
+        align-items: flex-start;
+      }
+
+      .close-modal {
+        top: 8px;
+        right: 12px;
+        font-size: 30px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+
+      .card-image-container {
+        height: 200px;
+      }
+
+      .card-info {
+        padding: 12px;
+      }
+
+      .card-name {
+        font-size: 1em;
+        min-height: 2em;
+      }
+
+      .card-price {
+        font-size: 1.2em;
+      }
+
+      .card-details {
+        font-size: 0.8em;
+      }
+
+      .filter-section {
+        flex-direction: column;
+        padding: 12px;
+        margin: 0 8px 16px 8px;
+      }
+
+      .search-box {
+        min-width: 100%;
+        max-width: 100%;
+        width: 100%;
+        box-sizing: border-box;
+      }
+
+      .sort-select {
+        min-width: 100%;
+        max-width: 100%;
+        width: 100%;
+        box-sizing: border-box;
+      }
+
+      .info-box {
+        margin: 0 8px 16px 8px;
+        padding: 12px;
+        font-size: 0.9em;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+      }
+
+      .card-image-container {
+        height: 180px;
+      }
+
+      .card-name {
+        font-size: 0.9em;
+        min-height: 1.8em;
+      }
+
+      .card-price {
+        font-size: 1.1em;
+      }
+
+      .card-details {
+        font-size: 0.75em;
+      }
+
+      .card-detail-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+      }
+
+      h2 {
+        font-size: 1.5em;
+      }
+
+      .info-box {
+        font-size: 0.85em;
+        padding: 10px;
+      }
+
+      .modal-content {
+        padding: 8px;
+      }
+
+      .modal-header h3 {
+        font-size: 1em;
+      }
+
+      .modal-image {
+        max-height: 30vh;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a href="index.html" class="home-button" title="กลับหน้าหลัก"></a>
+  
+  <div class="container">
+    <div class="logo">
+      <img src="https://i.postimg.cc/wjzpnxjB/Up-Level-01-1.png" alt="Up Level Logo">
+    </div>
+    
+    <h2>🃏 การ์ดฝากขาย</h2>
+    <div class="subtitle">การ์ดที่พร้อมขาย ณ ร้าน Up Level Academy</div>
+    
+    <div class="info-box">
+      <strong>📌 หมายเหตุ:</strong> การ์ดเหล่านี้เป็นการ์ดที่สมาชิกฝากขาย สามารถมาดูการ์ดจริงได้ที่แฟ้มในร้าน<br>
+      <strong>💬 สมาชิกท่านไหนต้องการฝากขาย</strong> สามารถติดต่อแอดมินได้เลยทุกช่องทาง
+    </div>
+    
+    <div class="filter-section">
+      <input type="text" id="search-box" class="search-box" placeholder="🔍 ค้นหาชื่อการ์ด...">
+      <select id="sort-select" class="sort-select">
+        <option value="name-asc">เรียงตามชื่อ (ก-ฮ)</option>
+        <option value="name-desc">เรียงตามชื่อ (ฮ-ก)</option>
+        <option value="price-asc">เรียงตามราคา (ต่ำ-สูง)</option>
+        <option value="price-desc">เรียงตามราคา (สูง-ต่ำ)</option>
+        <option value="date-desc">เรียงตามวันที่ฝาก (ใหม่-เก่า)</option>
+        <option value="date-asc">เรียงตามวันที่ฝาก (เก่า-ใหม่)</option>
+      </select>
+    </div>
+    
+    <div class="stats" id="stats">
+      กำลังโหลดข้อมูล...
+    </div>
+    
+    <div id="cards-container">
+      <div class="spinner"></div>
+      <div class="loading-text">กำลังโหลดการ์ด...</div>
+    </div>
+  </div>
+
+  <!-- Modal สำหรับแสดงรูปเต็ม -->
+  <div id="imageModal" class="modal">
+    <span class="close-modal" onclick="closeModal()">&times;</span>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modal-card-name"></h3>
+      </div>
+      <div class="modal-images">
+        <div class="modal-image-container">
+          <h4>ด้านหน้า</h4>
+          <img id="modal-front-image" class="modal-image" src="" alt="ด้านหน้า" loading="eager" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+          <div style="display:none; color: white; padding: 20px;">ไม่มีรูปภาพด้านหน้า</div>
+        </div>
+        <div class="modal-image-container">
+          <h4>ด้านหลัง</h4>
+          <img id="modal-back-image" class="modal-image" src="" alt="ด้านหลัง" loading="eager" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+          <div style="display:none; color: white; padding: 20px;">ไม่มีรูปภาพด้านหลัง</div>
+        </div>
+      </div>
+      <div class="modal-details">
+        <div class="modal-detail-row">
+          <span class="modal-detail-label">ราคา:</span>
+          <span class="modal-detail-value" id="modal-price"></span>
+        </div>
+        <div class="modal-detail-row">
+          <span class="modal-detail-label">ช่องในแฟ้ม:</span>
+          <span class="modal-detail-value" id="modal-folder-slot"></span>
+        </div>
+        <div class="modal-detail-row">
+          <span class="modal-detail-label">ผู้ฝากขาย:</span>
+          <span class="modal-detail-value" id="modal-consignor"></span>
+        </div>
+        <div class="modal-detail-row">
+          <span class="modal-detail-label">วันที่ฝาก:</span>
+          <span class="modal-detail-value" id="modal-deposit-date"></span>
+        </div>
+        <div class="modal-detail-row" id="modal-notes-row" style="display:none;">
+          <span class="modal-detail-label">หมายเหตุ:</span>
+          <span class="modal-detail-value" id="modal-notes"></span>
+        </div>
+        <div class="modal-detail-row">
+          <span class="modal-detail-label">สถานะ:</span>
+          <span class="modal-detail-value" id="modal-status"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbzwyYf_EWp5JPHGarUHSkKXzCnwRx7k53rWhq2uwnloaO55-aQVhBbRm-N8TvPPRsRIhA/exec?type=json";
+    
+    let allCards = [];
+    let filteredCards = [];
+
+    function parsePrice(priceStr) {
+      if (!priceStr) return 0;
+      const numStr = String(priceStr).replace(/[^\d]/g, '');
+      return parseInt(numStr) || 0;
+    }
+
+    function parseDate(dateStr) {
+      if (!dateStr) return 0;
+      const parts = String(dateStr).split('/');
+      if (parts.length === 3) {
+        const day = parseInt(parts[0]) || 0;
+        const month = parseInt(parts[1]) || 0;
+        const year = parseInt(parts[2]) || 0;
+        return year * 10000 + month * 100 + day;
+      }
+      return 0;
+    }
+
+    function sortCards(cards, sortBy) {
+      const sorted = [...cards];
+      
+      switch(sortBy) {
+        case 'name-asc':
+          sorted.sort((a, b) => {
+            const nameA = String(a.cardName || '').toLowerCase();
+            const nameB = String(b.cardName || '').toLowerCase();
+            return nameA.localeCompare(nameB, 'th');
+          });
+          break;
+        case 'name-desc':
+          sorted.sort((a, b) => {
+            const nameA = String(a.cardName || '').toLowerCase();
+            const nameB = String(b.cardName || '').toLowerCase();
+            return nameB.localeCompare(nameA, 'th');
+          });
+          break;
+        case 'price-asc':
+          sorted.sort((a, b) => {
+            const priceA = parsePrice(a.listedPrice);
+            const priceB = parsePrice(b.listedPrice);
+            return priceA - priceB;
+          });
+          break;
+        case 'price-desc':
+          sorted.sort((a, b) => {
+            const priceA = parsePrice(a.listedPrice);
+            const priceB = parsePrice(b.listedPrice);
+            return priceB - priceA;
+          });
+          break;
+        case 'date-desc':
+          sorted.sort((a, b) => {
+            const dateA = parseDate(a.depositDate);
+            const dateB = parseDate(b.depositDate);
+            return dateB - dateA;
+          });
+          break;
+        case 'date-asc':
+          sorted.sort((a, b) => {
+            const dateA = parseDate(a.depositDate);
+            const dateB = parseDate(b.depositDate);
+            return dateA - dateB;
+          });
+          break;
+      }
+      
+      return sorted;
+    }
+
+    function filterCards(cards, searchTerm) {
+      if (!searchTerm) return cards;
+      
+      const term = searchTerm.toLowerCase().trim();
+      return cards.filter(card => {
+        const cardName = String(card.cardName || '').toLowerCase();
+        const consignorName = String(card.consignorName || '').toLowerCase();
+        const notes = String(card.notes || '').toLowerCase();
+        
+        return cardName.includes(term) || 
+               consignorName.includes(term) || 
+               notes.includes(term);
+      });
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function renderCards(cards) {
+      const renderStart = performance.now();
+      const container = document.getElementById('cards-container');
+      
+      if (cards.length === 0) {
+        container.innerHTML = '<div class="no-cards">ไม่พบการ์ดที่ต้องการ</div>';
+        return;
+      }
+
+      let html = '<div class="cards-grid">';
+      let imageCount = 0;
+      let placeholderCount = 0;
+      
+      cards.forEach((card, index) => {
+        const imageUrl = card.cardImage || '';
+        const hasImage = imageUrl && String(imageUrl).trim() !== '' && String(imageUrl).trim().startsWith('http');
+        const productId = card.productId || '';
+        const status = String(card.status || 'ยังมีอยู่').trim();
+        // ตรวจสอบว่าสถานะเป็น "ยังมีอยู่" หรือไม่ (รองรับหลายรูปแบบ)
+        const isSold = status !== 'ยังมีอยู่' && status !== '' && status.toLowerCase() !== 'ยังมีอยู่';
+        
+        // Debug: แสดงข้อมูลการ์ดแต่ละใบ (เฉพาะการ์ดแรก)
+        if (index === 0) {
+          console.log('🔍 Debug การ์ดแรกใน renderCards:', {
+            cardName: card.cardName,
+            imageUrl: imageUrl,
+            imageUrlSubstring: String(imageUrl).substring(0, 50),
+            hasImage: hasImage,
+            imageUrlType: typeof imageUrl,
+            imageUrlLength: String(imageUrl).length,
+            status: status
+          });
+        }
+        
+        // แสดง spinner ก่อน แล้วค่อยโหลดรูปทีหลัง
+        let imageHtml = '';
+        let imageUrlToLoad = '';
+        
+        if (hasImage) {
+          imageCount++;
+          // ลบ quotes และ spaces ที่ไม่จำเป็น
+          let cleanUrl = String(imageUrl).trim().replace(/^["']|["']$/g, '');
+          
+          // ตรวจสอบว่าเป็น URL ที่ถูกต้อง
+          if (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://')) {
+            imageUrlToLoad = cleanUrl;
+            // แสดง spinner ก่อน
+            imageHtml = `<div class="card-image-placeholder" data-image-url="${escapeHtml(cleanUrl)}" data-card-index="${index}">
+              <div class="image-loading-spinner"></div>
+            </div>`;
+            placeholderCount++;
+          } else {
+            imageHtml = '<div class="card-image-placeholder">🃏</div>';
+            placeholderCount++;
+          }
+        } else {
+          imageHtml = '<div class="card-image-placeholder">🃏</div>';
+          placeholderCount++;
+        }
+        
+        const price = card.listedPrice ? String(card.listedPrice) : '-';
+        const folderSlot = card.folderSlot ? `ช่อง ${card.folderSlot}` : '-';
+        const depositDate = card.depositDate || '-';
+        const consignorName = card.consignorName || '-';
+        const soldClass = isSold ? ' sold' : '';
+        const statusText = isSold ? 'ขายแล้ว' : '✓ ยังมีอยู่';
+        const statusBadgeClass = isSold ? ' sold' : '';
+        
+        html += `
+          <div class="card-item${soldClass}" onclick="openModal(${index})">
+            <div class="card-image-container">
+              ${imageHtml}
+            </div>
+            <div class="card-info">
+              <div class="card-name">${escapeHtml(card.cardName)}</div>
+              <div class="card-price">
+                ${escapeHtml(price)} <span class="card-price-label">บาท</span>
+              </div>
+              <div class="card-details">
+                <div class="card-detail-row">
+                  <span class="card-detail-label">ช่องในแฟ้ม:</span>
+                  <span class="card-detail-value">${escapeHtml(folderSlot)}</span>
+                </div>
+                <div class="card-detail-row">
+                  <span class="card-detail-label">ผู้ฝากขาย:</span>
+                  <span class="card-detail-value">${escapeHtml(consignorName)}</span>
+                </div>
+                ${card.notes ? `
+                <div class="card-detail-row">
+                  <span class="card-detail-label">หมายเหตุ:</span>
+                  <span class="card-detail-value">${escapeHtml(card.notes)}</span>
+                </div>
+                ` : ''}
+                <span class="status-badge${statusBadgeClass}">${escapeHtml(statusText)}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+      
+      html += '</div>';
+      
+      const beforeInnerHTML = performance.now();
+      container.innerHTML = html;
+      const innerHTMLTime = performance.now() - beforeInnerHTML;
+      
+      const renderTime = performance.now() - renderStart;
+      console.log(`  📝 สร้าง HTML: ${(renderTime - innerHTMLTime).toFixed(0)}ms`);
+      console.log(`  💾 innerHTML: ${innerHTMLTime.toFixed(0)}ms`);
+      console.log(`  🖼️ มีรูปภาพ: ${imageCount}, Placeholder: ${placeholderCount}`);
+      
+      // เก็บ filteredCards ไว้ในตัวแปร global เพื่อใช้ใน modal
+      window.currentFilteredCards = cards;
+      
+      // โหลดรูปภาพทีละรูปหลังจากแสดงข้อมูลแล้ว
+      loadImagesProgressively();
+    }
+    
+    // โหลดรูปภาพทีละรูปแบบ progressive
+    function loadImagesProgressively() {
+      const imagePlaceholders = document.querySelectorAll('.card-image-placeholder[data-image-url]');
+      console.log(`🖼️ เริ่มโหลดรูปภาพ ${imagePlaceholders.length} รูป...`);
+      
+      if (imagePlaceholders.length === 0) {
+        console.log('⚠️ ไม่พบรูปภาพที่ต้องโหลด');
+        return;
+      }
+      
+      let loadedCount = 0;
+      let currentIndex = 0;
+      
+      // โหลดรูปทีละรูปด้วย delay เพื่อไม่ให้บล็อก UI
+      function loadNextImage() {
+        if (currentIndex >= imagePlaceholders.length) {
+          console.log(`✅ โหลดรูปภาพเสร็จทั้งหมด: ${loadedCount}/${imagePlaceholders.length}`);
+          return;
+        }
+        
+        const placeholder = imagePlaceholders[currentIndex];
+        const imageUrl = placeholder.getAttribute('data-image-url');
+        currentIndex++;
+        
+        if (!imageUrl) {
+          // ถ้าไม่มี URL ให้ข้ามไป
+          loadNextImage();
+          return;
+        }
+        
+        const img = new Image();
+        
+        img.onload = function() {
+          // แทนที่ spinner ด้วยรูปภาพ
+          placeholder.innerHTML = '';
+          placeholder.classList.remove('card-image-placeholder');
+          placeholder.classList.add('card-image-container');
+          img.className = 'card-image';
+          img.alt = 'Card image';
+          img.loading = 'lazy';
+          placeholder.appendChild(img);
+          
+          // ตรวจสอบว่าการ์ดนี้เป็น "ขายแล้ว" หรือไม่ เพื่อใช้ filter grayscale
+          const cardItem = placeholder.closest('.card-item');
+          if (cardItem && cardItem.classList.contains('sold')) {
+            // CSS จะจัดการ grayscale อัตโนมัติ
+          }
+          
+          loadedCount++;
+          console.log(`✅ โหลดรูปภาพ ${loadedCount}/${imagePlaceholders.length} เสร็จ`);
+          
+          // โหลดรูปถัดไปหลังจาก delay เล็กน้อย
+          setTimeout(loadNextImage, 100); // delay 100ms ต่อรูป
+        };
+        
+        img.onerror = function() {
+          // ถ้าโหลดไม่ได้ ให้แสดง placeholder
+          placeholder.innerHTML = '<div class="card-image-placeholder">🃏</div>';
+          placeholder.removeAttribute('data-image-url');
+          
+          loadedCount++;
+          console.log(`❌ โหลดรูปภาพ ${loadedCount}/${imagePlaceholders.length} ล้มเหลว`);
+          
+          // โหลดรูปถัดไปแม้ว่าจะล้มเหลว
+          setTimeout(loadNextImage, 50);
+        };
+        
+        // เริ่มโหลดรูป
+        img.src = imageUrl;
+      }
+      
+      // เริ่มโหลดรูปแรก
+      loadNextImage();
+    }
+
+    function updateStats(total, filtered) {
+      const statsEl = document.getElementById('stats');
+      if (filtered === total) {
+        statsEl.textContent = `แสดงทั้งหมด ${total} การ์ด`;
+      } else {
+        statsEl.textContent = `แสดง ${filtered} จากทั้งหมด ${total} การ์ด`;
+      }
+    }
+
+    function updateDisplay() {
+      const searchTerm = document.getElementById('search-box').value;
+      const sortBy = document.getElementById('sort-select').value;
+      
+      filteredCards = filterCards(allCards, searchTerm);
+      filteredCards = sortCards(filteredCards, sortBy);
+      
+      renderCards(filteredCards);
+      updateStats(allCards.length, filteredCards.length);
+    }
+
+    // แสดง skeleton cards ทันที
+    function showSkeletonCards() {
+      const container = document.getElementById('cards-container');
+      let html = '<div class="cards-grid">';
+      
+      // แสดง skeleton 9 การ์ด (ไม่สามารถคลิกได้)
+      for (let i = 0; i < 9; i++) {
+        html += `
+          <div class="card-item skeleton-card" style="cursor: default; pointer-events: none;">
+            <div class="card-image-container">
+              <div class="skeleton-image"></div>
+            </div>
+            <div class="card-info">
+              <div class="skeleton-text medium"></div>
+              <div class="skeleton-text short" style="margin-top: 12px;"></div>
+              <div class="skeleton-text" style="margin-top: 16px;"></div>
+              <div class="skeleton-text" style="margin-top: 8px;"></div>
+              <div class="skeleton-text" style="margin-top: 8px;"></div>
+            </div>
+          </div>
+        `;
+      }
+      
+      html += '</div>';
+      container.innerHTML = html;
+      console.log('⚡ แสดง skeleton cards ทันที');
+    }
+    
+    // แสดงชื่อการ์ดและราคาทันที (ไม่ต้องรอ renderCards ทั้งหมด)
+    function showCardsImmediately(cards) {
+      const container = document.getElementById('cards-container');
+      if (!container || cards.length === 0) return;
+      
+      // เรียงลำดับตามค่าเริ่มต้น (ชื่อ ก-ฮ) - ใช้ spread operator เพื่อไม่แก้ไข array เดิม
+      const sortedCards = sortCards([...cards], 'name-asc');
+      
+      // สร้าง HTML ทันทีโดยไม่ delay
+      let html = '<div class="cards-grid">';
+      
+      sortedCards.forEach((card, index) => {
+        const price = card.listedPrice ? String(card.listedPrice) : '-';
+        const cardName = card.cardName || 'ไม่ระบุชื่อ';
+        const status = String(card.status || 'ยังมีอยู่').trim();
+        // ตรวจสอบว่าสถานะเป็น "ยังมีอยู่" หรือไม่ (รองรับหลายรูปแบบ)
+        const isSold = status !== 'ยังมีอยู่' && status !== '' && status.toLowerCase() !== 'ยังมีอยู่';
+        const soldClass = isSold ? ' sold' : '';
+        const statusText = isSold ? 'ขายแล้ว' : '✓ ยังมีอยู่';
+        const statusBadgeClass = isSold ? ' sold' : '';
+        
+        // แสดงชื่อการ์ดและราคาทันที (ไม่ต้องรอรูปภาพ)
+        // ใช้ index จาก sortedCards แทน index เดิม
+        html += `
+          <div class="card-item${soldClass}" onclick="openModal(${index})">
+            <div class="card-image-container">
+              <div class="card-image-placeholder" data-image-url="${escapeHtml(card.cardImage || '')}">
+                <div class="image-loading-spinner"></div>
+              </div>
+            </div>
+            <div class="card-info">
+              <div class="card-name">${escapeHtml(cardName)}</div>
+              <div class="card-price">
+                ${escapeHtml(price)} <span class="card-price-label">บาท</span>
+              </div>
+              <div class="card-details">
+                <div class="card-detail-row">
+                  <span class="card-detail-label">ช่องในแฟ้ม:</span>
+                  <span class="card-detail-value">${escapeHtml(card.folderSlot ? `ช่อง ${card.folderSlot}` : '-')}</span>
+                </div>
+                <div class="card-detail-row">
+                  <span class="card-detail-label">ผู้ฝากขาย:</span>
+                  <span class="card-detail-value">${escapeHtml(card.consignorName || '-')}</span>
+                </div>
+                ${card.notes ? `
+                <div class="card-detail-row">
+                  <span class="card-detail-label">หมายเหตุ:</span>
+                  <span class="card-detail-value">${escapeHtml(card.notes)}</span>
+                </div>
+                ` : ''}
+                <span class="status-badge${statusBadgeClass}">${escapeHtml(statusText)}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+      
+      html += '</div>';
+      
+      // แสดงข้อความทันทีโดยไม่ต้องรอรูปภาพ - แสดงทันทีเลย
+      container.innerHTML = html;
+      
+      // เก็บ filteredCards ไว้ในตัวแปร global เพื่อใช้ใน modal (ใช้ sortedCards)
+      window.currentFilteredCards = sortedCards;
+      
+      // โหลดรูปภาพทีละรูปหลังจากแสดงข้อความแล้ว - ใช้ setTimeout เพื่อไม่ให้บล็อก UI
+      setTimeout(() => {
+        loadImagesProgressively();
+      }, 50); // delay เล็กน้อย (50ms) เพื่อให้ข้อความแสดงก่อน
+    }
+
+    function loadCards() {
+      const container = document.getElementById('cards-container');
+      if (!container) return;
+      
+      // แสดง skeleton cards ทันที (ไม่ต้องรอ API)
+      showSkeletonCards();
+      
+      if (API_URL.includes('YOUR_APPS_SCRIPT_WEB_APP_URL')) {
+        container.innerHTML = `
+          <div class="error-message">
+            <h3>⚠️ ยังไม่ได้ตั้งค่า API URL</h3>
+            <p>กรุณา deploy Apps Script และใส่ URL ในไฟล์ consignment-cards.html</p>
+          </div>
+        `;
+        return;
+      }
+      
+      const startTime = performance.now();
+      console.log('🚀 เริ่มโหลดข้อมูลจาก API...');
+      
+      fetch(API_URL)
+        .then(res => {
+          const fetchTime = performance.now() - startTime;
+          console.log(`📡 Fetch API เสร็จ: ${fetchTime.toFixed(0)}ms`);
+          
+          // ตรวจสอบ HTTP status
+          if (!res.ok) {
+            if (res.status === 429) {
+              throw new Error('429: เรียก API บ่อยเกินไป กรุณารอสักครู่แล้วรีเฟรชหน้าเว็บ');
+            }
+            throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+          }
+          
+          return res.json();
+        })
+        .then(data => {
+          const parseTime = performance.now() - startTime;
+          console.log(`📦 Parse JSON เสร็จ: ${parseTime.toFixed(0)}ms`);
+          
+          // แสดง debug info จาก Apps Script
+          if (data.debug && Array.isArray(data.debug)) {
+            console.log('🔍 Debug จาก Apps Script:');
+            data.debug.forEach(log => console.log('  - ' + log));
+          } else {
+            console.log('⚠️ ไม่พบ debug info จาก Apps Script (อาจจะยังไม่ได้ deploy เวอร์ชันใหม่)');
+          }
+          
+          if (data.error) {
+            container.innerHTML = `<div class="error-message">เกิดข้อผิดพลาด: ${escapeHtml(data.error)}</div>`;
+            return;
+          }
+          
+          const beforeProcessTime = performance.now();
+          allCards = data.cards || [];
+          console.log(`📊 ได้ข้อมูล ${allCards.length} การ์ด`);
+          
+          // แสดงข้อความทันที (ไม่ต้องรอรูปภาพ) - แสดงทันทีโดยไม่ delay
+          const renderStart = performance.now();
+          showCardsImmediately(allCards);
+          const renderTime = performance.now() - renderStart;
+          console.log(`⚡ แสดงข้อความทันที: ${renderTime.toFixed(0)}ms`);
+          
+          // อัพเดท stats
+          updateStats(allCards.length, allCards.length);
+          
+          const totalTime = performance.now() - startTime;
+          console.log(`✅ โหลดข้อมูลเสร็จ: ${totalTime.toFixed(0)}ms`);
+          console.log(`🖼️ กำลังโหลดรูปภาพทีละรูป...`);
+          console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        })
+        .catch(err => {
+          console.error('Error loading cards:', err);
+          const errorMessage = err.message || err.toString();
+          let displayMessage = 'เกิดข้อผิดพลาดในการโหลดข้อมูล';
+          
+          if (errorMessage.includes('429')) {
+            displayMessage = '⚠️ เรียก API บ่อยเกินไป<br>กรุณารอสักครู่แล้วรีเฟรชหน้าเว็บ (F5)';
+          } else if (errorMessage.includes('CORS')) {
+            displayMessage = '⚠️ ปัญหา CORS<br>กรุณาเปิดไฟล์ผ่าน web server หรือ deploy Apps Script ให้ถูกต้อง';
+          } else if (errorMessage.includes('Failed to fetch')) {
+            displayMessage = '⚠️ ไม่สามารถเชื่อมต่อกับ API ได้<br>กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ต';
+          } else {
+            displayMessage += `<br>${escapeHtml(errorMessage)}`;
+          }
+          
+          container.innerHTML = `
+            <div class="error-message">
+              ${displayMessage}
+            </div>
+          `;
+        });
+    }
+    
+    // โหลดรูปภาพที่หายไปทีหลัง
+    function loadMissingImages() {
+      const cardsNeedingImages = allCards.filter(card => 
+        card.productId && (!card.cardImage || !card.cardBackImage)
+      );
+      
+      if (cardsNeedingImages.length === 0) return;
+      
+      console.log(`Loading images for ${cardsNeedingImages.length} cards...`);
+      
+      // โหลดรูปทีละชุด (batch) เพื่อไม่ให้ช้าเกินไป
+      const batchSize = 5;
+      let currentIndex = 0;
+      
+      function loadBatch() {
+        const batch = cardsNeedingImages.slice(currentIndex, currentIndex + batchSize);
+        
+        batch.forEach(card => {
+          if (!card.cardImage && card.productId) {
+            // สร้าง URL จาก productId (ใช้ thumbnail URL)
+            // เนื่องจากเราไม่สามารถดึงจาก Drive โดยตรงได้ เราจะใช้ข้อมูลที่มีอยู่แล้ว
+            // หรือรอให้ Apps Script ดึงรูปให้ก่อน
+          }
+        });
+        
+        currentIndex += batchSize;
+        
+        if (currentIndex < cardsNeedingImages.length) {
+          // โหลดชุดถัดไปหลังจาก delay เล็กน้อย
+          setTimeout(loadBatch, 100);
+        }
+      }
+      
+      // เริ่มโหลดหลังจาก delay เล็กน้อย
+      setTimeout(loadBatch, 500);
+    }
+
+    function openModal(cardIndex) {
+      // ใช้ currentFilteredCards เพราะอาจมีการค้นหาหรือเรียงลำดับ
+      const cards = window.currentFilteredCards || [];
+      const card = cards[cardIndex];
+      if (!card) return;
+      
+      const modal = document.getElementById('imageModal');
+      const frontImage = document.getElementById('modal-front-image');
+      const backImage = document.getElementById('modal-back-image');
+      
+      // ตรวจสอบสถานะ
+      const status = card.status || 'ยังมีอยู่';
+      const isSold = status !== 'ยังมีอยู่';
+      
+      // เพิ่ม/ลบ class "sold" จาก modal เพื่อใช้ filter grayscale
+      if (isSold) {
+        modal.classList.add('sold');
+      } else {
+        modal.classList.remove('sold');
+      }
+      
+      // แสดงชื่อการ์ด
+      document.getElementById('modal-card-name').textContent = card.cardName || 'ไม่ระบุชื่อ';
+      
+      // แสดงรูปภาพ
+      if (card.cardImage) {
+        frontImage.src = card.cardImage;
+        frontImage.style.display = 'block';
+        frontImage.nextElementSibling.style.display = 'none';
+      } else {
+        frontImage.style.display = 'none';
+        frontImage.nextElementSibling.style.display = 'block';
+      }
+      
+      if (card.cardBackImage) {
+        backImage.src = card.cardBackImage;
+        backImage.style.display = 'block';
+        backImage.nextElementSibling.style.display = 'none';
+      } else {
+        backImage.style.display = 'none';
+        backImage.nextElementSibling.style.display = 'block';
+      }
+      
+      // แสดงรายละเอียด
+      const price = card.listedPrice ? String(card.listedPrice) + ' บาท' : '-';
+      document.getElementById('modal-price').textContent = price;
+      
+      const folderSlot = card.folderSlot ? `ช่อง ${card.folderSlot}` : '-';
+      document.getElementById('modal-folder-slot').textContent = folderSlot;
+      
+      document.getElementById('modal-consignor').textContent = card.consignorName || '-';
+      document.getElementById('modal-deposit-date').textContent = card.depositDate || '-';
+      
+      // แสดงสถานะ
+      const statusText = isSold ? 'ขายแล้ว' : 'ยังมีอยู่';
+      const statusElement = document.getElementById('modal-status');
+      statusElement.textContent = statusText;
+      statusElement.style.color = isSold ? '#e53935' : '#4caf50';
+      statusElement.style.fontWeight = 'bold';
+      
+      if (card.notes) {
+        document.getElementById('modal-notes').textContent = card.notes;
+        document.getElementById('modal-notes-row').style.display = 'flex';
+      } else {
+        document.getElementById('modal-notes-row').style.display = 'none';
+      }
+      
+      // แสดง modal
+      modal.style.display = 'block';
+      document.body.style.overflow = 'hidden'; // ป้องกัน scroll
+    }
+
+    function closeModal() {
+      const modal = document.getElementById('imageModal');
+      modal.style.display = 'none';
+      document.body.style.overflow = 'auto'; // เปิด scroll กลับ
+    }
+
+    // ปิด modal เมื่อคลิกนอก modal
+    window.onclick = function(event) {
+      const modal = document.getElementById('imageModal');
+      if (event.target === modal) {
+        closeModal();
+      }
+    }
+
+    // ปิด modal เมื่อกด ESC
+    document.addEventListener('keydown', function(event) {
+      if (event.key === 'Escape') {
+        closeModal();
+      }
+    });
+
+    document.getElementById('search-box').addEventListener('input', updateDisplay);
+    document.getElementById('sort-select').addEventListener('change', updateDisplay);
+
+    window.addEventListener('DOMContentLoaded', loadCards);
+  </script>
+
+  <!-- Contact & Social Quick Actions (Footer) -->
+  <footer style="margin-top:40px; padding: 24px 0 12px 0; background: #f7f8fa; border-top: 1.5px solid #e0e7ff;">
+    <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 18px;">
+      <a href="https://maps.app.goo.gl/4Lk4CnLN9bKoVW7y6" target="_blank" style="text-decoration:none;">
+        <button style="display:flex;align-items:center;gap:8px;padding:12px 20px;font-size:1.1em;background:#2563eb;color:#fff;border:none;border-radius:8px;box-shadow:0 2px 8px #b6c0d1;cursor:pointer;">
+          🗺️ <span>นำทางไปที่ร้าน</span>
+        </button>
+      </a>
+      <a href="https://www.facebook.com/uplevel.acad" target="_blank" style="text-decoration:none;">
+        <button style="display:flex;align-items:center;gap:8px;padding:12px 20px;font-size:1.1em;background:#1877f2;color:#fff;border:none;border-radius:8px;box-shadow:0 2px 8px #b6c0d1;cursor:pointer;">
+          👍 <span>ดูเพจ Facebook</span>
+        </button>
+      </a>
+      <a href="https://line.me/ti/g2/uGTOOvPJuCjaxW_ZlJyjroEU7zOqLuBaWw9UaQ?utm_source=invitation&utm_medium=link_copy&utm_campaign=default" target="_blank" style="text-decoration:none;">
+        <button style="display:flex;align-items:center;gap:8px;padding:12px 20px;font-size:1.1em;background:#06c755;color:#fff;border:none;border-radius:8px;box-shadow:0 2px 8px #b6c0d1;cursor:pointer;">
+          💬 <span>เข้าร่วม LINE OpenChat</span>
+        </button>
+      </a>
+    </div>
+    <div style="text-align:center;color:#888;font-size:0.98em;margin-top:18px;">
+      Up Level Academy | ติด MRT บางแค | ที่จอดรถสะดวก
+    </div>
+  </footer>
+</body>
+</html>
+
