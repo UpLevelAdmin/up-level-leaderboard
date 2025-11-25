@@ -185,6 +185,10 @@
       align-items: center;
       justify-content: center;
       height: 100%;
+      width: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
     }
 
     .image-loading-spinner {
@@ -347,13 +351,14 @@
     .modal {
       display: none;
       position: fixed;
-      z-index: 2000;
+      z-index: 10000;
       left: 0;
       top: 0;
       width: 100%;
       height: 100%;
       background-color: rgba(0,0,0,0.9);
       animation: fadeIn 0.3s;
+      overflow-y: auto;
     }
 
     @keyframes fadeIn {
@@ -423,7 +428,7 @@
     }
 
     .close-modal {
-      position: absolute;
+      position: fixed;
       top: 20px;
       right: 35px;
       color: #f1f1f1;
@@ -431,6 +436,7 @@
       font-weight: bold;
       cursor: pointer;
       transition: color 0.3s;
+      z-index: 10001;
     }
 
     .close-modal:hover {
@@ -854,10 +860,6 @@
                 <div class="card-detail-row">
                   <span class="card-detail-label">ช่องในแฟ้ม:</span>
                   <span class="card-detail-value">${escapeHtml(folderSlot)}</span>
-                </div>
-                <div class="card-detail-row">
-                  <span class="card-detail-label">วันที่ลง:</span>
-                  <span class="card-detail-value">${escapeHtml(postedDate)}</span>
                 </div>
                 ${card.notes ? `
                 <div class="card-detail-row">
