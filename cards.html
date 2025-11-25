@@ -26,6 +26,31 @@
       box-shadow: 0 4px 10px rgba(0,0,0,0.08);
     }
 
+    .home-button {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      padding: 10px 20px;
+      background: #667eea;
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: 500;
+      font-size: 0.95em;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      z-index: 10;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+
+    .home-button:hover {
+      background: #5568d3;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
     .logo {
       display: flex;
       justify-content: center;
@@ -33,6 +58,7 @@
       margin-bottom: 16px;
       padding-top: 16px;
       width: 100%;
+      position: relative;
     }
 
     .logo img {
@@ -412,6 +438,13 @@
     }
 
     @media (max-width: 768px) {
+      .home-button {
+        top: 12px;
+        left: 12px;
+        padding: 8px 16px;
+        font-size: 0.85em;
+      }
+
       .modal-images {
         flex-direction: column;
         gap: 16px;
@@ -638,6 +671,13 @@
     }
     
     @media (max-width: 480px) {
+      .home-button {
+        top: 10px;
+        left: 10px;
+        padding: 6px 12px;
+        font-size: 0.8em;
+      }
+
       .cards-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 8px;
@@ -687,6 +727,7 @@
 </head>
 <body>
   <div class="container">
+    <a href="index.html" class="home-button">🏠 กลับหน้าแรก</a>
     <div class="logo">
       <img src="https://i.postimg.cc/wjzpnxjB/Up-Level-01-1.png" alt="Up Level Guild Logo">
     </div>
