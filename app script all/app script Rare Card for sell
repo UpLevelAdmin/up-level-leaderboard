@@ -1,0 +1,924 @@
+function doGet(e) {
+  try {
+    var isJson = e && e.parameter && e.parameter.type === 'json';
+    var sheetType = e && e.parameter && e.parameter.sheet || 'consignment'; // 'consignment' หรือ 'shop'
+    
+    // ถ้าเป็น shop sheet ให้ใช้ฟังก์ชันใหม่
+    if (sheetType === 'shop') {
+      return doGetShopCards(e);
+    }
+    
+    var spreadsheetId = '1t-3GcjlaV2YL3aSKe-EG34xPiolaWodxK8smyqjDE_E';
+    var spreadsheet = SpreadsheetApp.openById(spreadsheetId);
+    
+    var targetSheet = spreadsheet.getSheetByName('ฝากขายการ์ด');
+    if (!targetSheet) {
+      targetSheet = spreadsheet.getSheetByName('Sheet1');
+    }
+    if (!targetSheet) {
+      var allSheets = spreadsheet.getSheets();
+      if (allSheets.length > 0) {
+        targetSheet = allSheets[0];
+      }
+    }
+    
+    if (!targetSheet) {
+      if (isJson) {
+        return ContentService.createTextOutput(JSON.stringify({
+          error: "ไม่พบชีทข้อมูล",
+          cards: []
+        })).setMimeType(ContentService.MimeType.JSON);
+      }
+      return HtmlService.createHtmlOutput("ไม่พบชีทข้อมูล");
+    }
+    
+    // ดึงข้อมูลทั้งหมดมาในครั้งเดียว (เร็วกว่าการดึงทีละแถว)
+    var data = targetSheet.getDataRange().getValues();
+    
+    if (data.length <= 1) {
+      if (isJson) {
+        return ContentService.createTextOutput(JSON.stringify({
+          error: "ไม่มีข้อมูล",
+          cards: []
+        })).setMimeType(ContentService.MimeType.JSON);
+      }
+      return HtmlService.createHtmlOutput("ไม่มีข้อมูล");
+    }
+    
+    var headers = data[0];
+    var cards = [];
+    
+    // สร้าง colIndex แบบเร็ว (ใช้ index โดยตรง)
+    var colIndex = {};
+    var headerCount = headers.length;
+    for (var h = 0; h < headerCount; h++) {
+      colIndex[headers[h]] = h;
+    }
+    
+    // Cache column indices เพื่อลดการค้นหา
+    var idxDate = colIndex['วันที่ฝาก'];
+    var idxConsignor = colIndex['ชื่อผู้ฝากขาย'];
+    var idxPhone = colIndex['เบอร์โทร'];
+    var idxSlot = colIndex['ช่องในแฟ้ม'];
+    var idxCardName = colIndex['ชื่อการ์ด'];
+    var idxPrice = colIndex['ราคาป้าย'];
+    var idxActualPrice = colIndex['ราคาขายจริง'];
+    var idxStatus = colIndex['สถานะ'];
+    var idxSaleDate = colIndex['วันที่ขาย/คืน'];
+    var idxRefund = colIndex['ยอดคืนลูกค้า (90%)'];
+    var idxNotes = colIndex['หมายเหตุ'];
+    var idxProductId = colIndex['รหัสสินค้า'];
+    var idxImageLink = colIndex['ลิงก์ภาพการ์ด'];
+    
+    // Cache folder และ files เพื่อไม่ต้องเปิด folder ซ้ำ (เร็วขึ้นมาก!)
+    var driveFolderId = '1ZVmhWN_5eMshclIzvjBlcyDwGUJW4A11';
+    var folder = null;
+    var fileMap = {}; // Cache files เพื่อไม่ต้องค้นหาซ้ำ
+    try {
+      folder = DriveApp.getFolderById(driveFolderId);
+      // ดึงไฟล์ทั้งหมดจาก folder ครั้งเดียว (เร็วกว่าการค้นหาทีละไฟล์)
+      var allFiles = folder.getFiles();
+      while (allFiles.hasNext()) {
+        var file = allFiles.next();
+        var fileName = file.getName();
+        fileMap[fileName] = {
+          id: file.getId(),
+          file: file
+        };
+      }
+    } catch (e) {
+      // ถ้าเกิด error ให้ข้ามไป (ไม่ต้องแสดง error)
+    }
+    
+    // ประมวลผลข้อมูลทั้งหมดแบบ batch (เร็วกว่าการประมวลผลทีละแถว)
+    var rowCount = data.length;
+    var cardImage, imageLink, imageLinkStr, idMatch, cardName, status;
+    var statusCounts = {};
+    var totalProcessed = 0;
+    var skippedNoName = 0;
+    var skippedRows = [];
+    
+    for (var i = 1; i < rowCount; i++) {
+      var row = data[i];
+      
+      // อ่านข้อมูลโดยใช้ index โดยตรง (เร็วกว่า)
+      cardName = row[idxCardName];
+      // ตรวจสอบว่ามีชื่อการ์ดหรือไม่ (รวมถึง whitespace)
+      if (!cardName || String(cardName).trim() === '') {
+        skippedNoName++;
+        // เก็บข้อมูลแถวที่ถูกข้ามเพื่อ debug
+        if (skippedRows.length < 5) { // เก็บแค่ 5 แถวแรกเพื่อไม่ให้ log ยาวเกินไป
+          skippedRows.push({
+            row: i + 1,
+            cardName: cardName,
+            productId: row[idxProductId] || '',
+            status: row[idxStatus] || ''
+          });
+        }
+        continue; // ข้ามถ้าไม่มีชื่อการ์ด
+      }
+      
+      status = String(row[idxStatus] || 'ยังมีอยู่').trim();
+      statusCounts[status] = (statusCounts[status] || 0) + 1;
+      totalProcessed++;
+      
+      // แสดงการ์ดทุกสถานะ (ไม่กรอง)
+      
+      // อ่านรูปภาพจาก Column G แบบเร็ว
+      cardImage = '';
+      if (idxImageLink !== undefined) {
+        imageLink = row[idxImageLink];
+        if (imageLink) {
+          imageLinkStr = String(imageLink);
+          if (imageLinkStr.indexOf('http') !== -1) {
+            if (imageLinkStr.indexOf('thumbnail?id=') !== -1) {
+              cardImage = imageLinkStr;
+            } else {
+              idMatch = imageLinkStr.match(/id=([a-zA-Z0-9_-]+)/);
+              if (idMatch && idMatch[1]) {
+                cardImage = 'https://drive.google.com/thumbnail?id=' + idMatch[1] + '&sz=w1000';
+              } else {
+                cardImage = imageLinkStr;
+              }
+            }
+          }
+        }
+      }
+      
+      // ดึงรูปหลังจาก Drive โดยใช้ productId - ใช้ fileMap ที่ cache ไว้แล้ว (เร็วมาก!)
+      var cardBackImage = '';
+      var productId = String(row[idxProductId] || '').trim();
+      if (productId && fileMap) {
+        var backFileName = productId + ' หลัง.jpg';
+        var cachedFile = fileMap[backFileName];
+        if (cachedFile) {
+          try {
+            // ลดการ setSharing (ไม่จำเป็นถ้าไฟล์ share อยู่แล้ว) - ทำให้เร็วขึ้นมาก
+            // ถ้าต้องการ setSharing ให้ uncomment บรรทัดนี้
+            // cachedFile.file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+            var backFileId = cachedFile.id;
+            cardBackImage = 'https://drive.google.com/thumbnail?id=' + backFileId + '&sz=w1000';
+          } catch (e) {
+            // ถ้าเกิด error ให้ข้ามไป (ไม่ต้องแสดง error)
+          }
+        }
+      }
+      
+      // สร้าง object แบบเร็ว (ใช้ตัวแปรที่ประกาศไว้แล้ว)
+      cards.push({
+        depositDate: row[idxDate] || '',
+        consignorName: row[idxConsignor] || '',
+        phone: row[idxPhone] || '',
+        folderSlot: row[idxSlot] || '',
+        cardName: cardName,
+        cardImage: cardImage,
+        cardBackImage: cardBackImage,
+        productId: productId,
+        listedPrice: row[idxPrice] || '',
+        actualPrice: row[idxActualPrice] || '',
+        status: status,
+        saleDate: row[idxSaleDate] || '',
+        refundAmount: row[idxRefund] || '',
+        notes: row[idxNotes] || ''
+      });
+    }
+    
+    if (isJson) {
+      var debugInfo = [];
+      debugInfo.push('📊 ประมวลผลทั้งหมด: ' + totalProcessed + ' การ์ด');
+      debugInfo.push('⏭️ ข้าม (ไม่มีชื่อ): ' + skippedNoName + ' แถว');
+      debugInfo.push('✅ ส่งออก: ' + cards.length + ' การ์ด');
+      debugInfo.push('📋 สถานะ: ' + JSON.stringify(statusCounts));
+      if (skippedRows.length > 0) {
+        debugInfo.push('🔍 แถวที่ถูกข้าม (ตัวอย่าง): ' + JSON.stringify(skippedRows));
+      }
+      
+      return ContentService.createTextOutput(JSON.stringify({
+        cards: cards,
+        total: cards.length,
+        debug: debugInfo
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    var html = '<html><body><h2>การ์ดฝากขาย</h2><ul>';
+    cards.forEach(function(card) {
+      html += '<li>' + card.cardName + ' - ' + card.listedPrice + ' บาท</li>';
+    });
+    html += '</ul></body></html>';
+    return HtmlService.createHtmlOutput(html);
+    
+  } catch (error) {
+    var errorMsg = 'เกิดข้อผิดพลาด: ' + error.toString();
+    
+    if (e && e.parameter && e.parameter.type === 'json') {
+      return ContentService.createTextOutput(JSON.stringify({
+        error: errorMsg,
+        cards: []
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    return HtmlService.createHtmlOutput(errorMsg);
+  }
+}
+
+/**
+ * ฟังก์ชันสำหรับดึงข้อมูลจาก sheet "การ์ดหน้าร้าน" โดยเฉพาะ
+ * เรียกใช้ผ่าน: doGet?type=json&sheet=shop
+ */
+function doGetShopCards(e) {
+  try {
+    var isJson = e && e.parameter && e.parameter.type === 'json';
+    
+    // Debug: เก็บข้อมูล debug
+    var debugInfo = [];
+    debugInfo.push('🔍 เริ่มทำงาน doGetShopCards');
+    debugInfo.push('📋 Parameter: ' + JSON.stringify(e ? e.parameter : 'no parameter'));
+    debugInfo.push('📋 isJson: ' + isJson);
+    
+    // ใช้ getActiveSpreadsheet() เพราะ Apps Script อยู่ใน Spreadsheet เดียวกัน
+    var spreadsheet;
+    try {
+      debugInfo.push('🔍 ใช้ SpreadsheetApp.getActiveSpreadsheet()...');
+      spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+      if (!spreadsheet) {
+        debugInfo.push('❌ ไม่มี Active Spreadsheet');
+        if (isJson) {
+          return ContentService.createTextOutput(JSON.stringify({
+            error: "ไม่พบ Spreadsheet",
+            cards: [],
+            debug: debugInfo,
+            suggestion: "กรุณาตรวจสอบว่า Apps Script อยู่ใน Spreadsheet ที่ถูกต้อง"
+          })).setMimeType(ContentService.MimeType.JSON);
+        }
+        return HtmlService.createHtmlOutput("ไม่พบ Spreadsheet<br><br>Debug:<br>" + debugInfo.join("<br>"));
+      }
+      debugInfo.push('✅ ใช้ Active Spreadsheet สำเร็จ');
+      debugInfo.push('📋 Spreadsheet Name: ' + spreadsheet.getName());
+    } catch (activeError) {
+      debugInfo.push('❌ Error ใช้ Active Spreadsheet: ' + activeError.toString());
+      
+      if (isJson) {
+        return ContentService.createTextOutput(JSON.stringify({
+          error: "ไม่สามารถเข้าถึง Spreadsheet ได้: " + activeError.toString(),
+          cards: [],
+          debug: debugInfo,
+          suggestion: "กรุณาตรวจสอบว่า Apps Script อยู่ใน Spreadsheet ที่ถูกต้อง"
+        })).setMimeType(ContentService.MimeType.JSON);
+      }
+      return HtmlService.createHtmlOutput("ไม่สามารถเข้าถึง Spreadsheet ได้<br><br>Debug:<br>" + debugInfo.join("<br>"));
+    }
+    
+    if (!spreadsheet) {
+      debugInfo.push('❌ Spreadsheet เป็น null');
+      if (isJson) {
+        return ContentService.createTextOutput(JSON.stringify({
+          error: "ไม่พบ Spreadsheet",
+          cards: [],
+          debug: debugInfo
+        })).setMimeType(ContentService.MimeType.JSON);
+      }
+      return HtmlService.createHtmlOutput("ไม่พบ Spreadsheet<br><br>Debug:<br>" + debugInfo.join("<br>"));
+    }
+    
+    debugInfo.push('🔍 พยายามหา sheet "การ์ดหน้าร้าน"...');
+    var targetSheet = spreadsheet.getSheetByName('การ์ดหน้าร้าน');
+    
+    if (!targetSheet) {
+      debugInfo.push('❌ ไม่พบ sheet "การ์ดหน้าร้าน"');
+      // ลองหา sheet อื่นๆ
+      var allSheets = spreadsheet.getSheets();
+      debugInfo.push('📋 พบ sheets ทั้งหมด: ' + allSheets.length + ' sheets');
+      for (var s = 0; s < allSheets.length && s < 5; s++) {
+        debugInfo.push('  - Sheet ' + (s + 1) + ': ' + allSheets[s].getName());
+      }
+      
+      if (isJson) {
+        return ContentService.createTextOutput(JSON.stringify({
+          error: "ไม่พบชีท 'การ์ดหน้าร้าน'",
+          cards: [],
+          debug: debugInfo
+        })).setMimeType(ContentService.MimeType.JSON);
+      }
+      return HtmlService.createHtmlOutput("ไม่พบชีท 'การ์ดหน้าร้าน'<br><br>Debug:<br>" + debugInfo.join("<br>"));
+    }
+    
+    debugInfo.push('✅ พบ sheet "การ์ดหน้าร้าน"');
+    
+    debugInfo.push('🔍 ดึงข้อมูลจาก sheet...');
+    var data = targetSheet.getDataRange().getValues();
+    debugInfo.push('📋 พบข้อมูล: ' + data.length + ' แถว');
+    
+    if (data.length <= 1) {
+      debugInfo.push('❌ ไม่มีข้อมูล (มีแค่ header หรือไม่มีเลย)');
+      if (isJson) {
+        return ContentService.createTextOutput(JSON.stringify({
+          error: "ไม่มีข้อมูล",
+          cards: [],
+          debug: debugInfo
+        })).setMimeType(ContentService.MimeType.JSON);
+      }
+      return HtmlService.createHtmlOutput("ไม่มีข้อมูล<br><br>Debug:<br>" + debugInfo.join("<br>"));
+    }
+    
+    var headers = data[0];
+    var cards = [];
+    
+    // สร้าง colIndex
+    var colIndex = {};
+    for (var h = 0; h < headers.length; h++) {
+      colIndex[headers[h]] = h;
+    }
+    
+    // Column indices สำหรับ sheet "การ์ดหน้าร้าน"
+    var idxDate = colIndex['วันที่ลง'] !== undefined ? colIndex['วันที่ลง'] : -1;
+    var idxSlot = colIndex['ช่องในแฟ้ม'] !== undefined ? colIndex['ช่องในแฟ้ม'] : -1;
+    var idxCardName = colIndex['ชื่อการ์ด'] !== undefined ? colIndex['ชื่อการ์ด'] : -1;
+    var idxImageLink = colIndex['ลิงก์ภาพการ์ด'] !== undefined ? colIndex['ลิงก์ภาพการ์ด'] : -1;
+    var idxPrice = colIndex['ราคาป้าย'] !== undefined ? colIndex['ราคาป้าย'] : -1;
+    var idxActualPrice = colIndex['ราคาขายจริง'] !== undefined ? colIndex['ราคาขายจริง'] : -1;
+    var idxStatus = colIndex['สถานะ'] !== undefined ? colIndex['สถานะ'] : -1;
+    var idxSaleDate = colIndex['วันที่ขาย'] !== undefined ? colIndex['วันที่ขาย'] : -1;
+    var idxNotes = colIndex['หมายเหตุ'] !== undefined ? colIndex['หมายเหตุ'] : -1;
+    var idxProductId = colIndex['รหัสสินค้า'] !== undefined ? colIndex['รหัสสินค้า'] : -1;
+    
+    // Cache folder และ files
+    var driveFolderId = '1ZVmhWN_5eMshclIzvjBlcyDwGUJW4A11';
+    var folder = null;
+    var fileMap = {};
+    try {
+      folder = DriveApp.getFolderById(driveFolderId);
+      var allFiles = folder.getFiles();
+      while (allFiles.hasNext()) {
+        var file = allFiles.next();
+        var fileName = file.getName();
+        fileMap[fileName] = {
+          id: file.getId(),
+          file: file
+        };
+      }
+    } catch (e) {
+      // ถ้าเกิด error ให้ข้ามไป
+    }
+    
+    // ประมวลผลข้อมูล
+    for (var i = 1; i < data.length; i++) {
+      var row = data[i];
+      
+      var cardName = idxCardName >= 0 ? row[idxCardName] : '';
+      if (!cardName || String(cardName).trim() === '') {
+        continue;
+      }
+      
+      // อ่านรูปภาพจาก Column E (ลิงก์ภาพการ์ด)
+      var cardImage = '';
+      if (idxImageLink >= 0) {
+        var imageLink = row[idxImageLink];
+        if (imageLink) {
+          var imageLinkStr = String(imageLink);
+          if (imageLinkStr.indexOf('http') !== -1) {
+            if (imageLinkStr.indexOf('thumbnail?id=') !== -1) {
+              cardImage = imageLinkStr;
+            } else {
+              var idMatch = imageLinkStr.match(/id=([a-zA-Z0-9_-]+)/);
+              if (idMatch && idMatch[1]) {
+                cardImage = 'https://drive.google.com/thumbnail?id=' + idMatch[1] + '&sz=w1000';
+              } else {
+                cardImage = imageLinkStr;
+              }
+            }
+          }
+        }
+      }
+      
+      // ดึงรูปหลังจาก Drive
+      var cardBackImage = '';
+      var productId = idxProductId >= 0 ? String(row[idxProductId] || '').trim() : '';
+      if (productId && fileMap) {
+        // ลองหาชื่อไฟล์หลายแบบ
+        var backFileName1 = productId + ' หลัง.jpg';
+        var backFileName2 = productId + 'หลัง.jpg';
+        var backFileName3 = productId + ' หลัง.jpg';
+        var backFileName4 = productId + 'หลัง.jpg';
+        var cachedFile = fileMap[backFileName1] || fileMap[backFileName2] || fileMap[backFileName3] || fileMap[backFileName4];
+        
+        if (!cachedFile) {
+          // ค้นหาแบบ fuzzy
+          for (var fileName in fileMap) {
+            if (fileName.indexOf(productId) !== -1 && 
+                (fileName.indexOf('หลัง') !== -1 || fileName.indexOf('หลัง') !== -1) && 
+                (fileName.indexOf('.jpg') !== -1 || fileName.indexOf('.JPG') !== -1)) {
+              cachedFile = fileMap[fileName];
+              break;
+            }
+          }
+        }
+        
+        if (cachedFile) {
+          try {
+            var backFileId = cachedFile.id;
+            cardBackImage = 'https://drive.google.com/thumbnail?id=' + backFileId + '&sz=w1000';
+          } catch (e) {}
+        }
+      }
+      
+      var status = idxStatus >= 0 ? String(row[idxStatus] || 'ยังมีอยู่').trim() : 'ยังมีอยู่';
+      
+      cards.push({
+        postedDate: idxDate >= 0 ? row[idxDate] : '',
+        folderSlot: idxSlot >= 0 ? row[idxSlot] : '',
+        cardName: cardName,
+        cardImage: cardImage,
+        cardBackImage: cardBackImage,
+        productId: productId,
+        listedPrice: idxPrice >= 0 ? row[idxPrice] : '',
+        actualPrice: idxActualPrice >= 0 ? row[idxActualPrice] : '',
+        status: status,
+        saleDate: idxSaleDate >= 0 ? row[idxSaleDate] : '',
+        notes: idxNotes >= 0 ? row[idxNotes] : ''
+      });
+    }
+    
+    debugInfo.push('✅ ประมวลผลเสร็จ: ' + cards.length + ' การ์ด');
+    
+    if (isJson) {
+      return ContentService.createTextOutput(JSON.stringify({
+        cards: cards,
+        total: cards.length,
+        debug: debugInfo
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    var html = '<html><body><h2>การ์ดหน้าร้าน</h2><ul>';
+    cards.forEach(function(card) {
+      html += '<li>' + card.cardName + ' - ' + card.listedPrice + ' บาท</li>';
+    });
+    html += '</ul></body></html>';
+    return HtmlService.createHtmlOutput(html);
+    
+  } catch (error) {
+    var errorMsg = 'เกิดข้อผิดพลาด: ' + error.toString();
+    var debugInfo = [];
+    debugInfo.push('❌ Error ใน doGetShopCards (catch block)');
+    debugInfo.push('📋 Error Type: ' + typeof error);
+    debugInfo.push('📋 Error Message: ' + (error.message || error.toString()));
+    debugInfo.push('📋 Error Stack: ' + (error.stack || 'no stack'));
+    debugInfo.push('📋 Error Name: ' + (error.name || 'no name'));
+    
+    if (e && e.parameter && e.parameter.type === 'json') {
+      return ContentService.createTextOutput(JSON.stringify({
+        error: errorMsg,
+        cards: [],
+        debug: debugInfo
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    return HtmlService.createHtmlOutput(errorMsg + "<br><br>Debug:<br>" + debugInfo.join("<br>"));
+  }
+}
+
+function linkImagesFromDrive() {
+  var sheetName = 'การ์ดหน้าร้าน';
+  var driveFolderId = '1ZVmhWN_5eMshclIzvjBlcyDwGUJW4A11';
+  var productIdCol = 10; // Column K = index 10 (A=0, B=1, C=2, D=3, E=4, F=5, G=6, H=7, I=8, J=9, K=10)
+  var imageLinkCol = 4; // Column E = index 4 (A=0, B=1, C=2, D=3, E=4)
+  
+  try {
+    // ใช้ active spreadsheet เท่านั้น (ปลอดภัยสำหรับ trigger)
+    var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+    if (!spreadsheet) {
+      return; // ไม่แสดง alert
+    }
+    
+    var sheet = spreadsheet.getSheetByName(sheetName);
+    if (!sheet) {
+      return; // ไม่แสดง alert
+    }
+    
+    var folder = DriveApp.getFolderById(driveFolderId);
+    var files = folder.getFiles();
+    var fileMap = {};
+    var fileList = []; // เก็บชื่อไฟล์ทั้งหมดเพื่อ debug
+    var fileCount = 0;
+    
+    // สร้าง fileMap และเก็บชื่อไฟล์ทั้งหมด
+    while (files.hasNext()) {
+      var file = files.next();
+      var fileName = file.getName();
+      fileMap[fileName] = file;
+      fileList.push(fileName);
+      fileCount++;
+    }
+    
+    var data = sheet.getDataRange().getValues();
+    var updatedCount = 0;
+    var notFoundCount = 0;
+    var skippedCount = 0;
+    
+    for (var i = 1; i < data.length; i++) {
+      var productId = String(data[i][productIdCol] || '').trim();
+      if (!productId) {
+        skippedCount++;
+        continue;
+      }
+      
+      // ตรวจสอบว่ามีลิงก์ภาพที่ถูกต้องอยู่แล้วหรือไม่
+      var existingLink = String(data[i][imageLinkCol] || '').trim();
+      var hasValidLink = false;
+      if (existingLink) {
+        // ตรวจสอบว่าลิงก์ถูกต้อง (ต้องมี https://drive.google.com/thumbnail?id= และ file ID)
+        if (existingLink.indexOf('https://drive.google.com/thumbnail?id=') !== -1) {
+          var idMatch = existingLink.match(/id=([a-zA-Z0-9_-]+)/);
+          if (idMatch && idMatch[1] && idMatch[1].length > 10) {
+            hasValidLink = true;
+          }
+        }
+      }
+      
+      // ถ้ามีลิงก์ที่ถูกต้องอยู่แล้วให้ข้าม
+      if (hasValidLink) {
+        skippedCount++;
+        continue;
+      }
+      
+      // ลองหาชื่อไฟล์หลายแบบ (เผื่อมี space หรือ character พิเศษ หรือสะกดผิด)
+      var frontFileName1 = productId + ' หน้า.jpg';  // มี space, สะกดถูก
+      var frontFileName2 = productId + 'หน้า.jpg';   // ไม่มี space, สะกดถูก
+      var frontFileName3 = productId + ' หนัา.jpg';   // มี space, สะกดผิด (หนัา)
+      var frontFileName4 = productId + 'หนัา.jpg';    // ไม่มี space, สะกดผิด (หนัา)
+      var frontFile = fileMap[frontFileName1] || fileMap[frontFileName2] || fileMap[frontFileName3] || fileMap[frontFileName4];
+      
+      // ถ้ายังไม่พบ ลองค้นหาแบบ fuzzy (หาชื่อไฟล์ที่มี productId และคำว่า "หน้า" หรือ "หนัา")
+      if (!frontFile) {
+        for (var fileName in fileMap) {
+          // หาไฟล์ที่มี productId และมีคำว่า "หน้า" หรือ "หนัา" และเป็นไฟล์ .jpg
+          if (fileName.indexOf(productId) !== -1 && 
+              (fileName.indexOf('หน้า') !== -1 || fileName.indexOf('หนัา') !== -1) && 
+              (fileName.indexOf('.jpg') !== -1 || fileName.indexOf('.JPG') !== -1)) {
+            frontFile = fileMap[fileName];
+            break;
+          }
+        }
+      }
+      
+      if (frontFile) {
+        try {
+          frontFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+        } catch (e) {
+          // ถ้า setSharing ไม่ได้ก็ข้ามไป (อาจ share อยู่แล้ว)
+        }
+        
+        var fileId = frontFile.getId();
+        // ใช้ thumbnail URL แทน เพราะจะโหลดได้เร็วกว่าและไม่ต้องตั้งค่าแชร์
+        var imageUrl = 'https://drive.google.com/thumbnail?id=' + fileId + '&sz=w1000';
+        sheet.getRange(i + 1, imageLinkCol + 1).setValue(imageUrl);
+        updatedCount++;
+      } else {
+        notFoundCount++;
+      }
+    }
+    
+    // ไม่แสดง alert เพื่อไม่เสียเวลา
+  } catch (error) {
+    // ไม่แสดง error เพื่อไม่เสียเวลา
+    // แต่ถ้าต้องการ debug ให้ uncomment บรรทัดนี้
+    // Logger.log('Error in linkImagesFromDrive: ' + error.toString());
+  }
+}
+
+/**
+ * ฟังก์ชันทดสอบสำหรับตรวจสอบว่าฟังก์ชันทำงานได้หรือไม่
+ * รันฟังก์ชันนี้เพื่อดูผลลัพธ์
+ */
+function testLinkImages() {
+  var sheetName = 'การ์ดหน้าร้าน';
+  var driveFolderId = '1ZVmhWN_5eMshclIzvjBlcyDwGUJW4A11';
+  var productIdCol = 10;
+  var imageLinkCol = 4;
+  
+  try {
+    // ใช้ active spreadsheet เท่านั้น (ปลอดภัยสำหรับ trigger)
+    var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+    if (!spreadsheet) {
+      SpreadsheetApp.getUi().alert('กรุณาเปิดไฟล์ Google Sheets ก่อน');
+      return;
+    }
+    
+    var sheet = spreadsheet.getSheetByName(sheetName);
+    if (!sheet) {
+      Logger.log('ไม่พบ sheet: ' + sheetName);
+      SpreadsheetApp.getUi().alert('ไม่พบ sheet: ' + sheetName);
+      return;
+    }
+    
+    var folder = DriveApp.getFolderById(driveFolderId);
+    var files = folder.getFiles();
+    var fileMap = {};
+    var fileList = []; // เก็บชื่อไฟล์ทั้งหมดเพื่อ debug
+    var fileCount = 0;
+    
+    while (files.hasNext()) {
+      var file = files.next();
+      var fileName = file.getName();
+      fileMap[fileName] = file;
+      fileList.push(fileName);
+      fileCount++;
+    }
+    
+    Logger.log('พบไฟล์ทั้งหมด: ' + fileCount + ' ไฟล์');
+    Logger.log('ชื่อไฟล์ใน Drive: ' + fileList.join(', '));
+    
+    var data = sheet.getDataRange().getValues();
+    Logger.log('พบข้อมูลทั้งหมด: ' + (data.length - 1) + ' แถว');
+    
+    var updatedCount = 0;
+    var notFoundCount = 0;
+    var skippedCount = 0;
+    var notFoundIds = [];
+    var notFoundDetails = [];
+    
+    for (var i = 1; i < data.length; i++) {
+      var productId = String(data[i][productIdCol] || '').trim();
+      if (!productId) {
+        skippedCount++;
+        continue;
+      }
+      
+      var existingLink = String(data[i][imageLinkCol] || '').trim();
+      var hasValidLink = false;
+      if (existingLink) {
+        if (existingLink.indexOf('https://drive.google.com/thumbnail?id=') !== -1) {
+          var idMatch = existingLink.match(/id=([a-zA-Z0-9_-]+)/);
+          if (idMatch && idMatch[1] && idMatch[1].length > 10) {
+            hasValidLink = true;
+          }
+        }
+      }
+      
+      if (hasValidLink) {
+        skippedCount++;
+        continue;
+      }
+      
+      var frontFileName1 = productId + ' หน้า.jpg';  // มี space, สะกดถูก
+      var frontFileName2 = productId + 'หน้า.jpg';   // ไม่มี space, สะกดถูก
+      var frontFileName3 = productId + ' หนัา.jpg';   // มี space, สะกดผิด (หนัา)
+      var frontFileName4 = productId + 'หนัา.jpg';    // ไม่มี space, สะกดผิด (หนัา)
+      var frontFile = fileMap[frontFileName1] || fileMap[frontFileName2] || fileMap[frontFileName3] || fileMap[frontFileName4];
+      var foundFileName = '';
+      
+      if (frontFile) {
+        // ใช้ชื่อไฟล์ที่ตรงกับ key ใน fileMap
+        if (fileMap[frontFileName1]) {
+          foundFileName = frontFileName1;
+        } else if (fileMap[frontFileName2]) {
+          foundFileName = frontFileName2;
+        } else if (fileMap[frontFileName3]) {
+          foundFileName = frontFileName3;
+        } else if (fileMap[frontFileName4]) {
+          foundFileName = frontFileName4;
+        }
+      } else {
+        // ถ้ายังไม่พบ ลองค้นหาแบบ fuzzy (หาชื่อไฟล์ที่มี productId และคำว่า "หน้า" หรือ "หนัา")
+        for (var fileName in fileMap) {
+          // หาไฟล์ที่มี productId อยู่ในชื่อ และมีคำว่า "หน้า" หรือ "หนัา" และเป็นไฟล์ .jpg
+          if (fileName.indexOf(productId) !== -1 && 
+              (fileName.indexOf('หน้า') !== -1 || fileName.indexOf('หนัา') !== -1) && 
+              (fileName.indexOf('.jpg') !== -1 || fileName.indexOf('.JPG') !== -1)) {
+            frontFile = fileMap[fileName];
+            foundFileName = fileName;
+            break;
+          }
+        }
+      }
+      
+      if (frontFile) {
+        try {
+          frontFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+        } catch (e) {}
+        
+        var fileId = frontFile.getId();
+        var imageUrl = 'https://drive.google.com/thumbnail?id=' + fileId + '&sz=w1000';
+        sheet.getRange(i + 1, imageLinkCol + 1).setValue(imageUrl);
+        updatedCount++;
+        Logger.log('อัพเดทแถว ' + (i + 1) + ': ' + productId + ' -> ' + foundFileName);
+      } else {
+        notFoundCount++;
+        notFoundIds.push(productId);
+        var searchPatterns = 'ค้นหา: "' + frontFileName1 + '" หรือ "' + frontFileName2 + '"';
+        notFoundDetails.push(productId + ' (' + searchPatterns + ')');
+        Logger.log('ไม่พบไฟล์สำหรับ: ' + productId + ' - ' + searchPatterns);
+      }
+    }
+    
+    var message = 'เสร็จสิ้น!\n';
+    message += 'อัพเดท: ' + updatedCount + ' แถว\n';
+    message += 'ไม่พบไฟล์: ' + notFoundCount + ' แถว\n';
+    message += 'ข้าม (มีลิงก์แล้ว/ไม่มีรหัส): ' + skippedCount + ' แถว\n';
+    message += 'ไฟล์ใน Drive: ' + fileCount + ' ไฟล์';
+    
+    if (notFoundIds.length > 0 && notFoundIds.length <= 10) {
+      message += '\n\nรหัสที่ไม่พบ:\n' + notFoundIds.join(', ');
+      message += '\n\nรายละเอียด:\n' + notFoundDetails.join('\n');
+      
+      // แสดงไฟล์ที่เกี่ยวข้องกับรหัสที่ไม่พบ
+      message += '\n\nไฟล์ที่เกี่ยวข้องใน Drive:';
+      for (var n = 0; n < notFoundIds.length; n++) {
+        var searchId = notFoundIds[n];
+        var relatedFiles = [];
+        for (var f = 0; f < fileList.length; f++) {
+          if (fileList[f].indexOf(searchId) !== -1) {
+            relatedFiles.push(fileList[f]);
+          }
+        }
+        if (relatedFiles.length > 0) {
+          message += '\n' + searchId + ': ' + relatedFiles.join(', ');
+        } else {
+          message += '\n' + searchId + ': ไม่พบไฟล์ที่เกี่ยวข้อง';
+        }
+      }
+    }
+    
+    // แสดงไฟล์ทั้งหมดใน Drive (ถ้ามีไม่เกิน 30 ไฟล์)
+    if (fileList.length > 0 && fileList.length <= 30) {
+      message += '\n\nไฟล์ทั้งหมดใน Drive (' + fileList.length + ' ไฟล์):\n' + fileList.join('\n');
+      Logger.log('\nไฟล์ทั้งหมดใน Drive:\n' + fileList.join('\n'));
+    } else if (fileList.length > 30) {
+      message += '\n\nไฟล์ทั้งหมดใน Drive: ' + fileList.length + ' ไฟล์ (ดูใน Logger)';
+      Logger.log('\nไฟล์ทั้งหมดใน Drive:\n' + fileList.join('\n'));
+    }
+    
+    Logger.log(message);
+    SpreadsheetApp.getUi().alert(message);
+  } catch (error) {
+    var errorMsg = 'Error: ' + error.toString();
+    Logger.log(errorMsg);
+    SpreadsheetApp.getUi().alert(errorMsg);
+  }
+}
+
+function updateImageColumn() {
+  var sheetName = 'การ์ดหน้าร้าน';
+  var imageLinkCol = 4; // Column E
+  var imageCol = 3; // Column D
+  
+  try {
+    // ใช้ active spreadsheet เท่านั้น (ปลอดภัยสำหรับ trigger)
+    var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+    if (!spreadsheet) {
+      return;
+    }
+    
+    var sheet = spreadsheet.getSheetByName(sheetName);
+    if (!sheet) {
+      return;
+    }
+    var data = sheet.getDataRange().getValues();
+    var updatedCount = 0;
+    
+    for (var i = 1; i < data.length; i++) {
+      var imageUrl = String(data[i][imageLinkCol] || '').trim();
+      if (imageUrl && imageUrl.indexOf('http') !== -1) {
+        sheet.getRange(i + 1, imageCol + 1).setValue('=IMAGE("' + imageUrl + '")');
+        updatedCount++;
+      }
+    }
+    
+    // ไม่แสดง alert เพื่อไม่เสียเวลา
+  } catch (error) {
+    // ไม่แสดง error เพื่อไม่เสียเวลา
+  }
+}
+
+/**
+ * ฟังก์ชันสำหรับสร้างปุ่มใน Google Sheets
+ * รันครั้งเดียวเพื่อสร้างปุ่มสำหรับอัพเดท URL รูปภาพ
+ */
+function createButton() {
+  try {
+    // ใช้ active spreadsheet เท่านั้น (ปลอดภัยสำหรับ trigger)
+    var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+    if (!spreadsheet) {
+      SpreadsheetApp.getUi().alert('กรุณาเปิดไฟล์ Google Sheets ก่อน');
+      return;
+    }
+    
+    var sheet = spreadsheet.getSheetByName('การ์ดหน้าร้าน');
+    
+    if (!sheet) {
+      var allSheets = spreadsheet.getSheets();
+      if (allSheets.length > 0) {
+        sheet = allSheets[0];
+      }
+    }
+    
+    if (!sheet) {
+      SpreadsheetApp.getUi().alert('ไม่พบ sheet');
+      return;
+    }
+    
+    // ลบปุ่มเก่า (ถ้ามี)
+    var drawings = sheet.getDrawings();
+    drawings.forEach(function(drawing) {
+      var note = drawing.getOnClick();
+      if (note && note.indexOf('linkImagesFromDrive') !== -1) {
+        drawing.remove();
+      }
+    });
+    
+    // สร้างปุ่มใหม่
+    var range = sheet.getRange('O1'); // วางปุ่มที่ Column O แถว 1
+    var button = sheet.newImage()
+      .setUrl('https://www.gstatic.com/images/icons/material/system/1x/add_circle_outline_black_24dp.png')
+      .setAnchorCell(range)
+      .setWidth(100)
+      .setHeight(30)
+      .assignScript('linkImagesFromDrive');
+    
+    // หรือใช้วิธีสร้าง shape แทน
+    var buttonRange = sheet.getRange('O1');
+    buttonRange.setValue('🔄 อัพเดท URL รูปภาพ');
+    buttonRange.setBackground('#4285f4');
+    buttonRange.setFontColor('#ffffff');
+    buttonRange.setFontWeight('bold');
+    buttonRange.setFontSize(11);
+    buttonRange.setHorizontalAlignment('center');
+    
+    SpreadsheetApp.getUi().alert('สร้างปุ่มเรียบร้อยแล้ว!\n\nคลิกที่เซลล์ O1 เพื่อรันฟังก์ชัน linkImagesFromDrive()');
+  } catch (error) {
+    SpreadsheetApp.getUi().alert('Error: ' + error.toString());
+  }
+}
+
+/**
+ * ฟังก์ชันสำหรับสร้างเมนูใน Google Sheets
+ * รันครั้งเดียวเพื่อเพิ่มเมนู "การ์ดหน้าร้าน" ในแถบเมนู
+ * และอัพเดทลิงก์ภาพการ์ดอัตโนมัติเมื่อเปิดไฟล์
+ */
+function onOpen() {
+  var ui = SpreadsheetApp.getUi();
+  ui.createMenu('🃏 การ์ดหน้าร้าน')
+    .addItem('🔄 อัพเดท URL รูปภาพ', 'linkImagesFromDrive')
+    .addItem('🖼️ อัพเดท Column D ให้แสดงรูป', 'updateImageColumn')
+    .addSeparator()
+    .addItem('🧪 ทดสอบการอัพเดท (แสดงผลลัพธ์)', 'testLinkImages')
+    .addToUi();
+  
+  // อัพเดทลิงก์ภาพการ์ดอัตโนมัติเมื่อเปิดไฟล์ (ใช้ installable trigger แทน)
+  // ไม่เรียกตรงนี้เพราะ simple trigger มีข้อจำกัด
+}
+
+/**
+ * Trigger function ที่จะทำงานเมื่อมีการแก้ไข sheet
+ * อัพเดทลิงก์ภาพการ์ดใน Column E อัตโนมัติ
+ * หมายเหตุ: Simple trigger มีข้อจำกัด ควรใช้ installable trigger แทน
+ */
+function onEdit(e) {
+  try {
+    var sheet = e.source.getActiveSheet();
+    var sheetName = sheet.getName();
+    
+    // ตรวจสอบว่าเป็น sheet "การ์ดหน้าร้าน" หรือไม่
+    if (sheetName === 'การ์ดหน้าร้าน') {
+      // ใช้ installable trigger แทน simple trigger
+      // Simple trigger ไม่สามารถใช้ openById ได้
+    }
+  } catch (error) {
+    // ไม่แสดง error เพื่อไม่เสียเวลา
+  }
+}
+
+/**
+ * Installable trigger function สำหรับอัพเดทลิงก์ภาพการ์ดอัตโนมัติ
+ * ตั้งค่า trigger โดยไปที่: Triggers > Add Trigger > onEditInstallable
+ * Event type: On edit
+ * Event source: From spreadsheet
+ */
+function onEditInstallable(e) {
+  try {
+    var sheet = e.source.getActiveSheet();
+    var sheetName = sheet.getName();
+    
+    // ตรวจสอบว่าเป็น sheet "การ์ดหน้าร้าน" หรือไม่
+    if (sheetName === 'การ์ดหน้าร้าน') {
+      // อัพเดทลิงก์ภาพการ์ดอัตโนมัติ
+      linkImagesFromDrive();
+    }
+  } catch (error) {
+    // ไม่แสดง error เพื่อไม่เสียเวลา
+  }
+}
+
+/**
+ * Installable trigger function สำหรับอัพเดทลิงก์ภาพการ์ดอัตโนมัติเมื่อเปิดไฟล์
+ * ตั้งค่า trigger โดยไปที่: Triggers > Add Trigger > onOpenInstallable
+ * Event type: On open
+ * Event source: From spreadsheet
+ */
+function onOpenInstallable(e) {
+  try {
+    // อัพเดทลิงก์ภาพการ์ดอัตโนมัติเมื่อเปิดไฟล์
+    linkImagesFromDrive();
+  } catch (error) {
+    // ไม่แสดง error เพื่อไม่เสียเวลา
+  }
+}

@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>การ์ดทั้งหมด - Up Level Guild</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Mitr:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Mitr', 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      margin: 0;
+      padding: 1rem;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 32px auto;
+      padding: 0 16px 32px 16px;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    }
+
+    .logo {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 16px;
+      padding-top: 16px;
+      width: 100%;
+    }
+
+    .logo img {
+      max-width: 120px;
+      display: block;
+      margin: 0 auto;
+    }
+
+    h2 {
+      color: #388e3c;
+      text-align: center;
+      margin-bottom: 8px;
+      font-size: 2em;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #666;
+      margin-bottom: 24px;
+      font-size: 1em;
+    }
+
+    /* Tab Navigation */
+    .tab-navigation {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+      border-bottom: 2px solid #e0e0e0;
+      padding: 0 16px;
+    }
+
+    .tab-button {
+      background: none;
+      border: none;
+      padding: 12px 24px;
+      font-size: 1em;
+      font-weight: 500;
+      color: #666;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      transition: all 0.3s ease;
+      font-family: 'Mitr', sans-serif;
+    }
+
+    .tab-button:hover {
+      color: #667eea;
+      background: rgba(102, 126, 234, 0.05);
+    }
+
+    .tab-button.active {
+      color: #667eea;
+      border-bottom-color: #667eea;
+      font-weight: 600;
+    }
+
+    /* Tab Content */
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* Info Box */
+    .info-box {
+      background: #fff3cd;
+      border: 1px solid #ffc107;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 24px;
+      color: #856404;
+    }
+
+    .info-box strong {
+      color: #d32f2f;
+    }
+
+    /* Search and Sort */
+    .search-sort-container {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .search-box {
+      flex: 1;
+      min-width: 200px;
+      padding: 12px 16px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 1em;
+      font-family: 'Mitr', sans-serif;
+    }
+
+    .search-box:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .sort-select {
+      padding: 12px 16px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 1em;
+      font-family: 'Mitr', sans-serif;
+      background: white;
+      cursor: pointer;
+    }
+
+    .sort-select:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    /* Stats */
+    .stats {
+      text-align: center;
+      color: #666;
+      margin-bottom: 24px;
+      font-size: 1em;
+    }
+
+    /* Cards Grid */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+
+    .card-item {
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      cursor: pointer;
+    }
+
+    .card-item:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    }
+
+    .card-item.sold {
+      opacity: 0.7;
+      filter: grayscale(100%);
+    }
+
+    .card-image-container {
+      width: 100%;
+      padding-top: 100%;
+      position: relative;
+      background: #f5f5f5;
+      overflow: hidden;
+    }
+
+    .card-image {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .card-image-placeholder {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f5f5f5;
+      font-size: 3em;
+      color: #ccc;
+    }
+
+    .image-loading-spinner {
+      width: 48px;
+      height: 48px;
+      border: 4px solid #e0e0e0;
+      border-top: 4px solid #42A5F5;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: auto;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    @keyframes spin {
+      0% { transform: translate(-50%, -50%) rotate(0deg); }
+      100% { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+
+    .card-info {
+      padding: 16px;
+    }
+
+    .card-name {
+      font-size: 1.1em;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 8px;
+      line-height: 1.4;
+    }
+
+    .card-price {
+      font-size: 1.3em;
+      font-weight: 700;
+      color: #d32f2f;
+      margin-bottom: 8px;
+    }
+
+    .card-details {
+      font-size: 0.9em;
+      color: #666;
+      margin-bottom: 4px;
+    }
+
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.8);
+      overflow: auto;
+    }
+
+    .modal.active {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-content {
+      background: white;
+      margin: auto;
+      padding: 24px;
+      border-radius: 16px;
+      max-width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+      position: relative;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      font-size: 2em;
+      font-weight: bold;
+      color: #999;
+      cursor: pointer;
+      line-height: 1;
+    }
+
+    .modal-close:hover {
+      color: #333;
+    }
+
+    .modal-images {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .modal-image-container {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .modal-image-container img {
+      width: 100%;
+      border-radius: 8px;
+    }
+
+    .modal-info {
+      margin-top: 24px;
+    }
+
+    .modal-info h3 {
+      margin-bottom: 16px;
+      color: #333;
+    }
+
+    .modal-info p {
+      margin-bottom: 8px;
+      color: #666;
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding: 32px 16px;
+      background: rgba(255,255,255,0.9);
+      border-radius: 16px;
+      margin-top: 32px;
+    }
+
+    .footer-buttons {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .footer-button {
+      padding: 12px 24px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .footer-button.map {
+      background: #4285f4;
+      color: white;
+    }
+
+    .footer-button.facebook {
+      background: #1877f2;
+      color: white;
+    }
+
+    .footer-button.line {
+      background: #06c755;
+      color: white;
+    }
+
+    .footer-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    .footer-text {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 16px;
+    }
+
+    /* Loading */
+    .loading {
+      text-align: center;
+      padding: 48px;
+      color: #666;
+    }
+
+    .error-message {
+      background: #ffebee;
+      border: 1px solid #d32f2f;
+      border-radius: 8px;
+      padding: 16px;
+      color: #d32f2f;
+      text-align: center;
+      margin: 24px 0;
+    }
+
+    /* Skeleton Loading */
+    .skeleton-card {
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    .skeleton-image {
+      width: 100%;
+      padding-top: 100%;
+      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+      background-size: 200% 100%;
+      animation: loading 1.5s ease-in-out infinite;
+    }
+
+    .skeleton-text {
+      height: 16px;
+      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+      background-size: 200% 100%;
+      animation: loading 1.5s ease-in-out infinite;
+      border-radius: 4px;
+      margin-bottom: 8px;
+    }
+
+    .skeleton-text.medium {
+      width: 70%;
+    }
+
+    .skeleton-text.short {
+      width: 40%;
+    }
+
+    @keyframes loading {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+
+    @media (max-width: 768px) {
+      .cards-grid {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 16px;
+      }
+
+      .search-sort-container {
+        flex-direction: column;
+      }
+
+      .tab-navigation {
+        flex-direction: column;
+        border-bottom: none;
+      }
+
+      .tab-button {
+        border-bottom: none;
+        border-left: 3px solid transparent;
+        text-align: left;
+      }
+
+      .tab-button.active {
+        border-left-color: #667eea;
+        border-bottom-color: transparent;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">
+      <img src="https://i.postimg.cc/wjzpnxjB/Up-Level-01-1.png" alt="Up Level Guild Logo">
+    </div>
+
+    <h2>🃏 การ์ดทั้งหมด</h2>
+    <div class="subtitle">Up Level Academy</div>
+
+    <!-- Tab Navigation -->
+    <div class="tab-navigation">
+      <button class="tab-button active" onclick="switchTab('consignment')">
+        📦 การ์ดฝากขาย
+      </button>
+      <button class="tab-button" onclick="switchTab('shop')">
+        🏪 การ์ดหน้าร้าน
+      </button>
+    </div>
+
+    <!-- Consignment Cards Tab -->
+    <div id="consignment-content" class="tab-content active">
+      <div class="info-box">
+        <strong>หมายเหตุ:</strong> การ์ดเหล่านี้เป็นการ์ดฝากขายจากลูกค้า สามารถมาดูการ์ดจริงได้ที่ร้าน<br>
+        💬 สนใจการ์ดใด สามารถติดต่อแอดมินได้ทุกช่องทาง
+      </div>
+
+      <div class="search-sort-container">
+        <input type="text" id="consignment-search" class="search-box" placeholder="ค้นหาชื่อการ์ด...">
+        <select id="consignment-sort" class="sort-select">
+          <option value="name-asc">เรียงตามชื่อ (ก-ฮ)</option>
+          <option value="name-desc">เรียงตามชื่อ (ฮ-ก)</option>
+          <option value="price-asc">เรียงตามราคา (น้อย-มาก)</option>
+          <option value="price-desc">เรียงตามราคา (มาก-น้อย)</option>
+        </select>
+      </div>
+
+      <div id="consignment-stats" class="stats">กำลังโหลดข้อมูล...</div>
+      <div id="consignment-cards-container"></div>
+    </div>
+
+    <!-- Shop Cards Tab -->
+    <div id="shop-content" class="tab-content">
+      <div class="info-box">
+        <strong>หมายเหตุ:</strong> การ์ดเหล่านี้เป็นการ์ดในแฟ้มของร้านเอง สามารถมาดูการ์ดจริงได้ที่ร้าน<br>
+        💬 สนใจการ์ดใด สามารถติดต่อแอดมินได้ทุกช่องทาง
+      </div>
+
+      <div class="search-sort-container">
+        <input type="text" id="shop-search" class="search-box" placeholder="ค้นหาชื่อการ์ด...">
+        <select id="shop-sort" class="sort-select">
+          <option value="name-asc">เรียงตามชื่อ (ก-ฮ)</option>
+          <option value="name-desc">เรียงตามชื่อ (ฮ-ก)</option>
+          <option value="price-asc">เรียงตามราคา (น้อย-มาก)</option>
+          <option value="price-desc">เรียงตามราคา (มาก-น้อย)</option>
+        </select>
+      </div>
+
+      <div id="shop-stats" class="stats">กำลังโหลดข้อมูล...</div>
+      <div id="shop-cards-container"></div>
+    </div>
+
+    <!-- Modal -->
+    <div id="card-modal" class="modal">
+      <div class="modal-content">
+        <span class="modal-close" onclick="closeModal()">&times;</span>
+        <div class="modal-images">
+          <div class="modal-image-container">
+            <img id="modal-front-image" src="" alt="Front" style="display:none;">
+            <div id="modal-front-placeholder" style="display:none; text-align:center; padding:40px; background:#f5f5f5; border-radius:8px;">🃏</div>
+          </div>
+          <div class="modal-image-container">
+            <img id="modal-back-image" src="" alt="Back" style="display:none;">
+            <div id="modal-back-placeholder" style="display:none; text-align:center; padding:40px; background:#f5f5f5; border-radius:8px;">🃏</div>
+          </div>
+        </div>
+        <div class="modal-info">
+          <h3 id="modal-card-name"></h3>
+          <p id="modal-card-details"></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <div class="footer-buttons">
+        <a href="https://maps.google.com/?q=Up+Level+Academy" target="_blank" class="footer-button map">
+          📍 นำทางไปที่ร้าน
+        </a>
+        <a href="https://www.facebook.com/uplevelguild" target="_blank" class="footer-button facebook">
+          📘 ดูเพจ Facebook
+        </a>
+        <a href="https://line.me/ti/g2/..." target="_blank" class="footer-button line">
+          💬 เข้าร่วม LINE OpenChat
+        </a>
+      </div>
+      <div class="footer-text">
+        Up Level Academy | ติด MRT บางแค | ที่จอดรถสะดวก
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // API URLs
+    const CONSIGNMENT_API_URL = "https://script.google.com/macros/s/AKfycbzwyYf_EWp5JPHGarUHSkKXzCnwRx7k53rWhq2uwnloaO55-aQVhBbRm-N8TvPPRsRIhA/exec?type=json";
+    const SHOP_API_URL = "https://script.google.com/macros/s/AKfycbxsbm12v26W8Aa0bGQOVyijD7lWoW9AWgjHQ8HDkLVwO32DJHiiC_NwUpsmiFKALAy7/exec?type=json&sheet=shop";
+
+    // Data storage
+    let consignmentCards = [];
+    let shopCards = [];
+    let filteredConsignmentCards = [];
+    let filteredShopCards = [];
+
+    // Tab switching
+    function switchTab(tabName) {
+      // Hide all tabs
+      document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+      });
+
+      // Remove active class from all buttons
+      document.querySelectorAll('.tab-button').forEach(btn => {
+        btn.classList.remove('active');
+      });
+
+      // Show selected tab
+      document.getElementById(tabName + '-content').classList.add('active');
+      document.querySelector(`.tab-button:nth-child(${tabName === 'consignment' ? '1' : '2'})`).classList.add('active');
+
+      // Load data if not loaded
+      if (tabName === 'consignment' && consignmentCards.length === 0) {
+        loadConsignmentCards();
+      } else if (tabName === 'shop' && shopCards.length === 0) {
+        loadShopCards();
+      }
+    }
+
+    // Load Consignment Cards
+    function loadConsignmentCards() {
+      const container = document.getElementById('consignment-cards-container');
+      const statsEl = document.getElementById('consignment-stats');
+      
+      showSkeletonCards(container);
+      statsEl.textContent = 'กำลังโหลดข้อมูล...';
+
+      fetch(CONSIGNMENT_API_URL)
+        .then(res => res.json())
+        .then(data => {
+          if (data.error) {
+            container.innerHTML = `<div class="error-message">${data.error}</div>`;
+            statsEl.textContent = 'เกิดข้อผิดพลาด';
+            return;
+          }
+
+          consignmentCards = data.cards || [];
+          filteredConsignmentCards = [...consignmentCards];
+          renderCards('consignment', filteredConsignmentCards);
+          updateStats('consignment', consignmentCards.length, filteredConsignmentCards.length);
+        })
+        .catch(error => {
+          container.innerHTML = `<div class="error-message">เกิดข้อผิดพลาด: ${error.message}</div>`;
+          statsEl.textContent = 'เกิดข้อผิดพลาด';
+        });
+    }
+
+    // Load Shop Cards
+    function loadShopCards() {
+      const container = document.getElementById('shop-cards-container');
+      const statsEl = document.getElementById('shop-stats');
+      
+      showSkeletonCards(container);
+      statsEl.textContent = 'กำลังโหลดข้อมูล...';
+
+      fetch(SHOP_API_URL)
+        .then(res => res.json())
+        .then(data => {
+          if (data.error) {
+            container.innerHTML = `<div class="error-message">${data.error}</div>`;
+            statsEl.textContent = 'เกิดข้อผิดพลาด';
+            return;
+          }
+
+          shopCards = data.cards || [];
+          filteredShopCards = [...shopCards];
+          renderCards('shop', filteredShopCards);
+          updateStats('shop', shopCards.length, filteredShopCards.length);
+        })
+        .catch(error => {
+          container.innerHTML = `<div class="error-message">เกิดข้อผิดพลาด: ${error.message}</div>`;
+          statsEl.textContent = 'เกิดข้อผิดพลาด';
+        });
+    }
+
+    // Render Cards
+    function renderCards(type, cards) {
+      const container = document.getElementById(type + '-cards-container');
+      let html = '<div class="cards-grid">';
+
+      cards.forEach((card, index) => {
+        const imageUrl = card.cardImage || '';
+        const hasImage = imageUrl && String(imageUrl).trim() !== '' && String(imageUrl).trim().startsWith('http');
+        const status = String(card.status || 'ยังมีอยู่').trim();
+        const isSold = status !== 'ยังมีอยู่' && status !== '' && status.toLowerCase() !== 'ยังมีอยู่';
+
+        let imageHtml = '';
+        if (hasImage) {
+          let cleanUrl = String(imageUrl).trim().replace(/^["']|["']$/g, '');
+          if (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://')) {
+            imageHtml = `<div class="card-image-placeholder" data-image-url="${escapeHtml(cleanUrl)}" data-card-index="${index}">
+              <div class="image-loading-spinner"></div>
+            </div>`;
+          } else {
+            imageHtml = '<div class="card-image-placeholder">🃏</div>';
+          }
+        } else {
+          imageHtml = '<div class="card-image-placeholder">🃏</div>';
+        }
+
+        const price = card.listedPrice ? String(card.listedPrice) : '-';
+        const folderSlot = card.folderSlot ? `ช่อง ${card.folderSlot}` : '-';
+        const postedDate = card.postedDate || card.depositDate || '-';
+        const soldClass = isSold ? ' sold' : '';
+
+        html += `
+          <div class="card-item${soldClass}" onclick="showModal('${type}', ${index})">
+            ${imageHtml}
+            <div class="card-info">
+              <div class="card-name">${escapeHtml(card.cardName || 'ไม่ระบุชื่อ')}</div>
+              <div class="card-price">${price} บาท</div>
+              <div class="card-details">ช่องในแฟ้ม: ${folderSlot}</div>
+              <div class="card-details">วันที่ลง: ${postedDate}</div>
+            </div>
+          </div>
+        `;
+      });
+
+      html += '</div>';
+      container.innerHTML = html;
+
+      // Load images progressively
+      loadImagesProgressively(type);
+    }
+
+    // Load Images Progressively
+    function loadImagesProgressively(type) {
+      const container = document.getElementById(type + '-cards-container');
+      const imagePlaceholders = container.querySelectorAll('.card-image-placeholder[data-image-url]');
+
+      if (imagePlaceholders.length === 0) return;
+
+      let loadedCount = 0;
+      let currentIndex = 0;
+
+      function loadNextImage() {
+        if (currentIndex >= imagePlaceholders.length) return;
+
+        const placeholder = imagePlaceholders[currentIndex];
+        const imageUrl = placeholder.getAttribute('data-image-url');
+        currentIndex++;
+
+        if (!imageUrl) {
+          loadNextImage();
+          return;
+        }
+
+        const img = new Image();
+        let finalImageUrl = imageUrl;
+
+        // Convert Google Drive thumbnail URL to lh3.googleusercontent.com format
+        if (imageUrl.includes('drive.google.com/thumbnail')) {
+          const fileIdMatch = imageUrl.match(/id=([a-zA-Z0-9_-]+)/);
+          if (fileIdMatch && fileIdMatch[1]) {
+            finalImageUrl = `https://lh3.googleusercontent.com/d/${fileIdMatch[1]}=w1000`;
+          }
+        } else if (imageUrl.includes('drive.google.com') && !imageUrl.includes('lh3.googleusercontent.com')) {
+          const fileIdMatch = imageUrl.match(/id=([a-zA-Z0-9_-]+)/);
+          if (fileIdMatch && fileIdMatch[1]) {
+            finalImageUrl = `https://lh3.googleusercontent.com/d/${fileIdMatch[1]}=w1000`;
+          }
+        }
+
+        img.onload = function() {
+          placeholder.innerHTML = '';
+          placeholder.classList.remove('card-image-placeholder');
+          placeholder.classList.add('card-image-container');
+          img.className = 'card-image';
+          img.alt = 'Card image';
+          img.loading = 'lazy';
+          placeholder.appendChild(img);
+          loadedCount++;
+          setTimeout(loadNextImage, 100);
+        };
+
+        img.onerror = function() {
+          console.error('Failed to load image:', finalImageUrl);
+          placeholder.innerHTML = '<div class="card-image-placeholder">🃏</div>';
+          placeholder.removeAttribute('data-image-url');
+          loadedCount++;
+          setTimeout(loadNextImage, 50);
+        };
+
+        img.referrerPolicy = 'no-referrer';
+        img.src = finalImageUrl;
+      }
+
+      loadNextImage();
+    }
+
+    // Filter Cards
+    function filterCards(type, searchTerm) {
+      const cards = type === 'consignment' ? consignmentCards : shopCards;
+      if (!searchTerm) return cards;
+
+      const term = searchTerm.toLowerCase();
+      return cards.filter(card => {
+        const cardName = String(card.cardName || '').toLowerCase();
+        return cardName.includes(term);
+      });
+    }
+
+    // Sort Cards
+    function sortCards(cards, sortBy) {
+      const sorted = [...cards];
+      
+      switch(sortBy) {
+        case 'name-asc':
+          sorted.sort((a, b) => {
+            const nameA = String(a.cardName || '').localeCompare(String(b.cardName || ''), 'th');
+            return nameA;
+          });
+          break;
+        case 'name-desc':
+          sorted.sort((a, b) => {
+            const nameA = String(a.cardName || '').localeCompare(String(b.cardName || ''), 'th');
+            return -nameA;
+          });
+          break;
+        case 'price-asc':
+          sorted.sort((a, b) => {
+            const priceA = parseFloat(a.listedPrice) || 0;
+            const priceB = parseFloat(b.listedPrice) || 0;
+            return priceA - priceB;
+          });
+          break;
+        case 'price-desc':
+          sorted.sort((a, b) => {
+            const priceA = parseFloat(a.listedPrice) || 0;
+            const priceB = parseFloat(b.listedPrice) || 0;
+            return priceB - priceA;
+          });
+          break;
+      }
+
+      return sorted;
+    }
+
+    // Update Display
+    function updateDisplay(type) {
+      const searchBox = document.getElementById(type + '-search');
+      const sortSelect = document.getElementById(type + '-sort');
+      const searchTerm = searchBox.value;
+      const sortBy = sortSelect.value;
+
+      let filtered = filterCards(type, searchTerm);
+      filtered = sortCards(filtered, sortBy);
+
+      if (type === 'consignment') {
+        filteredConsignmentCards = filtered;
+        renderCards('consignment', filteredConsignmentCards);
+        updateStats('consignment', consignmentCards.length, filteredConsignmentCards.length);
+      } else {
+        filteredShopCards = filtered;
+        renderCards('shop', filteredShopCards);
+        updateStats('shop', shopCards.length, filteredShopCards.length);
+      }
+    }
+
+    // Update Stats
+    function updateStats(type, total, filtered) {
+      const statsEl = document.getElementById(type + '-stats');
+      if (filtered === total) {
+        statsEl.textContent = `แสดงทั้งหมด ${total} การ์ด`;
+      } else {
+        statsEl.textContent = `แสดง ${filtered} จากทั้งหมด ${total} การ์ด`;
+      }
+    }
+
+    // Show Skeleton Cards
+    function showSkeletonCards(container) {
+      let html = '<div class="cards-grid">';
+      for (let i = 0; i < 9; i++) {
+        html += `
+          <div class="card-item skeleton-card" style="cursor: default; pointer-events: none;">
+            <div class="card-image-container">
+              <div class="skeleton-image"></div>
+            </div>
+            <div class="card-info">
+              <div class="skeleton-text medium"></div>
+              <div class="skeleton-text short" style="margin-top: 12px;"></div>
+              <div class="skeleton-text" style="margin-top: 16px;"></div>
+              <div class="skeleton-text" style="margin-top: 8px;"></div>
+            </div>
+          </div>
+        `;
+      }
+      html += '</div>';
+      container.innerHTML = html;
+    }
+
+    // Show Modal
+    function showModal(type, index) {
+      const cards = type === 'consignment' ? filteredConsignmentCards : filteredShopCards;
+      const card = cards[index];
+      if (!card) return;
+
+      const modal = document.getElementById('card-modal');
+      const frontImage = document.getElementById('modal-front-image');
+      const backImage = document.getElementById('modal-back-image');
+      const frontPlaceholder = document.getElementById('modal-front-placeholder');
+      const backPlaceholder = document.getElementById('modal-back-placeholder');
+      const cardName = document.getElementById('modal-card-name');
+      const cardDetails = document.getElementById('modal-card-details');
+
+      // Convert image URLs
+      let frontImageUrl = card.cardImage || '';
+      let backImageUrl = card.cardBackImage || '';
+
+      if (frontImageUrl.includes('drive.google.com/thumbnail')) {
+        const fileIdMatch = frontImageUrl.match(/id=([a-zA-Z0-9_-]+)/);
+        if (fileIdMatch && fileIdMatch[1]) {
+          frontImageUrl = `https://lh3.googleusercontent.com/d/${fileIdMatch[1]}=w1000`;
+        }
+      }
+
+      if (backImageUrl.includes('drive.google.com/thumbnail')) {
+        const fileIdMatch = backImageUrl.match(/id=([a-zA-Z0-9_-]+)/);
+        if (fileIdMatch && fileIdMatch[1]) {
+          backImageUrl = `https://lh3.googleusercontent.com/d/${fileIdMatch[1]}=w1000`;
+        }
+      }
+
+      // Set images
+      if (frontImageUrl) {
+        frontImage.src = frontImageUrl;
+        frontImage.style.display = 'block';
+        frontPlaceholder.style.display = 'none';
+      } else {
+        frontImage.style.display = 'none';
+        frontPlaceholder.style.display = 'block';
+      }
+
+      if (backImageUrl) {
+        backImage.src = backImageUrl;
+        backImage.style.display = 'block';
+        backPlaceholder.style.display = 'none';
+      } else {
+        backImage.style.display = 'none';
+        backPlaceholder.style.display = 'block';
+      }
+
+      // Set card info
+      cardName.textContent = card.cardName || 'ไม่ระบุชื่อ';
+      const details = [];
+      if (card.listedPrice) details.push(`ราคา: ${card.listedPrice} บาท`);
+      if (card.folderSlot) details.push(`ช่องในแฟ้ม: ${card.folderSlot}`);
+      if (card.postedDate || card.depositDate) details.push(`วันที่ลง: ${card.postedDate || card.depositDate}`);
+      if (card.status) details.push(`สถานะ: ${card.status}`);
+      cardDetails.innerHTML = details.join('<br>');
+
+      modal.classList.add('active');
+    }
+
+    // Close Modal
+    function closeModal() {
+      document.getElementById('card-modal').classList.remove('active');
+    }
+
+    // Escape HTML
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // Event Listeners
+    document.getElementById('consignment-search').addEventListener('input', () => updateDisplay('consignment'));
+    document.getElementById('consignment-sort').addEventListener('change', () => updateDisplay('consignment'));
+    document.getElementById('shop-search').addEventListener('input', () => updateDisplay('shop'));
+    document.getElementById('shop-sort').addEventListener('change', () => updateDisplay('shop'));
+
+    // Close modal on outside click
+    window.onclick = function(event) {
+      const modal = document.getElementById('card-modal');
+      if (event.target === modal) {
+        closeModal();
+      }
+    }
+
+    // Load initial data
+    loadConsignmentCards();
+  </script>
+</body>
+</html>
+
