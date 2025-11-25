@@ -173,7 +173,8 @@
     .card-image {
       width: 100%;
       height: 100%;
-      object-fit: contain;
+      object-fit: cover;
+      object-position: center top;
       border-radius: 8px;
     }
 
@@ -1003,6 +1004,35 @@
         
         const img = new Image();
         
+        // แปลง Google Drive thumbnail URL เป็น lh3.googleusercontent.com format
+        // ใช้ w1000-h1400 สำหรับสัดส่วนการ์ด (2.5:3.5)
+        let finalImageUrl = imageUrl;
+        
+        if (imageUrl.includes('drive.google.com/thumbnail')) {
+          const fileIdMatch = imageUrl.match(/id=([a-zA-Z0-9_-]+)/);
+          if (fileIdMatch && fileIdMatch[1]) {
+            finalImageUrl = `https://lh3.googleusercontent.com/d/${fileIdMatch[1]}=w1000-h1400`;
+          }
+        } else if (imageUrl.includes('drive.google.com') && !imageUrl.includes('lh3.googleusercontent.com')) {
+          const fileIdMatch = imageUrl.match(/id=([a-zA-Z0-9_-]+)/);
+          if (fileIdMatch && fileIdMatch[1]) {
+            finalImageUrl = `https://lh3.googleusercontent.com/d/${fileIdMatch[1]}=w1000-h1400`;
+          }
+        } else if (imageUrl.includes('lh3.googleusercontent.com') && imageUrl.includes('=w1000') && !imageUrl.includes('-h')) {
+          // อัปเดต URL ที่มีเฉพาะ width ให้เพิ่ม height
+          finalImageUrl = imageUrl.replace('=w1000', '=w1000-h1400');
+        }
+        
+        // เพิ่ม cache buster เพื่อบังคับให้โหลดรูปใหม่หลังจากครอป
+        // ใช้ timestamp ปัจจุบัน (เปลี่ยนทุกนาที) เพื่อให้เห็นรูปใหม่เร็วขึ้น
+        const cacheBuster = Math.floor(Date.now() / (1000 * 60)); // เปลี่ยนทุกนาที
+        if (finalImageUrl.includes('lh3.googleusercontent.com')) {
+          const separator = finalImageUrl.includes('?') ? '&' : '?';
+          finalImageUrl += separator + 't=' + cacheBuster;
+        }
+        
+        img.src = finalImageUrl;
+        
         img.onload = function() {
           // แทนที่ spinner ด้วยรูปภาพ
           placeholder.innerHTML = '';
@@ -1038,8 +1068,7 @@
           setTimeout(loadNextImage, 50);
         };
         
-        // เริ่มโหลดรูป
-        img.src = imageUrl;
+        // เริ่มโหลดรูป (ใช้ finalImageUrl ที่แปลงแล้ว)
       }
       
       // เริ่มโหลดรูปแรก

@@ -201,7 +201,8 @@
       left: 0;
       width: 100%;
       height: 100%;
-      object-fit: contain;
+      object-fit: cover;
+      object-position: center;
     }
 
     .card-image-placeholder {
@@ -897,16 +898,29 @@
         let finalImageUrl = imageUrl;
 
         // Convert Google Drive thumbnail URL to lh3.googleusercontent.com format
+        // Use w1000-h1400 for card aspect ratio (2.5:3.5)
         if (imageUrl.includes('drive.google.com/thumbnail')) {
           const fileIdMatch = imageUrl.match(/id=([a-zA-Z0-9_-]+)/);
           if (fileIdMatch && fileIdMatch[1]) {
-            finalImageUrl = `https://lh3.googleusercontent.com/d/${fileIdMatch[1]}=w1000`;
+            finalImageUrl = `https://lh3.googleusercontent.com/d/${fileIdMatch[1]}=w1000-h1400`;
           }
         } else if (imageUrl.includes('drive.google.com') && !imageUrl.includes('lh3.googleusercontent.com')) {
           const fileIdMatch = imageUrl.match(/id=([a-zA-Z0-9_-]+)/);
           if (fileIdMatch && fileIdMatch[1]) {
-            finalImageUrl = `https://lh3.googleusercontent.com/d/${fileIdMatch[1]}=w1000`;
+            finalImageUrl = `https://lh3.googleusercontent.com/d/${fileIdMatch[1]}=w1000-h1400`;
           }
+        } else if (imageUrl.includes('lh3.googleusercontent.com') && imageUrl.includes('=w1000') && !imageUrl.includes('-h')) {
+          // Update existing URLs that only have width to include height
+          finalImageUrl = imageUrl.replace('=w1000', '=w1000-h1400');
+        }
+
+        // เพิ่ม cache buster เพื่อบังคับให้โหลดรูปใหม่หลังจากครอป
+        // ใช้ timestamp ปัจจุบัน (เปลี่ยนทุกนาที) เพื่อให้เห็นรูปใหม่เร็วขึ้น
+        const cacheBuster = Math.floor(Date.now() / (1000 * 60)); // เปลี่ยนทุกนาที
+        if (finalImageUrl.includes('lh3.googleusercontent.com')) {
+          // ตรวจสอบว่า URL มี query parameter อยู่แล้วหรือไม่
+          const separator = finalImageUrl.includes('?') ? '&' : '?';
+          finalImageUrl += separator + 't=' + cacheBuster;
         }
 
         img.onload = function() {
@@ -1055,18 +1069,34 @@
       let frontImageUrl = card.cardImage || '';
       let backImageUrl = card.cardBackImage || '';
 
+      // Convert Google Drive URLs to include height parameter for proper cropping
       if (frontImageUrl.includes('drive.google.com/thumbnail')) {
         const fileIdMatch = frontImageUrl.match(/id=([a-zA-Z0-9_-]+)/);
         if (fileIdMatch && fileIdMatch[1]) {
-          frontImageUrl = `https://lh3.googleusercontent.com/d/${fileIdMatch[1]}=w1000`;
+          frontImageUrl = `https://lh3.googleusercontent.com/d/${fileIdMatch[1]}=w1000-h1400`;
         }
+      } else if (frontImageUrl.includes('lh3.googleusercontent.com') && frontImageUrl.includes('=w1000') && !frontImageUrl.includes('-h')) {
+        frontImageUrl = frontImageUrl.replace('=w1000', '=w1000-h1400');
       }
 
       if (backImageUrl.includes('drive.google.com/thumbnail')) {
         const fileIdMatch = backImageUrl.match(/id=([a-zA-Z0-9_-]+)/);
         if (fileIdMatch && fileIdMatch[1]) {
-          backImageUrl = `https://lh3.googleusercontent.com/d/${fileIdMatch[1]}=w1000`;
+          backImageUrl = `https://lh3.googleusercontent.com/d/${fileIdMatch[1]}=w1000-h1400`;
         }
+      } else if (backImageUrl.includes('lh3.googleusercontent.com') && backImageUrl.includes('=w1000') && !backImageUrl.includes('-h')) {
+        backImageUrl = backImageUrl.replace('=w1000', '=w1000-h1400');
+      }
+
+      // เพิ่ม cache buster เพื่อบังคับให้โหลดรูปใหม่หลังจากครอป
+      const cacheBuster = Math.floor(Date.now() / (1000 * 60)); // เปลี่ยนทุกนาที
+      if (frontImageUrl.includes('lh3.googleusercontent.com')) {
+        const separator = frontImageUrl.includes('?') ? '&' : '?';
+        frontImageUrl += separator + 't=' + cacheBuster;
+      }
+      if (backImageUrl.includes('lh3.googleusercontent.com')) {
+        const separator = backImageUrl.includes('?') ? '&' : '?';
+        backImageUrl += separator + 't=' + cacheBuster;
       }
 
       // Set images - รองรับการซูมด้วยนิ้วโดยอัตโนมัติ (pinch zoom)
