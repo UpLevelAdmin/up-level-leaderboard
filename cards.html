@@ -1351,6 +1351,23 @@
       const backPlaceholder = document.getElementById('modal-back-placeholder');
       const cardName = document.getElementById('modal-card-name');
       const cardDetails = document.getElementById('modal-card-details');
+      
+      // ซ่อน container ด้านหลัง
+      const backContainer = document.querySelector('.modal-image-container:last-child');
+      if (backContainer) {
+        backContainer.style.display = 'none';
+      }
+      
+      // แสดง container ด้านหน้าและปรับให้ centered
+      const frontContainer = document.querySelector('.modal-image-container:first-child');
+      if (frontContainer) {
+        frontContainer.style.display = 'flex';
+        frontContainer.style.maxWidth = '60%';
+        const frontTitle = frontContainer.querySelector('h4');
+        if (frontTitle) {
+          frontTitle.style.display = 'none'; // ซ่อนข้อความ "ด้านหน้า"
+        }
+      }
 
       let imageUrl = card.cardImage || '';
 
@@ -1406,6 +1423,21 @@
       const backPlaceholder = document.getElementById('modal-back-placeholder');
       const cardName = document.getElementById('modal-card-name');
       const cardDetails = document.getElementById('modal-card-details');
+      
+      // แสดง container ทั้งสองกลับมา (สำหรับการ์ดฝากขายและการ์ดหน้าร้าน)
+      const frontContainer = document.querySelector('.modal-image-container:first-child');
+      const backContainer = document.querySelector('.modal-image-container:last-child');
+      if (frontContainer) {
+        frontContainer.style.display = 'flex';
+        frontContainer.style.maxWidth = '45%';
+        const frontTitle = frontContainer.querySelector('h4');
+        if (frontTitle) {
+          frontTitle.style.display = 'block'; // แสดงข้อความ "ด้านหน้า"
+        }
+      }
+      if (backContainer) {
+        backContainer.style.display = 'flex';
+      }
 
       // Convert image URLs
       let frontImageUrl = card.cardImage || '';
@@ -1478,6 +1510,21 @@
       const modal = document.getElementById('card-modal');
       modal.style.display = 'none';
       document.body.style.overflow = 'auto'; // เปิด scroll กลับ
+      
+      // Reset container styles
+      const frontContainer = document.querySelector('.modal-image-container:first-child');
+      const backContainer = document.querySelector('.modal-image-container:last-child');
+      if (frontContainer) {
+        frontContainer.style.display = '';
+        frontContainer.style.maxWidth = '';
+        const frontTitle = frontContainer.querySelector('h4');
+        if (frontTitle) {
+          frontTitle.style.display = '';
+        }
+      }
+      if (backContainer) {
+        backContainer.style.display = '';
+      }
     }
     
     // Handle modal click - ปิด modal เมื่อคลิกที่พื้นหลังสีดำ
