@@ -149,8 +149,26 @@ function doGet(e) {
       var cardBackImage = '';
       var productId = String(row[idxProductId] || '').trim();
       if (productId && fileMap) {
-        var backFileName = productId + ' หลัง.jpg';
-        var cachedFile = fileMap[backFileName];
+        // รองรับทั้ง .jpg และ .png
+        var backFileName1 = productId + ' หลัง.jpg';
+        var backFileName2 = productId + 'หลัง.jpg';
+        var backFileName3 = productId + ' หลัง.png';
+        var backFileName4 = productId + 'หลัง.png';
+        var cachedFile = fileMap[backFileName1] || fileMap[backFileName2] || fileMap[backFileName3] || fileMap[backFileName4];
+        
+        // ถ้ายังไม่พบ ลองค้นหาแบบ fuzzy
+        if (!cachedFile) {
+          for (var fileName in fileMap) {
+            if (fileName.indexOf(productId) !== -1 && 
+                fileName.indexOf('หลัง') !== -1 && 
+                ((fileName.indexOf('.jpg') !== -1 || fileName.indexOf('.JPG') !== -1) ||
+                 (fileName.indexOf('.png') !== -1 || fileName.indexOf('.PNG') !== -1))) {
+              cachedFile = fileMap[fileName];
+              break;
+            }
+          }
+        }
+        
         if (cachedFile) {
           try {
             // ลดการ setSharing (ไม่จำเป็นถ้าไฟล์ share อยู่แล้ว) - ทำให้เร็วขึ้นมาก
@@ -394,19 +412,20 @@ function doGetShopCards(e) {
       var cardBackImage = '';
       var productId = idxProductId >= 0 ? String(row[idxProductId] || '').trim() : '';
       if (productId && fileMap) {
-        // ลองหาชื่อไฟล์หลายแบบ
+        // ลองหาชื่อไฟล์หลายแบบ - รองรับทั้ง .jpg และ .png
         var backFileName1 = productId + ' หลัง.jpg';
         var backFileName2 = productId + 'หลัง.jpg';
-        var backFileName3 = productId + ' หลัง.jpg';
-        var backFileName4 = productId + 'หลัง.jpg';
+        var backFileName3 = productId + ' หลัง.png';
+        var backFileName4 = productId + 'หลัง.png';
         var cachedFile = fileMap[backFileName1] || fileMap[backFileName2] || fileMap[backFileName3] || fileMap[backFileName4];
         
         if (!cachedFile) {
           // ค้นหาแบบ fuzzy
           for (var fileName in fileMap) {
             if (fileName.indexOf(productId) !== -1 && 
-                (fileName.indexOf('หลัง') !== -1 || fileName.indexOf('หลัง') !== -1) && 
-                (fileName.indexOf('.jpg') !== -1 || fileName.indexOf('.JPG') !== -1)) {
+                fileName.indexOf('หลัง') !== -1 && 
+                ((fileName.indexOf('.jpg') !== -1 || fileName.indexOf('.JPG') !== -1) ||
+                 (fileName.indexOf('.png') !== -1 || fileName.indexOf('.PNG') !== -1))) {
               cachedFile = fileMap[fileName];
               break;
             }
@@ -541,19 +560,26 @@ function linkImagesFromDrive() {
       }
       
       // ลองหาชื่อไฟล์หลายแบบ (เผื่อมี space หรือ character พิเศษ หรือสะกดผิด)
-      var frontFileName1 = productId + ' หน้า.jpg';  // มี space, สะกดถูก
-      var frontFileName2 = productId + 'หน้า.jpg';   // ไม่มี space, สะกดถูก
-      var frontFileName3 = productId + ' หนัา.jpg';   // มี space, สะกดผิด (หนัา)
-      var frontFileName4 = productId + 'หนัา.jpg';    // ไม่มี space, สะกดผิด (หนัา)
-      var frontFile = fileMap[frontFileName1] || fileMap[frontFileName2] || fileMap[frontFileName3] || fileMap[frontFileName4];
+      // รองรับทั้ง .jpg และ .png
+      var frontFileName1 = productId + ' หน้า.jpg';  // มี space, สะกดถูก, .jpg
+      var frontFileName2 = productId + 'หน้า.jpg';   // ไม่มี space, สะกดถูก, .jpg
+      var frontFileName3 = productId + ' หนัา.jpg';   // มี space, สะกดผิด (หนัา), .jpg
+      var frontFileName4 = productId + 'หนัา.jpg';    // ไม่มี space, สะกดผิด (หนัา), .jpg
+      var frontFileName5 = productId + ' หน้า.png';  // มี space, สะกดถูก, .png
+      var frontFileName6 = productId + 'หน้า.png';   // ไม่มี space, สะกดถูก, .png
+      var frontFileName7 = productId + ' หนัา.png';   // มี space, สะกดผิด (หนัา), .png
+      var frontFileName8 = productId + 'หนัา.png';    // ไม่มี space, สะกดผิด (หนัา), .png
+      var frontFile = fileMap[frontFileName1] || fileMap[frontFileName2] || fileMap[frontFileName3] || fileMap[frontFileName4] ||
+                      fileMap[frontFileName5] || fileMap[frontFileName6] || fileMap[frontFileName7] || fileMap[frontFileName8];
       
       // ถ้ายังไม่พบ ลองค้นหาแบบ fuzzy (หาชื่อไฟล์ที่มี productId และคำว่า "หน้า" หรือ "หนัา")
       if (!frontFile) {
         for (var fileName in fileMap) {
-          // หาไฟล์ที่มี productId และมีคำว่า "หน้า" หรือ "หนัา" และเป็นไฟล์ .jpg
+          // หาไฟล์ที่มี productId และมีคำว่า "หน้า" หรือ "หนัา" และเป็นไฟล์ .jpg หรือ .png
           if (fileName.indexOf(productId) !== -1 && 
               (fileName.indexOf('หน้า') !== -1 || fileName.indexOf('หนัา') !== -1) && 
-              (fileName.indexOf('.jpg') !== -1 || fileName.indexOf('.JPG') !== -1)) {
+              ((fileName.indexOf('.jpg') !== -1 || fileName.indexOf('.JPG') !== -1) ||
+               (fileName.indexOf('.png') !== -1 || fileName.indexOf('.PNG') !== -1))) {
             frontFile = fileMap[fileName];
             break;
           }
@@ -659,11 +685,17 @@ function testLinkImages() {
         continue;
       }
       
-      var frontFileName1 = productId + ' หน้า.jpg';  // มี space, สะกดถูก
-      var frontFileName2 = productId + 'หน้า.jpg';   // ไม่มี space, สะกดถูก
-      var frontFileName3 = productId + ' หนัา.jpg';   // มี space, สะกดผิด (หนัา)
-      var frontFileName4 = productId + 'หนัา.jpg';    // ไม่มี space, สะกดผิด (หนัา)
-      var frontFile = fileMap[frontFileName1] || fileMap[frontFileName2] || fileMap[frontFileName3] || fileMap[frontFileName4];
+      // รองรับทั้ง .jpg และ .png
+      var frontFileName1 = productId + ' หน้า.jpg';  // มี space, สะกดถูก, .jpg
+      var frontFileName2 = productId + 'หน้า.jpg';   // ไม่มี space, สะกดถูก, .jpg
+      var frontFileName3 = productId + ' หนัา.jpg';   // มี space, สะกดผิด (หนัา), .jpg
+      var frontFileName4 = productId + 'หนัา.jpg';    // ไม่มี space, สะกดผิด (หนัา), .jpg
+      var frontFileName5 = productId + ' หน้า.png';  // มี space, สะกดถูก, .png
+      var frontFileName6 = productId + 'หน้า.png';   // ไม่มี space, สะกดถูก, .png
+      var frontFileName7 = productId + ' หนัา.png';   // มี space, สะกดผิด (หนัา), .png
+      var frontFileName8 = productId + 'หนัา.png';    // ไม่มี space, สะกดผิด (หนัา), .png
+      var frontFile = fileMap[frontFileName1] || fileMap[frontFileName2] || fileMap[frontFileName3] || fileMap[frontFileName4] ||
+                      fileMap[frontFileName5] || fileMap[frontFileName6] || fileMap[frontFileName7] || fileMap[frontFileName8];
       var foundFileName = '';
       
       if (frontFile) {
@@ -676,14 +708,23 @@ function testLinkImages() {
           foundFileName = frontFileName3;
         } else if (fileMap[frontFileName4]) {
           foundFileName = frontFileName4;
+        } else if (fileMap[frontFileName5]) {
+          foundFileName = frontFileName5;
+        } else if (fileMap[frontFileName6]) {
+          foundFileName = frontFileName6;
+        } else if (fileMap[frontFileName7]) {
+          foundFileName = frontFileName7;
+        } else if (fileMap[frontFileName8]) {
+          foundFileName = frontFileName8;
         }
       } else {
         // ถ้ายังไม่พบ ลองค้นหาแบบ fuzzy (หาชื่อไฟล์ที่มี productId และคำว่า "หน้า" หรือ "หนัา")
         for (var fileName in fileMap) {
-          // หาไฟล์ที่มี productId อยู่ในชื่อ และมีคำว่า "หน้า" หรือ "หนัา" และเป็นไฟล์ .jpg
+          // หาไฟล์ที่มี productId อยู่ในชื่อ และมีคำว่า "หน้า" หรือ "หนัา" และเป็นไฟล์ .jpg หรือ .png
           if (fileName.indexOf(productId) !== -1 && 
               (fileName.indexOf('หน้า') !== -1 || fileName.indexOf('หนัา') !== -1) && 
-              (fileName.indexOf('.jpg') !== -1 || fileName.indexOf('.JPG') !== -1)) {
+              ((fileName.indexOf('.jpg') !== -1 || fileName.indexOf('.JPG') !== -1) ||
+               (fileName.indexOf('.png') !== -1 || fileName.indexOf('.PNG') !== -1))) {
             frontFile = fileMap[fileName];
             foundFileName = fileName;
             break;
@@ -704,7 +745,7 @@ function testLinkImages() {
       } else {
         notFoundCount++;
         notFoundIds.push(productId);
-        var searchPatterns = 'ค้นหา: "' + frontFileName1 + '" หรือ "' + frontFileName2 + '"';
+        var searchPatterns = 'ค้นหา: "' + frontFileName1 + '", "' + frontFileName2 + '", "' + frontFileName5 + '", "' + frontFileName6 + '"';
         notFoundDetails.push(productId + ' (' + searchPatterns + ')');
         Logger.log('ไม่พบไฟล์สำหรับ: ' + productId + ' - ' + searchPatterns);
       }

@@ -4,17 +4,57 @@
     <meta charset="UTF-8">
     <title>รายชื่อผู้สมัคร Up Level Great Ball League</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Mitr:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Prompt:wght@300;400;500;600;700&family=Chonburi&display=swap" rel="stylesheet">
   <style>
+    body {
+      background: linear-gradient(180deg, #e0f2fe 0%, #bae6fd 50%, #93c5fd 100%);
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+      font-family: 'Kanit', 'Prompt', sans-serif;
+    }
+    
+    /* Snowflakes Animation */
+    .snowflake {
+      position: fixed;
+      top: -10px;
+      color: #ffffff;
+      font-size: 1em;
+      font-family: Arial;
+      text-shadow: 0 0 8px rgba(255,255,255,0.9), 0 0 15px rgba(200,220,255,0.6);
+      animation: fall linear infinite, sway 3s ease-in-out infinite;
+      pointer-events: none;
+      z-index: 1000;
+      user-select: none;
+    }
+    
+    @keyframes fall {
+      to {
+        transform: translateY(100vh) rotate(360deg);
+      }
+    }
+    
+    @keyframes sway {
+      0%, 100% {
+        transform: translateX(0);
+      }
+      50% {
+        transform: translateX(20px);
+      }
+    }
+    
     .gbl-container {
       max-width: 900px;
       margin: 32px auto;
       padding: 0 8px 32px 8px;
-      background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #1e40af 100%);
-      border-radius: 16px;
-      box-shadow: 0 8px 25px rgba(30, 58, 138, 0.3);
-      color: white;
-      font-family: 'Mitr', sans-serif;
+      background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 30%, #81d4fa 60%, #4fc3f7 100%);
+      border-radius: 20px;
+      box-shadow: 0 10px 40px rgba(79, 195, 247, 0.4), 0 0 20px rgba(255, 255, 255, 0.5);
+      color: #0d47a1;
+      font-family: 'Kanit', sans-serif;
+      position: relative;
+      border: 2px solid rgba(255, 255, 255, 0.6);
+      backdrop-filter: blur(10px);
     }
     .logo {
       display: flex;
@@ -29,58 +69,62 @@
       margin: 0 auto;
     }
     h2 {
-      color: #ffffff;
+      color: #0d47a1;
       text-align: center;
-      text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
-      font-weight: 600;
+      text-shadow: 2px 2px 8px rgba(255,255,255,0.8), 0 0 10px rgba(255,255,255,0.5);
+      font-weight: 700;
       font-size: 1.8em;
+      font-family: 'Prompt', 'Kanit', sans-serif;
     }
     .register-btn {
       display: block;
       width: 100%;
       margin: 24px auto 0 auto;
-      padding: 12px 0;
-      background: linear-gradient(45deg, #dc2626, #ef4444);
+      padding: 14px 0;
+      background: linear-gradient(135deg, #0288d1 0%, #0277bd 50%, #01579b 100%);
       color: #fff;
       font-size: 1.1em;
-      font-weight: bold;
-      border: none;
-      border-radius: 8px;
+      font-weight: 700;
+      border: 2px solid rgba(255, 255, 255, 0.5);
+      border-radius: 12px;
       cursor: pointer;
       text-decoration: none;
       text-align: center;
-      transition: background 0.2s, transform 0.18s, box-shadow 0.18s;
+      transition: all 0.3s ease;
       max-width: 350px;
-      box-shadow: 0 4px 15px rgba(220, 38, 38, 0.4);
+      box-shadow: 0 6px 20px rgba(2, 119, 189, 0.4), 0 0 15px rgba(255, 255, 255, 0.3);
+      font-family: 'Prompt', 'Kanit', sans-serif;
     }
     .register-btn:hover {
-      background: linear-gradient(45deg, #ef4444, #f87171);
+      background: linear-gradient(135deg, #039be5 0%, #0288d1 50%, #0277bd 100%);
       color: #fff;
-      transform: scale(1.07);
-      box-shadow: 0 0 20px #ef4444, 0 0 40px #ef4444;
+      transform: translateY(-2px) scale(1.05);
+      box-shadow: 0 8px 25px rgba(3, 155, 229, 0.5), 0 0 25px rgba(255, 255, 255, 0.5);
+      border-color: rgba(255, 255, 255, 0.8);
     }
     .spinner {
       margin: 24px auto 8px auto;
-      border: 6px solid rgba(255,255,255,0.3);
-      border-top: 6px solid #fbbf24;
+      border: 6px solid rgba(255,255,255,0.4);
+      border-top: 6px solid #0288d1;
       border-radius: 50%;
       width: 48px;
       height: 48px;
       animation: spin 1s linear infinite;
+      box-shadow: 0 0 10px rgba(2, 136, 209, 0.3);
     }
     @keyframes spin {
       0% { transform: rotate(0deg);}
       100% { transform: rotate(360deg);}
     }
-    /* ... (คัดลอก CSS codename-rank, wave, blink, สี, ขนาด ฯลฯ จาก gymbattle.html) ... */
-    .codename-rank[data-rank="Rookie"]      .codename { color: #1e3a8a; font-size: 1.05em; font-weight: 500; }
-    .codename-rank[data-rank="Bronze"]      .codename { color: #1e40af; font-size: 1.08em; font-weight: 500; }
-    .codename-rank[data-rank="Silver"]      .codename { color: #3b82f6; font-size: 1.12em; font-weight: 500; }
-    .codename-rank[data-rank="Gold"]        .codename { color: #fbbf24; font-size: 1.18em; font-weight: 600; }
-    .codename-rank[data-rank="Platinum"]    .codename { color: #e5e7eb; font-size: 1.22em; font-weight: 600; }
-    .codename-rank[data-rank="Diamond"]     .codename { color: #60a5fa; font-size: 1.28em; font-weight: 600; }
-    .codename-rank[data-rank="Grandmaster"] .codename { color: #f59e0b; font-size: 1.35em; font-weight: 600; }
-    .codename-rank[data-rank="Legend"]      .codename { color: #ef4444; font-size: 1.45em; font-weight: 600; }
+    /* Codename rank styles with winter theme */
+    .codename-rank[data-rank="Rookie"]      .codename { color: #81d4fa; font-size: 1.05em; font-weight: 500; }
+    .codename-rank[data-rank="Bronze"]      .codename { color: #4fc3f7; font-size: 1.08em; font-weight: 500; }
+    .codename-rank[data-rank="Silver"]      .codename { color: #29b6f6; font-size: 1.12em; font-weight: 500; }
+    .codename-rank[data-rank="Gold"]        .codename { color: #ffd54f; font-size: 1.18em; font-weight: 600; }
+    .codename-rank[data-rank="Platinum"]    .codename { color: #e1f5fe; font-size: 1.22em; font-weight: 600; }
+    .codename-rank[data-rank="Diamond"]     .codename { color: #03a9f4; font-size: 1.28em; font-weight: 600; }
+    .codename-rank[data-rank="Grandmaster"] .codename { color: #0288d1; font-size: 1.35em; font-weight: 600; }
+    .codename-rank[data-rank="Legend"]      .codename { color: #01579b; font-size: 1.45em; font-weight: 600; }
     .codename-rank[data-rank="Gold"]        .codename,
     .codename-rank[data-rank="Platinum"]    .codename,
     .codename-rank[data-rank="Diamond"]     .codename,
@@ -136,23 +180,22 @@
     .prizes-section {
       margin-top: 32px;
       padding: 24px;
-      background: rgba(255, 255, 255, 0.95);
-      border-radius: 12px;
-      border: 1px solid rgba(0, 0, 0, 0.1);
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(240, 248, 255, 0.98) 100%);
+      border-radius: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.8);
+      box-shadow: 0 8px 25px rgba(2, 136, 209, 0.2), inset 0 0 20px rgba(255, 255, 255, 0.5);
     }
     
     .prizes-title {
-      color: #1e3a8a;
+      color: #01579b;
       text-align: center;
       font-size: 1.8em;
       font-weight: 700;
       margin-bottom: 30px;
       text-shadow: 
-        -1px -1px 0 #ffffff,
-        1px -1px 0 #ffffff,
-        -1px 1px 0 #ffffff,
-        1px 1px 0 #ffffff,
-        2px 2px 4px rgba(0,0,0,0.3);
+        2px 2px 4px rgba(255,255,255,0.8),
+        0 0 10px rgba(2, 136, 209, 0.3);
+      font-family: 'Prompt', 'Kanit', sans-serif;
     }
     
     .prizes-grid {
@@ -181,8 +224,10 @@
     }
     
     .modal-content {
-      width: 250%;
-      height: 250vh;
+      max-width: 90vw;
+      max-height: 90vh;
+      width: auto;
+      height: auto;
       object-fit: contain;
       cursor: pointer;
       user-select: none;
@@ -228,82 +273,99 @@
       border: none;
       box-shadow: none;
       width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    .prize-item .card-wrapper {
+      width: 200px;
+      height: 280px;
+      margin: 0 auto 15px auto;
+      border-radius: 8px;
+      background: transparent;
+      display: block;
+      overflow: hidden;
+      position: relative;
+      box-sizing: border-box;
+      flex-shrink: 0;
+      padding: 0;
     }
     
     .prize-item img {
-      width: 100%;
-      height: auto;
-      margin-bottom: 15px;
+      width: 200px !important;
+      height: 280px !important;
+      min-width: 200px !important;
+      min-height: 280px !important;
+      max-width: 200px !important;
+      max-height: 280px !important;
+      object-fit: cover !important;
+      object-position: center center !important;
       border-radius: 8px;
       cursor: pointer;
-      transition: transform 0.3s ease;
-      min-height: 200px;
-      object-fit: cover;
-    }
-    
-    .prize-item img:hover {
-      transform: scale(1.5);
+      display: block;
+      box-sizing: border-box;
+      flex-shrink: 0;
+      margin: 0;
+      padding: 0;
     }
     
     .prize-item h4 {
-      color: #1e3a8a;
+      color: #0277bd;
       margin: 8px 0 4px 0;
       font-size: 1.4em;
-      font-weight: 600;
-      text-shadow: 
-        -1px -1px 0 #ffffff,
-        1px -1px 0 #ffffff,
-        -1px 1px 0 #ffffff,
-        1px 1px 0 #ffffff;
+      font-weight: 700;
+      text-shadow: 1px 1px 3px rgba(255,255,255,0.8);
+      font-family: 'Prompt', 'Kanit', sans-serif;
     }
     
     .prize-item p {
-      color: #374151;
+      color: #01579b;
       font-size: 1em;
       margin: 0;
       line-height: 1.4;
-      font-weight: 400;
-      text-shadow: 
-        -1px -1px 0 #ffffff,
-        1px -1px 0 #ffffff,
-        -1px 1px 0 #ffffff,
-        1px 1px 0 #ffffff;
+      font-weight: 500;
     }
     
     table {
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.4);
+      border-radius: 12px;
       overflow: hidden;
       margin-top: 20px;
+      border: 2px solid rgba(255, 255, 255, 0.6);
+      box-shadow: 0 4px 15px rgba(2, 136, 209, 0.2);
     }
     
     th {
-      background: rgba(255, 255, 255, 0.15);
-      color: #1e3a8a;
-      font-weight: 600;
+      background: linear-gradient(135deg, rgba(2, 136, 209, 0.3) 0%, rgba(1, 87, 155, 0.4) 100%);
+      color: #01579b;
+      font-weight: 700;
       font-size: 1.1em;
       padding: 12px 8px;
+      text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
+      font-family: 'Prompt', 'Kanit', sans-serif;
     }
     
     td {
-      color: #1e40af;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      color: #0277bd;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.3);
       padding: 10px 8px;
       font-weight: 500;
     }
     
     tr:nth-child(even) td {
-      color: #3b82f6;
-      background: rgba(255, 255, 255, 0.05);
+      color: #0288d1;
+      background: rgba(255, 255, 255, 0.2);
     }
     
     tr:nth-child(odd) td {
-      color: #1e3a8a;
-      background: rgba(255, 255, 255, 0.1);
+      color: #01579b;
+      background: rgba(255, 255, 255, 0.3);
     }
   </style>
 </head>
 <body>
+  <div id="snowflakes"></div>
   <a href="index.html" class="home-button" title="กลับหน้าหลัก"></a>
   <div class="gbl-container">
     <div class="logo-section">
@@ -311,8 +373,9 @@
       <img src="https://i.postimg.cc/50nywLQq/GBL.png" alt="Great Ball League Logo">
     </div>
     <h2 style="text-align:center; margin-bottom: 24px;">รายชื่อผู้สมัคร Up Level Great Ball League</h2>
+    <div style="text-align:center; margin-bottom: 16px; font-size: 1.2em; color: #01579b; font-weight: 700; text-shadow: 2px 2px 6px rgba(255,255,255,0.8), 0 0 10px rgba(255,255,255,0.5); font-family: 'Prompt', 'Kanit', sans-serif;">❄️ แข่งขันวันที่ 14 ธันวาคม 2025 ❄️</div>
     <div style="display: flex; justify-content: center; margin-bottom: 24px;">
-      <a class="register-btn" href="https://forms.gle/u8tNjxLcC5ratdfA6" target="_blank" style="text-align: center;">สมัครแข่งขัน Great Ball League</a>
+      <a class="register-btn" href="https://forms.gle/j8D3xVbrF5Hwnz5u9" target="_blank" style="text-align: center;">สมัครแข่งขัน Great Ball League</a>
     </div>
     <div id="gbl-list" style="text-align:center;">
       <div class="spinner"></div>
@@ -320,7 +383,7 @@
     </div>
   </div>
   <script>
-    const apiUrl = "https://script.google.com/macros/s/AKfycbwadjGJCKwILvuRQUnORnYnSnU_ctIZC64NVOMRBbqGN48yCZpyPGGpMln2GLqNqdjO/exec";
+    const apiUrl = "https://script.google.com/macros/s/AKfycbxRtbq4D3AN2eU-AsoX4A79xHKqVjIvWXeuBp2ePceSqmEq0zNwFZVMOy4FJpXxxIfYog/exec";
     const memberDashboardApi = "https://script.google.com/macros/s/AKfycbxtjsDwHI6nJU4OIHExUxMaZwUn3qwakvdkzwbQO7C8Trzz5Gh84SX6F1gqb4BOFQcn/exec?func=getMemberDashboardData";
     // Codename effect rendering (copy from gymbattle.html)
     function renderCodenameEffect(codename, rank) {
@@ -329,7 +392,7 @@
       if (waveRanks.includes(rank)) {
         return `<span class="codename wave ${rank.toLowerCase()}">${chars.map((ch,i)=>`<span>${ch}</span>`).join('')}</span>`;
       } else {
-        return `<span class="codename" style="color: #1e3a8a;">[${codename}]</span>`;
+        return `<span class="codename" style="color: #81d4fa;">[${codename}]</span>`;
       }
     }
     // Rank emoji map (copy from gymbattle.html)
@@ -419,6 +482,40 @@
         closeModal();
       }
     });
+    
+    // Create snowflakes with better animation
+    const snowflakeSymbols = ['❄', '❅', '❆', '✻', '✼', '✽'];
+    
+    function createSnowflake() {
+      const snowflake = document.createElement('div');
+      snowflake.className = 'snowflake';
+      snowflake.innerHTML = snowflakeSymbols[Math.floor(Math.random() * snowflakeSymbols.length)];
+      snowflake.style.left = Math.random() * 100 + '%';
+      snowflake.style.opacity = Math.random() * 0.6 + 0.4;
+      snowflake.style.fontSize = Math.random() * 15 + 12 + 'px';
+      
+      const fallDuration = Math.random() * 4 + 3; // 3-7 seconds
+      const swayDuration = Math.random() * 2 + 2; // 2-4 seconds
+      
+      snowflake.style.animation = `fall ${fallDuration}s linear infinite, sway ${swayDuration}s ease-in-out infinite`;
+      snowflake.style.animationDelay = Math.random() * 2 + 's';
+      
+      document.getElementById('snowflakes').appendChild(snowflake);
+      
+      setTimeout(() => {
+        if (snowflake.parentNode) {
+          snowflake.remove();
+        }
+      }, (fallDuration + 2) * 1000);
+    }
+    
+    // Create snowflakes more frequently for better effect
+    setInterval(createSnowflake, 200);
+    
+    // Create initial snowflakes
+    for (let i = 0; i < 30; i++) {
+      setTimeout(() => createSnowflake(), i * 100);
+    }
   </script>
   
   <!-- รางวัล Section -->
@@ -426,12 +523,16 @@
     <div class="prizes-title">🏆 รางวัลการแข่งขัน 🏆</div>
     <div class="prizes-grid">
       <div class="prize-item">
-        <img src="https://i.postimg.cc/fThWJ8Pn/GBL-door-gift.png" alt="Door Gift" onclick="openModal(this.src)">
+        <div class="card-wrapper">
+          <img src="images/gbl/door-gift.png" alt="Door Gift" onclick="openModal(this.src)">
+        </div>
         <h4>🎁 Door Gift</h4>
-        <p>รางวัลสำหรับทุกคนที่ร่วมแข่งขัน</p>
+        <p>การ์ดโปรโม เมก้าซิกแนล - รางวัลสำหรับทุกคนที่ร่วมแข่งขัน</p>
       </div>
       <div class="prize-item">
-        <img src="https://i.postimg.cc/mk4x25gm/GBL-finalist.png" alt="Finalist Prize" onclick="openModal(this.src)">
+        <div class="card-wrapper">
+          <img src="images/gbl/finalist.png" alt="Finalist Prize" onclick="openModal(this.src)">
+        </div>
         <h4>🥈 รางวัล Finalist</h4>
         <p>รางวัลสำหรับผู้เข้ารอบสุดท้าย</p>
       </div>
