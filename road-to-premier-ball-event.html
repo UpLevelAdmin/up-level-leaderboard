@@ -552,8 +552,9 @@
     function renderCodenameEffect(codename, rank) {
       const chars = ['[', ...codename.split(''), ']'];
       const waveRanks = ['Gold', 'Platinum', 'Diamond', 'Grandmaster', 'Legend'];
-      if (waveRanks.includes(rank)) {
-        return `<span class="codename wave ${rank.toLowerCase()}">${chars.map((ch,i)=>`<span>${ch}</span>`).join('')}</span>`;
+      const baseRank = getBaseRank(rank);
+      if (waveRanks.includes(baseRank)) {
+        return `<span class="codename wave ${baseRank.toLowerCase()}">${chars.map((ch,i)=>`<span>${ch}</span>`).join('')}</span>`;
       } else {
         return `<span class="codename">[${codename}]</span>`;
       }

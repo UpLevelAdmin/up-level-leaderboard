@@ -2007,10 +2007,16 @@
       "Legend": "🐉", "Legend II": "🐉", "Legend III": "🐉", "Legend IV": "🐉", "Legend V": "🐉"
     };
 
+    function getBaseRank(rank) {
+      if (!rank) return "Rookie";
+      const baseRank = rank.replace(/\s+(II|III|IV|V|VI|VII|VIII|IX|X|\d+)$/, '');
+      return baseRank || "Rookie";
+    }
+
     function getRankEmoji(rank) {
       if (!rank) return rankEmojis["Rookie"] || "🐣";
       if (rankEmojis[rank]) return rankEmojis[rank];
-      const baseRank = rank.replace(/\s+(II|III|IV|V|VI|VII|VIII|IX|X|\d+)$/, '');
+      const baseRank = getBaseRank(rank);
       return rankEmojis[baseRank] || rankEmojis["Rookie"] || "🐣";
     }
 
@@ -2018,9 +2024,10 @@
     function renderCodenameEffect(codename, rank) {
       const chars = ['[', ...codename.split(''), ']'];
       const waveRanks = ['Gold', 'Platinum', 'Diamond', 'Grandmaster', 'Legend'];
-      if (waveRanks.includes(rank)) {
+      const baseRank = getBaseRank(rank);
+      if (waveRanks.includes(baseRank)) {
         // wave + class ตาม rank, ใส่วงเล็บเหลี่ยมขยับด้วย
-        return `<span class="codename wave ${rank.toLowerCase()}">${chars.map((ch,i)=>`<span>${ch}</span>`).join('')}</span>`;
+        return `<span class="codename wave ${baseRank.toLowerCase()}">${chars.map((ch,i)=>`<span>${ch}</span>`).join('')}</span>`;
       } else {
         // ใส่วงเล็บเหลี่ยมธรรมดา
         return `<span class="codename">[${codename}]</span>`;

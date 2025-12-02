@@ -2521,15 +2521,16 @@
 
     function renderCodenameEffect(codename, rank) {
       if (!codename) return '';
-      if (rank === 'Gold') {
+      const baseRank = getBaseRank(rank);
+      if (baseRank === 'Gold') {
         return `<span class="codename wave gold">${codename}</span>`;
-      } else if (rank === 'Platinum') {
+      } else if (baseRank === 'Platinum') {
         return `<span class="codename wave platinum">${codename}</span>`;
-      } else if (rank === 'Diamond') {
+      } else if (baseRank === 'Diamond') {
         return `<span class="codename wave diamond">${codename}</span>`;
-      } else if (rank === 'Grandmaster') {
+      } else if (baseRank === 'Grandmaster') {
         return `<span class="codename wave grandmaster">${codename}</span>`;
-      } else if (rank === 'Legend') {
+      } else if (baseRank === 'Legend') {
         return `<span class="codename wave legend">${codename}</span>`;
       } else {
         return `<span class="codename">${codename}</span>`;

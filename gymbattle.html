@@ -808,9 +808,10 @@
     function renderCodenameEffect(codename, rank) {
       const chars = ['[', ...codename.split(''), ']'];
       const waveRanks = ['Gold', 'Platinum', 'Diamond', 'Grandmaster', 'Legend'];
-      if (waveRanks.includes(rank)) {
+      const baseRank = getBaseRank(rank);
+      if (waveRanks.includes(baseRank)) {
         // wave + class ตาม rank, ใส่วงเล็บเหลี่ยมขยับด้วย
-        return `<span class="codename wave ${rank.toLowerCase()}">${chars.map((ch,i)=>`<span>${ch}</span>`).join('')}</span>`;
+        return `<span class="codename wave ${baseRank.toLowerCase()}">${chars.map((ch,i)=>`<span>${ch}</span>`).join('')}</span>`;
       } else {
         // ใส่วงเล็บเหลี่ยมธรรมดา
         return `<span class="codename">[${codename}]</span>`;
