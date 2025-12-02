@@ -530,15 +530,21 @@
   <script>
     console.log('DEBUG: version 2 - Winter Theme');
     const apiUrl = "https://script.google.com/macros/s/AKfycbwqheVTe7ySCqynf7-QFY3hppgP0sl-OP5spfJPuGoNXsnmaSVadbiWmuJ6IrADM0dj/exec?type=json";
-    // สีธีม Winter (ฟ้า, น้ำเงินอ่อน, ขาว)
+    // สีธีม Winter (แตกต่างกันมากขึ้นเพื่อให้แยกแยะได้ง่าย)
     const pastelColors = [
-      { bg: "#E6F3FF", border: "#87CEEB", th: "#4682B4" },
-      { bg: "#F0F8FF", border: "#B0E0E6", th: "#5F9EA0" },
-      { bg: "#E0F2F7", border: "#ADD8E6", th: "#4682B4" },
-      { bg: "#F5F9FC", border: "#B8D4E3", th: "#5A9BD4" },
-      { bg: "#E8F4F8", border: "#A8C8D8", th: "#4A90A4" },
-      { bg: "#F2F8FB", border: "#C8E0ED", th: "#6BA8E0" },
-      { bg: "#EAF4F8", border: "#9EC5D8", th: "#4A7C9C" }
+      { bg: "#E3F2FD", border: "#2196F3", th: "#1976D2" },      // ฟ้าสดใส
+      { bg: "#E1F5FE", border: "#00BCD4", th: "#0097A7" },     // ฟ้าอ่อน-เขียว
+      { bg: "#E8EAF6", border: "#5C6BC0", th: "#3F51B5" },     // ม่วง-น้ำเงิน
+      { bg: "#F3E5F5", border: "#9C27B0", th: "#7B1FA2" },    // ม่วง
+      { bg: "#E0F2F1", border: "#009688", th: "#00796B" },     // เขียว-น้ำเงิน
+      { bg: "#E8F5E9", border: "#4CAF50", th: "#388E3C" },     // เขียว
+      { bg: "#FFF3E0", border: "#FF9800", th: "#F57C00" },      // ส้ม
+      { bg: "#FCE4EC", border: "#E91E63", th: "#C2185B" },     // ชมพู
+      { bg: "#E0F7FA", border: "#00ACC1", th: "#00838F" },     // ฟ้า-เขียว
+      { bg: "#EDE7F6", border: "#673AB7", th: "#512DA8" },     // ม่วงเข้ม
+      { bg: "#E1BEE7", border: "#BA68C8", th: "#9C27B0" },     // ม่วงอ่อน
+      { bg: "#BBDEFB", border: "#42A5F5", th: "#1E88E5" },     // ฟ้าอ่อน
+      { bg: "#C5CAE9", border: "#7986CB", th: "#5C6BC0" }      // ม่วง-น้ำเงินอ่อน
     ];
 
     // วันที่แข่งขันเดือนธันวาคม 2568
