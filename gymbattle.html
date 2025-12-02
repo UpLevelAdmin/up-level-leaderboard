@@ -4,14 +4,23 @@
   <meta charset="UTF-8">
   <title>รายชื่อผู้สมัคร Gym Battle</title>
   <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Chonburi&display=swap" rel="stylesheet">
   <style>
+    * {
+      font-family: 'Kanit', sans-serif;
+    }
+    body {
+      background: linear-gradient(135deg, #e0f2f7 0%, #b8d4e3 50%, #a8c8d8 100%);
+      background-attachment: fixed;
+    }
     .gymbattle-container {
       max-width: 900px;
       margin: 32px auto;
       padding: 0 8px 32px 8px;
-      background: #fff;
+      background: linear-gradient(180deg, #ffffff 0%, #f0f8ff 100%);
       border-radius: 16px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+      box-shadow: 0 8px 24px rgba(70, 130, 180, 0.3);
+      border: 2px solid rgba(176, 224, 230, 0.5);
     }
     .logo {
       display: flex;
@@ -26,17 +35,21 @@
       margin: 0 auto;
     }
     h2 {
-      color: #388e3c;
+      color: #1e3a5f;
       text-align: center;
+      font-family: 'Chonburi', cursive;
+      font-weight: 400;
+      text-shadow: 0 2px 4px rgba(70, 130, 180, 0.3);
     }
     .date-header {
-      padding: 10px;
+      padding: 12px 16px;
       margin-top: 32px;
       font-size: 1.1em;
-      font-weight: bold;
+      font-weight: 600;
       border-radius: 8px 8px 0 0;
-      border-left: 6px solid #42A5F5;
+      border-left: 6px solid #4682b4;
       text-align: left;
+      box-shadow: 0 2px 8px rgba(70, 130, 180, 0.2);
     }
     table {
       width: 100%;
@@ -50,43 +63,44 @@
     th, td {
       padding: 10px 8px;
       text-align: center;
-      border-bottom: 1px solid #ddd;
+      border-bottom: 1px solid #d0e8f0;
     }
     th {
-      font-weight: bold;
+      font-weight: 600;
       font-size: 1.05em;
     }
     tr:hover td {
-      background: #f1f1f1;
+      background: #e6f3ff;
     }
     .register-btn {
       display: block;
       width: 100%;
       margin: 24px auto 0 auto;
-      padding: 12px 0;
-      background: #1976d2;
+      padding: 14px 0;
+      background: linear-gradient(135deg, #4682b4 0%, #5a9bd4 100%);
       color: #fff;
       font-size: 1.1em;
-      font-weight: bold;
+      font-weight: 600;
       border: none;
-      border-radius: 8px;
+      border-radius: 12px;
       cursor: pointer;
       text-decoration: none;
       text-align: center;
-      transition: background 0.2s, transform 0.18s, box-shadow 0.18s;
+      transition: all 0.3s ease;
       max-width: 350px;
+      box-shadow: 0 4px 12px rgba(70, 130, 180, 0.4);
     }
     .register-btn:hover {
-      background: #42A5F5;
+      background: linear-gradient(135deg, #5a9bd4 0%, #6ba8e0 100%);
       color: #fff;
-      transform: scale(1.07);
-      box-shadow: 0 0 16px #42A5F5, 0 0 32px #42A5F5;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(70, 130, 180, 0.6);
     }
     /* Spinner */
     .spinner {
       margin: 24px auto 8px auto;
-      border: 6px solid #e0e0e0;
-      border-top: 6px solid #42A5F5;
+      border: 6px solid #d0e8f0;
+      border-top: 6px solid #4682b4;
       border-radius: 50%;
       width: 48px;
       height: 48px;
@@ -259,24 +273,28 @@
     .promo-cards-section {
       margin-top: 40px;
       padding: 24px;
-      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+      background: linear-gradient(135deg, #f0f8ff 0%, #e6f3ff 100%);
       border-radius: 16px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 12px rgba(70, 130, 180, 0.2);
+      border: 1px solid rgba(176, 224, 230, 0.5);
     }
 
     .promo-cards-title {
       text-align: center;
-      color: #2c3e50;
+      color: #1e3a5f;
       font-size: 1.8em;
-      font-weight: bold;
+      font-weight: 600;
       margin-bottom: 8px;
+      font-family: 'Chonburi', cursive;
+      text-shadow: 0 2px 4px rgba(70, 130, 180, 0.2);
     }
 
     .promo-cards-subtitle {
       text-align: center;
-      color: #6c757d;
+      color: #4682b4;
       font-size: 1.1em;
       margin-bottom: 32px;
+      font-weight: 400;
     }
 
     .promo-cards-grid {
@@ -293,17 +311,19 @@
       background: #fff;
       border-radius: 12px;
       padding: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 8px rgba(70, 130, 180, 0.15);
       transition: all 0.3s ease;
       cursor: pointer;
       text-align: center;
       width: 100%;
       position: relative;
+      border: 1px solid rgba(176, 224, 230, 0.3);
     }
 
     .promo-card:hover {
       transform: translateY(-4px);
-      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+      box-shadow: 0 8px 20px rgba(70, 130, 180, 0.3);
+      border-color: rgba(70, 130, 180, 0.5);
     }
 
     .promo-card img {
@@ -480,9 +500,9 @@
     <div class="logo">
       <img src="https://i.postimg.cc/wjzpnxjB/Up-Level-01-1.png" alt="Up Level Logo">
     </div>
-    <h2 style="text-align:center; margin-bottom: 24px;">รายชื่อผู้สมัคร Gym Battle เดือนพฤศจิกายน 2568</h2>
+    <h2 style="text-align:center; margin-bottom: 24px;">รายชื่อผู้สมัคร Gym Battle เดือนธันวาคม 2568 ❄️</h2>
     <div style="display: flex; justify-content: center; margin-bottom: 24px;">
-      <a class="register-btn" href="https://forms.gle/bHLKm6DW6KGv9hsr6" target="_blank" style="text-align: center;">สมัครแข่งขัน Gym Battle</a>
+      <a class="register-btn" href="https://forms.gle/tgw95ZL5YxHnLpAM6" target="_blank" style="text-align: center;">สมัครแข่งขัน Gym Battle</a>
     </div>
     <div id="gymbattle-list" style="text-align:center;">
       <div class="spinner"></div>
@@ -508,33 +528,34 @@
     </div>
   </div>
   <script>
-    console.log('DEBUG: version 2');
-    const apiUrl = "https://script.google.com/macros/s/AKfycbyvf57rrZ4cQTeD3znO5vgVG00TDs_vmldtGI8BQ0ZCM_-haevAZU1M9cyRkrSjChTK/exec?type=json";
-    // พาสเทล 7 สี
+    console.log('DEBUG: version 2 - Winter Theme');
+    const apiUrl = "https://script.google.com/macros/s/AKfycbwqheVTe7ySCqynf7-QFY3hppgP0sl-OP5spfJPuGoNXsnmaSVadbiWmuJ6IrADM0dj/exec?type=json";
+    // สีธีม Winter (ฟ้า, น้ำเงินอ่อน, ขาว)
     const pastelColors = [
-      { bg: "#E3F2FD", border: "#42A5F5", th: "#42A5F5" },
-      { bg: "#FFFDE7", border: "#FDD835", th: "#FDD835" },
-      { bg: "#F1F8E9", border: "#7CB342", th: "#7CB342" },
-      { bg: "#FCE4EC", border: "#EC407A", th: "#EC407A" },
-      { bg: "#E8EAF6", border: "#5C6BC0", th: "#5C6BC0" },
-      { bg: "#FFF3E0", border: "#FFB74D", th: "#FFB74D" },
-      { bg: "#E0F2F1", border: "#26A69A", th: "#26A69A" }
+      { bg: "#E6F3FF", border: "#87CEEB", th: "#4682B4" },
+      { bg: "#F0F8FF", border: "#B0E0E6", th: "#5F9EA0" },
+      { bg: "#E0F2F7", border: "#ADD8E6", th: "#4682B4" },
+      { bg: "#F5F9FC", border: "#B8D4E3", th: "#5A9BD4" },
+      { bg: "#E8F4F8", border: "#A8C8D8", th: "#4A90A4" },
+      { bg: "#F2F8FB", border: "#C8E0ED", th: "#6BA8E0" },
+      { bg: "#EAF4F8", border: "#9EC5D8", th: "#4A7C9C" }
     ];
 
-    // วันที่แข่งขันเดือนพฤศจิกายน 2568
-    const novemberDates = [
-      "วันเสาร์ที่ 1 พฤศจิกายน 2568",
-      "วันอังคารที่ 4 พฤศจิกายน 2568",
-      "วันศุกร์ที่ 7 พฤศจิกายน 2568",
-      "วันเสาร์ที่ 8 พฤศจิกายน 2568",
-      "วันอังคารที่ 11 พฤศจิกายน 2568",
-      "วันศุกร์ที่ 14 พฤศจิกายน 2568",
-      "วันเสาร์ที่ 15 พฤศจิกายน 2568",
-      "วันอังคารที่ 18 พฤศจิกายน 2568",
-      "วันศุกร์ที่ 21 พฤศจิกายน 2568",
-      "วันเสาร์ที่ 22 พฤศจิกายน 2568",
-      "วันอังคารที่ 25 พฤศจิกายน 2568",
-      "วันศุกร์ที่ 28 พฤศจิกายน 2568"
+    // วันที่แข่งขันเดือนธันวาคม 2568
+    const decemberDates = [
+      "วันอังคารที่ 2 ธันวาคม 2568",
+      "วันศุกร์ที่ 5 ธันวาคม 2568",
+      "วันเสาร์ที่ 6 ธันวาคม 2568",
+      "วันอังคารที่ 9 ธันวาคม 2568",
+      "วันศุกร์ที่ 12 ธันวาคม 2568",
+      "วันเสาร์ที่ 13 ธันวาคม 2568",
+      "วันอังคารที่ 16 ธันวาคม 2568",
+      "วันศุกร์ที่ 19 ธันวาคม 2568",
+      "วันเสาร์ที่ 20 ธันวาคม 2568",
+      "วันอังคารที่ 23 ธันวาคม 2568",
+      "วันศุกร์ที่ 26 ธันวาคม 2568",
+      "วันเสาร์ที่ 27 ธันวาคม 2568",
+      "วันอังคารที่ 30 ธันวาคม 2568"
     ];
 
     // ดึงข้อมูลสมาชิกจาก Member Dashboard (API ใหม่)
@@ -637,16 +658,16 @@
       today.setHours(0,0,0,0);
       
       // ใช้ข้อมูลวันที่จาก API หรือ fallback ไปใช้ข้อมูลที่กำหนดไว้
-      let datesToUse = data && data.dates ? data.dates : novemberDates;
+      let datesToUse = data && data.dates ? data.dates : decemberDates;
 
-      // รวมวันที่จากระบบ (novemberDates) ก่อน เพื่อให้เริ่มที่ 1 พฤศจิกายนแน่นอน
-      // จากนั้นตามด้วยวันที่จาก API ที่ถูกแปลงเป็นพฤศจิกายน และตัดซ้ำ/จัดเรียง
+      // รวมวันที่จากระบบ (decemberDates) ก่อน เพื่อให้เริ่มที่ 2 ธันวาคมแน่นอน
+      // จากนั้นตามด้วยวันที่จาก API ที่ถูกแปลงเป็นธันวาคม และตัดซ้ำ/จัดเรียง
       const normalizedApiDates = (Array.isArray(datesToUse) ? datesToUse : []).map(date =>
-        date && typeof date === 'string' && date.includes('ตุลาคม') ? date.replace('ตุลาคม', 'พฤศจิกายน') : date
+        date && typeof date === 'string' && (date.includes('พฤศจิกายน') || date.includes('ตุลาคม')) ? date.replace(/พฤศจิกายน|ตุลาคม/g, 'ธันวาคม') : date
       ).filter(Boolean);
 
-      // รวมและตัดซ้ำโดยคงลำดับเริ่มจาก novemberDates
-      const combinedDates = [...novemberDates, ...normalizedApiDates];
+      // รวมและตัดซ้ำโดยคงลำดับเริ่มจาก decemberDates
+      const combinedDates = [...decemberDates, ...normalizedApiDates];
       const seen = new Set();
       datesToUse = combinedDates.filter(d => {
         if (seen.has(d)) return false;
@@ -654,7 +675,7 @@
         return true;
       });
 
-      // จัดเรียงวันที่ตามลำดับเวลา เพื่อให้รายการเริ่มที่ 1 พฤศจิกายนเสมอ
+      // จัดเรียงวันที่ตามลำดับเวลา เพื่อให้รายการเริ่มที่ 2 ธันวาคมเสมอ
       datesToUse.sort((a, b) => {
         const da = parseThaiDate(a);
         const db = parseThaiDate(b);
@@ -666,13 +687,16 @@
         // หาข้อมูลผู้สมัครสำหรับวันที่นี้ (ถ้ามี)
         let players = [];
         if (data && data.groupedData) {
-          // ตรวจสอบทั้งวันที่ปัจจุบันและวันที่ตุลาคม (กรณีข้อมูลเก่า)
+          // ตรวจสอบทั้งวันที่ปัจจุบันและวันที่พฤศจิกายน/ตุลาคม (กรณีข้อมูลเก่า)
           if (data.groupedData[date]) {
             players = data.groupedData[date];
           } else {
-            // ลองหาจากวันที่ตุลาคมที่ตรงกัน
-            const octoberDate = date.replace('พฤศจิกายน', 'ตุลาคม');
-            if (data.groupedData[octoberDate]) {
+            // ลองหาจากวันที่พฤศจิกายนหรือตุลาคมที่ตรงกัน
+            const novemberDate = date.replace('ธันวาคม', 'พฤศจิกายน');
+            const octoberDate = date.replace('ธันวาคม', 'ตุลาคม');
+            if (data.groupedData[novemberDate]) {
+              players = data.groupedData[novemberDate];
+            } else if (data.groupedData[octoberDate]) {
               players = data.groupedData[octoberDate];
             }
           }
@@ -741,7 +765,7 @@
       const today = new Date();
       today.setHours(0,0,0,0);
       
-      novemberDates.forEach((date, idx) => {
+      decemberDates.forEach((date, idx) => {
         const color = pastelColors[idx % pastelColors.length];
         const dateObj = parseThaiDate(date);
         let isPast = false;

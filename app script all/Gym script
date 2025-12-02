@@ -1,17 +1,18 @@
 function doGet(e) {
   var dates = [
-    "วันเสาร์ที่ 1 พฤศจิกายน 2568",
-    "วันอังคารที่ 4 พฤศจิกายน 2568",
-    "วันศุกร์ที่ 7 พฤศจิกายน 2568",
-    "วันเสาร์ที่ 8 พฤศจิกายน 2568",
-    "วันอังคารที่ 11 พฤศจิกายน 2568",
-    "วันศุกร์ที่ 14 พฤศจิกายน 2568",
-    "วันเสาร์ที่ 15 พฤศจิกายน 2568",
-    "วันอังคารที่ 18 พฤศจิกายน 2568",
-    "วันศุกร์ที่ 21 พฤศจิกายน 2568",
-    "วันเสาร์ที่ 22 พฤศจิกายน 2568",
-    "วันอังคารที่ 25 พฤศจิกายน 2568",
-    "วันศุกร์ที่ 28 พฤศจิกายน 2568"
+    "วันอังคารที่ 2 ธันวาคม 2568",
+    "วันศุกร์ที่ 5 ธันวาคม 2568",
+    "วันเสาร์ที่ 6 ธันวาคม 2568",
+    "วันอังคารที่ 9 ธันวาคม 2568",
+    "วันศุกร์ที่ 12 ธันวาคม 2568",
+    "วันเสาร์ที่ 13 ธันวาคม 2568",
+    "วันอังคารที่ 16 ธันวาคม 2568",
+    "วันศุกร์ที่ 19 ธันวาคม 2568",
+    "วันเสาร์ที่ 20 ธันวาคม 2568",
+    "วันอังคารที่ 23 ธันวาคม 2568",
+    "วันศุกร์ที่ 26 ธันวาคม 2568",
+    "วันเสาร์ที่ 27 ธันวาคม 2568",
+    "วันอังคารที่ 30 ธันวาคม 2568"
   ];
 
   var pastelColors = [
@@ -44,11 +45,11 @@ function doGet(e) {
   
   // เพิ่มรูปแบบวันที่ที่อาจแตกต่างกัน (เช่น 2568 vs 2025)
   var alternativeDates = [
-    "วันเสาร์ที่ 1 พฤศจิกายน 2025",
-    "วันอังคารที่ 4 พฤศจิกายน 2025",
-    "วันศุกร์ที่ 7 พฤศจิกายน 2025", 
-    "วันเสาร์ที่ 8 พฤศจิกายน 2025",
-    "วันอังคารที่ 11 พฤศจิกายน 2025"
+    "วันอังคารที่ 2 ธันวาคม 2025",
+    "วันศุกร์ที่ 5 ธันวาคม 2025",
+    "วันเสาร์ที่ 6 ธันวาคม 2025",
+    "วันอังคารที่ 9 ธันวาคม 2025",
+    "วันศุกร์ที่ 12 ธันวาคม 2025"
   ];
   
   alternativeDates.forEach(date => {
@@ -75,13 +76,13 @@ function doGet(e) {
   
   // Debug: แสดงข้อมูลที่สร้างขึ้น
   console.log("Debug - groupedData keys:", Object.keys(groupedData));
-  console.log("Debug - Sample data:", groupedData["วันอังคารที่ 4 พฤศจิกายน 2568"]);
-  console.log("Debug - วันที่ 7 พฤศจิกายน:", groupedData["วันศุกร์ที่ 7 พฤศจิกายน 2568"]);
+  console.log("Debug - Sample data:", groupedData["วันอังคารที่ 2 ธันวาคม 2568"]);
+  console.log("Debug - วันที่ 5 ธันวาคม:", groupedData["วันศุกร์ที่ 5 ธันวาคม 2568"]);
   
-  // Debug: เปรียบเทียบวันที่ 4 และ 7
-  console.log("=== เปรียบเทียบวันที่ 4 และ 7 ===");
-  console.log("วันที่ 4:", groupedData["วันอังคารที่ 4 พฤศจิกายน 2568"].length);
-  console.log("วันที่ 7:", groupedData["วันศุกร์ที่ 7 พฤศจิกายน 2568"].length);
+  // Debug: เปรียบเทียบวันที่ 2 และ 5
+  console.log("=== เปรียบเทียบวันที่ 2 และ 5 ===");
+  console.log("วันที่ 2:", groupedData["วันอังคารที่ 2 ธันวาคม 2568"].length);
+  console.log("วันที่ 5:", groupedData["วันศุกร์ที่ 5 ธันวาคม 2568"].length);
   
   // Debug: แสดงข้อมูลดิบจาก Google Sheets
   console.log("Debug - Raw data from sheet:");
@@ -93,7 +94,7 @@ function doGet(e) {
   console.log("Debug - ตรวจสอบรูปแบบวันที่ที่แตกต่างกัน:");
   for (var i = 1; i < data.length; i++) {
     var date = data[i][1];
-    if (date && (date.includes("4 พฤศจิกายน") || date.includes("7 พฤศจิกายน"))) {
+    if (date && (date.includes("2 ธันวาคม") || date.includes("5 ธันวาคม"))) {
       console.log(`Row ${i}: "${date}" - Length: ${date.length}`);
       // ตรวจสอบว่ามีช่องว่างหรืออักขระพิเศษหรือไม่
       for (var j = 0; j < date.length; j++) {
@@ -104,12 +105,12 @@ function doGet(e) {
     }
   }
   
-  // Debug: ตรวจสอบข้อมูลวันที่ 7 พฤศจิกายนโดยเฉพาะ
-  console.log("Debug - ตรวจสอบข้อมูลวันที่ 7 พฤศจิกายน:");
+  // Debug: ตรวจสอบข้อมูลวันที่ 5 ธันวาคมโดยเฉพาะ
+  console.log("Debug - ตรวจสอบข้อมูลวันที่ 5 ธันวาคม:");
   for (var i = 1; i < data.length; i++) {
     var date = data[i][1];
-    if (date && date.includes("7 พฤศจิกายน")) {
-      console.log(`Found date 7: "${date}", Nickname: "${data[i][3]}"`);
+    if (date && date.includes("5 ธันวาคม")) {
+      console.log(`Found date 5: "${date}", Nickname: "${data[i][3]}"`);
       
       // ตรวจสอบรูปแบบวันที่ที่แตกต่างกัน
       if (date.includes("2568")) {
@@ -141,8 +142,8 @@ function doGet(e) {
     dates.forEach(function(date) {
       var players = groupedData[date] || [];
       
-      // เพิ่มข้อมูลจากรูปแบบที่ไม่มีช่องว่างระหว่าง "พฤศจิกายน" กับ "2568"
-      var dateNoSpace = date.replace("พฤศจิกายน 2568", "พฤศจิกายน2568");
+      // เพิ่มข้อมูลจากรูปแบบที่ไม่มีช่องว่างระหว่าง "ธันวาคม" กับ "2568"
+      var dateNoSpace = date.replace("ธันวาคม 2568", "ธันวาคม2568");
       var playersNoSpace = groupedData[dateNoSpace] || [];
       
       // เพิ่มข้อมูลจากรูปแบบวันที่ที่แตกต่างกัน (2568 vs 2025)
@@ -164,7 +165,7 @@ function doGet(e) {
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>รายชื่อผู้สมัคร Gym Battle พฤศจิกายน 2568</title>
+      <title>รายชื่อผู้สมัคร Gym Battle ธันวาคม 2568</title>
       <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
       <style>
         body {
@@ -219,7 +220,7 @@ function doGet(e) {
         <div class="logo">
           <img src="${logoUrl}" alt="Up Level Logo">
         </div>
-        <h2>รายชื่อผู้สมัคร Gym Battle เดือนพฤศจิกายน 2568</h2>
+        <h2>รายชื่อผู้สมัคร Gym Battle เดือนธันวาคม 2568</h2>
   `;
 
   dates.forEach(function(date, index) {
@@ -336,7 +337,7 @@ function testTelegramNotification() {
     const testData = {
       values: [
         new Date().toLocaleString('th-TH'),
-        "วันอังคารที่ 4 พฤศจิกายน 2568",
+        "วันอังคารที่ 2 ธันวาคม 2568",
         "",
         "ผู้ทดสอบ",
         "",
