@@ -117,14 +117,14 @@
       100% { transform: rotate(360deg);}
     }
     /* Codename rank styles with winter theme */
-    .codename-rank[data-rank="Rookie"]      .codename { color: #81d4fa; font-size: 1.05em; font-weight: 500; }
-    .codename-rank[data-rank="Bronze"]      .codename { color: #4fc3f7; font-size: 1.08em; font-weight: 500; }
-    .codename-rank[data-rank="Silver"]      .codename { color: #29b6f6; font-size: 1.12em; font-weight: 500; }
-    .codename-rank[data-rank="Gold"]        .codename { color: #ffd54f; font-size: 1.18em; font-weight: 600; }
-    .codename-rank[data-rank="Platinum"]    .codename { color: #e1f5fe; font-size: 1.22em; font-weight: 600; }
-    .codename-rank[data-rank="Diamond"]     .codename { color: #03a9f4; font-size: 1.28em; font-weight: 600; }
-    .codename-rank[data-rank="Grandmaster"] .codename { color: #0288d1; font-size: 1.35em; font-weight: 600; }
-    .codename-rank[data-rank="Legend"]      .codename { color: #01579b; font-size: 1.45em; font-weight: 600; }
+    .codename-rank[data-rank="Rookie"]      .codename { color: #0277bd; font-size: 1.05em; font-weight: 500; }
+    .codename-rank[data-rank="Bronze"]      .codename { color: #0288d1; font-size: 1.08em; font-weight: 500; }
+    .codename-rank[data-rank="Silver"]      .codename { color: #039be5; font-size: 1.12em; font-weight: 500; }
+    .codename-rank[data-rank="Gold"]        .codename { color: #f57c00; font-size: 1.18em; font-weight: 600; }
+    .codename-rank[data-rank="Platinum"]    .codename { color: #0277bd; font-size: 1.22em; font-weight: 600; }
+    .codename-rank[data-rank="Diamond"]     .codename { color: #01579b; font-size: 1.28em; font-weight: 600; }
+    .codename-rank[data-rank="Grandmaster"] .codename { color: #014377; font-size: 1.35em; font-weight: 600; }
+    .codename-rank[data-rank="Legend"]      .codename { color: #002447; font-size: 1.45em; font-weight: 600; }
     .codename-rank[data-rank="Gold"]        .codename,
     .codename-rank[data-rank="Platinum"]    .codename,
     .codename-rank[data-rank="Diamond"]     .codename,
@@ -392,7 +392,7 @@
       if (waveRanks.includes(rank)) {
         return `<span class="codename wave ${rank.toLowerCase()}">${chars.map((ch,i)=>`<span>${ch}</span>`).join('')}</span>`;
       } else {
-        return `<span class="codename" style="color: #81d4fa;">[${codename}]</span>`;
+        return `<span class="codename" style="color: #0277bd;">[${codename}]</span>`;
       }
     }
     // Rank emoji map (copy from gymbattle.html)
