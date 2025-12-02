@@ -385,16 +385,6 @@
   <script>
     const apiUrl = "https://script.google.com/macros/s/AKfycbxRtbq4D3AN2eU-AsoX4A79xHKqVjIvWXeuBp2ePceSqmEq0zNwFZVMOy4FJpXxxIfYog/exec";
     const memberDashboardApi = "https://script.google.com/macros/s/AKfycbxtjsDwHI6nJU4OIHExUxMaZwUn3qwakvdkzwbQO7C8Trzz5Gh84SX6F1gqb4BOFQcn/exec?func=getMemberDashboardData";
-    // Codename effect rendering (copy from gymbattle.html)
-    function renderCodenameEffect(codename, rank) {
-      const chars = ['[', ...codename.split(''), ']'];
-      const waveRanks = ['Gold', 'Platinum', 'Diamond', 'Grandmaster', 'Legend'];
-      if (waveRanks.includes(rank)) {
-        return `<span class="codename wave ${rank.toLowerCase()}">${chars.map((ch,i)=>`<span>${ch}</span>`).join('')}</span>`;
-      } else {
-        return `<span class="codename" style="color: #0277bd;">[${codename}]</span>`;
-      }
-    }
     // Rank emoji map (copy from gymbattle.html)
     const rankEmojis = {
       "Rookie": "🐣", "Rookie II": "🐣", "Rookie III": "🐣", "Rookie IV": "🐣", "Rookie V": "🐣",
@@ -410,6 +400,17 @@
       if (!rank) return "Rookie";
       const baseRank = rank.replace(/\s+(II|III|IV|V|VI|VII|VIII|IX|X|\d+)$/, '');
       return baseRank || "Rookie";
+    }
+    // Codename effect rendering (copy from gymbattle.html)
+    function renderCodenameEffect(codename, rank) {
+      const chars = ['[', ...codename.split(''), ']'];
+      const waveRanks = ['Gold', 'Platinum', 'Diamond', 'Grandmaster', 'Legend'];
+      const baseRank = getBaseRank(rank);
+      if (waveRanks.includes(baseRank)) {
+        return `<span class="codename wave ${baseRank.toLowerCase()}">${chars.map((ch,i)=>`<span>${ch}</span>`).join('')}</span>`;
+      } else {
+        return `<span class="codename" style="color: #0277bd;">[${codename}]</span>`;
+      }
     }
     function getRankEmoji(rank) {
       if (!rank) return rankEmojis["Rookie"] || "🐣";
