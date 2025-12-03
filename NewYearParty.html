@@ -397,14 +397,15 @@
       
       let html = '';
       if (data && data.participants && data.participants.length > 0) {
-        html += `<table><thead><tr><th>ลำดับ</th><th>ชื่อ-สกุล / Codename</th><th>เข้าร่วมยิม</th><th>อาหาร</th></tr></thead><tbody>`;
+        html += `<table><thead><tr><th>ลำดับ</th><th>ชื่อเล่น / Codename</th><th>เข้าร่วมยิม</th><th>อาหาร</th></tr></thead><tbody>`;
         data.participants.forEach((p, idx) => {
           // ดึงข้อมูลจาก object โดยใช้ชื่อ column จาก Google Form
-          // col B: ชื่อ - นามสกุล, col C: เบอร์ติดต่อ (0xx-xxx-xxxx), col D: เข้าร่วมยิม Gym battle, col E: Trainer ID, col F: อาหารที่ต้องการรับประทานในงาน
-          const fullname = p['ชื่อ - นามสกุล'] || p[Object.keys(p)[1]] || '';
+          // col B: ชื่อ - นามสกุล, col C: เบอร์ติดต่อ (0xx-xxx-xxxx), col D: อาหารที่ต้องการรับประทานในงาน
+          // col E: เข้าร่วมยิม Gym battle, col F: Trainer ID, col G: ชื่อเล่น
+          const nickname = p['ชื่อเล่น'] || p[Object.keys(p)[6]] || '';
           const phone = String(p['เบอร์ติดต่อ (0xx-xxx-xxxx)'] || p[Object.keys(p)[2]] || '').replace(/[^\d]/g, "");
-          const gymJoin = p['เข้าร่วมยิม Gym battle'] || p[Object.keys(p)[3]] || '';
-          const food = p['อาหารที่ต้องการรับประทานในงาน'] || p[Object.keys(p)[5]] || '';
+          const gymJoin = p['เข้าร่วมยิม Gym battle'] || p[Object.keys(p)[4]] || '';
+          const food = p['อาหารที่ต้องการรับประทานในงาน'] || p[Object.keys(p)[3]] || '';
           
           let codename = '';
           let rank = '';
@@ -414,7 +415,7 @@
           }
           
           let codenameHtml = codename ? `<span class="codename-rank" data-rank="${rank}">${getRankEmoji(rank)} ${renderCodenameEffect(codename, rank)} ${getRankEmoji(rank)}</span>` : '-';
-          html += `<tr><td>${idx+1}</td><td>${fullname}<br>${codenameHtml}</td><td>${gymJoin || '-'}</td><td>${food || '-'}</td></tr>`;
+          html += `<tr><td>${idx+1}</td><td>${nickname || '-'}<br>${codenameHtml}</td><td>${gymJoin || '-'}</td><td>${food || '-'}</td></tr>`;
         });
         html += `</tbody></table>`;
       } else {
