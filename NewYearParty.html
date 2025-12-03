@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="th">
+  <head>
+    <meta charset="UTF-8">
+    <title>🎄 Up Level New Year Party 🎄</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Prompt:wght@300;400;500;600;700&family=Chonburi&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(180deg, #fff5f5 0%, #ffe5e5 50%, #ffcccc 100%);
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+      font-family: 'Kanit', 'Prompt', sans-serif;
+    }
+    
+    /* Snowflakes Animation */
+    .snowflake {
+      position: fixed;
+      top: -10px;
+      color: #ffffff;
+      font-size: 1em;
+      font-family: Arial;
+      text-shadow: 0 0 8px rgba(255,255,255,0.9), 0 0 15px rgba(255,200,200,0.6);
+      animation: fall linear infinite, sway 3s ease-in-out infinite;
+      pointer-events: none;
+      z-index: 1000;
+      user-select: none;
+    }
+    
+    @keyframes fall {
+      to {
+        transform: translateY(100vh) rotate(360deg);
+      }
+    }
+    
+    @keyframes sway {
+      0%, 100% {
+        transform: translateX(0);
+      }
+      50% {
+        transform: translateX(20px);
+      }
+    }
+    
+    .party-container {
+      max-width: 1000px;
+      margin: 32px auto;
+      padding: 0 8px 32px 8px;
+      background: linear-gradient(135deg, #fff0f0 0%, #ffe0e0 30%, #ffd6d6 60%, #ffcccc 100%);
+      border-radius: 20px;
+      box-shadow: 0 10px 40px rgba(255, 100, 100, 0.3), 0 0 20px rgba(255, 255, 255, 0.5);
+      color: #8b0000;
+      font-family: 'Kanit', sans-serif;
+      position: relative;
+      border: 2px solid rgba(255, 255, 255, 0.6);
+      backdrop-filter: blur(10px);
+    }
+    
+    .home-button {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+      border: none;
+      border-radius: 50%;
+      box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+    }
+    
+    .home-button:hover {
+      transform: translateY(-3px) scale(1.05);
+      box-shadow: 0 12px 30px rgba(255, 107, 107, 0.6);
+      background: linear-gradient(135deg, #ff5252 0%, #e53935 100%);
+    }
+    
+    .home-button::before {
+      content: "🏠";
+      font-size: 24px;
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+    }
+    
+    .logo-section {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 20px;
+      width: 100%;
+    }
+    
+    .logo-section img {
+      max-width: 150px;
+      display: block;
+      margin: 0 auto;
+    }
+    
+    h1 {
+      color: #c41e3a;
+      text-align: center;
+      text-shadow: 2px 2px 8px rgba(255,255,255,0.8), 0 0 10px rgba(255,200,200,0.5);
+      font-weight: 700;
+      font-size: 2.5em;
+      font-family: 'Prompt', 'Kanit', sans-serif;
+      margin-bottom: 16px;
+    }
+    
+    h2 {
+      color: #8b0000;
+      text-align: center;
+      text-shadow: 2px 2px 8px rgba(255,255,255,0.8), 0 0 10px rgba(255,255,255,0.5);
+      font-weight: 700;
+      font-size: 1.8em;
+      font-family: 'Prompt', 'Kanit', sans-serif;
+    }
+    
+    .event-info {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 240, 240, 0.98) 100%);
+      border-radius: 16px;
+      padding: 24px;
+      margin: 24px 0;
+      border: 2px solid rgba(255, 255, 255, 0.8);
+      box-shadow: 0 8px 25px rgba(255, 100, 100, 0.2), inset 0 0 20px rgba(255, 255, 255, 0.5);
+    }
+    
+    .event-info h3 {
+      color: #c41e3a;
+      font-size: 1.5em;
+      font-weight: 700;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+    
+    .event-info p {
+      color: #8b0000;
+      font-size: 1.1em;
+      line-height: 1.8;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+    
+    .event-info ul {
+      color: #8b0000;
+      font-size: 1.1em;
+      line-height: 2;
+      margin: 16px 0;
+      padding-left: 20px;
+    }
+    
+    .event-info li {
+      margin-bottom: 8px;
+    }
+    
+    .register-btn {
+      display: block;
+      width: 100%;
+      margin: 24px auto;
+      padding: 16px 0;
+      background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 50%, #c41e3a 100%);
+      color: #fff;
+      font-size: 1.2em;
+      font-weight: 700;
+      border: 2px solid rgba(255, 255, 255, 0.5);
+      border-radius: 12px;
+      cursor: pointer;
+      text-decoration: none;
+      text-align: center;
+      transition: all 0.3s ease;
+      max-width: 400px;
+      box-shadow: 0 6px 20px rgba(196, 30, 58, 0.4), 0 0 15px rgba(255, 255, 255, 0.3);
+      font-family: 'Prompt', 'Kanit', sans-serif;
+    }
+    
+    .register-btn:hover {
+      background: linear-gradient(135deg, #ff5252 0%, #ff6b6b 50%, #ee5a6f 100%);
+      color: #fff;
+      transform: translateY(-2px) scale(1.05);
+      box-shadow: 0 8px 25px rgba(255, 82, 82, 0.5), 0 0 25px rgba(255, 255, 255, 0.5);
+      border-color: rgba(255, 255, 255, 0.8);
+    }
+    
+    .spinner {
+      margin: 24px auto 8px auto;
+      border: 6px solid rgba(255,255,255,0.4);
+      border-top: 6px solid #ff6b6b;
+      border-radius: 50%;
+      width: 48px;
+      height: 48px;
+      animation: spin 1s linear infinite;
+      box-shadow: 0 0 10px rgba(255, 107, 107, 0.3);
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg);}
+      100% { transform: rotate(360deg);}
+    }
+    
+    /* Codename rank styles */
+    .codename-rank[data-rank="Rookie"]      .codename { color: #8b0000; font-size: 1.05em; font-weight: 500; }
+    .codename-rank[data-rank="Bronze"]      .codename { color: #a52a2a; font-size: 1.08em; font-weight: 500; }
+    .codename-rank[data-rank="Silver"]      .codename { color: #c41e3a; font-size: 1.12em; font-weight: 500; }
+    .codename-rank[data-rank="Gold"]        .codename { color: #ff8c00; font-size: 1.18em; font-weight: 600; }
+    .codename-rank[data-rank="Platinum"]    .codename { color: #c41e3a; font-size: 1.22em; font-weight: 600; }
+    .codename-rank[data-rank="Diamond"]     .codename { color: #8b0000; font-size: 1.28em; font-weight: 600; }
+    .codename-rank[data-rank="Grandmaster"] .codename { color: #660000; font-size: 1.35em; font-weight: 600; }
+    .codename-rank[data-rank="Legend"]      .codename { color: #4b0000; font-size: 1.45em; font-weight: 600; }
+    .codename-rank[data-rank="Gold"]        .codename,
+    .codename-rank[data-rank="Platinum"]    .codename,
+    .codename-rank[data-rank="Diamond"]     .codename,
+    .codename-rank[data-rank="Grandmaster"] .codename,
+    .codename-rank[data-rank="Legend"]      .codename {
+      animation: blink 1s step-end infinite alternate;
+    }
+    @keyframes blink {
+      0%   { opacity: 1;   text-shadow: 0 0 8px #fff, 0 0 16px currentColor; }
+      100% { opacity: 0.6; text-shadow: 0 0 2px #fff, 0 0 4px currentColor; }
+    }
+    @keyframes wave {
+      0%, 100% { transform: translateY(0);}
+      20%      { transform: translateY(-5px);}
+      40%      { transform: translateY(-10px);}
+      60%      { transform: translateY(-5px);}
+      80%      { transform: translateY(0);}
+    }
+    .codename.wave span {
+      display: inline-block;
+      animation: wave 1.2s cubic-bezier(0.4,0,0.2,1) infinite;
+    }
+    .codename.wave.gold span { animation-duration: 1.2s; }
+    .codename.wave.platinum span { animation-duration: 1s; }
+    .codename.wave.diamond span { animation-duration: 0.85s; }
+    .codename.wave.grandmaster span { animation-duration: 0.7s; }
+    .codename.wave.legend span { animation-duration: 0.6s; }
+    .codename.wave span:nth-child(1) { animation-delay: 0s; }
+    .codename.wave span:nth-child(2) { animation-delay: 0.08s; }
+    .codename.wave span:nth-child(3) { animation-delay: 0.16s; }
+    .codename.wave span:nth-child(4) { animation-delay: 0.24s; }
+    .codename.wave span:nth-child(5) { animation-delay: 0.32s; }
+    .codename.wave span:nth-child(6) { animation-delay: 0.40s; }
+    .codename.wave span:nth-child(7) { animation-delay: 0.48s; }
+    .codename.wave span:nth-child(8) { animation-delay: 0.56s; }
+    .codename.wave span:nth-child(9) { animation-delay: 0.64s; }
+    .codename.wave span:nth-child(10){ animation-delay: 0.72s; }
+    
+    table {
+      background: rgba(255, 255, 255, 0.4);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-top: 20px;
+      border: 2px solid rgba(255, 255, 255, 0.6);
+      box-shadow: 0 4px 15px rgba(255, 100, 100, 0.2);
+    }
+    
+    th {
+      background: linear-gradient(135deg, rgba(255, 107, 107, 0.3) 0%, rgba(196, 30, 58, 0.4) 100%);
+      color: #8b0000;
+      font-weight: 700;
+      font-size: 1.1em;
+      padding: 12px 8px;
+      text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
+      font-family: 'Prompt', 'Kanit', sans-serif;
+    }
+    
+    td {
+      color: #c41e3a;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+      padding: 10px 8px;
+      font-weight: 500;
+    }
+    
+    tr:nth-child(even) td {
+      color: #a52a2a;
+      background: rgba(255, 255, 255, 0.2);
+    }
+    
+    tr:nth-child(odd) td {
+      color: #8b0000;
+      background: rgba(255, 255, 255, 0.3);
+    }
+    
+    .highlight-box {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 240, 240, 0.98) 100%);
+      border-radius: 16px;
+      padding: 20px;
+      margin: 20px 0;
+      border: 2px solid rgba(255, 200, 200, 0.8);
+      box-shadow: 0 4px 15px rgba(255, 100, 100, 0.2);
+    }
+    
+    .highlight-box h4 {
+      color: #c41e3a;
+      font-size: 1.3em;
+      font-weight: 700;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+    
+    .highlight-box p {
+      color: #8b0000;
+      font-size: 1em;
+      line-height: 1.6;
+      margin: 8px 0;
+    }
+  </style>
+</head>
+<body>
+  <div id="snowflakes"></div>
+  <a href="index.html" class="home-button" title="กลับหน้าหลัก"></a>
+  <div class="party-container">
+    <div class="logo-section">
+      <img src="https://i.postimg.cc/wjzpnxjB/Up-Level-01-1.png" alt="Up Level Logo">
+    </div>
+    <h1>🎄 Up Level New Year Party 🎄</h1>
+    
+    <div style="display: flex; justify-content: center; margin: 24px 0;">
+      <a class="register-btn" href="https://forms.gle/hAUr4aEyDCBjz9Nu8" target="_blank" style="text-align: center;">✨ ลงทะเบียนได้เลย ✨</a>
+    </div>
+    
+    <h2 style="margin-top: 40px;">รายชื่อผู้สมัคร</h2>
+    <div id="participants-list" style="text-align:center;">
+      <div class="spinner"></div>
+      <div>กำลังโหลด...</div>
+    </div>
+    
+    <div class="event-info" style="margin-top: 40px;">
+      <h3>✨ รายละเอียดงาน</h3>
+      <p style="font-size: 1.2em; font-weight: 700; color: #c41e3a; margin-bottom: 16px;">
+        วันอาทิตย์ที่ 7 ธันวาคม 2568 — ลงทะเบียน 13:00 น.
+      </p>
+      <p><strong>🎁 เข้าร่วมง่ายมาก!</strong> แค่นำของขวัญ 1 ชิ้น (มูลค่า 200 บาทขึ้นไป) ❌ ของกิน ❌ เงินสด ❌ Single card</p>
+      <p><strong>❄️ กิจกรรม:</strong> แลกของขวัญปีใหม่ • เกมฐานทีมชนทีม • ซุ้มสอยดาว • มีกิจกรรมให้ร่วมสนุกตลอดงาน</p>
+      <p><strong>🔥 18:30 น. — Chaos Black Ops Gym:</strong> ยิมพิเศษประจำงานปีใหม่! ใช้เด็คส่วนตัว • ทุกคนต้องแอบผิดกติกา 1 อย่าง • ทุกเกมมี Chaos Rule แบบสุ่ม • ผู้แพ้สามารถ Challenge เดาความผิดของคู่ต่อสู้ได้!</p>
+      <p><strong>🎖 สิทธิพิเศษ:</strong> 👕 ใส่เสื้อกิลด์ → +5 EXP • 👥 ปาร์ตี้มาครบทีม → +10 Party Point</p>
+      <p style="margin-top: 16px; font-weight: 600;">❤️ ไม่ต้องเตรียมอะไรเยอะ แค่ของขวัญ 1 ชิ้น + ใจพร้อมสนุก แล้วมาเจอกันในงาน Up Level New Year Party บรรยากาศอบอุ่น สนุก ลุ้น ฮา ทั้งวันแน่นอน! 🎉❄️</p>
+    </div>
+  </div>
+  
+  <script>
+    const apiUrl = "https://script.google.com/macros/s/AKfycbzqjIPGLi5kOQRw6I9wfMpLEA1qHuoFQ57rPXf2vgFNkFKk_vymOCC-iaBO1gV7D50iXQ/exec";
+    const memberDashboardApi = "https://script.google.com/macros/s/AKfycbxtjsDwHI6nJU4OIHExUxMaZwUn3qwakvdkzwbQO7C8Trzz5Gh84SX6F1gqb4BOFQcn/exec?func=getMemberDashboardData";
+    
+    // Rank emoji map
+    const rankEmojis = {
+      "Rookie": "🐣", "Rookie II": "🐣", "Rookie III": "🐣", "Rookie IV": "🐣", "Rookie V": "🐣",
+      "Bronze": "🛡️", "Bronze II": "🛡️", "Bronze III": "🛡️", "Bronze IV": "🛡️", "Bronze V": "🛡️",
+      "Silver": "⚔️", "Silver II": "⚔️", "Silver III": "⚔️", "Silver IV": "⚔️", "Silver V": "⚔️",
+      "Gold": "🥇", "Gold II": "🥇", "Gold III": "🥇", "Gold IV": "🥇", "Gold V": "🥇",
+      "Platinum": "✨", "Platinum II": "✨", "Platinum III": "✨", "Platinum IV": "✨", "Platinum V": "✨",
+      "Diamond": "💎", "Diamond II": "💎", "Diamond III": "💎", "Diamond IV": "💎", "Diamond V": "💎",
+      "Grandmaster": "👑", "Grandmaster II": "👑", "Grandmaster III": "👑", "Grandmaster IV": "👑", "Grandmaster V": "👑",
+      "Legend": "🐉", "Legend II": "🐉", "Legend III": "🐉", "Legend IV": "🐉", "Legend V": "🐉"
+    };
+    
+    function getBaseRank(rank) {
+      if (!rank) return "Rookie";
+      const baseRank = rank.replace(/\s+(II|III|IV|V|VI|VII|VIII|IX|X|\d+)$/, '');
+      return baseRank || "Rookie";
+    }
+    
+    function renderCodenameEffect(codename, rank) {
+      const chars = ['[', ...codename.split(''), ']'];
+      const waveRanks = ['Gold', 'Platinum', 'Diamond', 'Grandmaster', 'Legend'];
+      const baseRank = getBaseRank(rank);
+      if (waveRanks.includes(baseRank)) {
+        return `<span class="codename wave ${baseRank.toLowerCase()}">${chars.map((ch,i)=>`<span>${ch}</span>`).join('')}</span>`;
+      } else {
+        return `<span class="codename" style="color: #c41e3a;">[${codename}]</span>`;
+      }
+    }
+    
+    function getRankEmoji(rank) {
+      if (!rank) return rankEmojis["Rookie"] || "🐣";
+      if (rankEmojis[rank]) return rankEmojis[rank];
+      const baseRank = getBaseRank(rank);
+      return rankEmojis[baseRank] || rankEmojis["Rookie"] || "🐣";
+    }
+    
+    Promise.all([
+      fetch(apiUrl).then(res => res.json()),
+      fetch(memberDashboardApi).then(res => res.json())
+    ]).then(([data, members]) => {
+      // สร้าง map เบอร์โทร -> { codename, rank }
+      const phoneMap = {};
+      if (members && Array.isArray(members)) {
+        members.forEach(m => {
+          const phone = String(m.phone).replace(/[^\d]/g, "");
+          phoneMap[phone] = { codename: m.codename, rank: m.rank };
+        });
+      }
+      
+      let html = '';
+      if (data && data.participants && data.participants.length > 0) {
+        html += `<table><thead><tr><th>ลำดับ</th><th>ชื่อ-สกุล / Codename</th><th>เข้าร่วมยิม</th><th>อาหาร</th></tr></thead><tbody>`;
+        data.participants.forEach((p, idx) => {
+          // ดึงข้อมูลจาก object โดยใช้ชื่อ column จาก Google Form
+          // col B: ชื่อ - นามสกุล, col C: เบอร์ติดต่อ (0xx-xxx-xxxx), col D: เข้าร่วมยิม Gym battle, col E: Trainer ID, col F: อาหารที่ต้องการรับประทานในงาน
+          const fullname = p['ชื่อ - นามสกุล'] || p[Object.keys(p)[1]] || '';
+          const phone = String(p['เบอร์ติดต่อ (0xx-xxx-xxxx)'] || p[Object.keys(p)[2]] || '').replace(/[^\d]/g, "");
+          const gymJoin = p['เข้าร่วมยิม Gym battle'] || p[Object.keys(p)[3]] || '';
+          const food = p['อาหารที่ต้องการรับประทานในงาน'] || p[Object.keys(p)[5]] || '';
+          
+          let codename = '';
+          let rank = '';
+          if (phoneMap[phone]) {
+            codename = phoneMap[phone].codename || '';
+            rank = phoneMap[phone].rank || '';
+          }
+          
+          let codenameHtml = codename ? `<span class="codename-rank" data-rank="${rank}">${getRankEmoji(rank)} ${renderCodenameEffect(codename, rank)} ${getRankEmoji(rank)}</span>` : '-';
+          html += `<tr><td>${idx+1}</td><td>${fullname}<br>${codenameHtml}</td><td>${gymJoin || '-'}</td><td>${food || '-'}</td></tr>`;
+        });
+        html += `</tbody></table>`;
+      } else {
+        html = '<div style="padding: 20px; color: #8b0000; font-size: 1.2em;">ยังไม่มีผู้สมัคร</div>';
+      }
+      document.getElementById('participants-list').innerHTML = html;
+    }).catch(err => {
+      console.error('Fetch error:', err);
+      document.getElementById('participants-list').innerHTML = '<div style="padding: 20px; color: #c41e3a; font-size: 1.2em;">เกิดข้อผิดพลาดในการโหลดข้อมูล</div>';
+    });
+    
+    // Create snowflakes with better animation
+    const snowflakeSymbols = ['❄', '❅', '❆', '✻', '✼', '✽', '🎄', '⭐'];
+    
+    function createSnowflake() {
+      const snowflake = document.createElement('div');
+      snowflake.className = 'snowflake';
+      snowflake.innerHTML = snowflakeSymbols[Math.floor(Math.random() * snowflakeSymbols.length)];
+      snowflake.style.left = Math.random() * 100 + '%';
+      snowflake.style.opacity = Math.random() * 0.6 + 0.4;
+      snowflake.style.fontSize = Math.random() * 15 + 12 + 'px';
+      
+      const fallDuration = Math.random() * 4 + 3; // 3-7 seconds
+      const swayDuration = Math.random() * 2 + 2; // 2-4 seconds
+      
+      snowflake.style.animation = `fall ${fallDuration}s linear infinite, sway ${swayDuration}s ease-in-out infinite`;
+      snowflake.style.animationDelay = Math.random() * 2 + 's';
+      
+      document.getElementById('snowflakes').appendChild(snowflake);
+      
+      setTimeout(() => {
+        if (snowflake.parentNode) {
+          snowflake.remove();
+        }
+      }, (fallDuration + 2) * 1000);
+    }
+    
+    // Create snowflakes more frequently for better effect
+    setInterval(createSnowflake, 200);
+    
+    // Create initial snowflakes
+    for (let i = 0; i < 30; i++) {
+      setTimeout(() => createSnowflake(), i * 100);
+    }
+  </script>
+</body>
+</html>
+
