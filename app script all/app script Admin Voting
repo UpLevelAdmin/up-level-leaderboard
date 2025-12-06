@@ -179,7 +179,19 @@ function getVotingData() {
       const row = votesData[i];
       if (voteAdminIdCol >= 0 && votePhoneCol >= 0) {
         const adminId = String(row[voteAdminIdCol]);
-        const phone = normalizePhone(row[votePhoneCol]);
+        // แปลงเบอร์เป็น string ก่อน normalize เพื่อรักษา 0 ข้างหน้า
+        let phoneValue = row[votePhoneCol];
+        // ถ้าเป็นตัวเลข ให้แปลงเป็น string และเติม 0 ข้างหน้าถ้าจำนวนหลักน้อยกว่า 10
+        if (typeof phoneValue === 'number') {
+          phoneValue = String(phoneValue);
+          // ถ้าเบอร์มี 9 หลัก (ไม่มี 0 ข้างหน้า) ให้เติม 0 ข้างหน้า
+          if (phoneValue.length === 9) {
+            phoneValue = '0' + phoneValue;
+          }
+        } else {
+          phoneValue = String(phoneValue);
+        }
+        const phone = normalizePhone(phoneValue);
         const codename = voteCodenameCol >= 0 ? row[voteCodenameCol] : (memberMap[phone] || '');
         
         if (!votesByAdmin[adminId]) {
@@ -257,7 +269,18 @@ function checkVoteStatus(phone) {
     const normalizedPhone = normalizePhone(phone);
     
     for (let i = 1; i < votesData.length; i++) {
-      const rowPhone = normalizePhone(votesData[i][phoneCol]);
+      let rowPhoneValue = votesData[i][phoneCol];
+      // แปลงเบอร์เป็น string ก่อน normalize เพื่อรักษา 0 ข้างหน้า
+      if (typeof rowPhoneValue === 'number') {
+        rowPhoneValue = String(rowPhoneValue);
+        // ถ้าเบอร์มี 9 หลัก (ไม่มี 0 ข้างหน้า) ให้เติม 0 ข้างหน้า
+        if (rowPhoneValue.length === 9) {
+          rowPhoneValue = '0' + rowPhoneValue;
+        }
+      } else {
+        rowPhoneValue = String(rowPhoneValue);
+      }
+      const rowPhone = normalizePhone(rowPhoneValue);
       if (rowPhone === normalizedPhone) {
         return ContentService.createTextOutput(JSON.stringify({
           hasVoted: true
@@ -351,15 +374,25 @@ function submitVote(phone, adminId) {
       const newSheet = ss.insertSheet('Votes');
       newSheet.appendRow(['Timestamp', 'Phone', 'Admin ID', 'Codename']);
       newSheet.getRange(1, 1, 1, 4).setFontWeight('bold');
+      // ตั้งค่า format ของ column Phone เป็น text เพื่อรักษา 0 ข้างหน้า
+      newSheet.getRange(2, 2, 1000, 1).setNumberFormat('@');
+    } else {
+      // ตั้งค่า format ของ column Phone เป็น text (ถ้ายังไม่ได้ตั้ง)
+      const lastRow = votesSheet.getLastRow();
+      if (lastRow > 0) {
+        votesSheet.getRange(2, 2, Math.max(lastRow, 1000), 1).setNumberFormat('@');
+      }
     }
     
     const timestamp = new Date();
-    votesSheet.appendRow([
-      timestamp,
-      phone,
-      adminId,
-      codename
-    ]);
+    const newRow = votesSheet.getLastRow() + 1;
+    
+    // บันทึกข้อมูลโดยใช้ setValue เพื่อควบคุม format
+    votesSheet.getRange(newRow, 1).setValue(timestamp); // Timestamp
+    votesSheet.getRange(newRow, 2).setValue(phone); // Phone (เป็น text format)
+    votesSheet.getRange(newRow, 2).setNumberFormat('@'); // ตั้งค่าเป็น text format เพื่อรักษา 0 ข้างหน้า
+    votesSheet.getRange(newRow, 3).setValue(adminId); // Admin ID
+    votesSheet.getRange(newRow, 4).setValue(codename); // Codename
     
     return ContentService.createTextOutput(JSON.stringify({
       success: true,

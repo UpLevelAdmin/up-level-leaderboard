@@ -615,6 +615,26 @@
     .codename.wave.diamond span { animation-duration: 0.85s; }
     .codename.wave.grandmaster span { animation-duration: 0.7s; }
     .codename.wave.legend span { animation-duration: 0.6s; }
+    
+    /* ให้ emoji ใน codename-rank ขยับได้ด้วย wave effect */
+    .codename-rank .codename.wave span,
+    .codename-rank span {
+      display: inline-block;
+    }
+    
+    /* Wave effect สำหรับ emoji ใน codename-rank */
+    .codename-rank .codename.wave span {
+      animation: wave 1.2s cubic-bezier(0.4,0,0.2,1) infinite;
+    }
+    .codename-rank[data-rank*="Gold"] .codename.wave span { animation-duration: 1.2s; }
+    .codename-rank[data-rank*="Platinum"] .codename.wave span { animation-duration: 1s; }
+    .codename-rank[data-rank*="Diamond"] .codename.wave span { animation-duration: 0.85s; }
+    .codename-rank[data-rank*="Grandmaster"] .codename.wave span { animation-duration: 0.7s; }
+    .codename-rank[data-rank*="Legend"] .codename.wave span { animation-duration: 0.6s; }
+    
+    /* Animation delay สำหรับ emoji */
+    .codename-rank .codename.wave span:nth-child(1) { animation-delay: 0s; }
+    .codename-rank .codename.wave span:nth-last-child(1) { animation-delay: 0.8s; }
     .codename.wave span:nth-child(1) { animation-delay: 0s; }
     .codename.wave span:nth-child(2) { animation-delay: 0.08s; }
     .codename.wave span:nth-child(3) { animation-delay: 0.16s; }
@@ -627,9 +647,40 @@
     .codename.wave span:nth-child(10){ animation-delay: 0.72s; }
     
     /* ให้ emoji ใน codename-rank ขยับได้ด้วย wave effect */
-    .codename-rank .codename.wave span,
     .codename-rank span {
       display: inline-block;
+    }
+    
+    /* Wave effect สำหรับ emoji ใน codename-rank (ต้องมี animation) */
+    .codename-rank[data-rank*="Gold"] span,
+    .codename-rank[data-rank*="Platinum"] span,
+    .codename-rank[data-rank*="Diamond"] span,
+    .codename-rank[data-rank*="Grandmaster"] span,
+    .codename-rank[data-rank*="Legend"] span {
+      animation: wave 1.2s cubic-bezier(0.4,0,0.2,1) infinite;
+    }
+    
+    .codename-rank[data-rank*="Gold"] span { animation-duration: 1.2s; }
+    .codename-rank[data-rank*="Platinum"] span { animation-duration: 1s; }
+    .codename-rank[data-rank*="Diamond"] span { animation-duration: 0.85s; }
+    .codename-rank[data-rank*="Grandmaster"] span { animation-duration: 0.7s; }
+    .codename-rank[data-rank*="Legend"] span { animation-duration: 0.6s; }
+    
+    /* Animation delay สำหรับ emoji */
+    .codename-rank[data-rank*="Gold"] span:nth-child(1),
+    .codename-rank[data-rank*="Platinum"] span:nth-child(1),
+    .codename-rank[data-rank*="Diamond"] span:nth-child(1),
+    .codename-rank[data-rank*="Grandmaster"] span:nth-child(1),
+    .codename-rank[data-rank*="Legend"] span:nth-child(1) {
+      animation-delay: 0s;
+    }
+    
+    .codename-rank[data-rank*="Gold"] span:nth-last-child(1),
+    .codename-rank[data-rank*="Platinum"] span:nth-last-child(1),
+    .codename-rank[data-rank*="Diamond"] span:nth-last-child(1),
+    .codename-rank[data-rank*="Grandmaster"] span:nth-last-child(1),
+    .codename-rank[data-rank*="Legend"] span:nth-last-child(1) {
+      animation-delay: 0.8s;
     }
     
     /* Bounce (Platinum) */
@@ -996,17 +1047,28 @@
         
         const voters = votes.map(v => {
           const voter = memberMap[normalizePhone(v.phone)];
+          let codename = '';
+          let rank = 'Rookie';
+          
           if (voter && voter.codename) {
-            const rank = voter.rank || '';
-            const emoji = getRankEmoji(rank);
-            const codenameHtml = renderCodenameEffect(voter.codename, rank);
-            return `<div class="voter-item"><span class="codename-rank" data-rank="${rank}"><span>${emoji}</span> ${codenameHtml} <span>${emoji}</span></span></div>`;
+            codename = voter.codename;
+            rank = voter.rank || 'Rookie';
+          } else if (v.codename) {
+            // ถ้าไม่มี voter ใน memberMap แต่มี codename ใน vote data
+            codename = v.codename;
+            rank = 'Rookie'; // default rank
           }
-          // ถ้าไม่มี codename ให้ใช้จาก vote data หรือเบอร์โทร
-          const codename = v.codename || '';
+          
           if (codename) {
-            return `<div class="voter-item">[${codename}]</div>`;
+            const emoji = getRankEmoji(rank);
+            const codenameHtml = renderCodenameEffect(codename, rank);
+            // ใช้ codename-rank wrapper เพื่อให้ CSS effects ทำงาน
+            // แน่ใจว่า rank ไม่เป็น empty string
+            const safeRank = rank || 'Rookie';
+            return `<div class="voter-item"><span class="codename-rank" data-rank="${safeRank}"><span>${emoji}</span> ${codenameHtml} <span>${emoji}</span></span></div>`;
           }
+          
+          // ถ้าไม่มี codename เลย แสดงเบอร์โทร
           return `<div class="voter-item">${v.phone}</div>`;
         }).join('');
         
