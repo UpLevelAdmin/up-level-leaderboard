@@ -1,0 +1,1211 @@
+<!DOCTYPE html>
+<html lang="th">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏆 โหวตแอดมินดีเด่นประจำร้าน 🏆</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Prompt:wght@300;400;500;600;700&family=Chonburi&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(180deg, #fff5f5 0%, #ffe5e5 50%, #ffcccc 100%);
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+      font-family: 'Kanit', 'Prompt', sans-serif;
+      padding-bottom: 40px;
+    }
+    
+    /* Snowflakes Animation */
+    .snowflake {
+      position: fixed;
+      top: -10px;
+      color: #ffffff;
+      font-size: 1em;
+      font-family: Arial;
+      text-shadow: 0 0 8px rgba(255,255,255,0.9), 0 0 15px rgba(255,200,200,0.6);
+      animation: fall linear infinite, sway 3s ease-in-out infinite;
+      pointer-events: none;
+      z-index: 1000;
+      user-select: none;
+    }
+    
+    @keyframes fall {
+      to {
+        transform: translateY(100vh) rotate(360deg);
+      }
+    }
+    
+    @keyframes sway {
+      0%, 100% {
+        transform: translateX(0);
+      }
+      50% {
+        transform: translateX(20px);
+      }
+    }
+    
+    .party-container {
+      max-width: 1200px;
+      margin: 32px auto;
+      padding: 0 8px 32px 8px;
+      background: linear-gradient(135deg, #fff0f0 0%, #ffe0e0 30%, #ffd6d6 60%, #ffcccc 100%);
+      border-radius: 20px;
+      box-shadow: 0 10px 40px rgba(255, 100, 100, 0.3), 0 0 20px rgba(255, 255, 255, 0.5);
+      color: #8b0000;
+      font-family: 'Kanit', sans-serif;
+      position: relative;
+      border: 2px solid rgba(255, 255, 255, 0.6);
+      backdrop-filter: blur(10px);
+    }
+    
+    .home-button {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+      border: none;
+      border-radius: 50%;
+      box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+    }
+    
+    .home-button:hover {
+      transform: translateY(-3px) scale(1.05);
+      box-shadow: 0 12px 30px rgba(255, 107, 107, 0.6);
+      background: linear-gradient(135deg, #ff5252 0%, #e53935 100%);
+    }
+    
+    .home-button::before {
+      content: "🏠";
+      font-size: 24px;
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+    }
+    
+    .logo-section {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 20px;
+      width: 100%;
+      padding-top: 20px;
+    }
+    
+    .logo-section img {
+      max-width: 150px;
+      display: block;
+      margin: 0 auto;
+    }
+    
+    h1 {
+      color: #c41e3a;
+      text-align: center;
+      text-shadow: 2px 2px 8px rgba(255,255,255,0.8), 0 0 10px rgba(255,200,200,0.5);
+      font-weight: 700;
+      font-size: 2.5em;
+      font-family: 'Prompt', 'Kanit', sans-serif;
+      margin-bottom: 16px;
+    }
+    
+    h2 {
+      color: #8b0000;
+      text-align: center;
+      text-shadow: 2px 2px 8px rgba(255,255,255,0.8), 0 0 10px rgba(255,255,255,0.5);
+      font-weight: 700;
+      font-size: 1.8em;
+      font-family: 'Prompt', 'Kanit', sans-serif;
+      margin: 30px 0 20px 0;
+    }
+    
+    .admin-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 24px;
+      padding: 20px;
+      margin-top: 20px;
+      max-width: 1200px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    .admin-card {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 240, 240, 0.98) 100%);
+      border-radius: 16px;
+      padding: 20px;
+      border: 3px solid rgba(255, 255, 255, 0.8);
+      box-shadow: 0 8px 25px rgba(255, 100, 100, 0.2), inset 0 0 20px rgba(255, 255, 255, 0.5);
+      text-align: center;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+    
+    /* Rank colors */
+    .admin-card.rank-1 {
+      background: linear-gradient(135deg, #ffd700 0%, #ffed4e 50%, #ffd700 100%);
+      border: 4px solid #ffb300;
+      box-shadow: 0 12px 40px rgba(255, 215, 0, 0.5), inset 0 0 30px rgba(255, 255, 255, 0.6);
+      transform: scale(1.05);
+    }
+    
+    .admin-card.rank-2 {
+      background: linear-gradient(135deg, #c0c0c0 0%, #e8e8e8 50%, #c0c0c0 100%);
+      border: 4px solid #a0a0a0;
+      box-shadow: 0 10px 35px rgba(192, 192, 192, 0.4), inset 0 0 25px rgba(255, 255, 255, 0.6);
+      transform: scale(1.02);
+    }
+    
+    .admin-card.rank-3 {
+      background: linear-gradient(135deg, #cd7f32 0%, #e6a85c 50%, #cd7f32 100%);
+      border: 4px solid #b87333;
+      box-shadow: 0 8px 30px rgba(205, 127, 50, 0.4), inset 0 0 20px rgba(255, 255, 255, 0.5);
+    }
+    
+    .admin-card.rank-4 {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 240, 240, 0.98) 100%);
+      border: 3px solid rgba(200, 200, 200, 0.8);
+      box-shadow: 0 6px 20px rgba(200, 200, 200, 0.3);
+    }
+    
+    .admin-card.rank-5 {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(240, 240, 240, 0.98) 100%);
+      border: 2px solid rgba(180, 180, 180, 0.6);
+      box-shadow: 0 4px 15px rgba(180, 180, 180, 0.2);
+    }
+    
+    .admin-card:hover {
+      transform: translateY(-5px) scale(1.02);
+      box-shadow: 0 12px 35px rgba(255, 100, 100, 0.3);
+    }
+    
+    .admin-card.rank-1:hover {
+      transform: translateY(-5px) scale(1.08);
+    }
+    
+    .admin-card.rank-2:hover {
+      transform: translateY(-5px) scale(1.05);
+    }
+    
+    .admin-card.rank-3:hover {
+      transform: translateY(-5px) scale(1.03);
+    }
+    
+    .admin-photo {
+      width: 150px;
+      height: 150px;
+      border-radius: 12px;
+      object-fit: cover;
+      border: 4px solid rgba(255, 255, 255, 0.8);
+      box-shadow: 0 4px 15px rgba(196, 30, 58, 0.3);
+      margin: 0 auto 15px;
+      display: block;
+    }
+    
+    .admin-card.rank-1 .admin-photo {
+      border: 5px solid #ffb300;
+      box-shadow: 0 6px 20px rgba(255, 179, 0, 0.5);
+    }
+    
+    .admin-card.rank-2 .admin-photo {
+      border: 5px solid #a0a0a0;
+      box-shadow: 0 5px 18px rgba(160, 160, 160, 0.4);
+    }
+    
+    .admin-card.rank-3 .admin-photo {
+      border: 5px solid #b87333;
+      box-shadow: 0 5px 18px rgba(184, 115, 51, 0.4);
+    }
+    
+    .admin-codename {
+      color: #c41e3a;
+      font-size: 1.5em;
+      font-weight: 700;
+      margin-bottom: 15px;
+      text-shadow: 1px 1px 3px rgba(255,255,255,0.8);
+    }
+    
+    .admin-card.rank-1 .admin-codename {
+      color: #8b6914;
+      text-shadow: 2px 2px 4px rgba(255,255,255,0.9);
+    }
+    
+    .admin-card.rank-2 .admin-codename {
+      color: #4a4a4a;
+      text-shadow: 2px 2px 4px rgba(255,255,255,0.9);
+    }
+    
+    .admin-card.rank-3 .admin-codename {
+      color: #6b4423;
+      text-shadow: 2px 2px 4px rgba(255,255,255,0.9);
+    }
+    
+    .vote-count {
+      background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+      color: white;
+      font-size: 2em;
+      font-weight: 700;
+      padding: 12px 24px;
+      border-radius: 30px;
+      display: inline-block;
+      margin: 15px 0;
+      box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+      min-width: 80px;
+    }
+    
+    .admin-card.rank-1 .vote-count {
+      background: linear-gradient(135deg, #ffb300 0%, #ffd700 100%);
+      color: #8b6914;
+      box-shadow: 0 6px 20px rgba(255, 179, 0, 0.6);
+      font-size: 2.2em;
+    }
+    
+    .admin-card.rank-2 .vote-count {
+      background: linear-gradient(135deg, #a0a0a0 0%, #c0c0c0 100%);
+      color: #4a4a4a;
+      box-shadow: 0 5px 18px rgba(160, 160, 160, 0.5);
+      font-size: 2.1em;
+    }
+    
+    .admin-card.rank-3 .vote-count {
+      background: linear-gradient(135deg, #b87333 0%, #cd7f32 100%);
+      color: white;
+      box-shadow: 0 5px 18px rgba(184, 115, 51, 0.5);
+      font-size: 2em;
+    }
+    
+    .voters-list {
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 2px solid rgba(200, 200, 200, 0.5);
+      max-height: 200px;
+      overflow-y: auto;
+      text-align: left;
+    }
+    
+    .admin-card.rank-1 .voters-list {
+      border-top-color: rgba(255, 179, 0, 0.6);
+    }
+    
+    .admin-card.rank-2 .voters-list {
+      border-top-color: rgba(160, 160, 160, 0.6);
+    }
+    
+    .admin-card.rank-3 .voters-list {
+      border-top-color: rgba(184, 115, 51, 0.6);
+    }
+    
+    .voters-list-title {
+      color: #8b0000;
+      font-size: 0.95em;
+      font-weight: 700;
+      margin-bottom: 10px;
+      text-align: center;
+      padding-bottom: 8px;
+    }
+    
+    .admin-card.rank-1 .voters-list-title {
+      color: #8b6914;
+    }
+    
+    .admin-card.rank-2 .voters-list-title {
+      color: #4a4a4a;
+    }
+    
+    .admin-card.rank-3 .voters-list-title {
+      color: #6b4423;
+    }
+    
+    .voter-item {
+      color: #a52a2a;
+      font-size: 0.9em;
+      padding: 6px 8px;
+      margin: 4px 0;
+      background: rgba(255, 255, 255, 0.5);
+      border-radius: 6px;
+      border-left: 3px solid rgba(196, 30, 58, 0.5);
+    }
+    
+    .admin-card.rank-1 .voter-item {
+      background: rgba(255, 255, 255, 0.7);
+      border-left-color: rgba(255, 179, 0, 0.8);
+      color: #6b5000;
+    }
+    
+    .admin-card.rank-2 .voter-item {
+      background: rgba(255, 255, 255, 0.6);
+      border-left-color: rgba(160, 160, 160, 0.8);
+      color: #3a3a3a;
+    }
+    
+    .admin-card.rank-3 .voter-item {
+      background: rgba(255, 255, 255, 0.6);
+      border-left-color: rgba(184, 115, 51, 0.8);
+      color: #5b3413;
+    }
+    
+    .vote-btn {
+      display: block;
+      width: 100%;
+      margin: 24px auto;
+      padding: 16px 0;
+      background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 50%, #c41e3a 100%);
+      color: #fff;
+      font-size: 1.2em;
+      font-weight: 700;
+      border: 2px solid rgba(255, 255, 255, 0.5);
+      border-radius: 12px;
+      cursor: pointer;
+      text-decoration: none;
+      text-align: center;
+      transition: all 0.3s ease;
+      max-width: 400px;
+      box-shadow: 0 6px 20px rgba(196, 30, 58, 0.4), 0 0 15px rgba(255, 255, 255, 0.3);
+      font-family: 'Prompt', 'Kanit', sans-serif;
+    }
+    
+    .vote-btn:hover {
+      background: linear-gradient(135deg, #ff5252 0%, #ff6b6b 50%, #ee5a6f 100%);
+      color: #fff;
+      transform: translateY(-2px) scale(1.05);
+      box-shadow: 0 8px 25px rgba(255, 82, 82, 0.5), 0 0 25px rgba(255, 255, 255, 0.5);
+      border-color: rgba(255, 255, 255, 0.8);
+    }
+    
+    .vote-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    /* Modal Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 2000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(5px);
+      animation: fadeIn 0.3s ease;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    .modal-content {
+      background: linear-gradient(135deg, #fff0f0 0%, #ffe0e0 100%);
+      margin: 5% auto;
+      padding: 30px;
+      border: 2px solid rgba(255, 255, 255, 0.8);
+      border-radius: 20px;
+      width: 90%;
+      max-width: 500px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      animation: slideDown 0.3s ease;
+      color: #8b0000;
+    }
+    
+    @keyframes slideDown {
+      from {
+        transform: translateY(-50px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+    
+    .close {
+      color: #c41e3a;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+      line-height: 20px;
+    }
+    
+    .close:hover {
+      color: #8b0000;
+    }
+    
+    .modal-title {
+      color: #c41e3a;
+      font-size: 1.8em;
+      font-weight: 700;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-group label {
+      display: block;
+      color: #8b0000;
+      font-weight: 600;
+      margin-bottom: 8px;
+      font-size: 1.1em;
+    }
+    
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid rgba(255, 200, 200, 0.8);
+      border-radius: 10px;
+      font-size: 1em;
+      font-family: 'Kanit', sans-serif;
+      background: rgba(255, 255, 255, 0.9);
+      color: #8b0000;
+      box-sizing: border-box;
+    }
+    
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: #ff6b6b;
+      box-shadow: 0 0 10px rgba(255, 107, 107, 0.3);
+    }
+    
+    .confirm-name {
+      background: rgba(255, 255, 255, 0.6);
+      padding: 15px;
+      border-radius: 10px;
+      margin: 15px 0;
+      border: 2px solid rgba(255, 200, 200, 0.5);
+      display: none;
+    }
+    
+    .confirm-name.show {
+      display: block;
+    }
+    
+    .confirm-name strong {
+      color: #c41e3a;
+      font-size: 1.1em;
+    }
+    
+    .submit-vote-btn {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 50%, #c41e3a 100%);
+      color: #fff;
+      font-size: 1.2em;
+      font-weight: 700;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: 'Prompt', 'Kanit', sans-serif;
+      margin-top: 20px;
+    }
+    
+    .submit-vote-btn:hover {
+      background: linear-gradient(135deg, #ff5252 0%, #ff6b6b 50%, #ee5a6f 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(255, 82, 82, 0.5);
+    }
+    
+    .submit-vote-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    .spinner {
+      margin: 24px auto 8px auto;
+      border: 6px solid rgba(255,255,255,0.4);
+      border-top: 6px solid #ff6b6b;
+      border-radius: 50%;
+      width: 48px;
+      height: 48px;
+      animation: spin 1s linear infinite;
+      box-shadow: 0 0 10px rgba(255, 107, 107, 0.3);
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg);}
+      100% { transform: rotate(360deg);}
+    }
+    
+    .message {
+      padding: 15px;
+      border-radius: 10px;
+      margin: 15px 0;
+      text-align: center;
+      font-weight: 600;
+    }
+    
+    .message.success {
+      background: rgba(0, 200, 100, 0.2);
+      color: #006600;
+      border: 2px solid rgba(0, 200, 100, 0.5);
+    }
+    
+    .message.error {
+      background: rgba(255, 100, 100, 0.2);
+      color: #8b0000;
+      border: 2px solid rgba(255, 100, 100, 0.5);
+    }
+    
+    .already-voted {
+      background: rgba(255, 200, 100, 0.2);
+      padding: 15px;
+      border-radius: 10px;
+      margin: 20px 0;
+      text-align: center;
+      border: 2px solid rgba(255, 200, 100, 0.5);
+      color: #8b0000;
+      font-weight: 600;
+    }
+    
+    /* Codename rank styles */
+    .codename-rank[data-rank="Rookie"]      .codename { color: #888888; font-size: 1.05em; }
+    .codename-rank[data-rank="Bronze"]      .codename { color: #b87333; font-size: 1.08em; }
+    .codename-rank[data-rank="Silver"]      .codename { color: #9e9e9e; font-size: 1.12em; }
+    .codename-rank[data-rank="Gold"]        .codename { color: #ffd700; font-size: 1.18em; font-weight: bold; }
+    .codename-rank[data-rank="Platinum"]    .codename { color: #00bcd4; font-size: 1.22em; font-weight: bold; }
+    .codename-rank[data-rank="Diamond"]     .codename { color: #00bfff; font-size: 1.28em; font-weight: bold; }
+    .codename-rank[data-rank="Grandmaster"] .codename { color: #8e24aa; font-size: 1.35em; font-weight: bold; }
+    .codename-rank[data-rank="Legend"]      .codename { color: #e53935; font-size: 1.45em; font-weight: bold; }
+    .codename-rank[data-rank="Gold"]        .codename,
+    .codename-rank[data-rank="Platinum"]    .codename,
+    .codename-rank[data-rank="Diamond"]     .codename,
+    .codename-rank[data-rank="Grandmaster"] .codename,
+    .codename-rank[data-rank="Legend"]      .codename {
+      animation: blink 1s step-end infinite alternate;
+    }
+    @keyframes blink {
+      0%   { opacity: 1;   text-shadow: 0 0 8px #fff, 0 0 16px currentColor; }
+      100% { opacity: 0.6; text-shadow: 0 0 2px #fff, 0 0 4px currentColor; }
+    }
+    
+    /* Wave animation (Gold, Platinum, Diamond, Grandmaster, Legend) */
+    @keyframes wave {
+      0%, 100% { transform: translateY(0);}
+      20%      { transform: translateY(-5px);}
+      40%      { transform: translateY(-10px);}
+      60%      { transform: translateY(-5px);}
+      80%      { transform: translateY(0);}
+    }
+    .codename.wave span {
+      display: inline-block;
+      animation: wave 1.2s cubic-bezier(0.4,0,0.2,1) infinite;
+    }
+    .codename.wave.gold span { animation-duration: 1.2s; }
+    .codename.wave.platinum span { animation-duration: 1s; }
+    .codename.wave.diamond span { animation-duration: 0.85s; }
+    .codename.wave.grandmaster span { animation-duration: 0.7s; }
+    .codename.wave.legend span { animation-duration: 0.6s; }
+    .codename.wave span:nth-child(1) { animation-delay: 0s; }
+    .codename.wave span:nth-child(2) { animation-delay: 0.08s; }
+    .codename.wave span:nth-child(3) { animation-delay: 0.16s; }
+    .codename.wave span:nth-child(4) { animation-delay: 0.24s; }
+    .codename.wave span:nth-child(5) { animation-delay: 0.32s; }
+    .codename.wave span:nth-child(6) { animation-delay: 0.40s; }
+    .codename.wave span:nth-child(7) { animation-delay: 0.48s; }
+    .codename.wave span:nth-child(8) { animation-delay: 0.56s; }
+    .codename.wave span:nth-child(9) { animation-delay: 0.64s; }
+    .codename.wave span:nth-child(10){ animation-delay: 0.72s; }
+    
+    /* Bounce (Platinum) */
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50%      { transform: translateY(-18px); }
+    }
+    .codename.bounce {
+      display: inline-block;
+      animation: bounce 1s infinite;
+    }
+    
+    /* Pulse (Diamond) */
+    @keyframes pulse {
+      0%   { transform: scale(1);   opacity: 1; }
+      50%  { transform: scale(1.18); opacity: 0.7; }
+      100% { transform: scale(1);   opacity: 1; }
+    }
+    .codename.pulse {
+      display: inline-block;
+      animation: pulse 1.2s infinite;
+    }
+    
+    /* Shake (Grandmaster) */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-2px); }
+      40% { transform: translateX(2px); }
+      60% { transform: translateX(-2px); }
+      80% { transform: translateX(2px); }
+    }
+    .codename.shake {
+      display: inline-block;
+      animation: shake 0.7s infinite;
+    }
+    
+    /* Rainbow Spin (Legend) */
+    @keyframes rainbow {
+      0% { filter: hue-rotate(0deg); }
+      100% { filter: hue-rotate(360deg); }
+    }
+    @keyframes spin-text {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .codename.rainbow-spin {
+      display: inline-block;
+      animation: rainbow 2s linear infinite, spin-text 1.5s linear infinite;
+    }
+    
+    /* Neon Glow (Gold) */
+    .codename.neon {
+      font-size: 1.18em;
+      color: #fff;
+      text-shadow: 0 0 5px #ffd700, 0 0 10px #ffd700, 0 0 20px #ffd700, 0 0 40px #ffd700, 0 0 80px #ffd700;
+      animation: glow 1.5s infinite alternate;
+    }
+    @keyframes glow {
+      0% {
+        text-shadow: 0 0 5px #ffd700, 0 0 10px #ffd700, 0 0 20px #ffd700, 0 0 40px #ffd700, 0 0 80px #ffd700;
+      }
+    }
+    
+    /* Typewriter (Platinum) */
+    .codename.typewriter {
+      font-family: 'Fira Mono', monospace;
+      overflow: hidden;
+      border-right: .15em solid #00bcd4;
+      white-space: nowrap;
+      animation: typing 2.5s steps(12, end) infinite, blink-caret .75s step-end infinite;
+      font-size: 1.22em;
+    }
+    @keyframes typing {
+      0% { width: 0 }
+      50% { width: 100% }
+      100% { width: 0 }
+    }
+    @keyframes blink-caret {
+      from, to { border-color: transparent }
+      50% { border-color: #00bcd4; }
+    }
+    
+    /* Glitch (Diamond) */
+    .codename.glitch {
+      position: relative;
+      color: #fff;
+      font-size: 1.28em;
+      font-weight: bold;
+      animation: glitch 2s infinite;
+    }
+    .codename.glitch::before,
+    .codename.glitch::after {
+      content: attr(data-text);
+      position: absolute;
+      left: 0; top: 0;
+      width: 100%; height: 100%;
+      opacity: 0.7;
+    }
+    .codename.glitch::before {
+      color: #ff005e;
+      z-index: 1;
+      clip-path: polygon(0 0, 100% 0, 100% 30%, 0 30%);
+      animation: glitch 2s infinite;
+    }
+    .codename.glitch::after {
+      color: #00d4ff;
+      z-index: 2;
+      clip-path: polygon(0 70%, 100% 70%, 100% 100%, 0 100%);
+      animation: glitch 2s infinite;
+    }
+    @keyframes glitch {
+      0%, 100% { transform: translate(0);}
+      20% { transform: translate(-2px, 2px);}
+      40% { transform: translate(2px, -2px);}
+      60% { transform: translate(-1px, 1px);}
+      80% { transform: translate(1px, -1px);}
+    }
+    
+    @media (max-width: 768px) {
+      .admin-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+        padding: 10px;
+      }
+      
+      .admin-card {
+        padding: 15px;
+      }
+      
+      .admin-card.rank-1 {
+        transform: scale(1);
+      }
+      
+      .admin-card.rank-2 {
+        transform: scale(1);
+      }
+      
+      .admin-photo {
+        width: 120px;
+        height: 120px;
+      }
+      
+      .admin-codename {
+        font-size: 1.2em;
+      }
+      
+      .vote-count {
+        font-size: 1.5em;
+        padding: 10px 18px;
+      }
+      
+      .modal-content {
+        width: 95%;
+        padding: 20px;
+        margin: 10% auto;
+      }
+      
+      h1 {
+        font-size: 2em;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .admin-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+      
+      .admin-photo {
+        width: 150px;
+        height: 150px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="snowflakes"></div>
+  <a href="index.html" class="home-button" title="กลับหน้าหลัก"></a>
+  <div class="party-container">
+    <div class="logo-section">
+      <img src="https://i.postimg.cc/wjzpnxjB/Up-Level-01-1.png" alt="Up Level Logo">
+    </div>
+    <h1>🏆 โหวตแอดมินดีเด่นประจำร้าน 🏆</h1>
+    
+    <div id="vote-status"></div>
+    
+    <div id="admin-list" style="text-align:center;">
+      <div class="spinner"></div>
+      <div>กำลังโหลดข้อมูลแอดมิน...</div>
+    </div>
+    
+    <div style="display: flex; justify-content: center; margin: 24px 0;">
+      <button class="vote-btn" id="voteBtn" onclick="openVoteModal()">🗳️ โหวตแอดมินดีเด่น</button>
+    </div>
+  </div>
+  
+  <!-- Vote Modal -->
+  <div id="voteModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeVoteModal()">&times;</span>
+      <h2 class="modal-title">🗳️ โหวตแอดมินดีเด่น</h2>
+      
+      <div id="modalMessage"></div>
+      
+      <form id="voteForm">
+        <div class="form-group">
+          <label for="memberPhone">เบอร์สมาชิก:</label>
+          <input type="text" id="memberPhone" placeholder="กรุณากรอกเบอร์สมาชิก" required>
+        </div>
+        
+        <div class="confirm-name" id="confirmName">
+          <strong>ยืนยันชื่อ:</strong> <span id="memberNameDisplay"></span>
+        </div>
+        
+        <div class="form-group">
+          <label for="adminSelect">เลือกแอดมินที่ต้องการโหวต:</label>
+          <select id="adminSelect" required disabled>
+            <option value="">กรุณากรอกเบอร์สมาชิกก่อน</option>
+          </select>
+        </div>
+        
+        <button type="submit" class="submit-vote-btn" id="submitVoteBtn" disabled>ส่งการโหวต</button>
+      </form>
+    </div>
+  </div>
+  
+  <script>
+    // API URLs - Google Apps Script สำหรับจัดการการโหวต
+    const votingApiUrl = "https://script.google.com/macros/s/AKfycbxmby3kH5Nbhpxpyqpf-h2BQ6LnXzV9r8F2y7VffymzPq_7ZMQUNXRQNWu0GoXIaSE0/exec";
+    const memberDashboardApi = "https://script.google.com/macros/s/AKfycbxtjsDwHI6nJU4OIHExUxMaZwUn3qwakvdkzwbQO7C8Trzz5Gh84SX6F1gqb4BOFQcn/exec?func=getMemberDashboardData";
+    
+    // Rank emoji map
+    const rankEmojis = {
+      "Rookie": "🐣", "Rookie II": "🐣", "Rookie III": "🐣", "Rookie IV": "🐣", "Rookie V": "🐣",
+      "Bronze": "🛡️", "Bronze II": "🛡️", "Bronze III": "🛡️", "Bronze IV": "🛡️", "Bronze V": "🛡️",
+      "Silver": "⚔️", "Silver II": "⚔️", "Silver III": "⚔️", "Silver IV": "⚔️", "Silver V": "⚔️",
+      "Gold": "🥇", "Gold II": "🥇", "Gold III": "🥇", "Gold IV": "🥇", "Gold V": "🥇",
+      "Platinum": "✨", "Platinum II": "✨", "Platinum III": "✨", "Platinum IV": "✨", "Platinum V": "✨",
+      "Diamond": "💎", "Diamond II": "💎", "Diamond III": "💎", "Diamond IV": "💎", "Diamond V": "💎",
+      "Grandmaster": "👑", "Grandmaster II": "👑", "Grandmaster III": "👑", "Grandmaster IV": "👑", "Grandmaster V": "👑",
+      "Legend": "🐉", "Legend II": "🐉", "Legend III": "🐉", "Legend IV": "🐉", "Legend V": "🐉"
+    };
+    
+    function getBaseRank(rank) {
+      if (!rank) return "Rookie";
+      const baseRank = rank.replace(/\s+(II|III|IV|V|VI|VII|VIII|IX|X|\d+)$/, '');
+      return baseRank || "Rookie";
+    }
+    
+    function renderCodenameEffect(codename, rank) {
+      if (!codename) return '';
+      
+      const chars = ['[', ...codename.split(''), ']'];
+      const baseRank = getBaseRank(rank);
+      
+      // Wave effect สำหรับ Gold, Platinum, Diamond, Grandmaster, Legend
+      const waveRanks = ['Gold', 'Platinum', 'Diamond', 'Grandmaster', 'Legend'];
+      if (waveRanks.includes(baseRank)) {
+        return `<span class="codename wave ${baseRank.toLowerCase()}">${chars.map((ch,i)=>`<span>${ch}</span>`).join('')}</span>`;
+      } else {
+        // Rookie, Bronze, Silver แสดงแบบธรรมดา
+        return `<span class="codename">[${codename}]</span>`;
+      }
+    }
+    
+    function getRankEmoji(rank) {
+      if (!rank) return rankEmojis["Rookie"] || "🐣";
+      if (rankEmojis[rank]) return rankEmojis[rank];
+      const baseRank = getBaseRank(rank);
+      return rankEmojis[baseRank] || rankEmojis["Rookie"] || "🐣";
+    }
+    
+    function normalizePhone(phone) {
+      return String(phone).replace(/[^\d]/g, "");
+    }
+    
+    let admins = [];
+    let memberMap = {};
+    let currentMemberPhone = null;
+    let hasVoted = false;
+    
+    // Load admins and voting data from Google Sheet
+    async function loadVotingData() {
+      try {
+        // Load member data for codename lookup
+        try {
+          const memberRes = await fetch(memberDashboardApi);
+          const members = await memberRes.json();
+          
+          if (members && Array.isArray(members)) {
+            members.forEach(m => {
+              const phone = normalizePhone(m.phone);
+              memberMap[phone] = {
+                codename: m.codename,
+                rank: m.rank,
+                name: m.name || ''
+              };
+            });
+          }
+        } catch (e) {
+          console.log('Could not load member data, continuing without it');
+        }
+        
+        // Load voting data from Google Sheet
+        const votingRes = await fetch(`${votingApiUrl}?func=getVotingData`);
+        const votingData = await votingRes.json();
+        
+        if (votingData && votingData.admins && votingData.admins.length > 0) {
+          admins = votingData.admins;
+          renderAdmins();
+        } else {
+          // ถ้ายังไม่มีข้อมูลใน Sheet แสดงข้อความแจ้งเตือน
+          document.getElementById('admin-list').innerHTML = `
+            <div style="padding: 20px; color: #8b0000; font-size: 1.2em; text-align: center;">
+              <p>⚠️ ยังไม่มีข้อมูลแอดมินใน Google Sheet</p>
+              <p style="font-size: 0.9em; margin-top: 10px;">กรุณาสร้าง Sheet "Admins" และเพิ่มข้อมูลแอดมิน 5 คน:</p>
+              <ul style="text-align: left; display: inline-block; margin-top: 10px;">
+                <li>Ice</li>
+                <li>Tiw</li>
+                <li>Leo</li>
+                <li>Earth</li>
+                <li>Boom</li>
+              </ul>
+            </div>
+          `;
+        }
+      } catch (err) {
+        console.error('Error loading voting data:', err);
+        document.getElementById('admin-list').innerHTML = `
+          <div style="padding: 20px; color: #c41e3a; font-size: 1.2em; text-align: center;">
+            <p>❌ เกิดข้อผิดพลาดในการโหลดข้อมูล</p>
+            <p style="font-size: 0.9em; margin-top: 10px;">กรุณาตรวจสอบ:</p>
+            <ul style="text-align: left; display: inline-block; margin-top: 10px;">
+              <li>URL ของ Google Apps Script ถูกต้องหรือไม่</li>
+              <li>Google Sheet มี Sheet "Admins" และ "Votes" หรือไม่</li>
+              <li>Apps Script ได้ Deploy เป็น Web App แล้วหรือไม่</li>
+            </ul>
+          </div>
+        `;
+      }
+    }
+    
+    function renderAdmins() {
+      const container = document.getElementById('admin-list');
+      
+      if (!admins || admins.length === 0) {
+        container.innerHTML = '<div style="padding: 20px; color: #8b0000; font-size: 1.2em;">ยังไม่มีข้อมูลแอดมิน</div>';
+        return;
+      }
+      
+      // เรียงตามคะแนน (มากไปน้อย)
+      const sortedAdmins = [...admins].sort((a, b) => {
+        const votesA = (a.votes || []).length;
+        const votesB = (b.votes || []).length;
+        return votesB - votesA;
+      });
+      
+      let html = '<div class="admin-grid">';
+      
+      sortedAdmins.forEach((admin, index) => {
+        const votes = admin.votes || [];
+        const voteCount = votes.length;
+        const rank = index + 1; // 1, 2, 3, 4, 5
+        
+        const voters = votes.map(v => {
+          const voter = memberMap[normalizePhone(v.phone)];
+          if (voter && voter.codename) {
+            const rank = voter.rank || '';
+            const emoji = getRankEmoji(rank);
+            const codenameHtml = renderCodenameEffect(voter.codename, rank);
+            return `<div class="voter-item"><span class="codename-rank" data-rank="${rank}">${emoji} ${codenameHtml} ${emoji}</span></div>`;
+          }
+          // ถ้าไม่มี codename ให้ใช้จาก vote data หรือเบอร์โทร
+          const codename = v.codename || '';
+          if (codename) {
+            return `<div class="voter-item">[${codename}]</div>`;
+          }
+          return `<div class="voter-item">${v.phone}</div>`;
+        }).join('');
+        
+        html += `
+          <div class="admin-card rank-${rank}">
+            <img src="${admin.photo || 'https://via.placeholder.com/150?text=' + encodeURIComponent(admin.codename || admin.name)}" alt="${admin.codename || admin.name}" class="admin-photo" onerror="this.src='https://via.placeholder.com/150?text=' + encodeURIComponent('${admin.codename || admin.name}')">
+            <div class="admin-codename">${admin.codename || admin.name}</div>
+            <div class="vote-count">${voteCount} โหวต</div>
+            ${voteCount > 0 ? `
+              <div class="voters-list">
+                <div class="voters-list-title">ผู้โหวต (${voteCount} คน):</div>
+                ${voters}
+              </div>
+            ` : '<div class="voters-list"><div class="voters-list-title" style="color: #999;">ยังไม่มีผู้โหวต</div></div>'}
+          </div>
+        `;
+      });
+      
+      html += '</div>';
+      container.innerHTML = html;
+    }
+    
+    function openVoteModal() {
+      document.getElementById('voteModal').style.display = 'block';
+      document.getElementById('modalMessage').innerHTML = '';
+      document.getElementById('voteForm').reset();
+      document.getElementById('confirmName').classList.remove('show');
+      document.getElementById('adminSelect').disabled = true;
+      document.getElementById('submitVoteBtn').disabled = true;
+      currentMemberPhone = null;
+    }
+    
+    function closeVoteModal() {
+      document.getElementById('voteModal').style.display = 'none';
+    }
+    
+    // Check if member has already voted
+    async function checkVoteStatus(phone) {
+      try {
+        const res = await fetch(`${votingApiUrl}?func=checkVoteStatus&phone=${encodeURIComponent(phone)}`);
+        const data = await res.json();
+        return data.hasVoted || false;
+      } catch (err) {
+        console.error('Error checking vote status:', err);
+        return false;
+      }
+    }
+    
+    // Handle member phone input
+    document.getElementById('memberPhone').addEventListener('blur', async function() {
+      const phone = normalizePhone(this.value);
+      
+      if (!phone || phone.length < 10) {
+        document.getElementById('confirmName').classList.remove('show');
+        document.getElementById('adminSelect').disabled = true;
+        document.getElementById('submitVoteBtn').disabled = true;
+        document.getElementById('modalMessage').innerHTML = '';
+        return;
+      }
+      
+      // Check if already voted
+      hasVoted = await checkVoteStatus(phone);
+      
+      if (hasVoted) {
+        document.getElementById('modalMessage').innerHTML = '<div class="message error">คุณได้โหวตแล้ว ไม่สามารถโหวตซ้ำได้</div>';
+        document.getElementById('confirmName').classList.remove('show');
+        document.getElementById('adminSelect').disabled = true;
+        document.getElementById('submitVoteBtn').disabled = true;
+        return;
+      }
+      
+      currentMemberPhone = phone;
+      
+      // Try to get member info from memberMap (if available)
+      const member = memberMap[phone];
+      if (member && member.codename) {
+        document.getElementById('memberNameDisplay').textContent = `${member.name || ''} [${member.codename}]`;
+        document.getElementById('confirmName').classList.add('show');
+      } else {
+        // ถ้าไม่มีข้อมูล member ให้แสดงแค่เบอร์โทร
+        document.getElementById('memberNameDisplay').textContent = `เบอร์: ${phone}`;
+        document.getElementById('confirmName').classList.add('show');
+      }
+      
+      document.getElementById('modalMessage').innerHTML = '';
+      
+      // Populate admin select (เรียงตาม ID)
+      const adminSelect = document.getElementById('adminSelect');
+      adminSelect.innerHTML = '<option value="">เลือกแอดมิน</option>';
+      // เรียงตาม ID เพื่อให้ลำดับคงที่
+      const sortedAdminsForSelect = [...admins].sort((a, b) => {
+        const idA = parseInt(a.id) || 0;
+        const idB = parseInt(b.id) || 0;
+        return idA - idB;
+      });
+      sortedAdminsForSelect.forEach(admin => {
+        const option = document.createElement('option');
+        option.value = admin.id;
+        option.textContent = admin.codename || admin.name;
+        adminSelect.appendChild(option);
+      });
+      adminSelect.disabled = false;
+      document.getElementById('submitVoteBtn').disabled = false;
+    });
+    
+    // Handle form submission
+    document.getElementById('voteForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const phone = normalizePhone(document.getElementById('memberPhone').value);
+      const adminId = document.getElementById('adminSelect').value;
+      
+      if (!phone || !adminId) {
+        document.getElementById('modalMessage').innerHTML = '<div class="message error">กรุณากรอกข้อมูลให้ครบถ้วน</div>';
+        return;
+      }
+      
+      if (hasVoted) {
+        document.getElementById('modalMessage').innerHTML = '<div class="message error">คุณได้โหวตแล้ว ไม่สามารถโหวตซ้ำได้</div>';
+        return;
+      }
+      
+      document.getElementById('submitVoteBtn').disabled = true;
+      document.getElementById('submitVoteBtn').textContent = 'กำลังส่ง...';
+      
+      try {
+        // ใช้ GET request แทน POST เพื่อแก้ปัญหา CORS
+        const res = await fetch(`${votingApiUrl}?func=submitVote&phone=${encodeURIComponent(phone)}&adminId=${encodeURIComponent(adminId)}`);
+        
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        }
+        
+        const result = await res.json();
+        
+        if (result.success) {
+          document.getElementById('modalMessage').innerHTML = '<div class="message success">โหวตสำเร็จ! ขอบคุณสำหรับการโหวต</div>';
+          
+          // Update vote status
+          document.getElementById('vote-status').innerHTML = '<div class="already-voted">✅ คุณได้โหวตแล้ว</div>';
+          document.getElementById('voteBtn').disabled = true;
+          
+          // Reload voting data
+          setTimeout(() => {
+            loadVotingData();
+            closeVoteModal();
+          }, 2000);
+        } else {
+          document.getElementById('modalMessage').innerHTML = `<div class="message error">${result.error || 'เกิดข้อผิดพลาดในการโหวต'}</div>`;
+          document.getElementById('submitVoteBtn').disabled = false;
+          document.getElementById('submitVoteBtn').textContent = 'ส่งการโหวต';
+        }
+      } catch (err) {
+        console.error('Error submitting vote:', err);
+        document.getElementById('modalMessage').innerHTML = `<div class="message error">เกิดข้อผิดพลาด: ${err.message || err.toString()}<br>กรุณาลองใหม่อีกครั้ง</div>`;
+        document.getElementById('submitVoteBtn').disabled = false;
+        document.getElementById('submitVoteBtn').textContent = 'ส่งการโหวต';
+      }
+    });
+    
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+      const modal = document.getElementById('voteModal');
+      if (event.target == modal) {
+        closeVoteModal();
+      }
+    }
+    
+    // Create snowflakes
+    const snowflakeSymbols = ['❄', '❅', '❆', '✻', '✼', '✽', '🎄', '⭐'];
+    
+    function createSnowflake() {
+      const snowflake = document.createElement('div');
+      snowflake.className = 'snowflake';
+      snowflake.innerHTML = snowflakeSymbols[Math.floor(Math.random() * snowflakeSymbols.length)];
+      snowflake.style.left = Math.random() * 100 + '%';
+      snowflake.style.opacity = Math.random() * 0.6 + 0.4;
+      snowflake.style.fontSize = Math.random() * 15 + 12 + 'px';
+      
+      const fallDuration = Math.random() * 4 + 3;
+      const swayDuration = Math.random() * 2 + 2;
+      
+      snowflake.style.animation = `fall ${fallDuration}s linear infinite, sway ${swayDuration}s ease-in-out infinite`;
+      snowflake.style.animationDelay = Math.random() * 2 + 's';
+      
+      document.getElementById('snowflakes').appendChild(snowflake);
+      
+      setTimeout(() => {
+        if (snowflake.parentNode) {
+          snowflake.remove();
+        }
+      }, (fallDuration + 2) * 1000);
+    }
+    
+    setInterval(createSnowflake, 200);
+    for (let i = 0; i < 30; i++) {
+      setTimeout(() => createSnowflake(), i * 100);
+    }
+    
+    // Check vote status on page load
+    function checkCurrentVoteStatus() {
+      // ตรวจสอบจาก localStorage ว่ามีเบอร์ที่โหวตแล้วหรือไม่
+      // สำหรับการใช้งานจริง อาจจะต้องเก็บเบอร์ที่โหวตใน session หรือ cookie
+      // แต่ตอนนี้จะให้โหวตได้ตามปกติ
+    }
+    
+    // Initialize
+    loadVotingData();
+    checkCurrentVoteStatus();
+  </script>
+</body>
+</html>
+

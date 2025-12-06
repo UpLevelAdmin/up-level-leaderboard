@@ -1,0 +1,384 @@
+/**
+ * Google Apps Script สำหรับระบบโหวตแอดมินดีเด่น
+ * 
+ * ต้องมี Google Sheet ที่มี Sheet ต่อไปนี้:
+ * 1. "Sheet1" หรือ "Admins" - ข้อมูลแอดมิน (Columns: ID, Name, Codename, Photo URL)
+ * 2. "Votes" - ข้อมูลการโหวต (Columns: Timestamp, Phone, Admin ID, Member Codename)
+ * 
+ * Sheet ID: 1BTYJeaTTJ9F7tlxbBHQ_pzMy9cESRD2NKTEbLyMlen0
+ * 
+ * API Usage:
+ * GET: ?func=getVotingData - ดึงข้อมูลแอดมินและผลโหวต
+ * GET: ?func=checkVoteStatus&phone=xxx - ตรวจสอบว่าสมาชิกโหวตแล้วหรือยัง
+ * POST: {func: 'submitVote', phone: 'xxx', adminId: 'xxx'} - ส่งการโหวต
+ */
+
+// Helper function to get spreadsheet
+// ใช้ getActiveSpreadsheet() เพราะ Apps Script อยู่ใน Spreadsheet เดียวกัน
+function getSpreadsheet() {
+  try {
+    // ใช้ getActiveSpreadsheet() เพราะ Apps Script อยู่ใน Spreadsheet เดียวกัน
+    // วิธีนี้จะไม่มีปัญหาเรื่องสิทธิ์
+    return SpreadsheetApp.getActiveSpreadsheet();
+  } catch (e) {
+    Logger.log('getActiveSpreadsheet failed: ' + e.toString());
+    throw new Error('ไม่สามารถเข้าถึง Google Sheet ได้ กรุณาตรวจสอบว่า Apps Script อยู่ใน Spreadsheet ที่ถูกต้อง');
+  }
+}
+
+function doGet(e) {
+  try {
+    const func = e.parameter.func;
+    
+    if (func === 'getVotingData') {
+      return getVotingData();
+    } else if (func === 'checkVoteStatus') {
+      const phone = normalizePhone(e.parameter.phone);
+      return checkVoteStatus(phone);
+    } else if (func === 'submitVote') {
+      // รองรับ GET request สำหรับ submitVote (เพื่อแก้ปัญหา CORS)
+      const phone = normalizePhone(e.parameter.phone);
+      const adminId = e.parameter.adminId;
+      if (!phone || !adminId) {
+        return ContentService.createTextOutput(JSON.stringify({
+          success: false,
+          error: 'กรุณาระบุ phone และ adminId'
+        })).setMimeType(ContentService.MimeType.JSON);
+      }
+      return submitVote(phone, adminId);
+    } else {
+      return ContentService.createTextOutput(JSON.stringify({
+        error: "Invalid function",
+        availableFunctions: ['getVotingData', 'checkVoteStatus', 'submitVote']
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({
+      error: err.toString()
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function doPost(e) {
+  try {
+    const data = JSON.parse(e.postData.contents);
+    const func = data.func;
+    
+    if (func === 'submitVote') {
+      const phone = normalizePhone(data.phone);
+      const adminId = data.adminId;
+      return submitVote(phone, adminId);
+    } else {
+      return ContentService.createTextOutput(JSON.stringify({
+        success: false,
+        error: "Invalid function"
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({
+      success: false,
+      error: err.toString()
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+/**
+ * ดึงข้อมูลแอดมินและผลโหวตทั้งหมด
+ */
+function getVotingData() {
+  try {
+    const ss = getSpreadsheet();
+    
+    // ดึงข้อมูลแอดมิน - ลองหา Sheet1 ก่อน ถ้าไม่มีค่อยหา Admins
+    let adminsSheet = ss.getSheetByName('Sheet1');
+    if (!adminsSheet) {
+      adminsSheet = ss.getSheetByName('Admins');
+    }
+    if (!adminsSheet) {
+      throw new Error('ไม่พบ Sheet "Sheet1" หรือ "Admins"');
+    }
+    
+    const adminsData = adminsSheet.getDataRange().getValues();
+    if (adminsData.length <= 1) {
+      return ContentService.createTextOutput(JSON.stringify({
+        admins: []
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    const headers = adminsData[0];
+    // หา column index โดยใช้ชื่อ header หรือตำแหน่ง
+    let idCol = headers.indexOf('ID');
+    if (idCol === -1) {
+      // ถ้าไม่เจอ ลองใช้ตำแหน่ง (Column B = index 1)
+      idCol = 1;
+    }
+    
+    let nameCol = headers.indexOf('Name');
+    if (nameCol === -1) {
+      nameCol = headers.indexOf('ชื่อ');
+      if (nameCol === -1) {
+        // ถ้าไม่เจอ ลองใช้ตำแหน่ง (Column C = index 2)
+        nameCol = 2;
+      }
+    }
+    
+    let codenameCol = headers.indexOf('Codename');
+    if (codenameCol === -1) {
+      codenameCol = headers.indexOf('โค้ดเนม');
+      if (codenameCol === -1) {
+        // ถ้าไม่เจอ ลองใช้ตำแหน่ง (Column D = index 3)
+        codenameCol = 3;
+      }
+    }
+    
+    let photoCol = headers.indexOf('Photo');
+    if (photoCol === -1) {
+      photoCol = headers.indexOf('Photo URL');
+      if (photoCol === -1) {
+        photoCol = headers.indexOf('รูปภาพ');
+        if (photoCol === -1) {
+          // ถ้าไม่เจอ ลองใช้ตำแหน่ง (Column E = index 4)
+          photoCol = 4;
+        }
+      }
+    }
+    
+    // ดึงข้อมูลการโหวต
+    const votesSheet = ss.getSheetByName('Votes');
+    let votesData = [];
+    if (votesSheet) {
+      votesData = votesSheet.getDataRange().getValues();
+    }
+    
+    const voteHeaders = votesData.length > 0 ? votesData[0] : [];
+    const votePhoneCol = voteHeaders.indexOf('Phone') !== -1 ? voteHeaders.indexOf('Phone') : voteHeaders.indexOf('เบอร์โทร');
+    const voteAdminIdCol = voteHeaders.indexOf('Admin ID') !== -1 ? voteHeaders.indexOf('Admin ID') : voteHeaders.indexOf('แอดมิน ID');
+    const voteCodenameCol = voteHeaders.indexOf('Codename') !== -1 ? voteHeaders.indexOf('Codename') : voteHeaders.indexOf('โค้ดเนม');
+    
+    // สร้าง map ของ votes ตาม admin ID
+    const votesByAdmin = {};
+    
+    // ดึงข้อมูล codename จาก Member Dashboard
+    const memberDashboardApi = 'https://script.google.com/macros/s/AKfycbxtjsDwHI6nJU4OIHExUxMaZwUn3qwakvdkzwbQO7C8Trzz5Gh84SX6F1gqb4BOFQcn/exec?func=getMemberDashboardData';
+    let memberMap = {};
+    try {
+      const memberRes = UrlFetchApp.fetch(memberDashboardApi);
+      const members = JSON.parse(memberRes.getContentText());
+      if (members && Array.isArray(members)) {
+        members.forEach(m => {
+          const phone = normalizePhone(m.phone);
+          memberMap[phone] = m.codename || '';
+        });
+      }
+    } catch (e) {
+      Logger.log('Error fetching member data: ' + e.toString());
+    }
+    
+    // จัดกลุ่ม votes ตาม admin ID
+    for (let i = 1; i < votesData.length; i++) {
+      const row = votesData[i];
+      if (voteAdminIdCol >= 0 && votePhoneCol >= 0) {
+        const adminId = String(row[voteAdminIdCol]);
+        const phone = normalizePhone(row[votePhoneCol]);
+        const codename = voteCodenameCol >= 0 ? row[voteCodenameCol] : (memberMap[phone] || '');
+        
+        if (!votesByAdmin[adminId]) {
+          votesByAdmin[adminId] = [];
+        }
+        votesByAdmin[adminId].push({
+          phone: phone,
+          codename: codename
+        });
+      }
+    }
+    
+    // สร้าง array ของ admins พร้อม votes
+    const admins = [];
+    for (let i = 1; i < adminsData.length; i++) {
+      const row = adminsData[i];
+      // ตรวจสอบว่าแถวนี้มีข้อมูลหรือไม่ (เช็ค ID)
+      const adminId = row[idCol] ? String(row[idCol]) : null;
+      if (!adminId || adminId.trim() === '') {
+        continue; // ข้ามแถวที่ไม่มีข้อมูล
+      }
+      
+      const admin = {
+        id: adminId,
+        name: row[nameCol] ? String(row[nameCol]) : '',
+        codename: row[codenameCol] ? String(row[codenameCol]) : '',
+        photo: row[photoCol] ? String(row[photoCol]) : '',
+        votes: votesByAdmin[adminId] || []
+      };
+      admins.push(admin);
+    }
+    
+    return ContentService.createTextOutput(JSON.stringify({
+      admins: admins
+    })).setMimeType(ContentService.MimeType.JSON);
+    
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({
+      error: err.toString(),
+      admins: []
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+/**
+ * ตรวจสอบว่าสมาชิกโหวตแล้วหรือยัง
+ */
+function checkVoteStatus(phone) {
+  try {
+    const ss = getSpreadsheet();
+    const votesSheet = ss.getSheetByName('Votes');
+    
+    if (!votesSheet) {
+      return ContentService.createTextOutput(JSON.stringify({
+        hasVoted: false
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    const votesData = votesSheet.getDataRange().getValues();
+    if (votesData.length <= 1) {
+      return ContentService.createTextOutput(JSON.stringify({
+        hasVoted: false
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    const headers = votesData[0];
+    const phoneCol = headers.indexOf('Phone') !== -1 ? headers.indexOf('Phone') : headers.indexOf('เบอร์โทร');
+    
+    if (phoneCol < 0) {
+      return ContentService.createTextOutput(JSON.stringify({
+        hasVoted: false
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    const normalizedPhone = normalizePhone(phone);
+    
+    for (let i = 1; i < votesData.length; i++) {
+      const rowPhone = normalizePhone(votesData[i][phoneCol]);
+      if (rowPhone === normalizedPhone) {
+        return ContentService.createTextOutput(JSON.stringify({
+          hasVoted: true
+        })).setMimeType(ContentService.MimeType.JSON);
+      }
+    }
+    
+    return ContentService.createTextOutput(JSON.stringify({
+      hasVoted: false
+    })).setMimeType(ContentService.MimeType.JSON);
+    
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({
+      hasVoted: false,
+      error: err.toString()
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+/**
+ * ส่งการโหวต
+ */
+function submitVote(phone, adminId) {
+  try {
+    const ss = getSpreadsheet();
+    
+    // ตรวจสอบว่ามีการโหวตแล้วหรือยัง
+    const checkResult = JSON.parse(checkVoteStatus(phone).getContent());
+    if (checkResult.hasVoted) {
+      return ContentService.createTextOutput(JSON.stringify({
+        success: false,
+        error: 'คุณได้โหวตแล้ว ไม่สามารถโหวตซ้ำได้'
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    // ตรวจสอบว่า admin ID ถูกต้องหรือไม่ - ลองหา Sheet1 ก่อน
+    let adminsSheet = ss.getSheetByName('Sheet1');
+    if (!adminsSheet) {
+      adminsSheet = ss.getSheetByName('Admins');
+    }
+    if (!adminsSheet) {
+      return ContentService.createTextOutput(JSON.stringify({
+        success: false,
+        error: 'ไม่พบ Sheet "Sheet1" หรือ "Admins"'
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    const adminsData = adminsSheet.getDataRange().getValues();
+    const headers = adminsData[0];
+    let idCol = headers.indexOf('ID');
+    if (idCol === -1) {
+      idCol = 1; // Column B = index 1
+    }
+    
+    let adminExists = false;
+    for (let i = 1; i < adminsData.length; i++) {
+      const rowId = adminsData[i][idCol];
+      if (rowId && String(rowId) === String(adminId)) {
+        adminExists = true;
+        break;
+      }
+    }
+    
+    if (!adminExists) {
+      return ContentService.createTextOutput(JSON.stringify({
+        success: false,
+        error: 'ไม่พบแอดมินที่เลือก'
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    // ดึงข้อมูล codename จาก Member Dashboard
+    let codename = '';
+    try {
+      const memberDashboardApi = 'https://script.google.com/macros/s/AKfycbxtjsDwHI6nJU4OIHExUxMaZwUn3qwakvdkzwbQO7C8Trzz5Gh84SX6F1gqb4BOFQcn/exec?func=getMemberDashboardData';
+      const memberRes = UrlFetchApp.fetch(memberDashboardApi);
+      const members = JSON.parse(memberRes.getContentText());
+      if (members && Array.isArray(members)) {
+        const member = members.find(m => normalizePhone(m.phone) === normalizePhone(phone));
+        if (member) {
+          codename = member.codename || '';
+        }
+      }
+    } catch (e) {
+      Logger.log('Error fetching member codename: ' + e.toString());
+    }
+    
+    // บันทึกการโหวต
+    const votesSheet = ss.getSheetByName('Votes');
+    if (!votesSheet) {
+      // สร้าง Sheet ใหม่ถ้ายังไม่มี
+      const newSheet = ss.insertSheet('Votes');
+      newSheet.appendRow(['Timestamp', 'Phone', 'Admin ID', 'Codename']);
+      newSheet.getRange(1, 1, 1, 4).setFontWeight('bold');
+    }
+    
+    const timestamp = new Date();
+    votesSheet.appendRow([
+      timestamp,
+      phone,
+      adminId,
+      codename
+    ]);
+    
+    return ContentService.createTextOutput(JSON.stringify({
+      success: true,
+      message: 'โหวตสำเร็จ'
+    })).setMimeType(ContentService.MimeType.JSON);
+    
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({
+      success: false,
+      error: err.toString()
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+/**
+ * Normalize phone number (ลบอักขระที่ไม่ใช่ตัวเลข)
+ */
+function normalizePhone(phone) {
+  if (!phone) return '';
+  return String(phone).replace(/[^\d]/g, '');
+}
+
