@@ -593,6 +593,11 @@
       100% { opacity: 0.6; text-shadow: 0 0 2px #fff, 0 0 4px currentColor; }
     }
     
+    /* ให้ emoji ใน codename-rank ขยับได้ด้วย wave effect */
+    .codename-rank .codename.wave span {
+      display: inline-block;
+    }
+    
     /* Wave animation (Gold, Platinum, Diamond, Grandmaster, Legend) */
     @keyframes wave {
       0%, 100% { transform: translateY(0);}
@@ -620,6 +625,12 @@
     .codename.wave span:nth-child(8) { animation-delay: 0.56s; }
     .codename.wave span:nth-child(9) { animation-delay: 0.64s; }
     .codename.wave span:nth-child(10){ animation-delay: 0.72s; }
+    
+    /* ให้ emoji ใน codename-rank ขยับได้ด้วย wave effect */
+    .codename-rank .codename.wave span,
+    .codename-rank span {
+      display: inline-block;
+    }
     
     /* Bounce (Platinum) */
     @keyframes bounce {
@@ -989,7 +1000,7 @@
             const rank = voter.rank || '';
             const emoji = getRankEmoji(rank);
             const codenameHtml = renderCodenameEffect(voter.codename, rank);
-            return `<div class="voter-item"><span class="codename-rank" data-rank="${rank}">${emoji} ${codenameHtml} ${emoji}</span></div>`;
+            return `<div class="voter-item"><span class="codename-rank" data-rank="${rank}"><span>${emoji}</span> ${codenameHtml} <span>${emoji}</span></span></div>`;
           }
           // ถ้าไม่มี codename ให้ใช้จาก vote data หรือเบอร์โทร
           const codename = v.codename || '';
