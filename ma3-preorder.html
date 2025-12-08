@@ -1,0 +1,1768 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🎉 พรีออเดอร์ MA3 & Midnight Party - Up Level Academy</title>
+  
+  <!-- Add Google Font 'Kanit' -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    body {
+      font-family: 'Kanit', 'Segoe UI', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
+      background: linear-gradient(135deg, #1a0f00 0%, #2d1a00 25%, #3d2500 50%, #2d1a00 75%, #1a0f00 100%);
+      background-size: 400% 400%;
+      animation: gradientShift 15s ease infinite;
+      margin: 0;
+      padding: 1rem;
+      text-align: center;
+      min-height: 100vh;
+      color: #fff;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    @keyframes gradientShift {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    /* Card pack near logo - cute shake animation */
+    .floating-card-pack {
+      position: absolute;
+      width: 80px;
+      height: auto;
+      z-index: 5;
+      pointer-events: none;
+      opacity: 0.9;
+      animation: cuteShake 2s ease-in-out infinite;
+    }
+
+    .floating-card-pack:nth-child(1) {
+      top: 20px;
+      right: 20px;
+      animation-delay: 0s;
+    }
+
+    .floating-card-pack:nth-child(2) {
+      top: 20px;
+      left: 20px;
+      animation-delay: 0.3s;
+    }
+
+    .floating-card-pack:nth-child(3),
+    .floating-card-pack:nth-child(4) {
+      display: none;
+    }
+
+    @keyframes cuteShake {
+      0%, 100% {
+        transform: translate(0, 0) rotate(0deg) scale(1);
+      }
+      10% {
+        transform: translate(-3px, -2px) rotate(-3deg) scale(1.05);
+      }
+      20% {
+        transform: translate(3px, 2px) rotate(3deg) scale(1.02);
+      }
+      30% {
+        transform: translate(-2px, 3px) rotate(-2deg) scale(1.03);
+      }
+      40% {
+        transform: translate(2px, -3px) rotate(2deg) scale(1.04);
+      }
+      50% {
+        transform: translate(-1px, -1px) rotate(-1deg) scale(1.05);
+      }
+      60% {
+        transform: translate(1px, 2px) rotate(1deg) scale(1.03);
+      }
+      70% {
+        transform: translate(-2px, 1px) rotate(-2deg) scale(1.04);
+      }
+      80% {
+        transform: translate(2px, -2px) rotate(2deg) scale(1.02);
+      }
+      90% {
+        transform: translate(-1px, 1px) rotate(-1deg) scale(1.03);
+      }
+    }
+
+    /* Responsive for mobile - smaller cards */
+    @media (max-width: 768px) {
+      .floating-card-pack {
+        width: 60px;
+        opacity: 0.85;
+      }
+
+      .floating-card-pack:nth-child(1) {
+        top: 10px;
+        right: 10px;
+      }
+
+      .floating-card-pack:nth-child(2) {
+        top: 10px;
+        left: 10px;
+      }
+
+      .floating-card-pack:nth-child(3),
+      .floating-card-pack:nth-child(4) {
+        display: none;
+      }
+    }
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+      background: linear-gradient(135deg, rgba(30, 20, 5, 0.85) 0%, rgba(40, 25, 10, 0.85) 100%);
+      border-radius: 25px;
+      padding: 2rem;
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4), 0 0 100px rgba(255, 215, 0, 0.2);
+      backdrop-filter: blur(20px);
+      border: 2px solid rgba(255, 215, 0, 0.4);
+      position: relative;
+      z-index: 10;
+    }
+
+    .home-button {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border: none;
+      border-radius: 50%;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+    }
+
+    .home-button:hover {
+      transform: translateY(-3px) scale(1.05);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+      background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+    }
+
+    .home-button::before {
+      content: "🏠";
+      font-size: 24px;
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 2rem;
+      position: relative;
+    }
+
+    .logo {
+      width: 120px;
+      margin-bottom: 1rem;
+      filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+    }
+
+    .event-title {
+      font-size: 3rem;
+      font-weight: 700;
+      background: linear-gradient(45deg, #ffd700, #ffed4e, #ffaa00, #ffd700);
+      background-size: 300% 300%;
+      animation: gradientFlow 3s ease infinite, glow 2s ease-in-out infinite alternate;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+      margin-bottom: 0.5rem;
+      filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.8));
+    }
+
+    @keyframes gradientFlow {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    @keyframes glow {
+      from { filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.8)); }
+      to { filter: drop-shadow(0 0 25px rgba(255, 200, 0, 1)); }
+    }
+
+    .event-subtitle {
+      font-size: 1.3rem;
+      color: #ffd700;
+      margin-bottom: 1rem;
+      font-weight: 600;
+      text-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
+      animation: subtitlePulse 2s ease-in-out infinite;
+    }
+
+    @keyframes subtitlePulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.8; }
+    }
+
+    .event-date {
+      font-size: 1.5rem;
+      color: #ffd700;
+      margin-bottom: 2rem;
+      font-weight: 700;
+      text-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
+    }
+
+    .product-showcase {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+      border-radius: 20px;
+      padding: 6px;
+      margin: 2rem 0;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .product-title {
+      font-size: 1.8rem;
+      color: #ffd700;
+      margin-bottom: 1rem;
+      font-weight: 700;
+      text-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
+      animation: titleShimmer 3s ease-in-out infinite;
+    }
+
+    @keyframes titleShimmer {
+      0%, 100% { text-shadow: 0 0 15px rgba(255, 215, 0, 0.8); }
+      50% { text-shadow: 0 0 25px rgba(255, 200, 0, 1), 0 0 35px rgba(255, 180, 0, 0.7); }
+    }
+
+    .product-description {
+      font-size: 1.1rem;
+      color: #e0e0e0;
+      margin-bottom: 1.5rem;
+      line-height: 1.6;
+    }
+
+    .pricing-section {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin: 1.5rem 0;
+      align-items: center;
+    }
+
+    .pricing-card {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+      border-radius: 15px;
+      padding: 1rem;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      transition: all 0.3s ease;
+      width: 100%;
+      max-width: 350px;
+    }
+
+    .pricing-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+      border-color: rgba(255, 217, 61, 0.5);
+    }
+
+    .promo-campaign-section {
+      background: linear-gradient(135deg, rgba(255, 217, 61, 0.15) 0%, rgba(255, 193, 7, 0.1) 100%);
+      border-radius: 20px;
+      padding: 1.5rem;
+      margin: 2rem 0;
+      border: 2px solid rgba(255, 217, 61, 0.4);
+      box-shadow: 0 0 20px rgba(255, 217, 61, 0.2);
+    }
+
+    .promo-campaign-title {
+      font-size: 1.8rem;
+      color: #ffd93d;
+      margin-bottom: 1rem;
+      font-weight: 700;
+      text-shadow: 0 0 15px rgba(255, 217, 61, 0.6);
+      animation: titleShimmer 3s ease-in-out infinite;
+    }
+
+    .promo-campaign-description {
+      font-size: 1.1rem;
+      color: #e0e0e0;
+      margin-bottom: 1.5rem;
+      line-height: 1.6;
+    }
+
+    .promo-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+      margin-top: 1.5rem;
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .promo-card-item {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 0.8rem;
+      border: 2px solid rgba(255, 217, 61, 0.3);
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .promo-card-item:hover {
+      transform: translateY(-5px) scale(1.05);
+      box-shadow: 0 10px 25px rgba(255, 217, 61, 0.4);
+      border-color: rgba(255, 217, 61, 0.6);
+    }
+
+    .promo-card-item img {
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+      display: block;
+    }
+
+    .promo-card-modal {
+      display: none;
+      position: fixed;
+      z-index: 10000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.9);
+      backdrop-filter: blur(10px);
+    }
+
+    .promo-card-modal-content {
+      position: relative;
+      margin: auto;
+      padding: 20px;
+      max-width: 90%;
+      max-height: 90vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+    }
+
+    .promo-card-modal-image {
+      max-width: 100%;
+      max-height: 90vh;
+      border-radius: 12px;
+      box-shadow: 0 0 50px rgba(255, 217, 61, 0.5);
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 20px;
+      right: 40px;
+      color: #fff;
+      font-size: 40px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      z-index: 10001;
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-close:hover {
+      background: rgba(255, 107, 107, 0.8);
+      transform: rotate(90deg);
+    }
+
+    .user-promo-cards {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: center;
+      margin-top: 0.5rem;
+    }
+
+    .user-promo-card-mini {
+      width: 40px;
+      height: auto;
+      border-radius: 4px;
+      border: 1px solid rgba(255, 217, 61, 0.5);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .user-promo-card-mini:hover {
+      transform: scale(1.2);
+      border-color: #ffd93d;
+      box-shadow: 0 0 10px rgba(255, 217, 61, 0.6);
+    }
+
+    .pricing-title {
+      font-size: 1.4rem;
+      color: #ffd93d;
+      margin-bottom: 1rem;
+      font-weight: 700;
+    }
+
+    .price {
+      font-size: 2rem;
+      color: #6bcf7f;
+      margin-bottom: 1rem;
+      font-weight: 700;
+    }
+
+    .price-note {
+      font-size: 0.9rem;
+      color: #b0b0b0;
+      margin-bottom: 1rem;
+    }
+
+    .benefits {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .benefits li {
+      background: rgba(255, 255, 255, 0.05);
+      margin-bottom: 0.5rem;
+      padding: 0.5rem;
+      border-radius: 8px;
+      color: #e0e0e0;
+      font-size: 0.9rem;
+    }
+
+    .spot-info {
+      background: linear-gradient(135deg, rgba(255, 107, 107, 0.1) 0%, rgba(255, 107, 107, 0.05) 100%);
+      border-radius: 20px;
+      padding: 1.5rem;
+      margin: 2rem 0;
+      border: 1px solid rgba(255, 107, 107, 0.3);
+    }
+
+    .spot-title {
+      font-size: 1.6rem;
+      color: #ff6b6b;
+      margin-bottom: 1rem;
+      font-weight: 700;
+    }
+
+    .spot-description {
+      font-size: 1.1rem;
+      color: #e0e0e0;
+      margin-bottom: 1rem;
+      line-height: 1.6;
+    }
+
+    .bonus-section {
+      background: linear-gradient(135deg, rgba(107, 207, 127, 0.1) 0%, rgba(107, 207, 127, 0.05) 100%);
+      border-radius: 20px;
+      padding: 1.5rem;
+      margin: 2rem 0;
+      border: 1px solid rgba(107, 207, 127, 0.3);
+    }
+
+    .bonus-title {
+      font-size: 1.6rem;
+      color: #6bcf7f;
+      margin-bottom: 1rem;
+      font-weight: 700;
+    }
+
+    .bonus-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .bonus-list li {
+      background: rgba(255, 255, 255, 0.05);
+      margin-bottom: 0.8rem;
+      padding: 0.8rem;
+      border-radius: 10px;
+      color: #e0e0e0;
+      font-size: 1rem;
+      border-left: 4px solid #6bcf7f;
+    }
+
+    .important-notes {
+      background: linear-gradient(135deg, rgba(255, 217, 61, 0.1) 0%, rgba(255, 217, 61, 0.05) 100%);
+      border-radius: 20px;
+      padding: 1.5rem;
+      margin: 2rem 0;
+      border: 1px solid rgba(255, 217, 61, 0.3);
+    }
+
+    .notes-title {
+      font-size: 1.6rem;
+      color: #ffd93d;
+      margin-bottom: 1rem;
+      font-weight: 700;
+    }
+
+    .notes-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .notes-list li {
+      background: rgba(255, 255, 255, 0.05);
+      margin-bottom: 0.8rem;
+      padding: 0.8rem;
+      border-radius: 10px;
+      color: #e0e0e0;
+      font-size: 1rem;
+      border-left: 4px solid #ffd93d;
+    }
+
+    .cta-section {
+      text-align: center;
+      margin: 3rem 0;
+    }
+
+    .cta-button {
+      display: inline-block;
+      background: linear-gradient(45deg, #ffd700, #ffed4e, #ffaa00);
+      background-size: 200% 200%;
+      animation: buttonGradient 3s ease infinite;
+      color: #1a0f00;
+      padding: 1.5rem 3rem;
+      border-radius: 50px;
+      text-decoration: none;
+      font-size: 1.3rem;
+      font-weight: 700;
+      box-shadow: 0 10px 30px rgba(255, 215, 0, 0.6), 0 0 40px rgba(255, 200, 0, 0.4);
+      transition: all 0.3s ease;
+      border: 2px solid rgba(255, 215, 0, 0.6);
+      cursor: pointer;
+    }
+
+    @keyframes buttonGradient {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    .cta-button:hover {
+      transform: translateY(-5px) scale(1.05);
+      box-shadow: 0 15px 40px rgba(255, 215, 0, 0.8), 0 0 60px rgba(255, 200, 0, 0.6);
+      border-color: rgba(255, 215, 0, 0.9);
+    }
+
+    .cta-top {
+      text-align: center;
+      margin: 2rem 0;
+    }
+
+    .cta-button-top {
+      display: inline-block;
+      background: linear-gradient(45deg, #ffd700, #ffed4e, #ffaa00);
+      background-size: 200% 200%;
+      animation: buttonGradient 3s ease infinite;
+      color: #1a0f00;
+      padding: 1rem 2.5rem;
+      border-radius: 50px;
+      text-decoration: none;
+      font-size: 1.1rem;
+      font-weight: 700;
+      box-shadow: 0 8px 25px rgba(255, 215, 0, 0.6), 0 0 30px rgba(255, 200, 0, 0.4);
+      transition: all 0.3s ease;
+      border: 2px solid rgba(255, 215, 0, 0.6);
+      cursor: pointer;
+    }
+
+    .cta-button-top:hover {
+      transform: translateY(-3px) scale(1.05);
+      box-shadow: 0 12px 30px rgba(255, 215, 0, 0.8), 0 0 50px rgba(255, 200, 0, 0.6);
+      border-color: rgba(255, 215, 0, 0.9);
+    }
+
+    .guild-button {
+      display: inline-block;
+      background: linear-gradient(45deg, #ffaa00, #ff9500);
+      color: #fff;
+      padding: 0.8rem 2rem;
+      border-radius: 50px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 0.9rem;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(255, 200, 0, 0.5), 0 0 20px rgba(255, 180, 0, 0.3);
+      border: 1px solid rgba(255, 215, 0, 0.4);
+      cursor: pointer;
+      margin-top: 1rem;
+    }
+
+    .guild-button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(255, 200, 0, 0.7), 0 0 40px rgba(255, 215, 0, 0.5);
+      background: linear-gradient(45deg, #ffd700, #ffaa00);
+    }
+
+    .info-section {
+      background: transparent;
+      border-radius: 20px;
+      padding: 1.5rem;
+      margin: 2rem 0;
+      border: none;
+    }
+
+    .info-title {
+      font-size: 1.6rem;
+      color: #ffd700;
+      margin-bottom: 1.5rem;
+      font-weight: 700;
+      text-align: center;
+      text-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
+      animation: titleShimmer 3s ease-in-out infinite;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .info-card {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 15px;
+      padding: 1.2rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.3s ease;
+    }
+
+    .info-card:hover {
+      transform: translateY(-3px);
+      background: rgba(255, 255, 255, 0.08);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .info-card.bonus {
+      border-color: rgba(107, 207, 127, 0.3);
+    }
+
+    .info-card.notes {
+      border-color: rgba(255, 217, 61, 0.3);
+    }
+
+    .info-card h4 {
+      color: #ffd93d;
+      font-size: 1.3rem;
+      margin-bottom: 1rem;
+      font-weight: 700;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    }
+
+    .info-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .info-list li {
+      background: rgba(255, 255, 255, 0.05);
+      margin-bottom: 0.8rem;
+      padding: 0.8rem;
+      border-radius: 10px;
+      color: #e0e0e0;
+      font-size: 1rem;
+      border-left: 4px solid #6bcf7f;
+    }
+
+    .info-card.notes .info-list li {
+      border-left-color: #ffd93d;
+    }
+
+    .footer {
+      margin-top: 3rem;
+      padding: 2rem;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .footer-title {
+      font-size: 1.4rem;
+      color: #ffd700;
+      margin-bottom: 1rem;
+      font-weight: 700;
+      text-shadow: 0 0 10px rgba(255, 215, 0, 0.7);
+    }
+
+    .contact-info {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      flex-wrap: wrap;
+      margin-top: 1rem;
+    }
+
+    .contact-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #e0e0e0;
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+
+    .contact-item:hover {
+      color: #ffd700;
+      text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+    }
+
+    /* เพิ่ม CSS สำหรับส่วนแสดงรายชื่อ */
+    .registered-users-section {
+      background: linear-gradient(135deg, rgba(107, 207, 127, 0.1) 0%, rgba(107, 207, 127, 0.05) 100%);
+      border-radius: 20px;
+      padding: 2rem;
+      margin: 2rem 0;
+      border: 1px solid rgba(107, 207, 127, 0.3);
+    }
+
+    .users-title {
+      font-size: 1.8rem;
+      color: #ffd700;
+      margin-bottom: 1.5rem;
+      font-weight: 700;
+      text-align: center;
+      text-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      animation: titleShimmer 3s ease-in-out infinite;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.8rem;
+      margin-bottom: 2rem;
+      max-width: 100%;
+      justify-content: center;
+    }
+
+    .stat-card {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 15px;
+      padding: 0.8rem;
+      text-align: center;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .stat-number {
+      font-size: 2rem;
+      color: #ffd700;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+      animation: numberPulse 2s ease-in-out infinite;
+    }
+
+    @keyframes numberPulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    .stat-label {
+      color: #e0e0e0;
+      font-size: 0.8rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.2;
+    }
+
+    .users-list {
+      max-height: 400px;
+      overflow-y: auto;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 15px;
+      padding: 1rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .refresh-button {
+      background: linear-gradient(45deg, #ffd700, #ffaa00);
+      color: #1a0f00;
+      padding: 0.8rem 1.5rem;
+      border-radius: 25px;
+      border: 1px solid rgba(255, 215, 0, 0.4);
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-bottom: 1rem;
+      box-shadow: 0 4px 15px rgba(255, 215, 0, 0.5), 0 0 20px rgba(255, 200, 0, 0.3);
+    }
+
+    .refresh-button:hover {
+      transform: translateY(-2px) scale(1.05);
+      box-shadow: 0 8px 20px rgba(255, 215, 0, 0.7), 0 0 30px rgba(255, 200, 0, 0.5);
+      border-color: rgba(255, 215, 0, 0.7);
+    }
+
+    .loading {
+      text-align: center;
+      color: #ffd700;
+      font-size: 1.1rem;
+      padding: 2rem;
+      text-shadow: 0 0 10px rgba(255, 215, 0, 0.7);
+    }
+
+    /* Loading spinner */
+    .spinner {
+      margin: 24px auto 8px auto;
+      border: 6px solid #e0e0e0;
+      border-top: 6px solid #ffd700;
+      border-radius: 50%;
+      width: 48px;
+      height: 48px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg);}
+      100% { transform: rotate(360deg);}
+    }
+
+    .error-message {
+      background: rgba(255, 107, 107, 0.1);
+      border: 1px solid rgba(255, 107, 107, 0.3);
+      border-radius: 10px;
+      padding: 1rem;
+      color: #ff6b6b;
+      text-align: center;
+      margin: 1rem 0;
+    }
+
+    /* Codename สี/ขนาด/กระพริบตาม rank */
+    .codename-rank[data-rank="Rookie"]      .codename { color: #888888; font-size: 1.05em; }
+    .codename-rank[data-rank="Bronze"]      .codename { color: #b87333; font-size: 1.08em; }
+    .codename-rank[data-rank="Silver"]      .codename { color: #9e9e9e; font-size: 1.12em; }
+    .codename-rank[data-rank="Gold"]        .codename { color: #ffd700; font-size: 1.18em; font-weight: bold; }
+    .codename-rank[data-rank="Platinum"]    .codename { color: #00bcd4; font-size: 1.22em; font-weight: bold; }
+    .codename-rank[data-rank="Diamond"]     .codename { color: #ffd700; font-size: 1.28em; font-weight: bold; }
+    .codename-rank[data-rank="Grandmaster"] .codename { color: #8e24aa; font-size: 1.35em; font-weight: bold; }
+    .codename-rank[data-rank="Legend"]      .codename { color: #e53935; font-size: 1.45em; font-weight: bold; }
+    .codename-rank[data-rank="Gold"]        .codename,
+    .codename-rank[data-rank="Platinum"]    .codename,
+    .codename-rank[data-rank="Diamond"]     .codename,
+    .codename-rank[data-rank="Grandmaster"] .codename,
+    .codename-rank[data-rank="Legend"]      .codename {
+      animation: blink 1s step-end infinite alternate;
+    }
+    @keyframes blink {
+      0%   { opacity: 1;   text-shadow: 0 0 8px #fff, 0 0 16px currentColor; }
+      100% { opacity: 0.6; text-shadow: 0 0 2px #fff, 0 0 4px currentColor; }
+    }
+    /* Wave (Gold) */
+    @keyframes wave {
+      0%, 100% { transform: translateY(0);}
+      20%      { transform: translateY(-5px);}
+      40%      { transform: translateY(-10px);}
+      60%      { transform: translateY(-5px);}
+      80%      { transform: translateY(0);}
+    }
+    .codename.wave span {
+      display: inline-block;
+      animation: wave 1.2s cubic-bezier(0.4,0,0.2,1) infinite;
+    }
+    .codename.wave.gold span { animation-duration: 1.2s; }
+    .codename.wave.platinum span { animation-duration: 1s; }
+    .codename.wave.diamond span { animation-duration: 0.85s; }
+    .codename.wave.grandmaster span { animation-duration: 0.7s; }
+    .codename.wave.legend span { animation-duration: 0.6s; }
+    .codename.wave span:nth-child(1) { animation-delay: 0s; }
+    .codename.wave span:nth-child(2) { animation-delay: 0.08s; }
+    .codename.wave span:nth-child(3) { animation-delay: 0.16s; }
+    .codename.wave span:nth-child(4) { animation-delay: 0.24s; }
+    .codename.wave span:nth-child(5) { animation-delay: 0.32s; }
+    .codename.wave span:nth-child(6) { animation-delay: 0.40s; }
+    .codename.wave span:nth-child(7) { animation-delay: 0.48s; }
+    .codename.wave span:nth-child(8) { animation-delay: 0.56s; }
+    .codename.wave span:nth-child(9) { animation-delay: 0.64s; }
+    .codename.wave span:nth-child(10){ animation-delay: 0.72s; }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .container {
+        padding: 1rem;
+        margin: 0.5rem;
+      }
+      
+      .event-title {
+        font-size: 2rem;
+      }
+      
+      .event-subtitle {
+        font-size: 1.1rem;
+      }
+      
+      .event-date {
+        font-size: 1.2rem;
+      }
+      
+      .pricing-section {
+        grid-template-columns: 1fr;
+      }
+      
+      .contact-info {
+        flex-direction: column;
+        gap: 1rem;
+      }
+      
+      .home-button {
+        top: 15px;
+        left: 15px;
+        width: 50px;
+        height: 50px;
+      }
+      
+      .home-button::before {
+        font-size: 20px;
+      }
+      
+      .stats-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.6rem;
+        padding: 0 0.5rem;
+      }
+      
+      .stat-card {
+        padding: 0.6rem 0.4rem;
+      }
+      
+      .stat-number {
+        font-size: 1.5rem;
+      }
+      
+      .stat-label {
+        font-size: 0.7rem;
+        line-height: 1.1;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      
+      .info-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+      
+      .users-title {
+        font-size: 1.4rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .promo-cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.8rem;
+      }
+
+      .promo-campaign-title {
+        font-size: 1.4rem;
+      }
+
+      .promo-campaign-description {
+        font-size: 1rem;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .container {
+        padding: 0.8rem;
+        margin: 0.3rem;
+      }
+      
+      .event-title {
+        font-size: 1.8rem;
+      }
+      
+      .event-subtitle {
+        font-size: 1rem;
+      }
+      
+      .event-date {
+        font-size: 1.1rem;
+      }
+      
+      .users-title {
+        font-size: 1.2rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      
+      .stats-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.4rem;
+        padding: 0 0.3rem;
+      }
+      
+      .stat-card {
+        padding: 0.5rem 0.3rem;
+      }
+      
+      .stat-number {
+        font-size: 1.3rem;
+      }
+      
+      .stat-label {
+        font-size: 0.65rem;
+        line-height: 1.1;
+      }
+
+      .promo-cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.6rem;
+      }
+
+      .promo-campaign-title {
+        font-size: 1.2rem;
+      }
+
+      .promo-campaign-description {
+        font-size: 0.9rem;
+      }
+
+      .user-promo-card-mini {
+        width: 35px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a href="index.html" class="home-button" title="กลับหน้าหลัก"></a>
+
+  <div class="container">
+    <!-- Card packs near logo - cute shake animation -->
+    <!-- ใช้รูปซอง MA3 ที่ผู้ใช้ให้มา - ต้องอัปเดต URL เมื่อมี -->
+    <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_ma3_pkg.png" alt="MA3 Booster Pack" class="floating-card-pack" onerror="this.src='https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/09/th_news_MA2_pillow_img-1.png'">
+    <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_ma3_pkg.png" alt="MA3 Booster Pack" class="floating-card-pack" onerror="this.src='https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/09/th_news_MA2_pillow_img-1.png'">
+    
+    <div class="header">
+      <img src="https://i.postimg.cc/wjzpnxjB/Up-Level-01-1.png" alt="Up Level Academy Logo" class="logo">
+      <h1 class="event-title">🎉 พรีออเดอร์ MA3 & Midnight Party 🎉</h1>
+      <div class="event-subtitle">วิวัฒนาการเมก้า ดรีมex</div>
+      <div class="event-date">🌙 คืนวันที่ 15 ม.ค. 2026 (ข้ามเข้า 16 ม.ค.)</div>
+    </div>
+
+    <div class="product-showcase">
+      <h2 class="product-title">🎁 การ์ดชุดเสริมไฮคลาส วิวัฒนาการเมก้า ดรีมex</h2>
+      <div class="product-description">
+        เตรียมพบกับการ์ดชุดใหม่ล่าสุด "วิวัฒนาการเมก้าดรีม (MA3)" ก่อนใครในงาน Midnight Party!<br>
+        คว้าฝันกับโปเกมอนวิวัฒนาการเมก้าex มาครองกัน พร้อมการ์ด MA (Mega Attack Rare) ที่เปิดตัวใหม่!<br><br>
+        <strong>✨ เสน่ห์ของวิวัฒนาการเมก้า ดรีม ex อยู่ตรงนี้! ✨</strong><br>
+        • การ์ดโปเกมอนวิวัฒนาการเมก้า ex น้องใหม่!<br>
+        • เปิดตัวการ์ด MA (Mega Attack Rare)!<br>
+        • การ์ดที่ช่วยเสริมเด็คของเธอให้แข็งแกร่งยิ่งขึ้น!<br>
+        • มีการ์ดฟอยล์มิเรอร์แบบพิเศษสุดอลังการรวมอยู่ด้วย!<br>
+        • มีการ์ด AR และการ์ด SAR ทรงเสน่ห์รวมอยู่ในชุด!
+      </div>
+      
+      <div class="cta-top">
+        <a href="https://forms.gle/3xZG8VewZjJtepQN6" target="_blank" class="cta-button-top">
+          🎯 สั่งซื้อและลงทะเบียนเลย!
+        </a>
+        <a href="https://forms.gle/5ctkLmT3FwLW9oRi6" target="_blank" class="guild-button">
+          🏰 สมัครสมาชิกกิลด์เพื่อสะสม EXP
+        </a>
+      </div>
+
+      <!-- ย้ายส่วนรายชื่อผู้ลงทะเบียนมาด้านบน -->
+      <div class="registered-users-section">
+        <h3 class="users-title">📋 รายชื่อผู้สั่งซื้อและลงทะเบียน</h3>
+        
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-number" id="totalUsers">-</div>
+            <div class="stat-label">ผู้สั่งซื้อทั้งหมด</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number" id="totalBoxes">-</div>
+            <div class="stat-label">Box ทั้งหมด</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number" id="totalSpots">-</div>
+            <div class="stat-label">Spot ทั้งหมด</div>
+          </div>
+        </div>
+        
+        <button class="refresh-button" onclick="loadRegisteredUsers()">
+          🔄 รีเฟรชข้อมูล
+        </button>
+        
+        <div id="usersContainer">
+          <div class="spinner"></div>
+          <div class="loading">กำลังโหลดข้อมูล...</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pricing-section">
+      <div class="pricing-card">
+        <h3 class="pricing-title">🔵 พรีออเดอร์ Booster Box</h3>
+        <div class="price">💸 1,550 บาท / Box</div>
+        <div class="price-note">ซื้อ 2 Box รับโปรโม 1 ซอง</div>
+        <ul class="benefits">
+          <li>✅ +6 EXP ต่อ 1 Box</li>
+          <li>✅ รับสินค้าตั้งแต่ 16 ม.ค. 2026 เป็นต้นไป</li>
+        </ul>
+      </div>
+
+      <div class="pricing-card">
+        <h3 class="pricing-title">🎯 Spot เปิด 2 ซอง</h3>
+        <div class="price">💰 320 บาท / Spot</div>
+        <ul class="benefits">
+          <li>✅ ครบ 5 Spot → เปิดกล่องได้ทันที!</li>
+          <li>✅ +1 EXP ต่อ 1 Spot</li>
+          <li>✅ สิทธิ์ร่วมเปิดกล่องแบบหาร ลุ้นพร้อมกัน</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="promo-campaign-section">
+      <h3 class="promo-campaign-title">🎁 แคมเปญพิเศษ: การ์ดโปรโม MA3</h3>
+      <div class="promo-campaign-description">
+        <strong>✨ ซื้อ Booster Box 2 กล่อง → รับการ์ดโปรโม 1 ซอง ✨</strong><br><br>
+        แต่ละซองมีการ์ดสุ่ม 1 ใบจากการ์ดโปรโมทั้งหมด 4 แบบ<br>
+        คลิกที่รูปการ์ดด้านล่างเพื่อดูรายละเอียด
+      </div>
+      <div class="promo-cards-grid">
+        <div class="promo-card-item" onclick="openPromoCardModal('https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_MPromo_047.png')">
+          <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_MPromo_047.png" alt="Promo Card 047" loading="lazy">
+        </div>
+        <div class="promo-card-item" onclick="openPromoCardModal('https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_MPromo_048.png')">
+          <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_MPromo_048.png" alt="Promo Card 048" loading="lazy">
+        </div>
+        <div class="promo-card-item" onclick="openPromoCardModal('https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_MPromo_049.png')">
+          <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_MPromo_049.png" alt="Promo Card 049" loading="lazy">
+        </div>
+        <div class="promo-card-item" onclick="openPromoCardModal('https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_MPromo_050.png')">
+          <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_MPromo_050.png" alt="Promo Card 050" loading="lazy">
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal for viewing promo cards -->
+    <div id="promoCardModal" class="promo-card-modal">
+      <span class="modal-close" onclick="closePromoCardModal()">&times;</span>
+      <div class="promo-card-modal-content">
+        <img id="promoCardModalImage" class="promo-card-modal-image" src="" alt="Promo Card">
+      </div>
+    </div>
+
+    <!-- ส่วนแสดงการ์ดพิเศษจากชุด MA3 -->
+    <div class="promo-campaign-section" style="margin-top: 2rem;">
+      <h3 class="promo-campaign-title">🌟 การ์ดพิเศษจากชุด MA3</h3>
+      <div class="promo-campaign-description">
+        การ์ดแกร่งที่เคยโชว์ฟอร์มในงานแข่งต่าง ๆ และการ์ดอื่น ๆ กลับมารวมตัวกันอีกครั้ง!
+      </div>
+      <div class="promo-cards-grid">
+        <div class="promo-card-item" onclick="openPromoCardModal('https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_ma3_card_223-1.png')">
+          <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_ma3_card_223-1.png" alt="MA3 Card 223" loading="lazy">
+        </div>
+        <div class="promo-card-item" onclick="openPromoCardModal('https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_ma3_card_228-1.png')">
+          <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_ma3_card_228-1.png" alt="MA3 Card 228" loading="lazy">
+        </div>
+        <div class="promo-card-item" onclick="openPromoCardModal('https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_ma3_card_226-1.png')">
+          <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_ma3_card_226-1.png" alt="MA3 Card 226" loading="lazy">
+        </div>
+        <div class="promo-card-item" onclick="openPromoCardModal('https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_ma3_card_243.png')">
+          <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_ma3_card_243.png" alt="MA3 Card 243" loading="lazy">
+        </div>
+      </div>
+    </div>
+
+    <div class="spot-info">
+      <h3 class="spot-title">🔴 Midnight Party</h3>
+      <div class="spot-description">
+        คืนวันที่ 15 ม.ค. เริ่มลงทะเบียน 23:30 น.<br>
+        ไม่มีการไลฟ์สด เปิดกล่องเฉพาะภายในงานเท่านั้น!<br><br>
+        ผู้ที่มาร่วมงานจะได้รับ:<br>
+        • +2 EXP<br>
+        • +2 Party Point<br>
+        • +6 EXP ต่อ 1 Box<br>
+        • มาครบทั้งปาร์ตี้ → +5 Party Point
+      </div>
+    </div>
+
+    <div class="info-section">
+      <h3 class="info-title">📋 ข้อมูลสำคัญ</h3>
+      <div class="info-grid">
+        <div class="info-card bonus">
+          <h4>🎉 โบนัสพิเศษ</h4>
+          <ul class="info-list">
+            <li>✅ มาร่วมงาน : +2 EXP | +2 Party Point</li>
+            <li>✅ มาครบทั้งปาร์ตี้ : +5 Party Point</li>
+            <li>✅ ซื้อ Box : +6 EXP ต่อ 1 Box</li>
+            <li>✅ จอง Spot : +1 EXP ต่อ 1 Spot</li>
+          </ul>
+        </div>
+        <div class="info-card notes">
+          <h4>📝 เงื่อนไขสำคัญ</h4>
+          <ul class="info-list">
+            <li>📌 ลูกค้าที่สั่งซื้อ แม้ไม่มาร่วมงาน ยังได้รับสินค้า + EXP ตามยอดซื้อปกติ</li>
+            <li>📌 แบบฟอร์มนี้คือการสั่งซื้อล่วงหน้า พร้อมชำระเงินทันที</li>
+            <li>📌 การจองถือว่าสมบูรณ์เมื่อแนบสลิปถูกต้อง</li>
+            <li>📌 หาก Spot ไม่ครบ 5 จะคืนเงินหลังจบงาน หรือเปลี่ยนเป็นสินค้าอื่นได้</li>
+            <li>📌 รับสินค้าตั้งแต่ 16 ม.ค. 2026 เป็นต้นไป</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="cta-section">
+      <a href="https://forms.gle/3xZG8VewZjJtepQN6" target="_blank" class="cta-button">
+        🎯 สั่งซื้อและลงทะเบียนเลย!
+      </a>
+      <a href="https://forms.gle/5ctkLmT3FwLW9oRi6" target="_blank" class="guild-button">
+        🏰 สมัครสมาชิกกิลด์เพื่อสะสม EXP
+      </a>
+    </div>
+
+    <div class="footer">
+      <h3 class="footer-title">📍 สถานที่จัดงาน</h3>
+      <p style="color: #e0e0e0; margin-bottom: 1rem;">ร้าน Up Level Academy<br>(ติด MRT บางแค ทางออก 2)</p>
+      
+      <h3 class="footer-title">📞 ติดต่อสอบถาม</h3>
+      <div class="contact-info">
+        <a href="tel:097-115-6555" class="contact-item">
+          📞 097-115-6555
+        </a>
+        <a href="https://line.me/ti/p/@uplevelacademy" target="_blank" class="contact-item">
+          💬 @uplevelacademy
+        </a>
+        <a href="https://www.facebook.com/uplevel.acad" target="_blank" class="contact-item">
+          👍 Up Level Academy
+        </a>
+        <a href="https://www.instagram.com/uplevel.acad" target="_blank" class="contact-item">
+          📸 uplevel.acad
+        </a>
+      </div>
+      <div style="margin-top: 1rem;">
+        <a href="https://shorturl.at/8r2Aw" target="_blank" class="contact-item" style="display: inline-block;">
+          💬 Line Open chat Pokemon
+        </a>
+        <a href="https://uplevelguild.netlify.app/" target="_blank" class="contact-item" style="display: inline-block;">
+          🌐 Up Level Guild Website
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    console.log('DEBUG: MA3 Pre-order & Midnight Party Registration System');
+    
+    // ⚠️ สำคัญ: ต้อง Deploy App Script ก่อนใช้งาน!
+    // 1. ไปที่ Google Sheet: https://docs.google.com/spreadsheets/d/1wi2OXnelj5D61E8Jv6wBN0RwCRbsQlgiWXnfGxrjlww/edit
+    // 2. คลิก Extensions > Apps Script
+    // 3. Copy โค้ดจากไฟล์ "app script MA3 Preorder" ไปวาง
+    // 4. คลิก Deploy > New deployment > เลือก Type: Web app
+    // 5. Execute as: Me, Who has access: Anyone
+    // 6. Copy URL ที่ได้มาแทนที่ด้านล่างนี้
+    const apiUrl = "https://script.google.com/macros/s/AKfycbzjBOVrpzhWSG2PhqttAyIX9jHA1seaNrtiXD-2Zkyk1iAFxfTySAhHrQ2ElRS2aXeenQ/exec?type=json";
+    const memberDashboardApi = "https://script.google.com/macros/s/AKfycbxtjsDwHI6nJU4OIHExUxMaZwUn3qwakvdkzwbQO7C8Trzz5Gh84SX6F1gqb4BOFQcn/exec?func=getMemberDashboardData";
+    
+    // โหลดข้อมูลผู้ลงทะเบียนเมื่อหน้าเว็บโหลดเสร็จ
+    window.addEventListener('load', function() {
+      loadRegisteredUsers();
+    });
+
+    function loadRegisteredUsers() {
+      const container = document.getElementById('usersContainer');
+      container.innerHTML = '<div class="spinner"></div><div class="loading">กำลังโหลดข้อมูล...</div>';
+      
+      console.log('=== MA3 PRE-ORDER DEBUG: Starting loadRegisteredUsers ===');
+      console.log('API URL:', apiUrl);
+      console.log('Member Dashboard API URL:', memberDashboardApi);
+      console.log('Timestamp:', new Date().toISOString());
+      
+      // ใช้วิธีเดียวกับ midnight-party.html - fetch() ธรรมดา
+      Promise.all([
+        fetch(apiUrl).then(res => res.json()),
+        fetch(memberDashboardApi).then(res => res.json())
+      ]).then(([data, members]) => {
+        // ตรวจสอบว่า data ถูกต้องหรือไม่
+        if (!data || !data.participants) {
+          console.error('❌ No participants data received');
+          showFallbackData(container);
+          return;
+        }
+        
+        // สร้าง map เบอร์โทร -> { codename, rank }
+        console.log('=== Creating phone map from members ===');
+        const phoneMap = {};
+        if (members && Array.isArray(members)) {
+          console.log('👥 Processing', members.length, 'members');
+          members.forEach((m, idx) => {
+            const phone = String(m.phone || '').replace(/[^\d]/g, "");
+            if (phone) {
+              phoneMap[phone] = { 
+                codename: m.codename || '', 
+                rank: m.rank || '' 
+              };
+            }
+            if (idx < 3) {
+              console.log(`👤 Member ${idx}:`, {
+                phone: m.phone,
+                cleaned: phone,
+                codename: m.codename,
+                rank: m.rank
+              });
+            }
+          });
+        } else {
+          console.warn('⚠️ Members is not an array:', members);
+        }
+        
+        console.log('📱 Phone map created with', Object.keys(phoneMap).length, 'entries');
+        console.log('📱 Sample phone keys:', Object.keys(phoneMap).slice(0, 5));
+        
+        // อัปเดต codename ในข้อมูลผู้ลงทะเบียน
+        if (data.participants && Array.isArray(data.participants)) {
+          console.log('=== Processing', data.participants.length, 'participants ===');
+          if (data.participants.length > 0) {
+            console.log('📝 First participant all columns:', Object.keys(data.participants[0]));
+            console.log('📝 First participant sample:', JSON.stringify(data.participants[0], null, 2).substring(0, 500));
+          }
+          
+          data.participants.forEach((participant, index) => {
+            // ใช้เบอร์โทรจาก column D (เบอร์ติดต่อ)
+            const originalPhone = participant['เบอร์ติดต่อ (0xx-xxx-xxxx)'] || 
+                                 participant['เบอร์ติดต่อ'] || 
+                                 participant['เบอร์โทร'] ||
+                                 participant['Phone'] ||
+                                 participant['phone'] ||
+                                 participant.phone || 
+                                 '';
+            const phone = String(originalPhone).replace(/[^\d]/g, "");
+            
+            if (index < 3) {
+              console.log(`👤 Participant ${index}:`, {
+                originalPhone: originalPhone,
+                cleanedPhone: phone,
+                foundInMap: !!phoneMap[phone],
+                codename: phoneMap[phone]?.codename || 'ไม่พบ',
+                rank: phoneMap[phone]?.rank || 'ไม่พบ',
+                allColumns: Object.keys(participant)
+              });
+            }
+            
+            if (phoneMap[phone]) {
+              participant.codename = phoneMap[phone].codename;
+              participant.rank = phoneMap[phone].rank;
+            }
+          });
+          
+          // แปลงข้อมูลให้ตรงกับที่ displayUsers คาดหวัง
+          console.log('=== Converting participants data ===');
+          const convertedData = {
+            users: data.participants.map((p, idx) => {
+              // ใช้ชื่อเล่นจาก column C
+              const nickname = p['ชื่อเล่น'] || p['ชื่อ - นามสกุล'] || 'ไม่ระบุชื่อ';
+              
+              // ใช้เบอร์โทรจาก column D
+              const phone = p['เบอร์ติดต่อ (0xx-xxx-xxxx)'] || p['เบอร์ติดต่อ'] || p['เบอร์โทร'] || p['Phone'] || p['phone'] || p.phone || '';
+              
+              // ใช้ข้อมูล Box จาก column E (จำนวนที่ต้องการสั่งซื้อ)
+              let boxes = 0;
+              const boxData = p['จำนวนที่ต้องการสั่งซื้อ (1 BOX = 1,550 บาท, 1 C/)'] || 
+                             p['จำนวนที่ต้องการสั่งซื้อ'] || 
+                             p['จำนวน Box'] || '';
+              
+              if (boxData && typeof boxData === 'string') {
+                // ลองหาเลขจำนวน Box จากข้อความ
+                const boxMatch = boxData.match(/(\d+)\s*(?:BOX|Box|box|กล่อง)/);
+                if (boxMatch) {
+                  boxes = parseInt(boxMatch[1]) || 0;
+                } else {
+                  // ถ้าไม่มีคำว่า BOX ลองหาแค่ตัวเลข
+                  const numMatch = boxData.match(/(\d+)/);
+                  if (numMatch) {
+                    boxes = parseInt(numMatch[1]) || 0;
+                  }
+                }
+              } else if (typeof boxData === 'number') {
+                boxes = boxData;
+              }
+              
+              // ใช้ข้อมูล Spot - อาจจะต้องคำนวณจากจำนวนที่ต้องการ
+              // สำหรับตอนนี้ให้เป็น 0 ก่อน (ถ้ามีข้อมูล Spot ใน Sheet จะเพิ่มทีหลัง)
+              let spots = 0;
+              
+              // ดึงข้อมูล promo cards จาก participant
+              let promoCards = [];
+              if (p.promoCards && Array.isArray(p.promoCards)) {
+                promoCards = p.promoCards;
+              } else if (p.promoPacks && p.promoPacks > 0) {
+                // ถ้ายังไม่มี promoCards แต่มี promoPacks ให้คำนวณใหม่
+                const promoPacks = Math.floor(boxes / 2);
+                if (promoPacks > 0) {
+                  // สุ่มการ์ดโปรโม (ใช้ phone + index เป็น seed)
+                  for (let pIdx = 0; pIdx < promoPacks; pIdx++) {
+                    const cardIndex = (phone.length + pIdx) % 4;
+                    promoCards.push({
+                      number: ['047', '048', '049', '050'][cardIndex],
+                      imageUrl: `https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_MPromo_${['047', '048', '049', '050'][cardIndex]}.png`
+                    });
+                  }
+                }
+              }
+              
+              // Debug logging สำหรับ 3 รายการแรก
+              if (idx < 3) {
+                console.log(`👤 Converting User ${idx} (${nickname}):`, {
+                  boxData: boxData,
+                  boxes: boxes,
+                  spots: spots,
+                  promoCards: promoCards.length,
+                  codename: p.codename || 'ไม่ระบุ',
+                  rank: p.rank || '',
+                  availableColumns: Object.keys(p).slice(0, 10)
+                });
+              }
+              
+              return {
+                nickname: nickname,
+                phone: phone,
+                boxes: boxes,
+                spots: spots,
+                promoCards: promoCards,
+                codename: p.codename || 'ไม่ระบุ',
+                rank: p.rank || '',
+                attendingParty: p['มาร่วมงาน Midnight Party หรือไม่'] || p['เข้าร่วมงาน'] || ''
+              };
+            }),
+            total: data.participants.length,
+            totalBoxes: data.participants.reduce((sum, p) => {
+              const boxData = p['จำนวนที่ต้องการสั่งซื้อ (1 BOX = 1,550 บาท, 1 C/)'] || 
+                             p['จำนวนที่ต้องการสั่งซื้อ'] || 
+                             p['จำนวน Box'] || '';
+              if (boxData && typeof boxData === 'string') {
+                const boxMatch = boxData.match(/(\d+)\s*(?:BOX|Box|box|กล่อง)/);
+                if (boxMatch) {
+                  return sum + (parseInt(boxMatch[1]) || 0);
+                } else {
+                  const numMatch = boxData.match(/(\d+)/);
+                  if (numMatch) {
+                    return sum + (parseInt(numMatch[1]) || 0);
+                  }
+                }
+              } else if (typeof boxData === 'number') {
+                return sum + boxData;
+              }
+              return sum;
+            }, 0),
+            totalSpots: 0 // จะเพิ่มเมื่อมีข้อมูล Spot
+          };
+          
+          console.log('=== Conversion Summary ===');
+          console.log('📊 Total users after conversion:', convertedData.users.length);
+          console.log('📊 Total boxes:', convertedData.totalBoxes);
+          console.log('📊 Total spots:', convertedData.totalSpots);
+          console.log('📊 Sample converted users (first 3):', convertedData.users.slice(0, 3));
+          
+          displayUsers(convertedData);
+        }
+      }).catch(error => {
+        console.error('❌ Fetch error:', error);
+        showFallbackData(container);
+      });
+    }
+
+    function showFallbackData(container) {
+      console.log('⚠️ ========== showFallbackData called ==========');
+      console.log('⚠️ Container element:', container);
+      console.log('⚠️ This means data could not be loaded');
+      
+      // อัปเดตสถิติเป็น 0
+      const totalUsersEl = document.getElementById('totalUsers');
+      const totalBoxesEl = document.getElementById('totalBoxes');
+      const totalSpotsEl = document.getElementById('totalSpots');
+      
+      console.log('📊 Updating stats to 0');
+      console.log('📊 totalUsers element:', totalUsersEl);
+      console.log('📊 totalBoxes element:', totalBoxesEl);
+      console.log('📊 totalSpots element:', totalSpotsEl);
+      
+      if (totalUsersEl) totalUsersEl.textContent = '0';
+      if (totalBoxesEl) totalBoxesEl.textContent = '0';
+      if (totalSpotsEl) totalSpotsEl.textContent = '0';
+      
+      // แสดงข้อความแจ้งเตือน
+      let errorMessage = '<div class="error-message">';
+      errorMessage += '⚠️ <strong>ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้</strong><br><br>';
+      errorMessage += '📌 <strong>สาเหตุ:</strong> Google Apps Script ยังไม่ได้ Deploy เป็น Web App หรือตั้งค่าไม่ถูกต้อง<br><br>';
+      errorMessage += '✅ <strong>วิธีแก้ไข (สำหรับ Admin):</strong><br>';
+      errorMessage += '   1. ไปที่ <a href="https://script.google.com" target="_blank" style="color: #ffd700;">Google Apps Script Editor</a><br>';
+      errorMessage += '   2. เปิด script "MA3 Preorder"<br>';
+      errorMessage += '   3. คลิก <strong>Deploy</strong> → <strong>Manage deployments</strong><br>';
+      errorMessage += '   4. คลิก <strong>Edit</strong> หรือ <strong>New deployment</strong><br>';
+      errorMessage += '   5. ตั้งค่า:<br>';
+      errorMessage += '      • Type: <strong>Web app</strong><br>';
+      errorMessage += '      • Execute as: <strong>Me</strong><br>';
+      errorMessage += '      • Who has access: <strong>Anyone</strong> (สำคัญมาก!)<br>';
+      errorMessage += '   6. คลิก <strong>Deploy</strong><br>';
+      errorMessage += '   7. Copy URL ใหม่และอัปเดตในโค้ด HTML (บรรทัดที่กำหนด apiUrl)<br><br>';
+      errorMessage += '💡 <strong>หมายเหตุ:</strong> หลังจาก Deploy แล้ว รอสักครู่แล้วรีเฟรชหน้านี้<br><br>';
+      errorMessage += '🔄 <button onclick="loadRegisteredUsers()" style="background:#6bcf7f;color:#fff;border:none;padding:0.5rem 1rem;border-radius:5px;cursor:pointer;font-weight:bold;">รีเฟรชข้อมูล</button>';
+      errorMessage += '</div>';
+      container.innerHTML = errorMessage;
+      console.log('⚠️ Fallback message displayed');
+    }
+
+    function displayUsers(data) {
+      console.log('=== displayUsers called ===');
+      console.log('📊 Input data:', data);
+      console.log('📊 data.users exists?', !!data.users);
+      console.log('📊 data.users length:', data.users ? data.users.length : 'N/A');
+      
+      const container = document.getElementById('usersContainer');
+      console.log('📦 Container element:', container);
+      
+      if (!data.users || data.users.length === 0) {
+        console.log('⚠️ No users to display');
+        // อัปเดตสถิติเป็น 0
+        document.getElementById('totalUsers').textContent = '0';
+        document.getElementById('totalBoxes').textContent = '0';
+        document.getElementById('totalSpots').textContent = '0';
+        container.innerHTML = '<div class="loading">📝 ยังไม่มีผู้สั่งซื้อ</div>';
+        console.log('✅ Displayed "no users" message');
+        return;
+      }
+      
+      console.log('📊 Processing', data.users.length, 'users');
+      
+      // รวมข้อมูลของลูกค้าที่จองหลายครั้งเข้าด้วยกัน
+      const userMap = {};
+      data.users.forEach(user => {
+        const phone = String(user.phone || '').replace(/[^\d]/g, "");
+        const key = phone || user.nickname; // ใช้เบอร์โทรเป็น key หรือชื่อเล่นถ้าไม่มีเบอร์โทร
+        
+        if (userMap[key]) {
+          // รวมข้อมูลการจอง
+          userMap[key].boxes += user.boxes || 0;
+          userMap[key].spots += user.spots || 0;
+          // รวม promo cards
+          if (user.promoCards && Array.isArray(user.promoCards)) {
+            userMap[key].promoCards = (userMap[key].promoCards || []).concat(user.promoCards);
+          }
+        } else {
+          // สร้างข้อมูลใหม่
+          userMap[key] = {
+            nickname: user.nickname,
+            codename: user.codename,
+            rank: user.rank,
+            boxes: user.boxes || 0,
+            spots: user.spots || 0,
+            promoCards: user.promoCards || [],
+            phone: user.phone,
+            attendingParty: user.attendingParty || ''
+          };
+        }
+      });
+      
+      // แปลงเป็น array และเรียงลำดับตามชื่อ
+      const uniqueUsers = Object.values(userMap).sort((a, b) => a.nickname.localeCompare(b.nickname));
+      
+      // อัปเดตสถิติด้วยข้อมูลที่รวมแล้ว
+      const totalUniqueUsers = uniqueUsers.length;
+      const totalBoxes = uniqueUsers.reduce((sum, user) => sum + user.boxes, 0);
+      const totalSpots = uniqueUsers.reduce((sum, user) => sum + user.spots, 0);
+      
+      console.log('📊 Stats to display:');
+      console.log('📊 Unique users:', totalUniqueUsers);
+      console.log('📊 Total boxes:', totalBoxes);
+      console.log('📊 Total spots:', totalSpots);
+      
+      document.getElementById('totalUsers').textContent = totalUniqueUsers;
+      document.getElementById('totalBoxes').textContent = totalBoxes;
+      document.getElementById('totalSpots').textContent = totalSpots;
+      
+      console.log('✅ Stats updated in DOM');
+      
+      // สร้างตารางแสดงข้อมูล
+      let html = '<table style="width:100%; border-collapse:collapse; margin:1rem auto; background:#fff; border-radius:12px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.1); max-width:900px;">';
+      html += '<thead><tr style="background:#42A5F5;">';
+      html += '<th style="padding:12px 8px; text-align:center; color:#fff; font-weight:bold; font-size:1.05em; width:60px;">ลำดับ</th>';
+      html += '<th style="padding:12px 8px; text-align:center; color:#fff; font-weight:bold; font-size:1.05em;">ชื่อเล่น / Codename</th>';
+      html += '<th style="padding:12px 8px; text-align:center; color:#fff; font-weight:bold; font-size:1.05em; width:140px;">จำนวน Box/Spot</th>';
+      html += '<th style="padding:12px 8px; text-align:center; color:#fff; font-weight:bold; font-size:1.05em; width:180px;">การ์ดโปรโม</th>';
+      html += '<th style="padding:12px 8px; text-align:center; color:#fff; font-weight:bold; font-size:1.05em; width:100px;">เข้าร่วมงาน</th>';
+      html += '</tr></thead><tbody>';
+      
+      uniqueUsers.forEach((user, index) => {
+        html += `<tr style="border-bottom:1px solid #ddd;">`;
+        html += `<td style="padding:10px 8px; text-align:center; color:#2c3e50; font-weight:bold;">${index + 1}</td>`;
+        
+        // แสดงชื่อเล่นและ codename ในคอลัมน์เดียวกัน
+        let displayName = user.nickname || 'ไม่ระบุชื่อ';
+        if (displayName.length > 15) {
+          displayName = displayName.substring(0, 15) + '...';
+        }
+        
+        // แสดง codename ใต้ชื่อเล่น
+        let codenameDisplay = '';
+        if (user.codename && user.codename !== 'ไม่ระบุ') {
+          const rank = user.rank || '';
+          const rankEmoji = getRankEmoji(rank);
+          let displayCodename = user.codename;
+          if (displayCodename.length > 8) {
+            displayCodename = displayCodename.substring(0, 8) + '...';
+          }
+          
+          // ใช้ renderCodenameEffect เหมือน midnight-party.html
+          const codenameHtml = renderCodenameEffect(displayCodename, rank);
+          codenameDisplay = `<br><span class="codename-rank" data-rank="${rank}" style="font-size:0.85em;"><span>${rankEmoji}</span> ${codenameHtml} <span>${rankEmoji}</span></span>`;
+        }
+        
+        html += `<td style="padding:12px 8px; text-align:center; color:#2c3e50; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:300px;">${displayName}${codenameDisplay}</td>`;
+        
+        // แสดงจำนวน Box/Spot ที่รวมแล้ว
+        let orderDetails = '';
+        if (user.boxes > 0) {
+          orderDetails += `${user.boxes} 📦`;
+        }
+        if (user.spots > 0) {
+          if (orderDetails) orderDetails += ' ';
+          orderDetails += `${user.spots} 🎯`;
+        }
+        if (user.boxes === 0 && user.spots === 0) {
+          orderDetails = '📝';
+        }
+        html += `<td style="padding:12px 8px; text-align:center; color:#2c3e50; white-space:nowrap; font-size:0.9em; font-weight:600;">${orderDetails}</td>`;
+        
+        // แสดงการ์ดโปรโมที่ได้รับ
+        let promoDisplay = '';
+        if (user.promoCards && user.promoCards.length > 0) {
+          promoDisplay = '<div class="user-promo-cards">';
+          user.promoCards.forEach(card => {
+            promoDisplay += `<img src="${card.imageUrl}" alt="Promo ${card.number}" class="user-promo-card-mini" onclick="openPromoCardModal('${card.imageUrl}')" title="การ์ดโปรโม ${card.number}">`;
+          });
+          promoDisplay += '</div>';
+        } else {
+          // คำนวณ promo packs จาก boxes
+          const promoPacks = Math.floor(user.boxes / 2);
+          if (promoPacks > 0) {
+            // สุ่มการ์ดโปรโม (ใช้ phone + index เป็น seed)
+            promoDisplay = '<div class="user-promo-cards">';
+            for (let pIdx = 0; pIdx < promoPacks; pIdx++) {
+              const phone = String(user.phone || '').replace(/[^\d]/g, "");
+              const cardIndex = (phone.length + pIdx) % 4;
+              const cardNumber = ['047', '048', '049', '050'][cardIndex];
+              const cardImageUrl = `https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_MPromo_${cardNumber}.png`;
+              promoDisplay += `<img src="${cardImageUrl}" alt="Promo ${cardNumber}" class="user-promo-card-mini" onclick="openPromoCardModal('${cardImageUrl}')" title="การ์ดโปรโม ${cardNumber}">`;
+            }
+            promoDisplay += '</div>';
+          } else {
+            promoDisplay = '<span style="color:#999;">-</span>';
+          }
+        }
+        html += `<td style="padding:12px 8px; text-align:center; color:#2c3e50; font-size:0.9em;">${promoDisplay}</td>`;
+        
+        // แสดงสถานะการเข้าร่วมงาน
+        const attending = user.attendingParty && (user.attendingParty.toLowerCase().includes('ใช่') || user.attendingParty.toLowerCase().includes('yes') || user.attendingParty.toLowerCase().includes('y'));
+        html += `<td style="padding:12px 8px; text-align:center; color:#2c3e50; font-size:0.9em; font-weight:600;">${attending ? '✅' : '❌'}</td>`;
+        
+        html += '</tr>';
+      });
+      
+      html += '</tbody></table>';
+      container.innerHTML = html;
+      console.log('✅ Table HTML generated and inserted');
+      console.log('✅ displayUsers completed');
+    }
+
+    // Rank emoji map
+    const rankEmojis = {
+      "Rookie": "🐣", "Rookie II": "🐣", "Rookie III": "🐣", "Rookie IV": "🐣", "Rookie V": "🐣",
+      "Bronze": "🛡️", "Bronze II": "🛡️", "Bronze III": "🛡️", "Bronze IV": "🛡️", "Bronze V": "🛡️",
+      "Silver": "⚔️", "Silver II": "⚔️", "Silver III": "⚔️", "Silver IV": "⚔️", "Silver V": "⚔️",
+      "Gold": "🥇", "Gold II": "🥇", "Gold III": "🥇", "Gold IV": "🥇", "Gold V": "🥇",
+      "Platinum": "✨", "Platinum II": "✨", "Platinum III": "✨", "Platinum IV": "✨", "Platinum V": "✨",
+      "Diamond": "💎", "Diamond II": "💎", "Diamond III": "💎", "Diamond IV": "💎", "Diamond V": "💎",
+      "Grandmaster": "👑", "Grandmaster II": "👑", "Grandmaster III": "👑", "Grandmaster IV": "👑", "Grandmaster V": "👑",
+      "Legend": "🐉", "Legend II": "🐉", "Legend III": "🐉", "Legend IV": "🐉", "Legend V": "🐉"
+    };
+
+    function getBaseRank(rank) {
+      if (!rank) return "Rookie";
+      const baseRank = rank.replace(/\s+(II|III|IV|V|VI|VII|VIII|IX|X|\d+)$/, '');
+      return baseRank || "Rookie";
+    }
+
+    function getRankEmoji(rank) {
+      if (!rank) return rankEmojis["Rookie"] || "🐣";
+      if (rankEmojis[rank]) return rankEmojis[rank];
+      const baseRank = getBaseRank(rank);
+      return rankEmojis[baseRank] || rankEmojis["Rookie"] || "🐣";
+    }
+
+    // ฟังก์ชัน renderCodenameEffect เหมือน midnight-party.html
+    function renderCodenameEffect(codename, rank) {
+      const chars = ['[', ...codename.split(''), ']'];
+      const waveRanks = ['Gold', 'Platinum', 'Diamond', 'Grandmaster', 'Legend'];
+      const baseRank = getBaseRank(rank);
+      if (waveRanks.includes(baseRank)) {
+        // wave + class ตาม rank, ใส่วงเล็บเหลี่ยมขยับด้วย
+        return `<span class="codename wave ${baseRank.toLowerCase()}">${chars.map((ch,i)=>`<span>${ch}</span>`).join('')}</span>`;
+      } else {
+        // ใส่วงเล็บเหลี่ยมธรรมดา
+        return `<span class="codename">[${codename}]</span>`;
+      }
+    }
+
+    // ฟังก์ชันเปิด Modal การ์ดโปรโม
+    function openPromoCardModal(imageUrl) {
+      const modal = document.getElementById('promoCardModal');
+      const modalImage = document.getElementById('promoCardModalImage');
+      if (modal && modalImage) {
+        modalImage.src = imageUrl;
+        modal.style.display = 'block';
+        document.body.style.overflow = 'hidden'; // ป้องกัน scroll เมื่อเปิด modal
+      }
+    }
+
+    // ฟังก์ชันปิด Modal การ์ดโปรโม
+    function closePromoCardModal() {
+      const modal = document.getElementById('promoCardModal');
+      if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto'; // เปิด scroll กลับมา
+      }
+    }
+
+    // ปิด Modal เมื่อคลิกนอกภาพ
+    document.addEventListener('DOMContentLoaded', function() {
+      const modal = document.getElementById('promoCardModal');
+      if (modal) {
+        modal.addEventListener('click', function(event) {
+          if (event.target === modal) {
+            closePromoCardModal();
+          }
+        });
+      }
+
+      // ปิด Modal ด้วยปุ่ม Escape
+      document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+          closePromoCardModal();
+        }
+      });
+    });
+  </script>
+</body>
+</html>

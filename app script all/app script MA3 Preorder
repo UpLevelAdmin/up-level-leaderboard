@@ -1,0 +1,414 @@
+/**
+ * Google Apps Script สำหรับระบบพรีออเดอร์ MA3 และลงทะเบียน Midnight Party
+ * 
+ * ⚠️ วิธีตั้งค่า:
+ * 1. ไปที่ Google Sheet: https://docs.google.com/spreadsheets/d/1wi2OXnelj5D61E8Jv6wBN0RwCRbsQlgiWXnfGxrjlww/edit
+ * 2. คลิก Extensions > Apps Script
+ * 3. Copy โค้ดทั้งหมดจากไฟล์นี้ไปวางใน Apps Script Editor
+ * 4. ตั้งค่า Trigger: คลิก Triggers (นาฬิกา) > Add Trigger
+ *    - Choose which function to run: onFormSubmit
+ *    - Select event source: From spreadsheet
+ *    - Select event type: On form submit
+ * 5. Deploy เป็น Web App:
+ *    - คลิก Deploy > New deployment
+ *    - Type: Web app
+ *    - Execute as: Me
+ *    - Who has access: Anyone
+ *    - คลิก Deploy และ Copy URL ที่ได้
+ * 6. นำ URL ที่ได้ไปอัปเดตในไฟล์ ma3-preorder.html (บรรทัดที่กำหนด apiUrl)
+ * 
+ * Sheet Structure:
+ * - Column A: Timestamp (เวลาที่ประทับ)
+ * - Column B: ชื่อ - นามสกุล
+ * - Column C: ชื่อเล่น
+ * - Column D: เบอร์ติดต่อ (0xx-xxx-xxxx)
+ * - Column E: จำนวนที่ต้องการสั่งซื้อ (1 BOX = 1,550 บาท, 1 C/)
+ * - Column F: การรับสินค้า
+ * - Column G: มาร่วมงาน Midnight Party หรือไม่
+ * - Column H: ที่อยู่ (ถ้าจัดส่งพัสดุ)
+ */
+
+// ===== ฟังก์ชันแจ้งเตือน Telegram =====
+
+// แก้ไขข้อมูลเหล่านี้
+const BOT_TOKEN = "8284717743:AAGfu8Z-r6SI_TeAslai9vA600nNagjzH5k";
+const CHAT_ID = "-4911555842"; // Group Chat ID
+
+const TELEGRAM_API_URL = `https://api.telegram.org/bot${BOT_TOKEN}`;
+
+// ===== ข้อมูลการ์ดโปรโม =====
+const PROMO_CARDS = [
+  {
+    number: "047",
+    imageUrl: "https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_MPromo_047.png"
+  },
+  {
+    number: "048",
+    imageUrl: "https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_MPromo_048.png"
+  },
+  {
+    number: "049",
+    imageUrl: "https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_MPromo_049.png"
+  },
+  {
+    number: "050",
+    imageUrl: "https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_MPromo_050.png"
+  }
+];
+
+/**
+ * คำนวณจำนวน promo card packs จากจำนวน Box
+ * ซื้อ 2 Box = 1 Promo Card Pack
+ */
+function calculatePromoPacks(boxes) {
+  if (!boxes || boxes < 2) return 0;
+  return Math.floor(boxes / 2);
+}
+
+/**
+ * สุ่มการ์ดโปรโม 1 ใบจาก 4 แบบ
+ * ใช้ phone + timestamp เป็น seed เพื่อให้ผลลัพธ์คงที่สำหรับผู้ใช้คนเดียวกัน
+ */
+function getRandomPromoCard(phone, timestamp) {
+  // สร้าง seed จาก phone และ timestamp
+  var seed = 0;
+  if (phone) {
+    for (var i = 0; i < phone.length; i++) {
+      seed += phone.charCodeAt(i);
+    }
+  }
+  if (timestamp) {
+    seed += new Date(timestamp).getTime();
+  }
+  
+  // ใช้ seed เพื่อสุ่มการ์ด
+  var random = seed % PROMO_CARDS.length;
+  return PROMO_CARDS[random];
+}
+
+/**
+ * แปลงข้อมูล Box จาก string เป็นตัวเลข
+ */
+function parseBoxQuantity(boxData) {
+  if (!boxData) return 0;
+  
+  if (typeof boxData === 'number') {
+    return boxData;
+  }
+  
+  if (typeof boxData === 'string') {
+    // ลองหาเลขจำนวน Box จากข้อความ
+    var boxMatch = boxData.match(/(\d+)\s*(?:BOX|Box|box|กล่อง)/);
+    if (boxMatch) {
+      return parseInt(boxMatch[1]) || 0;
+    } else {
+      // ถ้าไม่มีคำว่า BOX ลองหาแค่ตัวเลข
+      var numMatch = boxData.match(/(\d+)/);
+      if (numMatch) {
+        return parseInt(numMatch[1]) || 0;
+      }
+    }
+  }
+  
+  return 0;
+}
+
+/**
+ * ฟังก์ชันที่ทำงานเมื่อมีการส่งฟอร์ม
+ */
+function onFormSubmit(e) {
+  try {
+    // ดึงข้อมูลจากฟอร์ม
+    const responses = e.values;
+    const timestamp = responses[0] || new Date().toLocaleString('th-TH');
+    
+    // Column B: ชื่อ - นามสกุล
+    const fullName = responses[1] || 'ไม่ระบุชื่อ';
+    
+    // Column C: ชื่อเล่น
+    const nickname = responses[2] || responses[1] || 'ไม่ระบุชื่อ';
+    
+    // Column D: เบอร์ติดต่อ
+    const phone = responses[3] || 'ไม่ระบุเบอร์โทร';
+    
+    // Column E: จำนวนที่ต้องการสั่งซื้อ
+    const quantity = responses[4] || '0';
+    
+    // Column G: มาร่วมงาน Midnight Party หรือไม่
+    const attendingParty = responses[6] || 'ไม่ระบุ';
+    
+    // นับจำนวนคนที่สั่งซื้อ
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Form Responses 1");
+    let totalCount = 0;
+    
+    if (sheet) {
+      try {
+        const data = sheet.getDataRange().getValues();
+        totalCount = data.length - 1; // ลบ header row
+      } catch (countError) {
+        console.warn('Warning: Could not count total participants:', countError);
+      }
+    }
+    
+    // สร้างข้อความแจ้งเตือน
+    const message = `🎉 *มีคนสั่งซื้อ MA3 และลงทะเบียน Midnight Party ใหม่!*
+
+👤 *ชื่อเล่น:* ${nickname}
+📱 *เบอร์โทร:* ${phone}
+📦 *จำนวนที่สั่งซื้อ:* ${quantity}
+🎉 *เข้าร่วมงาน:* ${attendingParty}
+⏰ *เวลาที่สั่งซื้อ:* ${timestamp}
+
+📊 *รวมผู้สั่งซื้อ: ${totalCount} คน*
+
+---
+📊 [ตรวจสอบรายชื่อทั้งหมด](https://uplevelguild.netlify.app/ma3-preorder)`;
+    
+    // ส่งไปยัง Telegram
+    const payload = {
+      chat_id: CHAT_ID,
+      text: message,
+      parse_mode: "Markdown",
+      disable_web_page_preview: true
+    };
+    
+    const response = UrlFetchApp.fetch(`${TELEGRAM_API_URL}/sendMessage`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      payload: JSON.stringify(payload)
+    });
+    
+    // ตรวจสอบ response
+    if (response.getResponseCode() === 200) {
+      console.log("✅ ส่งการแจ้งเตือน MA3 Pre-order ไปยัง Telegram สำเร็จ");
+    } else {
+      console.warn("⚠️ Telegram API response:", response.getResponseCode(), response.getContentText());
+    }
+    
+  } catch (error) {
+    console.error("❌ เกิดข้อผิดพลาดในการส่งแจ้งเตือน Telegram:", error);
+    console.error("❌ Error details:", error.toString());
+    // ไม่ throw error เพื่อไม่ให้กระทบกับการบันทึกข้อมูลใน Google Sheet
+  }
+}
+
+/**
+ * ฟังก์ชันทดสอบการส่งไปยัง Telegram
+ */
+function testTelegramNotification() {
+  const testData = {
+    values: [
+      new Date().toLocaleString('th-TH'),
+      "ผู้ทดสอบ MA3",
+      "ทดสอบ",
+      "0812345678",
+      "2 BOX",
+      "",
+      "ใช่"
+    ]
+  };
+  
+  onFormSubmit(testData);
+  console.log("🧪 ส่งการทดสอบ MA3 Pre-order ไปยัง Telegram แล้ว");
+}
+
+function doGet(e) {
+  try {
+    // Debug logging (ปิดใน production หรือใช้ให้เหมาะสม)
+    var isDebug = e && e.parameter && e.parameter.debug === 'true';
+    var isJson = e && e.parameter && e.parameter.type === 'json';
+    
+    if (isDebug) console.log('doGet function called');
+    
+    // ตรวจสอบว่า spreadsheet มีอยู่หรือไม่
+    var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+    if (!spreadsheet) {
+      if (isDebug) console.log('No active spreadsheet found');
+      if (isJson) {
+        return ContentService.createTextOutput(JSON.stringify({ 
+          participants: [],
+          error: "No active spreadsheet found"
+        })).setMimeType(ContentService.MimeType.JSON);
+      }
+      return createResponse({ 
+        participants: [],
+        error: "No active spreadsheet found"
+      });
+    }
+    
+    if (isDebug) {
+      console.log('Spreadsheet ID:', spreadsheet.getId());
+      console.log('Spreadsheet name:', spreadsheet.getName());
+    }
+    
+    // ลองหา sheet ที่มีอยู่
+    var sheets = spreadsheet.getSheets();
+    if (isDebug) console.log('Available sheets:', sheets.map(s => s.getName()));
+    
+    // ลองหา sheet ที่มีข้อมูล
+    var targetSheet = null;
+    var sheetNames = ['Form Responses 1', 'Form Responses', 'Responses', 'Sheet1'];
+    
+    for (var i = 0; i < sheetNames.length; i++) {
+      var sheet = spreadsheet.getSheetByName(sheetNames[i]);
+      if (sheet) {
+        targetSheet = sheet;
+        if (isDebug) console.log('Found sheet:', sheetNames[i]);
+        break;
+      }
+    }
+    
+    if (!targetSheet) {
+      if (isDebug) console.log('No suitable sheet found');
+      if (isJson) {
+        return ContentService.createTextOutput(JSON.stringify({ 
+          participants: [],
+          error: "No suitable sheet found. Available sheets: " + sheets.map(s => s.getName()).join(', ')
+        })).setMimeType(ContentService.MimeType.JSON);
+      }
+      return createResponse({ 
+        participants: [],
+        error: "No suitable sheet found. Available sheets: " + sheets.map(s => s.getName()).join(', ')
+      });
+    }
+    
+    var data = targetSheet.getDataRange().getValues();
+    if (isDebug) console.log('Data rows found:', data.length);
+    
+    if (data.length <= 1) {
+      if (isDebug) console.log('No data rows found');
+      if (isJson) {
+        return ContentService.createTextOutput(JSON.stringify({ 
+          participants: [],
+          error: "No data rows found in sheet: " + targetSheet.getName()
+        })).setMimeType(ContentService.MimeType.JSON);
+      }
+      return createResponse({ 
+        participants: [],
+        error: "No data rows found in sheet: " + targetSheet.getName()
+      });
+    }
+    
+    var headers = data[0];
+    if (isDebug) console.log('Headers count:', headers.length);
+    
+    var participants = [];
+    
+    // สร้างข้อมูลผู้ใช้ในรูปแบบเดียวกับ midnight-party script
+    for (var i = 1; i < data.length; i++) {
+      var row = data[i];
+      var participant = {};
+      
+      // สร้าง object โดยใช้ชื่อ column เป็น key
+      for (var j = 0; j < headers.length; j++) {
+        var header = headers[j];
+        var value = row[j];
+        
+        // แปลงค่า null/undefined เป็น string ว่าง
+        participant[header] = (value === null || value === undefined) ? '' : value;
+      }
+      
+      // คำนวณจำนวน Box และ Promo Card Packs
+      var boxData = participant['จำนวนที่ต้องการสั่งซื้อ (1 BOX = 1,550 บาท, 1 C/)'] || 
+                   participant['จำนวนที่ต้องการสั่งซื้อ'] || 
+                   participant['จำนวน Box'] || '';
+      var boxes = parseBoxQuantity(boxData);
+      var promoPacks = calculatePromoPacks(boxes);
+      
+      // สุ่มการ์ดโปรโมสำหรับแต่ละ pack
+      participant.boxes = boxes;
+      participant.promoPacks = promoPacks;
+      participant.promoCards = [];
+      
+      if (promoPacks > 0) {
+        var phone = participant['เบอร์ติดต่อ (0xx-xxx-xxxx)'] || 
+                   participant['เบอร์ติดต่อ'] || 
+                   participant['เบอร์โทร'] || '';
+        var timestamp = participant['Timestamp'] || participant['Timestamp'] || row[0] || '';
+        
+        // สุ่มการ์ดสำหรับแต่ละ pack (ใช้ phone + pack index เป็น seed)
+        for (var p = 0; p < promoPacks; p++) {
+          var card = getRandomPromoCard(phone + '_' + p, timestamp);
+          participant.promoCards.push(card);
+        }
+      }
+      
+      participants.push(participant);
+      
+      // Log เฉพาะรายการแรกเท่านั้น เพื่อ debug
+      if (isDebug && i === 1) {
+        console.log('First participant sample:', participant);
+      }
+    }
+    
+    var result = {
+      participants: participants,
+      debug: isDebug ? {
+        sheetName: targetSheet.getName(),
+        headers: headers,
+        message: "Data loaded successfully from sheet",
+        totalRows: data.length,
+        totalParticipants: participants.length
+      } : undefined
+    };
+    
+    if (isDebug) console.log('Final result - participants count:', participants.length);
+    
+    // ถ้ามี type=json ให้ใช้ ContentService ตรงๆ
+    var isJson = e && e.parameter && e.parameter.type === 'json';
+    if (isJson) {
+      return ContentService.createTextOutput(JSON.stringify(result))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    return createResponse(result);
+    
+  } catch (error) {
+    console.error('Error in doGet:', error);
+    var isJson = e && e.parameter && e.parameter.type === 'json';
+    if (isJson) {
+      return ContentService.createTextOutput(JSON.stringify({
+        participants: [],
+        error: error.toString(),
+        stack: error.stack || '',
+        debug: {
+          message: "Error occurred while processing data",
+          timestamp: new Date().toISOString()
+        }
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+    return createResponse({
+      participants: [],
+      error: error.toString(),
+      stack: error.stack || '',
+      debug: {
+        message: "Error occurred while processing data",
+        timestamp: new Date().toISOString()
+      }
+    });
+  }
+}
+
+function createResponse(data) {
+  var response = ContentService.createTextOutput(JSON.stringify(data));
+  response.setMimeType(ContentService.MimeType.JSON);
+  
+  // เพิ่ม CORS headers เพื่อแก้ปัญหา CORS error
+  // Google Apps Script ไม่รองรับการตั้งค่า headers โดยตรง
+  // แต่สามารถใช้วิธีนี้ได้ในบางกรณี
+  return response;
+}
+
+function doPost(e) {
+  // POST request ควรจะทำงานเหมือน GET สำหรับ API นี้
+  // แต่สามารถใช้ e.postData เพื่อรับข้อมูลจาก POST body ได้
+  return doGet(e);
+}
+
+// ฟังก์ชันทดสอบ
+function testFunction() {
+  console.log('Test function called');
+  return 'Test successful';
+}
