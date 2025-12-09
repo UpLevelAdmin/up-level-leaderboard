@@ -1,15 +1,16 @@
 <!DOCTYPE html>
 <html lang="th">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>🎉 พรีออเดอร์ MA3 & Midnight Party - Up Level Academy</title>
-  
+
   <!-- Add Google Font 'Kanit' -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;700&display=swap" rel="stylesheet">
-  
+
   <style>
     body {
       font-family: 'Kanit', 'Segoe UI', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
@@ -26,8 +27,15 @@
     }
 
     @keyframes gradientShift {
-      0%, 100% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
+
+      0%,
+      100% {
+        background-position: 0% 50%;
+      }
+
+      50% {
+        background-position: 100% 50%;
+      }
     }
 
     /* Card pack near logo - cute shake animation */
@@ -59,33 +67,44 @@
     }
 
     @keyframes cuteShake {
-      0%, 100% {
+
+      0%,
+      100% {
         transform: translate(0, 0) rotate(0deg) scale(1);
       }
+
       10% {
         transform: translate(-3px, -2px) rotate(-3deg) scale(1.05);
       }
+
       20% {
         transform: translate(3px, 2px) rotate(3deg) scale(1.02);
       }
+
       30% {
         transform: translate(-2px, 3px) rotate(-2deg) scale(1.03);
       }
+
       40% {
         transform: translate(2px, -3px) rotate(2deg) scale(1.04);
       }
+
       50% {
         transform: translate(-1px, -1px) rotate(-1deg) scale(1.05);
       }
+
       60% {
         transform: translate(1px, 2px) rotate(1deg) scale(1.03);
       }
+
       70% {
         transform: translate(-2px, 1px) rotate(-2deg) scale(1.04);
       }
+
       80% {
         transform: translate(2px, -2px) rotate(2deg) scale(1.02);
       }
+
       90% {
         transform: translate(-1px, 1px) rotate(-1deg) scale(1.03);
       }
@@ -185,13 +204,25 @@
     }
 
     @keyframes gradientFlow {
-      0%, 100% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
+
+      0%,
+      100% {
+        background-position: 0% 50%;
+      }
+
+      50% {
+        background-position: 100% 50%;
+      }
     }
 
     @keyframes glow {
-      from { filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.8)); }
-      to { filter: drop-shadow(0 0 25px rgba(255, 200, 0, 1)); }
+      from {
+        filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.8));
+      }
+
+      to {
+        filter: drop-shadow(0 0 25px rgba(255, 200, 0, 1));
+      }
     }
 
     .event-subtitle {
@@ -204,8 +235,15 @@
     }
 
     @keyframes subtitlePulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.8; }
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.8;
+      }
     }
 
     .event-date {
@@ -234,8 +272,15 @@
     }
 
     @keyframes titleShimmer {
-      0%, 100% { text-shadow: 0 0 15px rgba(255, 215, 0, 0.8); }
-      50% { text-shadow: 0 0 25px rgba(255, 200, 0, 1), 0 0 35px rgba(255, 180, 0, 0.7); }
+
+      0%,
+      100% {
+        text-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
+      }
+
+      50% {
+        text-shadow: 0 0 25px rgba(255, 200, 0, 1), 0 0 35px rgba(255, 180, 0, 0.7);
+      }
     }
 
     .product-description {
@@ -551,8 +596,15 @@
     }
 
     @keyframes buttonGradient {
-      0%, 100% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
+
+      0%,
+      100% {
+        background-position: 0% 50%;
+      }
+
+      50% {
+        background-position: 100% 50%;
+      }
     }
 
     .cta-button:hover {
@@ -591,24 +643,26 @@
 
     .guild-button {
       display: inline-block;
-      background: linear-gradient(45deg, #ffaa00, #ff9500);
-      color: #fff;
-      padding: 0.8rem 2rem;
+      background: linear-gradient(45deg, #ffd700, #ffed4e, #ffaa00);
+      background-size: 200% 200%;
+      animation: buttonGradient 3s ease infinite;
+      color: #1a0f00;
+      padding: 1rem 2.5rem;
       border-radius: 50px;
       text-decoration: none;
       font-weight: 700;
-      font-size: 0.9rem;
+      font-size: 1.1rem;
       transition: all 0.3s ease;
-      box-shadow: 0 4px 15px rgba(255, 200, 0, 0.5), 0 0 20px rgba(255, 180, 0, 0.3);
-      border: 1px solid rgba(255, 215, 0, 0.4);
+      box-shadow: 0 8px 25px rgba(255, 215, 0, 0.6), 0 0 30px rgba(255, 200, 0, 0.4);
+      border: 2px solid rgba(255, 215, 0, 0.6);
       cursor: pointer;
       margin-top: 1rem;
     }
 
     .guild-button:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 8px 25px rgba(255, 200, 0, 0.7), 0 0 40px rgba(255, 215, 0, 0.5);
-      background: linear-gradient(45deg, #ffd700, #ffaa00);
+      transform: translateY(-3px) scale(1.05);
+      box-shadow: 0 12px 30px rgba(255, 215, 0, 0.8), 0 0 50px rgba(255, 200, 0, 0.6);
+      border-color: rgba(255, 215, 0, 0.9);
     }
 
     .info-section {
@@ -774,8 +828,15 @@
     }
 
     @keyframes numberPulse {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.05); }
+
+      0%,
+      100% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(1.05);
+      }
     }
 
     .stat-label {
@@ -836,8 +897,13 @@
     }
 
     @keyframes spin {
-      0% { transform: rotate(0deg);}
-      100% { transform: rotate(360deg);}
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
     }
 
     .error-message {
@@ -851,52 +917,160 @@
     }
 
     /* Codename สี/ขนาด/กระพริบตาม rank */
-    .codename-rank[data-rank="Rookie"]      .codename { color: #888888; font-size: 1.05em; }
-    .codename-rank[data-rank="Bronze"]      .codename { color: #b87333; font-size: 1.08em; }
-    .codename-rank[data-rank="Silver"]      .codename { color: #9e9e9e; font-size: 1.12em; }
-    .codename-rank[data-rank="Gold"]        .codename { color: #ffd700; font-size: 1.18em; font-weight: bold; }
-    .codename-rank[data-rank="Platinum"]    .codename { color: #00bcd4; font-size: 1.22em; font-weight: bold; }
-    .codename-rank[data-rank="Diamond"]     .codename { color: #ffd700; font-size: 1.28em; font-weight: bold; }
-    .codename-rank[data-rank="Grandmaster"] .codename { color: #8e24aa; font-size: 1.35em; font-weight: bold; }
-    .codename-rank[data-rank="Legend"]      .codename { color: #e53935; font-size: 1.45em; font-weight: bold; }
-    .codename-rank[data-rank="Gold"]        .codename,
-    .codename-rank[data-rank="Platinum"]    .codename,
-    .codename-rank[data-rank="Diamond"]     .codename,
+    .codename-rank[data-rank="Rookie"] .codename {
+      color: #888888;
+      font-size: 1.05em;
+    }
+
+    .codename-rank[data-rank="Bronze"] .codename {
+      color: #b87333;
+      font-size: 1.08em;
+    }
+
+    .codename-rank[data-rank="Silver"] .codename {
+      color: #9e9e9e;
+      font-size: 1.12em;
+    }
+
+    .codename-rank[data-rank="Gold"] .codename {
+      color: #ffd700;
+      font-size: 1.18em;
+      font-weight: bold;
+    }
+
+    .codename-rank[data-rank="Platinum"] .codename {
+      color: #00bcd4;
+      font-size: 1.22em;
+      font-weight: bold;
+    }
+
+    .codename-rank[data-rank="Diamond"] .codename {
+      color: #ffd700;
+      font-size: 1.28em;
+      font-weight: bold;
+    }
+
+    .codename-rank[data-rank="Grandmaster"] .codename {
+      color: #8e24aa;
+      font-size: 1.35em;
+      font-weight: bold;
+    }
+
+    .codename-rank[data-rank="Legend"] .codename {
+      color: #e53935;
+      font-size: 1.45em;
+      font-weight: bold;
+    }
+
+    .codename-rank[data-rank="Gold"] .codename,
+    .codename-rank[data-rank="Platinum"] .codename,
+    .codename-rank[data-rank="Diamond"] .codename,
     .codename-rank[data-rank="Grandmaster"] .codename,
-    .codename-rank[data-rank="Legend"]      .codename {
+    .codename-rank[data-rank="Legend"] .codename {
       animation: blink 1s step-end infinite alternate;
     }
+
     @keyframes blink {
-      0%   { opacity: 1;   text-shadow: 0 0 8px #fff, 0 0 16px currentColor; }
-      100% { opacity: 0.6; text-shadow: 0 0 2px #fff, 0 0 4px currentColor; }
+      0% {
+        opacity: 1;
+        text-shadow: 0 0 8px #fff, 0 0 16px currentColor;
+      }
+
+      100% {
+        opacity: 0.6;
+        text-shadow: 0 0 2px #fff, 0 0 4px currentColor;
+      }
     }
+
     /* Wave (Gold) */
     @keyframes wave {
-      0%, 100% { transform: translateY(0);}
-      20%      { transform: translateY(-5px);}
-      40%      { transform: translateY(-10px);}
-      60%      { transform: translateY(-5px);}
-      80%      { transform: translateY(0);}
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      20% {
+        transform: translateY(-5px);
+      }
+
+      40% {
+        transform: translateY(-10px);
+      }
+
+      60% {
+        transform: translateY(-5px);
+      }
+
+      80% {
+        transform: translateY(0);
+      }
     }
+
     .codename.wave span {
       display: inline-block;
-      animation: wave 1.2s cubic-bezier(0.4,0,0.2,1) infinite;
+      animation: wave 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
     }
-    .codename.wave.gold span { animation-duration: 1.2s; }
-    .codename.wave.platinum span { animation-duration: 1s; }
-    .codename.wave.diamond span { animation-duration: 0.85s; }
-    .codename.wave.grandmaster span { animation-duration: 0.7s; }
-    .codename.wave.legend span { animation-duration: 0.6s; }
-    .codename.wave span:nth-child(1) { animation-delay: 0s; }
-    .codename.wave span:nth-child(2) { animation-delay: 0.08s; }
-    .codename.wave span:nth-child(3) { animation-delay: 0.16s; }
-    .codename.wave span:nth-child(4) { animation-delay: 0.24s; }
-    .codename.wave span:nth-child(5) { animation-delay: 0.32s; }
-    .codename.wave span:nth-child(6) { animation-delay: 0.40s; }
-    .codename.wave span:nth-child(7) { animation-delay: 0.48s; }
-    .codename.wave span:nth-child(8) { animation-delay: 0.56s; }
-    .codename.wave span:nth-child(9) { animation-delay: 0.64s; }
-    .codename.wave span:nth-child(10){ animation-delay: 0.72s; }
+
+    .codename.wave.gold span {
+      animation-duration: 1.2s;
+    }
+
+    .codename.wave.platinum span {
+      animation-duration: 1s;
+    }
+
+    .codename.wave.diamond span {
+      animation-duration: 0.85s;
+    }
+
+    .codename.wave.grandmaster span {
+      animation-duration: 0.7s;
+    }
+
+    .codename.wave.legend span {
+      animation-duration: 0.6s;
+    }
+
+    .codename.wave span:nth-child(1) {
+      animation-delay: 0s;
+    }
+
+    .codename.wave span:nth-child(2) {
+      animation-delay: 0.08s;
+    }
+
+    .codename.wave span:nth-child(3) {
+      animation-delay: 0.16s;
+    }
+
+    .codename.wave span:nth-child(4) {
+      animation-delay: 0.24s;
+    }
+
+    .codename.wave span:nth-child(5) {
+      animation-delay: 0.32s;
+    }
+
+    .codename.wave span:nth-child(6) {
+      animation-delay: 0.40s;
+    }
+
+    .codename.wave span:nth-child(7) {
+      animation-delay: 0.48s;
+    }
+
+    .codename.wave span:nth-child(8) {
+      animation-delay: 0.56s;
+    }
+
+    .codename.wave span:nth-child(9) {
+      animation-delay: 0.64s;
+    }
+
+    .codename.wave span:nth-child(10) {
+      animation-delay: 0.72s;
+    }
 
     /* Responsive */
     @media (max-width: 768px) {
@@ -904,53 +1078,53 @@
         padding: 1rem;
         margin: 0.5rem;
       }
-      
+
       .event-title {
         font-size: 2rem;
       }
-      
+
       .event-subtitle {
         font-size: 1.1rem;
       }
-      
+
       .event-date {
         font-size: 1.2rem;
       }
-      
+
       .pricing-section {
         grid-template-columns: 1fr;
       }
-      
+
       .contact-info {
         flex-direction: column;
         gap: 1rem;
       }
-      
+
       .home-button {
         top: 15px;
         left: 15px;
         width: 50px;
         height: 50px;
       }
-      
+
       .home-button::before {
         font-size: 20px;
       }
-      
+
       .stats-grid {
         grid-template-columns: repeat(3, 1fr);
         gap: 0.6rem;
         padding: 0 0.5rem;
       }
-      
+
       .stat-card {
         padding: 0.6rem 0.4rem;
       }
-      
+
       .stat-number {
         font-size: 1.5rem;
       }
-      
+
       .stat-label {
         font-size: 0.7rem;
         line-height: 1.1;
@@ -958,12 +1132,12 @@
         overflow: hidden;
         text-overflow: ellipsis;
       }
-      
+
       .info-grid {
         grid-template-columns: 1fr;
         gap: 1rem;
       }
-      
+
       .users-title {
         font-size: 1.4rem;
         white-space: nowrap;
@@ -984,46 +1158,46 @@
         font-size: 1rem;
       }
     }
-    
+
     @media (max-width: 480px) {
       .container {
         padding: 0.8rem;
         margin: 0.3rem;
       }
-      
+
       .event-title {
         font-size: 1.8rem;
       }
-      
+
       .event-subtitle {
         font-size: 1rem;
       }
-      
+
       .event-date {
         font-size: 1.1rem;
       }
-      
+
       .users-title {
         font-size: 1.2rem;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
       }
-      
+
       .stats-grid {
         grid-template-columns: repeat(3, 1fr);
         gap: 0.4rem;
         padding: 0 0.3rem;
       }
-      
+
       .stat-card {
         padding: 0.5rem 0.3rem;
       }
-      
+
       .stat-number {
         font-size: 1.3rem;
       }
-      
+
       .stat-label {
         font-size: 0.65rem;
         line-height: 1.1;
@@ -1048,15 +1222,20 @@
     }
   </style>
 </head>
+
 <body>
   <a href="index.html" class="home-button" title="กลับหน้าหลัก"></a>
 
   <div class="container">
     <!-- Card packs near logo - cute shake animation -->
     <!-- ใช้รูปซอง MA3 ที่ผู้ใช้ให้มา - ต้องอัปเดต URL เมื่อมี -->
-    <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_ma3_pkg.png" alt="MA3 Booster Pack" class="floating-card-pack" onerror="this.src='https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/09/th_news_MA2_pillow_img-1.png'">
-    <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_ma3_pkg.png" alt="MA3 Booster Pack" class="floating-card-pack" onerror="this.src='https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/09/th_news_MA2_pillow_img-1.png'">
-    
+    <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_ma3_pkg.png"
+      alt="MA3 Booster Pack" class="floating-card-pack"
+      onerror="this.src='https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/09/th_news_MA2_pillow_img-1.png'">
+    <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_ma3_pkg.png"
+      alt="MA3 Booster Pack" class="floating-card-pack"
+      onerror="this.src='https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/09/th_news_MA2_pillow_img-1.png'">
+
     <div class="header">
       <img src="https://i.postimg.cc/wjzpnxjB/Up-Level-01-1.png" alt="Up Level Academy Logo" class="logo">
       <h1 class="event-title">🎉 พรีออเดอร์ Booster Box MA3 & ลงทะเบียนร่วมงาน Midnight Party 🎉</h1>
@@ -1065,7 +1244,7 @@
         เตรียมพบกับการ์ดชุดใหม่ล่าสุด “วิวัฒนาการเมก้าดรีม (MA3)”<br>
         <strong>งานนี้รวมทุกอย่างไว้ในฟอร์มเดียว — ทั้ง พรีออเดอร์สินค้า และ ลงทะเบียนเข้าร่วมงาน</strong>
       </div>
-      
+
       <!-- ปุ่มสั่งซื้อด้านบน -->
       <div class="cta-top">
         <a href="https://forms.gle/3xZG8VewZjJtepQN6" target="_blank" class="cta-button-top">
@@ -1078,7 +1257,7 @@
       <!-- ส่วนแสดงรายชื่อผู้ลงทะเบียน (ย้ายขึ้นมาบนสุดของ section) -->
       <div class="registered-users-section" style="margin-top: 0;">
         <h3 class="users-title">📋 รายชื่อผู้สั่งซื้อและลงทะเบียน</h3>
-        
+
         <div class="stats-grid">
           <div class="stat-card">
             <div class="stat-number" id="totalUsers">-</div>
@@ -1089,11 +1268,11 @@
             <div class="stat-label">จำนวนบ็อครวมทั้งหมด</div>
           </div>
         </div>
-        
+
         <button class="refresh-button" onclick="loadRegisteredUsers()">
           🔄 รีเฟรชข้อมูล
         </button>
-        
+
         <div id="usersContainer">
           <div class="spinner"></div>
           <div class="loading">กำลังโหลดข้อมูล...</div>
@@ -1121,17 +1300,25 @@
         คลิกที่รูปการ์ดด้านล่างเพื่อดูรายละเอียด
       </div>
       <div class="promo-cards-grid">
-        <div class="promo-card-item" onclick="openPromoCardModal('https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_MPromo_047.png')">
-          <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_MPromo_047.png" alt="Promo Card 047" loading="lazy">
+        <div class="promo-card-item"
+          onclick="openPromoCardModal('https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_MPromo_047.png')">
+          <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_MPromo_047.png"
+            alt="Promo Card 047" loading="lazy">
         </div>
-        <div class="promo-card-item" onclick="openPromoCardModal('https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_MPromo_048.png')">
-          <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_MPromo_048.png" alt="Promo Card 048" loading="lazy">
+        <div class="promo-card-item"
+          onclick="openPromoCardModal('https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_MPromo_048.png')">
+          <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_MPromo_048.png"
+            alt="Promo Card 048" loading="lazy">
         </div>
-        <div class="promo-card-item" onclick="openPromoCardModal('https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_MPromo_049.png')">
-          <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_MPromo_049.png" alt="Promo Card 049" loading="lazy">
+        <div class="promo-card-item"
+          onclick="openPromoCardModal('https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_MPromo_049.png')">
+          <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_MPromo_049.png"
+            alt="Promo Card 049" loading="lazy">
         </div>
-        <div class="promo-card-item" onclick="openPromoCardModal('https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_MPromo_050.png')">
-          <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_MPromo_050.png" alt="Promo Card 050" loading="lazy">
+        <div class="promo-card-item"
+          onclick="openPromoCardModal('https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_MPromo_050.png')">
+          <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_MPromo_050.png"
+            alt="Promo Card 050" loading="lazy">
         </div>
       </div>
     </div>
@@ -1151,17 +1338,25 @@
         การ์ดแกร่งที่เคยโชว์ฟอร์มในงานแข่งต่าง ๆ และการ์ดอื่น ๆ กลับมารวมตัวกันอีกครั้ง!
       </div>
       <div class="promo-cards-grid">
-        <div class="promo-card-item" onclick="openPromoCardModal('https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_ma3_card_223-1.png')">
-          <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_ma3_card_223-1.png" alt="MA3 Card 223" loading="lazy">
+        <div class="promo-card-item"
+          onclick="openPromoCardModal('https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_ma3_card_223-1.png')">
+          <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_ma3_card_223-1.png"
+            alt="MA3 Card 223" loading="lazy">
         </div>
-        <div class="promo-card-item" onclick="openPromoCardModal('https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_ma3_card_228-1.png')">
-          <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_ma3_card_228-1.png" alt="MA3 Card 228" loading="lazy">
+        <div class="promo-card-item"
+          onclick="openPromoCardModal('https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_ma3_card_228-1.png')">
+          <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_ma3_card_228-1.png"
+            alt="MA3 Card 228" loading="lazy">
         </div>
-        <div class="promo-card-item" onclick="openPromoCardModal('https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_ma3_card_226-1.png')">
-          <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_ma3_card_226-1.png" alt="MA3 Card 226" loading="lazy">
+        <div class="promo-card-item"
+          onclick="openPromoCardModal('https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_ma3_card_226-1.png')">
+          <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_ma3_card_226-1.png"
+            alt="MA3 Card 226" loading="lazy">
         </div>
-        <div class="promo-card-item" onclick="openPromoCardModal('https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_ma3_card_243.png')">
-          <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_ma3_card_243.png" alt="MA3 Card 243" loading="lazy">
+        <div class="promo-card-item"
+          onclick="openPromoCardModal('https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_ma3_card_243.png')">
+          <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_ma3_card_243.png"
+            alt="MA3 Card 243" loading="lazy">
         </div>
       </div>
     </div>
@@ -1209,7 +1404,7 @@
     <div class="footer">
       <h3 class="footer-title">📍 สถานที่รับสินค้า/Midnight Party</h3>
       <p style="color: #e0e0e0; margin-bottom: 1rem;">ร้าน Up Level Academy<br>(ติด MRT บางแค ทางออก 2)</p>
-      
+
       <h3 class="footer-title">หากมีคำถามเพิ่มเติม</h3>
       <div class="contact-info">
         <a href="tel:097-115-6555" class="contact-item">
@@ -1238,7 +1433,7 @@
 
   <script>
     console.log('DEBUG: MA3 Pre-order & Midnight Party Registration System');
-    
+
     /**
      * แปลงข้อมูล Box/Carton จาก string เป็นจำนวน Box (รวม carton ที่แปลงเป็น box แล้ว)
      * รองรับรูปแบบต่างๆ เช่น:
@@ -1249,25 +1444,25 @@
      */
     function parseBoxQuantityFromString(boxData) {
       if (!boxData) return 0;
-      
+
       if (typeof boxData === 'number') {
         return boxData;
       }
-      
+
       if (typeof boxData === 'string') {
         let totalBoxes = 0;
         let text = boxData.trim();
-        
+
         // ลบข้อมูลราคาออก (เช่น "(1,550 บาท)")
         text = text.replace(/\([^)]*\)/g, '');
-        
+
         // แปลง carton (ตั้น, C, Carton) เป็น boxes (1 carton = 20 boxes)
         // รูปแบบ: "1 ตั้น", "1 C", "1 Carton", "1 C/", "1 carton"
         const cartonPatterns = [
           /(\d+)\s*(?:ตั้น|ตัน|carton|Carton|CARTON|C\/|C\b)/gi,
           /(\d+)\s*(?:คาตั้น|คาตัน)/gi
         ];
-        
+
         for (let i = 0; i < cartonPatterns.length; i++) {
           const cartonMatch = text.match(cartonPatterns[i]);
           if (cartonMatch) {
@@ -1277,14 +1472,14 @@
             text = text.replace(cartonPatterns[i], '');
           }
         }
-        
+
         // หาจำนวน Box จากรูปแบบต่างๆ
         // รูปแบบ: "4 boxes", "1 BOX", "2 Box", "5 บ็อค", "3 บ็อก", "2 กล่อง"
         const boxPatterns = [
           /(\d+)\s*(?:BOX|Box|box|boxes|BOXES)/gi,
           /(\d+)\s*(?:บ็อค|บ็อก|บ็อกซ์|กล่อง)/gi
         ];
-        
+
         for (let j = 0; j < boxPatterns.length; j++) {
           const boxMatch = text.match(boxPatterns[j]);
           if (boxMatch) {
@@ -1294,7 +1489,7 @@
             text = text.replace(boxPatterns[j], '');
           }
         }
-        
+
         // ถ้ายังไม่มีตัวเลขที่ match ลองหาแค่ตัวเลขเดียว (อาจเป็น box)
         if (totalBoxes === 0) {
           const numMatch = text.match(/(\d+)/);
@@ -1302,13 +1497,13 @@
             totalBoxes = parseInt(numMatch[1]) || 0;
           }
         }
-        
+
         return totalBoxes;
       }
-      
+
       return 0;
     }
-    
+
     // ⚠️ สำคัญ: ต้อง Deploy App Script ก่อนใช้งาน!
     // 1. ไปที่ Google Sheet: https://docs.google.com/spreadsheets/d/1wi2OXnelj5D61E8Jv6wBN0RwCRbsQlgiWXnfGxrjlww/edit
     // 2. คลิก Extensions > Apps Script
@@ -1318,21 +1513,21 @@
     // 6. Copy URL ที่ได้มาแทนที่ด้านล่างนี้
     const apiUrl = "https://script.google.com/macros/s/AKfycbzjBOVrpzhWSG2PhqttAyIX9jHA1seaNrtiXD-2Zkyk1iAFxfTySAhHrQ2ElRS2aXeenQ/exec?type=json";
     const memberDashboardApi = "https://script.google.com/macros/s/AKfycbxtjsDwHI6nJU4OIHExUxMaZwUn3qwakvdkzwbQO7C8Trzz5Gh84SX6F1gqb4BOFQcn/exec?func=getMemberDashboardData";
-    
+
     // โหลดข้อมูลผู้ลงทะเบียนเมื่อหน้าเว็บโหลดเสร็จ
-    window.addEventListener('load', function() {
+    window.addEventListener('load', function () {
       loadRegisteredUsers();
     });
 
     function loadRegisteredUsers() {
       const container = document.getElementById('usersContainer');
       container.innerHTML = '<div class="spinner"></div><div class="loading">กำลังโหลดข้อมูล...</div>';
-      
+
       console.log('=== MA3 PRE-ORDER DEBUG: Starting loadRegisteredUsers ===');
       console.log('API URL:', apiUrl);
       console.log('Member Dashboard API URL:', memberDashboardApi);
       console.log('Timestamp:', new Date().toISOString());
-      
+
       // ใช้วิธีเดียวกับ midnight-party.html - fetch() ธรรมดา
       Promise.all([
         fetch(apiUrl).then(res => {
@@ -1361,19 +1556,19 @@
           showFallbackData(container);
           return;
         }
-        
+
         if (data.error) {
           console.error('❌ API returned error:', data.error);
           showFallbackData(container);
           return;
         }
-        
+
         if (!data.participants || !Array.isArray(data.participants)) {
           console.error('❌ No participants array in data:', data);
           showFallbackData(container);
           return;
         }
-        
+
         // สร้าง map เบอร์โทร -> { codename, rank }
         console.log('=== Creating phone map from members ===');
         const phoneMap = {};
@@ -1382,9 +1577,9 @@
           members.forEach((m, idx) => {
             const phone = String(m.phone || '').replace(/[^\d]/g, "");
             if (phone) {
-              phoneMap[phone] = { 
-                codename: m.codename || '', 
-                rank: m.rank || '' 
+              phoneMap[phone] = {
+                codename: m.codename || '',
+                rank: m.rank || ''
               };
             }
             if (idx < 3) {
@@ -1399,10 +1594,10 @@
         } else {
           console.warn('⚠️ Members is not an array:', members);
         }
-        
+
         console.log('📱 Phone map created with', Object.keys(phoneMap).length, 'entries');
         console.log('📱 Sample phone keys:', Object.keys(phoneMap).slice(0, 5));
-        
+
         // อัปเดต codename ในข้อมูลผู้ลงทะเบียน
         if (data.participants && Array.isArray(data.participants)) {
           console.log('=== Processing', data.participants.length, 'participants ===');
@@ -1410,18 +1605,18 @@
             console.log('📝 First participant all columns:', Object.keys(data.participants[0]));
             console.log('📝 First participant sample:', JSON.stringify(data.participants[0], null, 2).substring(0, 500));
           }
-          
+
           data.participants.forEach((participant, index) => {
             // ใช้เบอร์โทรจาก column D (เบอร์ติดต่อ)
-            const originalPhone = participant['เบอร์ติดต่อ (0xx-xxx-xxxx)'] || 
-                                 participant['เบอร์ติดต่อ'] || 
-                                 participant['เบอร์โทร'] ||
-                                 participant['Phone'] ||
-                                 participant['phone'] ||
-                                 participant.phone || 
-                                 '';
+            const originalPhone = participant['เบอร์ติดต่อ (0xx-xxx-xxxx)'] ||
+              participant['เบอร์ติดต่อ'] ||
+              participant['เบอร์โทร'] ||
+              participant['Phone'] ||
+              participant['phone'] ||
+              participant.phone ||
+              '';
             const phone = String(originalPhone).replace(/[^\d]/g, "");
-            
+
             if (index < 3) {
               console.log(`👤 Participant ${index}:`, {
                 originalPhone: originalPhone,
@@ -1432,28 +1627,28 @@
                 allColumns: Object.keys(participant)
               });
             }
-            
+
             if (phoneMap[phone]) {
               participant.codename = phoneMap[phone].codename;
               participant.rank = phoneMap[phone].rank;
             }
           });
-          
+
           // แปลงข้อมูลให้ตรงกับที่ displayUsers คาดหวัง
           console.log('=== Converting participants data ===');
           const convertedData = {
             users: data.participants.map((p, idx) => {
               // ใช้ชื่อเล่นจาก column C
               const nickname = p['ชื่อเล่น'] || p['ชื่อ - นามสกุล'] || 'ไม่ระบุชื่อ';
-              
+
               // ใช้เบอร์โทรจาก column D
               const phone = p['เบอร์ติดต่อ (0xx-xxx-xxxx)'] || p['เบอร์ติดต่อ'] || p['เบอร์โทร'] || p['Phone'] || p['phone'] || p.phone || '';
-              
+
               // ใช้ Column J (จำนวน box) โดยตรง - แปลงเป็นตัวเลขเรียบร้อยแล้ว
               let boxes = 0;
               const boxColumnJ = p['จำนวน box'] || p['จำนวน Box'] || p['จำนวน box '] || '';
               let boxData = ''; // Initialize variable to avoid ReferenceError
-              
+
               // ถ้า Column J เป็นตัวเลขให้ใช้เลย
               if (typeof boxColumnJ === 'number') {
                 boxes = boxColumnJ;
@@ -1467,24 +1662,24 @@
                     boxData = String(boxes);
                   } else {
                     // ถ้าแปลงไม่ได้ให้ลอง parse จาก Column E (backup)
-                    boxData = p['จำนวน'] || 
-                                   p['จำนวนที่ต้องการสั่งซื้อ (1 BOX = 1,550 บาท, 1 C/)'] || 
-                                   p['จำนวนที่ต้องการสั่งซื้อ'] || '';
+                    boxData = p['จำนวน'] ||
+                      p['จำนวนที่ต้องการสั่งซื้อ (1 BOX = 1,550 บาท, 1 C/)'] ||
+                      p['จำนวนที่ต้องการสั่งซื้อ'] || '';
                     boxes = parseBoxQuantityFromString(boxData);
                   }
                 }
               } else {
                 // ถ้า Column J ว่างให้ลอง parse จาก Column E (backup)
-                boxData = p['จำนวน'] || 
-                               p['จำนวนที่ต้องการสั่งซื้อ (1 BOX = 1,550 บาท, 1 C/)'] || 
-                               p['จำนวนที่ต้องการสั่งซื้อ'] || '';
+                boxData = p['จำนวน'] ||
+                  p['จำนวนที่ต้องการสั่งซื้อ (1 BOX = 1,550 บาท, 1 C/)'] ||
+                  p['จำนวนที่ต้องการสั่งซื้อ'] || '';
                 boxes = parseBoxQuantityFromString(boxData);
               }
-              
+
               // ใช้ข้อมูล Spot - อาจจะต้องคำนวณจากจำนวนที่ต้องการ
               // ตัด Spot ออกแล้ว
               let spots = 0;
-              
+
               // ดึงข้อมูล promo cards จาก participant
               let promoCards = [];
               if (p.promoCards && Array.isArray(p.promoCards)) {
@@ -1503,7 +1698,7 @@
                   }
                 }
               }
-              
+
               // Debug logging สำหรับ 3 รายการแรก
               if (idx < 3) {
                 console.log(`👤 Converting User ${idx} (${nickname}):`, {
@@ -1516,7 +1711,7 @@
                   availableColumns: Object.keys(p).slice(0, 10)
                 });
               }
-              
+
               return {
                 nickname: nickname,
                 phone: phone,
@@ -1534,7 +1729,7 @@
               // ใช้ Column J (จำนวน box) โดยตรง
               const boxColumnJ = p['จำนวน box'] || p['จำนวน Box'] || p['จำนวน box '] || '';
               let boxes = 0;
-              
+
               if (typeof boxColumnJ === 'number') {
                 boxes = boxColumnJ;
               } else if (boxColumnJ !== null && boxColumnJ !== undefined && boxColumnJ !== '') {
@@ -1544,31 +1739,31 @@
                     boxes = numValue;
                   } else {
                     // Backup: parse จาก Column E
-                    const boxData = p['จำนวน'] || 
-                                   p['จำนวนที่ต้องการสั่งซื้อ (1 BOX = 1,550 บาท, 1 C/)'] || 
-                                   p['จำนวนที่ต้องการสั่งซื้อ'] || '';
+                    const boxData = p['จำนวน'] ||
+                      p['จำนวนที่ต้องการสั่งซื้อ (1 BOX = 1,550 บาท, 1 C/)'] ||
+                      p['จำนวนที่ต้องการสั่งซื้อ'] || '';
                     boxes = parseBoxQuantityFromString(boxData);
                   }
                 }
               } else {
                 // Backup: parse จาก Column E
-                const boxData = p['จำนวน'] || 
-                               p['จำนวนที่ต้องการสั่งซื้อ (1 BOX = 1,550 บาท, 1 C/)'] || 
-                               p['จำนวนที่ต้องการสั่งซื้อ'] || '';
+                const boxData = p['จำนวน'] ||
+                  p['จำนวนที่ต้องการสั่งซื้อ (1 BOX = 1,550 บาท, 1 C/)'] ||
+                  p['จำนวนที่ต้องการสั่งซื้อ'] || '';
                 boxes = parseBoxQuantityFromString(boxData);
               }
-              
+
               return sum + boxes;
             }, 0),
             totalSpots: 0 // จะเพิ่มเมื่อมีข้อมูล Spot
           };
-          
+
           console.log('=== Conversion Summary ===');
           console.log('📊 Total users after conversion:', convertedData.users.length);
           console.log('📊 Total boxes:', convertedData.totalBoxes);
           console.log('📊 Total spots:', convertedData.totalSpots);
           console.log('📊 Sample converted users (first 3):', convertedData.users.slice(0, 3));
-          
+
           displayUsers(convertedData);
         }
       }).catch(error => {
@@ -1582,21 +1777,21 @@
       console.log('⚠️ ========== showFallbackData called ==========');
       console.log('⚠️ Container element:', container);
       console.log('⚠️ This means data could not be loaded');
-      
+
       // อัปเดตสถิติเป็น 0
       const totalUsersEl = document.getElementById('totalUsers');
       const totalBoxesEl = document.getElementById('totalBoxes');
       // const totalSpotsEl = document.getElementById('totalSpots'); // เอา Spot ออก
-      
+
       console.log('📊 Updating stats to 0');
       console.log('📊 totalUsers element:', totalUsersEl);
       console.log('📊 totalBoxes element:', totalBoxesEl);
       // console.log('📊 totalSpots element:', totalSpotsEl);
-      
+
       if (totalUsersEl) totalUsersEl.textContent = '0';
       if (totalBoxesEl) totalBoxesEl.textContent = '0';
       // if (totalSpotsEl) totalSpotsEl.textContent = '0';
-      
+
       // แสดงข้อความแจ้งเตือน
       let errorMessage = '<div class="error-message">';
       errorMessage += '⚠️ <strong>ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้</strong><br><br>';
@@ -1624,10 +1819,10 @@
       console.log('📊 Input data:', data);
       console.log('📊 data.users exists?', !!data.users);
       console.log('📊 data.users length:', data.users ? data.users.length : 'N/A');
-      
+
       const container = document.getElementById('usersContainer');
       console.log('📦 Container element:', container);
-      
+
       if (!data.users || data.users.length === 0) {
         console.log('⚠️ No users to display');
         // อัปเดตสถิติเป็น 0
@@ -1638,9 +1833,9 @@
         console.log('✅ Displayed "no users" message');
         return;
       }
-      
+
       console.log('📊 Processing', data.users.length, 'users');
-      
+
       // รวมข้อมูลของลูกค้าที่จองหลายครั้งเข้าด้วยกัน
       // ใช้ชื่อเล่น/codename เป็น key เพื่อไม่นับซ้ำ (ถ้าซื้อเพิ่มทีหลังจะรวมกัน)
       const userMap = {};
@@ -1650,7 +1845,7 @@
         const codename = (user.codename || '').trim();
         // ใช้ชื่อเล่นเป็น key แต่ถ้าไม่มีให้ใช้ codename หรือ phone
         const key = nickname || codename || String(user.phone || '').replace(/[^\d]/g, "");
-        
+
         if (userMap[key]) {
           // รวมข้อมูลการจอง (ถ้าซื้อเพิ่มทีหลัง)
           userMap[key].boxes += user.boxes || 0;
@@ -1684,45 +1879,45 @@
           };
         }
       });
-      
+
       // แปลงเป็น array และเรียงลำดับตามชื่อ
       const uniqueUsers = Object.values(userMap).sort((a, b) => a.nickname.localeCompare(b.nickname));
-      
+
       // อัปเดตสถิติด้วยข้อมูลที่รวมแล้ว
       const totalUniqueUsers = uniqueUsers.length;
       const totalBoxes = uniqueUsers.reduce((sum, user) => sum + user.boxes, 0);
       const totalSpots = uniqueUsers.reduce((sum, user) => sum + user.spots, 0);
-      
+
       console.log('📊 Stats to display:');
       console.log('📊 Unique users:', totalUniqueUsers);
       console.log('📊 Total boxes:', totalBoxes);
       console.log('📊 Total spots:', totalSpots);
-      
+
       document.getElementById('totalUsers').textContent = totalUniqueUsers;
       document.getElementById('totalBoxes').textContent = totalBoxes;
       // document.getElementById('totalSpots').textContent = totalSpots;
-      
+
       console.log('✅ Stats updated in DOM');
-      
+
       // สร้างตารางแสดงข้อมูล
       // แสดงเฉพาะ: ชื่อเล่น/codename และมาร่วมงาน Midnight Party หรือไม่
       let html = '<table style="width:100%; border-collapse:collapse; margin:1rem auto; background:#fff; border-radius:12px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.1); max-width:900px;">';
-      html += '<thead><tr style="background:#42A5F5;">';
-      html += '<th style="padding:12px 8px; text-align:center; color:#fff; font-weight:bold; font-size:1.05em; width:60px;">ลำดับ</th>';
-      html += '<th style="padding:12px 8px; text-align:center; color:#fff; font-weight:bold; font-size:1.05em;">ชื่อเล่น / Codename</th>';
-      html += '<th style="padding:12px 8px; text-align:center; color:#fff; font-weight:bold; font-size:1.05em; width:120px;">มาร่วมงาน Midnight Party</th>';
+      html += '<thead><tr style="background: linear-gradient(45deg, #ffd700, #ffaa00); box-shadow: 0 2px 10px rgba(255, 215, 0, 0.3);">';
+      html += '<th style="padding:12px 8px; text-align:center; color:#1a0f00; font-weight:bold; font-size:1.05em; width:60px; text-shadow: 0 1px 2px rgba(255,255,255,0.3);">ลำดับ</th>';
+      html += '<th style="padding:12px 8px; text-align:center; color:#1a0f00; font-weight:bold; font-size:1.05em; text-shadow: 0 1px 2px rgba(255,255,255,0.3);">ชื่อเล่น / Codename</th>';
+      html += '<th style="padding:12px 8px; text-align:center; color:#1a0f00; font-weight:bold; font-size:1.05em; width:120px; text-shadow: 0 1px 2px rgba(255,255,255,0.3);">มาร่วมงาน Midnight Party</th>';
       html += '</tr></thead><tbody>';
-      
+
       uniqueUsers.forEach((user, index) => {
         html += `<tr style="border-bottom:1px solid #ddd;">`;
         html += `<td style="padding:10px 8px; text-align:center; color:#2c3e50; font-weight:bold;">${index + 1}</td>`;
-        
+
         // แสดงชื่อเล่นและ codename ในคอลัมน์เดียวกัน
         let displayName = user.nickname || 'ไม่ระบุชื่อ';
         if (displayName.length > 15) {
           displayName = displayName.substring(0, 15) + '...';
         }
-        
+
         // แสดง codename ใต้ชื่อเล่น
         let codenameDisplay = '';
         if (user.codename && user.codename !== 'ไม่ระบุ') {
@@ -1732,22 +1927,22 @@
           if (displayCodename.length > 8) {
             displayCodename = displayCodename.substring(0, 8) + '...';
           }
-          
+
           // ใช้ renderCodenameEffect เหมือน midnight-party.html
           const codenameHtml = renderCodenameEffect(displayCodename, rank);
           codenameDisplay = `<br><span class="codename-rank" data-rank="${rank}" style="font-size:0.85em;"><span>${rankEmoji}</span> ${codenameHtml} <span>${rankEmoji}</span></span>`;
         }
-        
+
         html += `<td style="padding:12px 8px; text-align:center; color:#2c3e50; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:300px;">${displayName}${codenameDisplay}</td>`;
-        
+
         // Column G: ถ้าเขียนว่า "มาร่วมงาน" = มาได้, ถ้าไม่ใช่ = ไม่มา
         const attendingPartyText = (user.attendingParty || '').trim();
         const attending = attendingPartyText === 'มาร่วมงาน' || attendingPartyText.toLowerCase().includes('มาร่วมงาน');
         html += `<td style="padding:12px 8px; text-align:center; color:#2c3e50; font-size:0.9em; font-weight:600;">${attending ? '✅ ใช่' : '❌ ไม่ได้มา'}</td>`;
-        
+
         html += '</tr>';
       });
-      
+
       html += '</tbody></table>';
       container.innerHTML = html;
       console.log('✅ Table HTML generated and inserted');
@@ -1786,7 +1981,7 @@
       const baseRank = getBaseRank(rank);
       if (waveRanks.includes(baseRank)) {
         // wave + class ตาม rank, ใส่วงเล็บเหลี่ยมขยับด้วย
-        return `<span class="codename wave ${baseRank.toLowerCase()}">${chars.map((ch,i)=>`<span>${ch}</span>`).join('')}</span>`;
+        return `<span class="codename wave ${baseRank.toLowerCase()}">${chars.map((ch, i) => `<span>${ch}</span>`).join('')}</span>`;
       } else {
         // ใส่วงเล็บเหลี่ยมธรรมดา
         return `<span class="codename">[${codename}]</span>`;
@@ -1814,10 +2009,10 @@
     }
 
     // ปิด Modal เมื่อคลิกนอกภาพ
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
       const modal = document.getElementById('promoCardModal');
       if (modal) {
-        modal.addEventListener('click', function(event) {
+        modal.addEventListener('click', function (event) {
           if (event.target === modal) {
             closePromoCardModal();
           }
@@ -1825,7 +2020,7 @@
       }
 
       // ปิด Modal ด้วยปุ่ม Escape
-      document.addEventListener('keydown', function(event) {
+      document.addEventListener('keydown', function (event) {
         if (event.key === 'Escape') {
           closePromoCardModal();
         }
@@ -1833,4 +2028,5 @@
     });
   </script>
 </body>
+
 </html>
