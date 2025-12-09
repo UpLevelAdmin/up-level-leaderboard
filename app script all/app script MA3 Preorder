@@ -17,15 +17,14 @@
  *    - คลิก Deploy และ Copy URL ที่ได้
  * 6. นำ URL ที่ได้ไปอัปเดตในไฟล์ ma3-preorder.html (บรรทัดที่กำหนด apiUrl)
  * 
- * Sheet Structure:
+ * Sheet Structure (Sheet1):
  * - Column A: Timestamp (เวลาที่ประทับ)
  * - Column B: ชื่อ - นามสกุล
  * - Column C: ชื่อเล่น
- * - Column D: เบอร์ติดต่อ (0xx-xxx-xxxx)
- * - Column E: จำนวนที่ต้องการสั่งซื้อ (1 BOX = 1,550 บาท, 1 C/)
- * - Column F: การรับสินค้า
- * - Column G: มาร่วมงาน Midnight Party หรือไม่
- * - Column H: ที่อยู่ (ถ้าจัดส่งพัสดุ)
+ * - Column D: เบอร์โทร
+ * - Column E: จำนวน (raw data)
+ * - Column G: มาร่วมงานไหม (ถ้าเป็น "มาร่วมงาน" = มาได้, ถ้าไม่ใช่ = ไม่มา)
+ * - Column J: จำนวน box (แปลงเป็นตัวเลขเรียบร้อยแล้ว)
  */
 
 // ===== ฟังก์ชันแจ้งเตือน Telegram =====
@@ -87,7 +86,12 @@ function getRandomPromoCard(phone, timestamp) {
 }
 
 /**
- * แปลงข้อมูล Box จาก string เป็นตัวเลข
+ * แปลงข้อมูล Box/Carton จาก string เป็นจำนวน Box (รวม carton ที่แปลงเป็น box แล้ว)
+ * รองรับรูปแบบต่างๆ เช่น:
+ * - "4 boxes", "1 BOX", "2 BOX"
+ * - "5 บ็อค", "1 ตั้น" (ตั้น = carton = 20 boxes)
+ * - "1 BOX (1,550 บาท)"
+ * - "1 C/" (C = Carton)
  */
 function parseBoxQuantity(boxData) {
   if (!boxData) return 0;
@@ -97,17 +101,55 @@ function parseBoxQuantity(boxData) {
   }
   
   if (typeof boxData === 'string') {
-    // ลองหาเลขจำนวน Box จากข้อความ
-    var boxMatch = boxData.match(/(\d+)\s*(?:BOX|Box|box|กล่อง)/);
-    if (boxMatch) {
-      return parseInt(boxMatch[1]) || 0;
-    } else {
-      // ถ้าไม่มีคำว่า BOX ลองหาแค่ตัวเลข
-      var numMatch = boxData.match(/(\d+)/);
-      if (numMatch) {
-        return parseInt(numMatch[1]) || 0;
+    var totalBoxes = 0;
+    var text = boxData.trim();
+    
+    // ลบข้อมูลราคาออก (เช่น "(1,550 บาท)")
+    text = text.replace(/\([^)]*\)/g, '');
+    
+    // แปลง carton (ตั้น, C, Carton) เป็น boxes (1 carton = 20 boxes)
+    // รูปแบบ: "1 ตั้น", "1 C", "1 Carton", "1 C/", "1 carton"
+    var cartonPatterns = [
+      /(\d+)\s*(?:ตั้น|ตัน|carton|Carton|CARTON|C\/|C\b)/gi,
+      /(\d+)\s*(?:คาตั้น|คาตัน)/gi
+    ];
+    
+    for (var i = 0; i < cartonPatterns.length; i++) {
+      var cartonMatch = text.match(cartonPatterns[i]);
+      if (cartonMatch) {
+        var cartonCount = parseInt(cartonMatch[1]) || 0;
+        totalBoxes += cartonCount * 20; // 1 carton = 20 boxes
+        // ลบส่วนที่ match ออกเพื่อไม่ให้นับซ้ำ
+        text = text.replace(cartonPatterns[i], '');
       }
     }
+    
+    // หาจำนวน Box จากรูปแบบต่างๆ
+    // รูปแบบ: "4 boxes", "1 BOX", "2 Box", "5 บ็อค", "3 บ็อก", "2 กล่อง"
+    var boxPatterns = [
+      /(\d+)\s*(?:BOX|Box|box|boxes|BOXES)/gi,
+      /(\d+)\s*(?:บ็อค|บ็อก|บ็อกซ์|กล่อง)/gi
+    ];
+    
+    for (var j = 0; j < boxPatterns.length; j++) {
+      var boxMatch = text.match(boxPatterns[j]);
+      if (boxMatch) {
+        var boxCount = parseInt(boxMatch[1]) || 0;
+        totalBoxes += boxCount;
+        // ลบส่วนที่ match ออกเพื่อไม่ให้นับซ้ำ
+        text = text.replace(boxPatterns[j], '');
+      }
+    }
+    
+    // ถ้ายังไม่มีตัวเลขที่ match ลองหาแค่ตัวเลขเดียว (อาจเป็น box)
+    if (totalBoxes === 0) {
+      var numMatch = text.match(/(\d+)/);
+      if (numMatch) {
+        totalBoxes = parseInt(numMatch[1]) || 0;
+      }
+    }
+    
+    return totalBoxes;
   }
   
   return 0;
@@ -224,6 +266,17 @@ function doGet(e) {
     
     // ตรวจสอบว่า spreadsheet มีอยู่หรือไม่
     var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+    
+    // ถ้าไม่พบ (กรณี Standalone Script) ให้ลองเปิดด้วย ID
+    if (!spreadsheet) {
+      try {
+        // ID จาก URL: https://docs.google.com/spreadsheets/d/1wi2OXnelj5D61E8Jv6wBN0RwCRbsQlgiWXnfGxrjlww/edit
+        spreadsheet = SpreadsheetApp.openById("1wi2OXnelj5D61E8Jv6wBN0RwCRbsQlgiWXnfGxrjlww");
+      } catch (e) {
+        console.error("Could not open spreadsheet by ID:", e);
+      }
+    }
+
     if (!spreadsheet) {
       if (isDebug) console.log('No active spreadsheet found');
       if (isJson) {
@@ -247,9 +300,9 @@ function doGet(e) {
     var sheets = spreadsheet.getSheets();
     if (isDebug) console.log('Available sheets:', sheets.map(s => s.getName()));
     
-    // ลองหา sheet ที่มีข้อมูล
+    // ลองหา sheet ที่มีข้อมูล - อ่านจาก Sheet1 ก่อน
     var targetSheet = null;
-    var sheetNames = ['Form Responses 1', 'Form Responses', 'Responses', 'Sheet1'];
+    var sheetNames = ['Sheet1', 'Form Responses 1', 'Form Responses', 'Responses'];
     
     for (var i = 0; i < sheetNames.length; i++) {
       var sheet = spreadsheet.getSheetByName(sheetNames[i]);
@@ -310,11 +363,46 @@ function doGet(e) {
         participant[header] = (value === null || value === undefined) ? '' : value;
       }
       
-      // คำนวณจำนวน Box และ Promo Card Packs
-      var boxData = participant['จำนวนที่ต้องการสั่งซื้อ (1 BOX = 1,550 บาท, 1 C/)'] || 
-                   participant['จำนวนที่ต้องการสั่งซื้อ'] || 
-                   participant['จำนวน Box'] || '';
-      var boxes = parseBoxQuantity(boxData);
+      // ใช้ Column J (จำนวน box) โดยตรง - แปลงเป็นตัวเลขเรียบร้อยแล้ว
+      // Column J = index 9 (0-based: A=0, B=1, C=2, D=3, E=4, F=5, G=6, H=7, I=8, J=9)
+      var boxes = 0;
+      var boxColumnJ = null;
+      
+      // ลองหา Column J โดยใช้ index ก่อน (Column J = index 9)
+      if (row.length > 9) {
+        boxColumnJ = row[9];
+      }
+      
+      // ถ้าไม่มีให้ลองหาโดยชื่อ column จาก header
+      if (boxColumnJ === null || boxColumnJ === undefined || boxColumnJ === '') {
+        boxColumnJ = participant['จำนวน box'] || participant['จำนวน Box'] || participant['จำนวน box '] || '';
+      }
+      
+      // ถ้า Column J เป็นตัวเลขให้ใช้เลย
+      if (typeof boxColumnJ === 'number') {
+        boxes = boxColumnJ;
+      } else if (boxColumnJ !== null && boxColumnJ !== undefined && boxColumnJ !== '') {
+        // ลองแปลงเป็นตัวเลข
+        if (typeof boxColumnJ === 'string') {
+          var numValue = parseFloat(boxColumnJ.toString().trim());
+          if (!isNaN(numValue) && isFinite(numValue)) {
+            boxes = numValue;
+          } else {
+            // ถ้าแปลงไม่ได้ให้ลอง parse จาก Column E (backup)
+            var boxData = participant['จำนวน'] || 
+                         participant['จำนวนที่ต้องการสั่งซื้อ (1 BOX = 1,550 บาท, 1 C/)'] || 
+                         participant['จำนวนที่ต้องการสั่งซื้อ'] || '';
+            boxes = parseBoxQuantity(boxData);
+          }
+        }
+      } else {
+        // ถ้า Column J ว่างให้ลอง parse จาก Column E (backup)
+        var boxData = participant['จำนวน'] || 
+                     participant['จำนวนที่ต้องการสั่งซื้อ (1 BOX = 1,550 บาท, 1 C/)'] || 
+                     participant['จำนวนที่ต้องการสั่งซื้อ'] || '';
+        boxes = parseBoxQuantity(boxData);
+      }
+      
       var promoPacks = calculatePromoPacks(boxes);
       
       // สุ่มการ์ดโปรโมสำหรับแต่ละ pack
