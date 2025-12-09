@@ -302,6 +302,7 @@
       max-width: 800px;
       margin-left: auto;
       margin-right: auto;
+      justify-items: center;
     }
 
     .promo-card-item {
@@ -311,6 +312,9 @@
       border: 2px solid rgba(255, 217, 61, 0.3);
       transition: all 0.3s ease;
       cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
 
     .promo-card-item:hover {
@@ -324,6 +328,7 @@
       height: auto;
       border-radius: 8px;
       display: block;
+      margin: 0 auto;
     }
 
     .promo-card-modal {
@@ -1054,35 +1059,24 @@
     
     <div class="header">
       <img src="https://i.postimg.cc/wjzpnxjB/Up-Level-01-1.png" alt="Up Level Academy Logo" class="logo">
-      <h1 class="event-title">🎉 พรีออเดอร์ MA3 & Midnight Party 🎉</h1>
+      <h1 class="event-title">🎉 พรีออเดอร์ Booster Box MA3 & ลงทะเบียนร่วมงาน Midnight Party 🎉</h1>
       <div class="event-subtitle">วิวัฒนาการเมก้า ดรีมex</div>
-      <div class="event-date">🌙 คืนวันที่ 15 ม.ค. 2026 (ข้ามเข้า 16 ม.ค.)</div>
+      <div class="product-description" style="text-align: center; margin-top: 1rem; font-size: 1.2rem;">
+        เตรียมพบกับการ์ดชุดใหม่ล่าสุด “วิวัฒนาการเมก้าดรีม (MA3)”<br>
+        <strong>งานนี้รวมทุกอย่างไว้ในฟอร์มเดียว — ทั้ง พรีออเดอร์สินค้า และ ลงทะเบียนเข้าร่วมงาน</strong>
+      </div>
+      
+      <!-- ปุ่มสั่งซื้อด้านบน -->
+      <div class="cta-top">
+        <a href="https://forms.gle/3xZG8VewZjJtepQN6" target="_blank" class="cta-button-top">
+          🎯 คลิกเพื่อสั่งซื้อ
+        </a>
+      </div>
     </div>
 
     <div class="product-showcase">
-      <h2 class="product-title">🎁 การ์ดชุดเสริมไฮคลาส วิวัฒนาการเมก้า ดรีมex</h2>
-      <div class="product-description">
-        เตรียมพบกับการ์ดชุดใหม่ล่าสุด "วิวัฒนาการเมก้าดรีม (MA3)" ก่อนใครในงาน Midnight Party!<br>
-        คว้าฝันกับโปเกมอนวิวัฒนาการเมก้าex มาครองกัน พร้อมการ์ด MA (Mega Attack Rare) ที่เปิดตัวใหม่!<br><br>
-        <strong>✨ เสน่ห์ของวิวัฒนาการเมก้า ดรีม ex อยู่ตรงนี้! ✨</strong><br>
-        • การ์ดโปเกมอนวิวัฒนาการเมก้า ex น้องใหม่!<br>
-        • เปิดตัวการ์ด MA (Mega Attack Rare)!<br>
-        • การ์ดที่ช่วยเสริมเด็คของเธอให้แข็งแกร่งยิ่งขึ้น!<br>
-        • มีการ์ดฟอยล์มิเรอร์แบบพิเศษสุดอลังการรวมอยู่ด้วย!<br>
-        • มีการ์ด AR และการ์ด SAR ทรงเสน่ห์รวมอยู่ในชุด!
-      </div>
-      
-      <div class="cta-top">
-        <a href="https://forms.gle/3xZG8VewZjJtepQN6" target="_blank" class="cta-button-top">
-          🎯 สั่งซื้อและลงทะเบียนเลย!
-        </a>
-        <a href="https://forms.gle/5ctkLmT3FwLW9oRi6" target="_blank" class="guild-button">
-          🏰 สมัครสมาชิกกิลด์เพื่อสะสม EXP
-        </a>
-      </div>
-
-      <!-- ย้ายส่วนรายชื่อผู้ลงทะเบียนมาด้านบน -->
-      <div class="registered-users-section">
+      <!-- ส่วนแสดงรายชื่อผู้ลงทะเบียน (ย้ายขึ้นมาบนสุดของ section) -->
+      <div class="registered-users-section" style="margin-top: 0;">
         <h3 class="users-title">📋 รายชื่อผู้สั่งซื้อและลงทะเบียน</h3>
         
         <div class="stats-grid">
@@ -1093,10 +1087,6 @@
           <div class="stat-card">
             <div class="stat-number" id="totalBoxes">-</div>
             <div class="stat-label">Box ทั้งหมด</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-number" id="totalSpots">-</div>
-            <div class="stat-label">Spot ทั้งหมด</div>
           </div>
         </div>
         
@@ -1112,23 +1102,13 @@
     </div>
 
     <div class="pricing-section">
-      <div class="pricing-card">
-        <h3 class="pricing-title">🔵 พรีออเดอร์ Booster Box</h3>
-        <div class="price">💸 1,550 บาท / Box</div>
-        <div class="price-note">ซื้อ 2 Box รับโปรโม 1 ซอง</div>
+      <div class="pricing-card" style="border-color: #4facfe; box-shadow: 0 0 15px rgba(79, 172, 254, 0.3);">
+        <h3 class="pricing-title" style="color: #4facfe;">🔵 พรีออเดอร์สินค้า MA3</h3>
+        <div class="price">💸 Booster Box 1,550 บาท / Box</div>
+        <div class="price-note">✨ ซื้อ 2 Box รับโปรโม 1 ซอง</div>
         <ul class="benefits">
-          <li>✅ +6 EXP ต่อ 1 Box</li>
+          <li>✅ รับ 5 EXP ต่อ 1 Box (ปกติ)</li>
           <li>✅ รับสินค้าตั้งแต่ 16 ม.ค. 2026 เป็นต้นไป</li>
-        </ul>
-      </div>
-
-      <div class="pricing-card">
-        <h3 class="pricing-title">🎯 Spot เปิด 2 ซอง</h3>
-        <div class="price">💰 320 บาท / Spot</div>
-        <ul class="benefits">
-          <li>✅ ครบ 5 Spot → เปิดกล่องได้ทันที!</li>
-          <li>✅ +1 EXP ต่อ 1 Spot</li>
-          <li>✅ สิทธิ์ร่วมเปิดกล่องแบบหาร ลุ้นพร้อมกัน</li>
         </ul>
       </div>
     </div>
@@ -1189,35 +1169,28 @@
     <div class="spot-info">
       <h3 class="spot-title">🔴 Midnight Party</h3>
       <div class="spot-description">
+        <strong>เปิดบ็อคก่อนใครในงาน Midnight Party คืนวันที่ 15 ม.ค. 2026 (ข้ามเข้า 16 ม.ค.)</strong><br><br>
         คืนวันที่ 15 ม.ค. เริ่มลงทะเบียน 23:30 น.<br>
         ไม่มีการไลฟ์สด เปิดกล่องเฉพาะภายในงานเท่านั้น!<br><br>
-        ผู้ที่มาร่วมงานจะได้รับ:<br>
-        • +2 EXP<br>
-        • +2 Party Point<br>
-        • +6 EXP ต่อ 1 Box<br>
-        • มาครบทั้งปาร์ตี้ → +5 Party Point
+        <strong>🎁 ผู้ที่มาร่วมงานจะได้รับ:</strong>
+        <ul class="benefits" style="margin-top: 10px; display: inline-block;">
+          <li>✨ +2 EXP</li>
+          <li>✨ +2 Party Point</li>
+          <li>✨ +6 EXP ต่อ 1 Box</li>
+          <li>✨ มาครบทั้งปาร์ตี้ → +5 Party Point</li>
+        </ul>
       </div>
     </div>
 
     <div class="info-section">
-      <h3 class="info-title">📋 ข้อมูลสำคัญ</h3>
+      <h3 class="info-title">📋 เงื่อนไขสำคัญ</h3>
       <div class="info-grid">
-        <div class="info-card bonus">
-          <h4>🎉 โบนัสพิเศษ</h4>
-          <ul class="info-list">
-            <li>✅ มาร่วมงาน : +2 EXP | +2 Party Point</li>
-            <li>✅ มาครบทั้งปาร์ตี้ : +5 Party Point</li>
-            <li>✅ ซื้อ Box : +6 EXP ต่อ 1 Box</li>
-            <li>✅ จอง Spot : +1 EXP ต่อ 1 Spot</li>
-          </ul>
-        </div>
-        <div class="info-card notes">
-          <h4>📝 เงื่อนไขสำคัญ</h4>
+        <div class="info-card notes" style="border-color: #ffd93d; grid-column: 1 / -1;">
+          <h4>📌 ข้อตกลงและเงื่อนไข</h4>
           <ul class="info-list">
             <li>📌 ลูกค้าที่สั่งซื้อ แม้ไม่มาร่วมงาน ยังได้รับสินค้า + EXP ตามยอดซื้อปกติ</li>
             <li>📌 แบบฟอร์มนี้คือการสั่งซื้อล่วงหน้า พร้อมชำระเงินทันที</li>
             <li>📌 การจองถือว่าสมบูรณ์เมื่อแนบสลิปถูกต้อง</li>
-            <li>📌 หาก Spot ไม่ครบ 5 จะคืนเงินหลังจบงาน หรือเปลี่ยนเป็นสินค้าอื่นได้</li>
             <li>📌 รับสินค้าตั้งแต่ 16 ม.ค. 2026 เป็นต้นไป</li>
           </ul>
         </div>
@@ -1226,7 +1199,7 @@
 
     <div class="cta-section">
       <a href="https://forms.gle/3xZG8VewZjJtepQN6" target="_blank" class="cta-button">
-        🎯 สั่งซื้อและลงทะเบียนเลย!
+        🎯 คลิกเพื่อสั่งจอง (และลงทะเบียนงาน)
       </a>
       <a href="https://forms.gle/5ctkLmT3FwLW9oRi6" target="_blank" class="guild-button">
         🏰 สมัครสมาชิกกิลด์เพื่อสะสม EXP
@@ -1234,10 +1207,10 @@
     </div>
 
     <div class="footer">
-      <h3 class="footer-title">📍 สถานที่จัดงาน</h3>
+      <h3 class="footer-title">📍 สถานที่รับสินค้า/Midnight Party</h3>
       <p style="color: #e0e0e0; margin-bottom: 1rem;">ร้าน Up Level Academy<br>(ติด MRT บางแค ทางออก 2)</p>
       
-      <h3 class="footer-title">📞 ติดต่อสอบถาม</h3>
+      <h3 class="footer-title">หากมีคำถามเพิ่มเติม</h3>
       <div class="contact-info">
         <a href="tel:097-115-6555" class="contact-item">
           📞 097-115-6555
@@ -1400,7 +1373,7 @@
               }
               
               // ใช้ข้อมูล Spot - อาจจะต้องคำนวณจากจำนวนที่ต้องการ
-              // สำหรับตอนนี้ให้เป็น 0 ก่อน (ถ้ามีข้อมูล Spot ใน Sheet จะเพิ่มทีหลัง)
+              // ตัด Spot ออกแล้ว
               let spots = 0;
               
               // ดึงข้อมูล promo cards จาก participant
@@ -1491,16 +1464,16 @@
       // อัปเดตสถิติเป็น 0
       const totalUsersEl = document.getElementById('totalUsers');
       const totalBoxesEl = document.getElementById('totalBoxes');
-      const totalSpotsEl = document.getElementById('totalSpots');
+      // const totalSpotsEl = document.getElementById('totalSpots'); // เอา Spot ออก
       
       console.log('📊 Updating stats to 0');
       console.log('📊 totalUsers element:', totalUsersEl);
       console.log('📊 totalBoxes element:', totalBoxesEl);
-      console.log('📊 totalSpots element:', totalSpotsEl);
+      // console.log('📊 totalSpots element:', totalSpotsEl);
       
       if (totalUsersEl) totalUsersEl.textContent = '0';
       if (totalBoxesEl) totalBoxesEl.textContent = '0';
-      if (totalSpotsEl) totalSpotsEl.textContent = '0';
+      // if (totalSpotsEl) totalSpotsEl.textContent = '0';
       
       // แสดงข้อความแจ้งเตือน
       let errorMessage = '<div class="error-message">';
@@ -1538,7 +1511,7 @@
         // อัปเดตสถิติเป็น 0
         document.getElementById('totalUsers').textContent = '0';
         document.getElementById('totalBoxes').textContent = '0';
-        document.getElementById('totalSpots').textContent = '0';
+        // document.getElementById('totalSpots').textContent = '0';
         container.innerHTML = '<div class="loading">📝 ยังไม่มีผู้สั่งซื้อ</div>';
         console.log('✅ Displayed "no users" message');
         return;
@@ -1590,7 +1563,7 @@
       
       document.getElementById('totalUsers').textContent = totalUniqueUsers;
       document.getElementById('totalBoxes').textContent = totalBoxes;
-      document.getElementById('totalSpots').textContent = totalSpots;
+      // document.getElementById('totalSpots').textContent = totalSpots;
       
       console.log('✅ Stats updated in DOM');
       
@@ -1599,7 +1572,7 @@
       html += '<thead><tr style="background:#42A5F5;">';
       html += '<th style="padding:12px 8px; text-align:center; color:#fff; font-weight:bold; font-size:1.05em; width:60px;">ลำดับ</th>';
       html += '<th style="padding:12px 8px; text-align:center; color:#fff; font-weight:bold; font-size:1.05em;">ชื่อเล่น / Codename</th>';
-      html += '<th style="padding:12px 8px; text-align:center; color:#fff; font-weight:bold; font-size:1.05em; width:140px;">จำนวน Box/Spot</th>';
+      html += '<th style="padding:12px 8px; text-align:center; color:#fff; font-weight:bold; font-size:1.05em; width:140px;">จำนวน Box</th>';
       html += '<th style="padding:12px 8px; text-align:center; color:#fff; font-weight:bold; font-size:1.05em; width:180px;">การ์ดโปรโม</th>';
       html += '<th style="padding:12px 8px; text-align:center; color:#fff; font-weight:bold; font-size:1.05em; width:100px;">เข้าร่วมงาน</th>';
       html += '</tr></thead><tbody>';
@@ -1631,16 +1604,18 @@
         
         html += `<td style="padding:12px 8px; text-align:center; color:#2c3e50; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:300px;">${displayName}${codenameDisplay}</td>`;
         
-        // แสดงจำนวน Box/Spot ที่รวมแล้ว
+        // แสดงจำนวน Box ที่รวมแล้ว
         let orderDetails = '';
         if (user.boxes > 0) {
           orderDetails += `${user.boxes} 📦`;
         }
+        /* ตัด Spot ออก
         if (user.spots > 0) {
           if (orderDetails) orderDetails += ' ';
           orderDetails += `${user.spots} 🎯`;
         }
-        if (user.boxes === 0 && user.spots === 0) {
+        */
+        if (user.boxes === 0) {
           orderDetails = '📝';
         }
         html += `<td style="padding:12px 8px; text-align:center; color:#2c3e50; white-space:nowrap; font-size:0.9em; font-weight:600;">${orderDetails}</td>`;
