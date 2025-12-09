@@ -1082,11 +1082,11 @@
         <div class="stats-grid">
           <div class="stat-card">
             <div class="stat-number" id="totalUsers">-</div>
-            <div class="stat-label">ผู้สั่งซื้อทั้งหมด</div>
+            <div class="stat-label">จำนวนผู้สั่งซื้อทั้งหมด</div>
           </div>
           <div class="stat-card">
             <div class="stat-number" id="totalBoxes">-</div>
-            <div class="stat-label">Box ทั้งหมด</div>
+            <div class="stat-label">จำนวนบ็อครวมทั้งหมด</div>
           </div>
         </div>
         
@@ -1239,6 +1239,76 @@
   <script>
     console.log('DEBUG: MA3 Pre-order & Midnight Party Registration System');
     
+    /**
+     * แปลงข้อมูล Box/Carton จาก string เป็นจำนวน Box (รวม carton ที่แปลงเป็น box แล้ว)
+     * รองรับรูปแบบต่างๆ เช่น:
+     * - "4 boxes", "1 BOX", "2 BOX"
+     * - "5 บ็อค", "1 ตั้น" (ตั้น = carton = 20 boxes)
+     * - "1 BOX (1,550 บาท)"
+     * - "1 C/" (C = Carton)
+     */
+    function parseBoxQuantityFromString(boxData) {
+      if (!boxData) return 0;
+      
+      if (typeof boxData === 'number') {
+        return boxData;
+      }
+      
+      if (typeof boxData === 'string') {
+        let totalBoxes = 0;
+        let text = boxData.trim();
+        
+        // ลบข้อมูลราคาออก (เช่น "(1,550 บาท)")
+        text = text.replace(/\([^)]*\)/g, '');
+        
+        // แปลง carton (ตั้น, C, Carton) เป็น boxes (1 carton = 20 boxes)
+        // รูปแบบ: "1 ตั้น", "1 C", "1 Carton", "1 C/", "1 carton"
+        const cartonPatterns = [
+          /(\d+)\s*(?:ตั้น|ตัน|carton|Carton|CARTON|C\/|C\b)/gi,
+          /(\d+)\s*(?:คาตั้น|คาตัน)/gi
+        ];
+        
+        for (let i = 0; i < cartonPatterns.length; i++) {
+          const cartonMatch = text.match(cartonPatterns[i]);
+          if (cartonMatch) {
+            const cartonCount = parseInt(cartonMatch[1]) || 0;
+            totalBoxes += cartonCount * 20; // 1 carton = 20 boxes
+            // ลบส่วนที่ match ออกเพื่อไม่ให้นับซ้ำ
+            text = text.replace(cartonPatterns[i], '');
+          }
+        }
+        
+        // หาจำนวน Box จากรูปแบบต่างๆ
+        // รูปแบบ: "4 boxes", "1 BOX", "2 Box", "5 บ็อค", "3 บ็อก", "2 กล่อง"
+        const boxPatterns = [
+          /(\d+)\s*(?:BOX|Box|box|boxes|BOXES)/gi,
+          /(\d+)\s*(?:บ็อค|บ็อก|บ็อกซ์|กล่อง)/gi
+        ];
+        
+        for (let j = 0; j < boxPatterns.length; j++) {
+          const boxMatch = text.match(boxPatterns[j]);
+          if (boxMatch) {
+            const boxCount = parseInt(boxMatch[1]) || 0;
+            totalBoxes += boxCount;
+            // ลบส่วนที่ match ออกเพื่อไม่ให้นับซ้ำ
+            text = text.replace(boxPatterns[j], '');
+          }
+        }
+        
+        // ถ้ายังไม่มีตัวเลขที่ match ลองหาแค่ตัวเลขเดียว (อาจเป็น box)
+        if (totalBoxes === 0) {
+          const numMatch = text.match(/(\d+)/);
+          if (numMatch) {
+            totalBoxes = parseInt(numMatch[1]) || 0;
+          }
+        }
+        
+        return totalBoxes;
+      }
+      
+      return 0;
+    }
+    
     // ⚠️ สำคัญ: ต้อง Deploy App Script ก่อนใช้งาน!
     // 1. ไปที่ Google Sheet: https://docs.google.com/spreadsheets/d/1wi2OXnelj5D61E8Jv6wBN0RwCRbsQlgiWXnfGxrjlww/edit
     // 2. คลิก Extensions > Apps Script
@@ -1265,12 +1335,41 @@
       
       // ใช้วิธีเดียวกับ midnight-party.html - fetch() ธรรมดา
       Promise.all([
-        fetch(apiUrl).then(res => res.json()),
-        fetch(memberDashboardApi).then(res => res.json())
+        fetch(apiUrl).then(res => {
+          if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+          }
+          return res.json();
+        }).catch(err => {
+          console.error('❌ Error fetching API:', err);
+          return { participants: [], error: err.toString() };
+        }),
+        fetch(memberDashboardApi).then(res => {
+          if (!res.ok) {
+            console.warn('⚠️ Member dashboard API error:', res.status);
+            return [];
+          }
+          return res.json();
+        }).catch(err => {
+          console.warn('⚠️ Error fetching member dashboard:', err);
+          return [];
+        })
       ]).then(([data, members]) => {
         // ตรวจสอบว่า data ถูกต้องหรือไม่
-        if (!data || !data.participants) {
-          console.error('❌ No participants data received');
+        if (!data) {
+          console.error('❌ No data received');
+          showFallbackData(container);
+          return;
+        }
+        
+        if (data.error) {
+          console.error('❌ API returned error:', data.error);
+          showFallbackData(container);
+          return;
+        }
+        
+        if (!data.participants || !Array.isArray(data.participants)) {
+          console.error('❌ No participants array in data:', data);
           showFallbackData(container);
           return;
         }
@@ -1350,26 +1449,36 @@
               // ใช้เบอร์โทรจาก column D
               const phone = p['เบอร์ติดต่อ (0xx-xxx-xxxx)'] || p['เบอร์ติดต่อ'] || p['เบอร์โทร'] || p['Phone'] || p['phone'] || p.phone || '';
               
-              // ใช้ข้อมูล Box จาก column E (จำนวนที่ต้องการสั่งซื้อ)
+              // ใช้ Column J (จำนวน box) โดยตรง - แปลงเป็นตัวเลขเรียบร้อยแล้ว
               let boxes = 0;
-              const boxData = p['จำนวนที่ต้องการสั่งซื้อ (1 BOX = 1,550 บาท, 1 C/)'] || 
-                             p['จำนวนที่ต้องการสั่งซื้อ'] || 
-                             p['จำนวน Box'] || '';
+              const boxColumnJ = p['จำนวน box'] || p['จำนวน Box'] || p['จำนวน box '] || '';
+              let boxData = ''; // Initialize variable to avoid ReferenceError
               
-              if (boxData && typeof boxData === 'string') {
-                // ลองหาเลขจำนวน Box จากข้อความ
-                const boxMatch = boxData.match(/(\d+)\s*(?:BOX|Box|box|กล่อง)/);
-                if (boxMatch) {
-                  boxes = parseInt(boxMatch[1]) || 0;
-                } else {
-                  // ถ้าไม่มีคำว่า BOX ลองหาแค่ตัวเลข
-                  const numMatch = boxData.match(/(\d+)/);
-                  if (numMatch) {
-                    boxes = parseInt(numMatch[1]) || 0;
+              // ถ้า Column J เป็นตัวเลขให้ใช้เลย
+              if (typeof boxColumnJ === 'number') {
+                boxes = boxColumnJ;
+                boxData = String(boxes);
+              } else if (boxColumnJ !== null && boxColumnJ !== undefined && boxColumnJ !== '') {
+                // ลองแปลงเป็นตัวเลข
+                if (typeof boxColumnJ === 'string') {
+                  const numValue = parseFloat(boxColumnJ.toString().trim());
+                  if (!isNaN(numValue) && isFinite(numValue)) {
+                    boxes = numValue;
+                    boxData = String(boxes);
+                  } else {
+                    // ถ้าแปลงไม่ได้ให้ลอง parse จาก Column E (backup)
+                    boxData = p['จำนวน'] || 
+                                   p['จำนวนที่ต้องการสั่งซื้อ (1 BOX = 1,550 บาท, 1 C/)'] || 
+                                   p['จำนวนที่ต้องการสั่งซื้อ'] || '';
+                    boxes = parseBoxQuantityFromString(boxData);
                   }
                 }
-              } else if (typeof boxData === 'number') {
-                boxes = boxData;
+              } else {
+                // ถ้า Column J ว่างให้ลอง parse จาก Column E (backup)
+                boxData = p['จำนวน'] || 
+                               p['จำนวนที่ต้องการสั่งซื้อ (1 BOX = 1,550 บาท, 1 C/)'] || 
+                               p['จำนวนที่ต้องการสั่งซื้อ'] || '';
+                boxes = parseBoxQuantityFromString(boxData);
               }
               
               // ใช้ข้อมูล Spot - อาจจะต้องคำนวณจากจำนวนที่ต้องการ
@@ -1416,28 +1525,40 @@
                 promoCards: promoCards,
                 codename: p.codename || 'ไม่ระบุ',
                 rank: p.rank || '',
-                attendingParty: p['มาร่วมงาน Midnight Party หรือไม่'] || p['เข้าร่วมงาน'] || ''
+                // Column G: ถ้าเขียนว่า "มาร่วมงาน" = มาได้, ถ้าไม่ใช่ = ไม่มา
+                attendingParty: p['มาร่วมงานไหม'] || p['มาร่วมงาน Midnight Party'] || p['มาร่วมงาน Midnight Party หรือไม่'] || p['เข้าร่วมงาน'] || ''
               };
             }),
             total: data.participants.length,
             totalBoxes: data.participants.reduce((sum, p) => {
-              const boxData = p['จำนวนที่ต้องการสั่งซื้อ (1 BOX = 1,550 บาท, 1 C/)'] || 
-                             p['จำนวนที่ต้องการสั่งซื้อ'] || 
-                             p['จำนวน Box'] || '';
-              if (boxData && typeof boxData === 'string') {
-                const boxMatch = boxData.match(/(\d+)\s*(?:BOX|Box|box|กล่อง)/);
-                if (boxMatch) {
-                  return sum + (parseInt(boxMatch[1]) || 0);
-                } else {
-                  const numMatch = boxData.match(/(\d+)/);
-                  if (numMatch) {
-                    return sum + (parseInt(numMatch[1]) || 0);
+              // ใช้ Column J (จำนวน box) โดยตรง
+              const boxColumnJ = p['จำนวน box'] || p['จำนวน Box'] || p['จำนวน box '] || '';
+              let boxes = 0;
+              
+              if (typeof boxColumnJ === 'number') {
+                boxes = boxColumnJ;
+              } else if (boxColumnJ !== null && boxColumnJ !== undefined && boxColumnJ !== '') {
+                if (typeof boxColumnJ === 'string') {
+                  const numValue = parseFloat(boxColumnJ.toString().trim());
+                  if (!isNaN(numValue) && isFinite(numValue)) {
+                    boxes = numValue;
+                  } else {
+                    // Backup: parse จาก Column E
+                    const boxData = p['จำนวน'] || 
+                                   p['จำนวนที่ต้องการสั่งซื้อ (1 BOX = 1,550 บาท, 1 C/)'] || 
+                                   p['จำนวนที่ต้องการสั่งซื้อ'] || '';
+                    boxes = parseBoxQuantityFromString(boxData);
                   }
                 }
-              } else if (typeof boxData === 'number') {
-                return sum + boxData;
+              } else {
+                // Backup: parse จาก Column E
+                const boxData = p['จำนวน'] || 
+                               p['จำนวนที่ต้องการสั่งซื้อ (1 BOX = 1,550 บาท, 1 C/)'] || 
+                               p['จำนวนที่ต้องการสั่งซื้อ'] || '';
+                boxes = parseBoxQuantityFromString(boxData);
               }
-              return sum;
+              
+              return sum + boxes;
             }, 0),
             totalSpots: 0 // จะเพิ่มเมื่อมีข้อมูล Spot
           };
@@ -1452,6 +1573,7 @@
         }
       }).catch(error => {
         console.error('❌ Fetch error:', error);
+        console.error('❌ Error details:', error.stack || error.toString());
         showFallbackData(container);
       });
     }
@@ -1520,29 +1642,44 @@
       console.log('📊 Processing', data.users.length, 'users');
       
       // รวมข้อมูลของลูกค้าที่จองหลายครั้งเข้าด้วยกัน
+      // ใช้ชื่อเล่น/codename เป็น key เพื่อไม่นับซ้ำ (ถ้าซื้อเพิ่มทีหลังจะรวมกัน)
       const userMap = {};
       data.users.forEach(user => {
-        const phone = String(user.phone || '').replace(/[^\d]/g, "");
-        const key = phone || user.nickname; // ใช้เบอร์โทรเป็น key หรือชื่อเล่นถ้าไม่มีเบอร์โทร
+        // ใช้ชื่อเล่นเป็น key หลัก แต่ถ้าไม่มีให้ใช้ codename
+        const nickname = (user.nickname || '').trim();
+        const codename = (user.codename || '').trim();
+        // ใช้ชื่อเล่นเป็น key แต่ถ้าไม่มีให้ใช้ codename หรือ phone
+        const key = nickname || codename || String(user.phone || '').replace(/[^\d]/g, "");
         
         if (userMap[key]) {
-          // รวมข้อมูลการจอง
+          // รวมข้อมูลการจอง (ถ้าซื้อเพิ่มทีหลัง)
           userMap[key].boxes += user.boxes || 0;
           userMap[key].spots += user.spots || 0;
           // รวม promo cards
           if (user.promoCards && Array.isArray(user.promoCards)) {
             userMap[key].promoCards = (userMap[key].promoCards || []).concat(user.promoCards);
           }
+          // อัปเดต codename ถ้ายังไม่มี
+          if (!userMap[key].codename && codename) {
+            userMap[key].codename = codename;
+            userMap[key].rank = user.rank;
+          }
+          // อัปเดต attendingParty ถ้ายังไม่มีหรือถ้าใหม่เป็น "มาร่วมงาน"
+          const newAttendingPartyText = (user.attendingParty || '').trim();
+          const newAttending = newAttendingPartyText === 'มาร่วมงาน' || newAttendingPartyText.toLowerCase().includes('มาร่วมงาน');
+          if (newAttending) {
+            userMap[key].attendingParty = user.attendingParty;
+          }
         } else {
           // สร้างข้อมูลใหม่
           userMap[key] = {
-            nickname: user.nickname,
-            codename: user.codename,
-            rank: user.rank,
+            nickname: nickname || 'ไม่ระบุชื่อ',
+            codename: codename || '',
+            rank: user.rank || '',
             boxes: user.boxes || 0,
             spots: user.spots || 0,
             promoCards: user.promoCards || [],
-            phone: user.phone,
+            phone: user.phone || '',
             attendingParty: user.attendingParty || ''
           };
         }
@@ -1568,13 +1705,12 @@
       console.log('✅ Stats updated in DOM');
       
       // สร้างตารางแสดงข้อมูล
+      // แสดงเฉพาะ: ชื่อเล่น/codename และมาร่วมงาน Midnight Party หรือไม่
       let html = '<table style="width:100%; border-collapse:collapse; margin:1rem auto; background:#fff; border-radius:12px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.1); max-width:900px;">';
       html += '<thead><tr style="background:#42A5F5;">';
       html += '<th style="padding:12px 8px; text-align:center; color:#fff; font-weight:bold; font-size:1.05em; width:60px;">ลำดับ</th>';
       html += '<th style="padding:12px 8px; text-align:center; color:#fff; font-weight:bold; font-size:1.05em;">ชื่อเล่น / Codename</th>';
-      html += '<th style="padding:12px 8px; text-align:center; color:#fff; font-weight:bold; font-size:1.05em; width:140px;">จำนวน Box</th>';
-      html += '<th style="padding:12px 8px; text-align:center; color:#fff; font-weight:bold; font-size:1.05em; width:180px;">การ์ดโปรโม</th>';
-      html += '<th style="padding:12px 8px; text-align:center; color:#fff; font-weight:bold; font-size:1.05em; width:100px;">เข้าร่วมงาน</th>';
+      html += '<th style="padding:12px 8px; text-align:center; color:#fff; font-weight:bold; font-size:1.05em; width:120px;">มาร่วมงาน Midnight Party</th>';
       html += '</tr></thead><tbody>';
       
       uniqueUsers.forEach((user, index) => {
@@ -1604,53 +1740,10 @@
         
         html += `<td style="padding:12px 8px; text-align:center; color:#2c3e50; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:300px;">${displayName}${codenameDisplay}</td>`;
         
-        // แสดงจำนวน Box ที่รวมแล้ว
-        let orderDetails = '';
-        if (user.boxes > 0) {
-          orderDetails += `${user.boxes} 📦`;
-        }
-        /* ตัด Spot ออก
-        if (user.spots > 0) {
-          if (orderDetails) orderDetails += ' ';
-          orderDetails += `${user.spots} 🎯`;
-        }
-        */
-        if (user.boxes === 0) {
-          orderDetails = '📝';
-        }
-        html += `<td style="padding:12px 8px; text-align:center; color:#2c3e50; white-space:nowrap; font-size:0.9em; font-weight:600;">${orderDetails}</td>`;
-        
-        // แสดงการ์ดโปรโมที่ได้รับ
-        let promoDisplay = '';
-        if (user.promoCards && user.promoCards.length > 0) {
-          promoDisplay = '<div class="user-promo-cards">';
-          user.promoCards.forEach(card => {
-            promoDisplay += `<img src="${card.imageUrl}" alt="Promo ${card.number}" class="user-promo-card-mini" onclick="openPromoCardModal('${card.imageUrl}')" title="การ์ดโปรโม ${card.number}">`;
-          });
-          promoDisplay += '</div>';
-        } else {
-          // คำนวณ promo packs จาก boxes
-          const promoPacks = Math.floor(user.boxes / 2);
-          if (promoPacks > 0) {
-            // สุ่มการ์ดโปรโม (ใช้ phone + index เป็น seed)
-            promoDisplay = '<div class="user-promo-cards">';
-            for (let pIdx = 0; pIdx < promoPacks; pIdx++) {
-              const phone = String(user.phone || '').replace(/[^\d]/g, "");
-              const cardIndex = (phone.length + pIdx) % 4;
-              const cardNumber = ['047', '048', '049', '050'][cardIndex];
-              const cardImageUrl = `https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_MPromo_${cardNumber}.png`;
-              promoDisplay += `<img src="${cardImageUrl}" alt="Promo ${cardNumber}" class="user-promo-card-mini" onclick="openPromoCardModal('${cardImageUrl}')" title="การ์ดโปรโม ${cardNumber}">`;
-            }
-            promoDisplay += '</div>';
-          } else {
-            promoDisplay = '<span style="color:#999;">-</span>';
-          }
-        }
-        html += `<td style="padding:12px 8px; text-align:center; color:#2c3e50; font-size:0.9em;">${promoDisplay}</td>`;
-        
-        // แสดงสถานะการเข้าร่วมงาน
-        const attending = user.attendingParty && (user.attendingParty.toLowerCase().includes('ใช่') || user.attendingParty.toLowerCase().includes('yes') || user.attendingParty.toLowerCase().includes('y'));
-        html += `<td style="padding:12px 8px; text-align:center; color:#2c3e50; font-size:0.9em; font-weight:600;">${attending ? '✅' : '❌'}</td>`;
+        // Column G: ถ้าเขียนว่า "มาร่วมงาน" = มาได้, ถ้าไม่ใช่ = ไม่มา
+        const attendingPartyText = (user.attendingParty || '').trim();
+        const attending = attendingPartyText === 'มาร่วมงาน' || attendingPartyText.toLowerCase().includes('มาร่วมงาน');
+        html += `<td style="padding:12px 8px; text-align:center; color:#2c3e50; font-size:0.9em; font-weight:600;">${attending ? '✅ ใช่' : '❌ ไม่ได้มา'}</td>`;
         
         html += '</tr>';
       });
