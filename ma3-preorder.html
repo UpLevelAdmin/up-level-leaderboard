@@ -2024,6 +2024,64 @@
       }
     }
 
+    // ✅ ฟังก์ชันโหลดข้อมูล (พร้อมระบบ Caching)
+    async function loadData() {
+      const container = document.getElementById('registered-users-list');
+      const loadingElement = document.getElementById('loading-animation');
+      const countElement = document.getElementById('participant-count');
+
+      // 1. ลองแสดงข้อมูลจาก Cache ก่อน (เพื่อให้ User เห็นทันที)
+      const cachedData = localStorage.getItem('ma3_preorder_data');
+      const cachedTime = localStorage.getItem('ma3_preorder_time');
+
+      if (cachedData) {
+        try {
+          const parsedData = JSON.parse(cachedData);
+          // ถ้า Cache ไม่เก่าเกิน 1 ชั่วโมง ให้แสดงผลเลย
+          if (cachedTime && (Date.now() - parseInt(cachedTime)) < 3600000) {
+            console.log("📦 ใช้ข้อมูลจาก Cache");
+            renderParticipants(parsedData.participants);
+            if (countElement) countElement.textContent = parsedData.participants.length;
+            if (loadingElement) loadingElement.style.display = 'none';
+          }
+        } catch (e) {
+          console.error("Cache error:", e);
+        }
+      }
+
+      try {
+        // 2. โหลดข้อมูลจริงจาก API (Background Update)
+        console.log("🔄 กำลังโหลดข้อมูลล่าสุด...");
+        const response = await fetch(apiUrl + "?type=json");
+        const data = await response.json();
+
+        if (data.participants) {
+          // บันทึกลง Cache
+          localStorage.setItem('ma3_preorder_data', JSON.stringify(data));
+          localStorage.setItem('ma3_preorder_time', Date.now().toString());
+
+          // แสดงผลข้อมูลใหม่
+          renderParticipants(data.participants);
+          if (countElement) countElement.textContent = data.participants.length;
+          if (loadingElement) loadingElement.style.display = 'none';
+          console.log("✅ อัปเดตข้อมูลล่าสุดเรียบร้อย");
+        } else if (data.error) {
+          console.error("API Error:", data.error);
+          if (!cachedData) {
+            container.innerHTML = `<div class="error-message">เกิดข้อผิดพลาด: ${data.error}</div>`;
+          }
+        }
+      } catch (error) {
+        console.error("Fetch error:", error);
+        if (!cachedData) {
+          container.innerHTML = `<div class="error-message">ไม่สามารถโหลดข้อมูลได้ กรุณาลองใหม่ภายหลัง</div>`;
+        }
+        if (loadingElement) loadingElement.style.display = 'none';
+      }
+    }
+
+    // เรียกใช้งานฟังก์ชัน
+    loadData();
     // ฟังก์ชันเปิด Modal การ์ดโปรโม
     function openPromoCardModal(imageUrl) {
       const modal = document.getElementById('promoCardModal');

@@ -229,6 +229,9 @@ function onFormSubmit(e) {
       console.warn("⚠️ Telegram API response:", response.getResponseCode(), response.getContentText());
     }
     
+    // ล้าง Cache เพื่อให้ข้อมูลอัปเดตทันที
+    invalidateCache();
+    
   } catch (error) {
     console.error("❌ เกิดข้อผิดพลาดในการส่งแจ้งเตือน Telegram:", error);
     console.error("❌ Error details:", error.toString());
@@ -258,10 +261,27 @@ function testTelegramNotification() {
 
 function doGet(e) {
   try {
-    // Debug logging (ปิดใน production หรือใช้ให้เหมาะสม)
+    // Debug logging
     var isDebug = e && e.parameter && e.parameter.debug === 'true';
     var isJson = e && e.parameter && e.parameter.type === 'json';
+    var refresh = e && e.parameter && e.parameter.refresh === 'true';
     
+    // 1. ตรวจสอบ Cache ก่อน (ถ้าไม่ได้ขอ refresh)
+    const cache = CacheService.getScriptCache();
+    const CACHE_KEY = 'ma3_preorder_data';
+    
+    if (!refresh && !isDebug) {
+      const cachedResult = cache.get(CACHE_KEY);
+      if (cachedResult) {
+        if (isJson) {
+          return ContentService.createTextOutput(cachedResult)
+            .setMimeType(ContentService.MimeType.JSON);
+        }
+        // ถ้าไม่ใช่ JSON request แต่มี cache (อาจจะต้อง parse กลับมาห่อใน createResponse ถ้าจำเป็น แต่ในที่นี้เราส่ง JSON string กลับไปเลยก็ได้ถ้า structure เหมือนกัน)
+        // เพื่อความชัวร์ ถ้าไม่ใช่ JSON request เราอาจจะข้าม cache ไปก่อน หรือ parse กลับมา
+      }
+    }
+
     if (isDebug) console.log('doGet function called');
     
     // ตรวจสอบว่า spreadsheet มีอยู่หรือไม่
@@ -279,26 +299,15 @@ function doGet(e) {
 
     if (!spreadsheet) {
       if (isDebug) console.log('No active spreadsheet found');
-      if (isJson) {
-        return ContentService.createTextOutput(JSON.stringify({ 
-          participants: [],
-          error: "No active spreadsheet found"
-        })).setMimeType(ContentService.MimeType.JSON);
-      }
-      return createResponse({ 
+      const errorResult = JSON.stringify({ 
         participants: [],
         error: "No active spreadsheet found"
       });
+      if (isJson) {
+        return ContentService.createTextOutput(errorResult).setMimeType(ContentService.MimeType.JSON);
+      }
+      return createResponse(JSON.parse(errorResult));
     }
-    
-    if (isDebug) {
-      console.log('Spreadsheet ID:', spreadsheet.getId());
-      console.log('Spreadsheet name:', spreadsheet.getName());
-    }
-    
-    // ลองหา sheet ที่มีอยู่
-    var sheets = spreadsheet.getSheets();
-    if (isDebug) console.log('Available sheets:', sheets.map(s => s.getName()));
     
     // ลองหา sheet ที่มีข้อมูล - อ่านจาก Sheet1 ก่อน
     var targetSheet = null;
@@ -314,39 +323,30 @@ function doGet(e) {
     }
     
     if (!targetSheet) {
-      if (isDebug) console.log('No suitable sheet found');
-      if (isJson) {
-        return ContentService.createTextOutput(JSON.stringify({ 
-          participants: [],
-          error: "No suitable sheet found. Available sheets: " + sheets.map(s => s.getName()).join(', ')
-        })).setMimeType(ContentService.MimeType.JSON);
-      }
-      return createResponse({ 
+      const errorResult = JSON.stringify({ 
         participants: [],
-        error: "No suitable sheet found. Available sheets: " + sheets.map(s => s.getName()).join(', ')
+        error: "No suitable sheet found. Available sheets: " + spreadsheet.getSheets().map(s => s.getName()).join(', ')
       });
+      if (isJson) {
+        return ContentService.createTextOutput(errorResult).setMimeType(ContentService.MimeType.JSON);
+      }
+      return createResponse(JSON.parse(errorResult));
     }
     
     var data = targetSheet.getDataRange().getValues();
-    if (isDebug) console.log('Data rows found:', data.length);
     
     if (data.length <= 1) {
-      if (isDebug) console.log('No data rows found');
-      if (isJson) {
-        return ContentService.createTextOutput(JSON.stringify({ 
-          participants: [],
-          error: "No data rows found in sheet: " + targetSheet.getName()
-        })).setMimeType(ContentService.MimeType.JSON);
-      }
-      return createResponse({ 
+      const errorResult = JSON.stringify({ 
         participants: [],
         error: "No data rows found in sheet: " + targetSheet.getName()
       });
+      if (isJson) {
+        return ContentService.createTextOutput(errorResult).setMimeType(ContentService.MimeType.JSON);
+      }
+      return createResponse(JSON.parse(errorResult));
     }
     
     var headers = data[0];
-    if (isDebug) console.log('Headers count:', headers.length);
-    
     var participants = [];
     
     // สร้างข้อมูลผู้ใช้ในรูปแบบเดียวกับ midnight-party script
@@ -358,13 +358,10 @@ function doGet(e) {
       for (var j = 0; j < headers.length; j++) {
         var header = headers[j];
         var value = row[j];
-        
-        // แปลงค่า null/undefined เป็น string ว่าง
         participant[header] = (value === null || value === undefined) ? '' : value;
       }
       
       // ใช้ Column J (จำนวน box) โดยตรง - แปลงเป็นตัวเลขเรียบร้อยแล้ว
-      // Column J = index 9 (0-based: A=0, B=1, C=2, D=3, E=4, F=5, G=6, H=7, I=8, J=9)
       var boxes = 0;
       var boxColumnJ = null;
       
@@ -424,11 +421,6 @@ function doGet(e) {
       }
       
       participants.push(participant);
-      
-      // Log เฉพาะรายการแรกเท่านั้น เพื่อ debug
-      if (isDebug && i === 1) {
-        console.log('First participant sample:', participant);
-      }
     }
     
     var result = {
@@ -442,10 +434,12 @@ function doGet(e) {
       } : undefined
     };
     
-    if (isDebug) console.log('Final result - participants count:', participants.length);
+    // 2. บันทึกลง Cache (เก็บเป็น JSON String) - นาน 10 นาที (600 วินาที)
+    if (!isDebug) {
+      cache.put(CACHE_KEY, JSON.stringify(result), 600);
+    }
     
     // ถ้ามี type=json ให้ใช้ ContentService ตรงๆ
-    var isJson = e && e.parameter && e.parameter.type === 'json';
     if (isJson) {
       return ContentService.createTextOutput(JSON.stringify(result))
         .setMimeType(ContentService.MimeType.JSON);
@@ -456,18 +450,7 @@ function doGet(e) {
   } catch (error) {
     console.error('Error in doGet:', error);
     var isJson = e && e.parameter && e.parameter.type === 'json';
-    if (isJson) {
-      return ContentService.createTextOutput(JSON.stringify({
-        participants: [],
-        error: error.toString(),
-        stack: error.stack || '',
-        debug: {
-          message: "Error occurred while processing data",
-          timestamp: new Date().toISOString()
-        }
-      })).setMimeType(ContentService.MimeType.JSON);
-    }
-    return createResponse({
+    const errorResponse = JSON.stringify({
       participants: [],
       error: error.toString(),
       stack: error.stack || '',
@@ -476,6 +459,24 @@ function doGet(e) {
         timestamp: new Date().toISOString()
       }
     });
+    
+    if (isJson) {
+      return ContentService.createTextOutput(errorResponse).setMimeType(ContentService.MimeType.JSON);
+    }
+    return createResponse(JSON.parse(errorResponse));
+  }
+}
+
+/**
+ * ล้าง Cache เมื่อมีการอัปเดตข้อมูล
+ */
+function invalidateCache() {
+  try {
+    const cache = CacheService.getScriptCache();
+    cache.remove('ma3_preorder_data');
+    console.log("🧹 Cache invalidated successfully");
+  } catch (e) {
+    console.error("❌ Failed to invalidate cache:", e);
   }
 }
 

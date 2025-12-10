@@ -1,28 +1,52 @@
 <!DOCTYPE html>
 <html lang="th">
+
 <head>
   <meta charset="UTF-8">
   <title>Gym Standing</title>
   <link rel="stylesheet" href="style.css">
-  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;700&family=Inter:wght@400;700&family=Noto+Sans+Thai:wght@400;700&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;700&family=Inter:wght@400;700&family=Noto+Sans+Thai:wght@400;700&display=swap"
+    rel="stylesheet">
   <style>
-    body, .container, table, th, td, input, select, button {
+    body,
+    .container,
+    table,
+    th,
+    td,
+    input,
+    select,
+    button {
       font-family: 'Prompt', 'Inter', 'Noto Sans Thai', 'Montserrat', Arial, sans-serif;
     }
+
     body {
       background: #f6f8fc;
     }
+
     .container {
       max-width: 1000px;
       margin: 32px auto;
       background: #fff;
       border-radius: 16px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
       padding: 24px;
     }
-    .logo img { max-width: 120px; display: block; margin: 0 auto; }
-    h2 { color: #388e3c; text-align: center; font-weight: 700; }
-    select, input[type="search"] {
+
+    .logo img {
+      max-width: 120px;
+      display: block;
+      margin: 0 auto;
+    }
+
+    h2 {
+      color: #388e3c;
+      text-align: center;
+      font-weight: 700;
+    }
+
+    select,
+    input[type="search"] {
       padding: 6px 12px;
       margin: 0 8px 16px 0;
       border-radius: 6px;
@@ -30,6 +54,7 @@
       background: #f1f8e9;
       font-size: 1em;
     }
+
     table {
       width: 100%;
       border-collapse: collapse;
@@ -38,21 +63,31 @@
       border-radius: 12px;
       overflow: hidden;
     }
-    th, td {
+
+    th,
+    td {
       padding: 10px 8px;
       text-align: center;
       border-bottom: 1px solid #e0e0e0;
     }
+
     th {
       background: #e3f2fd;
       color: #1976d2;
       font-weight: bold;
       font-size: 1.05em;
     }
+
     tr:hover td {
       background: #f1f8f8;
     }
-    .leaderboard-title { margin-top: 32px; color: #1976d2; font-weight: 700; }
+
+    .leaderboard-title {
+      margin-top: 32px;
+      color: #1976d2;
+      font-weight: 700;
+    }
+
     #toggle-event-standings {
       display: block;
       margin: 0 auto 24px auto;
@@ -68,21 +103,24 @@
       cursor: pointer;
       text-align: center;
       transition: background 0.2s, transform 0.18s, box-shadow 0.18s;
-      box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+      box-shadow: 0 2px 16px rgba(0, 0, 0, 0.06);
       letter-spacing: 0.5px;
     }
+
     #toggle-event-standings:hover {
       background: linear-gradient(90deg, #80cbc4 60%, #f8bbd0 100%);
       color: #004d40;
       transform: scale(1.03);
       box-shadow: 0 0 24px #b2dfdb, 0 0 32px #fce4ec;
     }
+
     #event-standings-wrap {
       background: #fce4ec;
       border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(236,64,122,0.06);
+      box-shadow: 0 2px 8px rgba(236, 64, 122, 0.06);
       padding: 16px 0 0 0;
     }
+
     /* Spinner */
     .spinner {
       margin: 48px auto 16px auto;
@@ -94,109 +132,323 @@
       animation: spin 1s linear infinite;
       display: none;
     }
+
     @keyframes spin {
-      0% { transform: rotate(0deg);}
-      100% { transform: rotate(360deg);}
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
     }
-    .container { max-width: 1000px; margin: 32px auto; background: #fff; border-radius: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); padding: 24px; }
-    h2 { color: #388e3c; text-align: center; }
-    select, input[type="search"] { padding: 6px 12px; margin: 0 8px 16px 0; border-radius: 6px; border: 1px solid #ccc; }
-    table { width: 100%; border-collapse: collapse; margin-bottom: 32px; }
-    th, td { padding: 8px 6px; text-align: center; border-bottom: 1px solid #eee; }
-    th { background: #e3f2fd; }
-    tr:hover td { background: #f1f8f8; }
-    .leaderboard-title { margin-top: 32px; color: #1976d2; }
-    .logo img { max-width: 120px; display: block; margin: 0 auto; }
-    .codename-rank[data-rank="Rookie"]      .codename { color: #888888; font-size: 1.05em; }
-    .codename-rank[data-rank="Bronze"]      .codename { color: #b87333; font-size: 1.08em; }
-    .codename-rank[data-rank="Silver"]      .codename { color: #9e9e9e; font-size: 1.12em; }
-    .codename-rank[data-rank="Gold"]        .codename { color: #ffd700; font-size: 1.18em; font-weight: bold; }
-    .codename-rank[data-rank="Platinum"]    .codename { color: #00bcd4; font-size: 1.22em; font-weight: bold; }
-    .codename-rank[data-rank="Diamond"]     .codename { color: #00bfff; font-size: 1.28em; font-weight: bold; }
-    .codename-rank[data-rank="Grandmaster"] .codename { color: #8e24aa; font-size: 1.35em; font-weight: bold; }
-    .codename-rank[data-rank="Legend"]      .codename { color: #e53935; font-size: 1.45em; font-weight: bold; }
-    .codename-rank[data-rank="Gold"]        .codename,
-    .codename-rank[data-rank="Platinum"]    .codename,
-    .codename-rank[data-rank="Diamond"]     .codename,
+
+    .container {
+      max-width: 1000px;
+      margin: 32px auto;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+      padding: 24px;
+    }
+
+    h2 {
+      color: #388e3c;
+      text-align: center;
+    }
+
+    select,
+    input[type="search"] {
+      padding: 6px 12px;
+      margin: 0 8px 16px 0;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 32px;
+    }
+
+    th,
+    td {
+      padding: 8px 6px;
+      text-align: center;
+      border-bottom: 1px solid #eee;
+    }
+
+    th {
+      background: #e3f2fd;
+    }
+
+    tr:hover td {
+      background: #f1f8f8;
+    }
+
+    .leaderboard-title {
+      margin-top: 32px;
+      color: #1976d2;
+    }
+
+    .logo img {
+      max-width: 120px;
+      display: block;
+      margin: 0 auto;
+    }
+
+    .codename-rank[data-rank="Rookie"] .codename {
+      color: #888888;
+      font-size: 1.05em;
+    }
+
+    .codename-rank[data-rank="Bronze"] .codename {
+      color: #b87333;
+      font-size: 1.08em;
+    }
+
+    .codename-rank[data-rank="Silver"] .codename {
+      color: #9e9e9e;
+      font-size: 1.12em;
+    }
+
+    .codename-rank[data-rank="Gold"] .codename {
+      color: #ffd700;
+      font-size: 1.18em;
+      font-weight: bold;
+    }
+
+    .codename-rank[data-rank="Platinum"] .codename {
+      color: #00bcd4;
+      font-size: 1.22em;
+      font-weight: bold;
+    }
+
+    .codename-rank[data-rank="Diamond"] .codename {
+      color: #00bfff;
+      font-size: 1.28em;
+      font-weight: bold;
+    }
+
+    .codename-rank[data-rank="Grandmaster"] .codename {
+      color: #8e24aa;
+      font-size: 1.35em;
+      font-weight: bold;
+    }
+
+    .codename-rank[data-rank="Legend"] .codename {
+      color: #e53935;
+      font-size: 1.45em;
+      font-weight: bold;
+    }
+
+    .codename-rank[data-rank="Gold"] .codename,
+    .codename-rank[data-rank="Platinum"] .codename,
+    .codename-rank[data-rank="Diamond"] .codename,
     .codename-rank[data-rank="Grandmaster"] .codename,
-    .codename-rank[data-rank="Legend"]      .codename {
+    .codename-rank[data-rank="Legend"] .codename {
       animation: blink 1s step-end infinite alternate;
     }
+
     @keyframes blink {
-      0%   { opacity: 1;   text-shadow: 0 0 8px #fff, 0 0 16px currentColor; }
-      100% { opacity: 0.6; text-shadow: 0 0 2px #fff, 0 0 4px currentColor; }
+      0% {
+        opacity: 1;
+        text-shadow: 0 0 8px #fff, 0 0 16px currentColor;
+      }
+
+      100% {
+        opacity: 0.6;
+        text-shadow: 0 0 2px #fff, 0 0 4px currentColor;
+      }
     }
+
     /* Wave (Gold+) */
     @keyframes wave {
-      0%, 100% { transform: translateY(0);}
-      20%      { transform: translateY(-5px);}
-      40%      { transform: translateY(-10px);}
-      60%      { transform: translateY(-5px);}
-      80%      { transform: translateY(0);}
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      20% {
+        transform: translateY(-5px);
+      }
+
+      40% {
+        transform: translateY(-10px);
+      }
+
+      60% {
+        transform: translateY(-5px);
+      }
+
+      80% {
+        transform: translateY(0);
+      }
     }
+
     .codename.wave span {
       display: inline-block;
-      animation: wave 1.2s cubic-bezier(0.4,0,0.2,1) infinite;
+      animation: wave 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
     }
-    .codename.wave.gold span { animation-duration: 1.2s; }
-    .codename.wave.platinum span { animation-duration: 1s; }
-    .codename.wave.diamond span { animation-duration: 0.85s; }
-    .codename.wave.grandmaster span { animation-duration: 0.7s; }
-    .codename.wave.legend span { animation-duration: 0.6s; }
-    .codename.wave span:nth-child(1) { animation-delay: 0s; }
-    .codename.wave span:nth-child(2) { animation-delay: 0.08s; }
-    .codename.wave span:nth-child(3) { animation-delay: 0.16s; }
-    .codename.wave span:nth-child(4) { animation-delay: 0.24s; }
-    .codename.wave span:nth-child(5) { animation-delay: 0.32s; }
-    .codename.wave span:nth-child(6) { animation-delay: 0.40s; }
-    .codename.wave span:nth-child(7) { animation-delay: 0.48s; }
-    .codename.wave span:nth-child(8) { animation-delay: 0.56s; }
-    .codename.wave span:nth-child(9) { animation-delay: 0.64s; }
-    .codename.wave span:nth-child(10){ animation-delay: 0.72s; }
+
+    .codename.wave.gold span {
+      animation-duration: 1.2s;
+    }
+
+    .codename.wave.platinum span {
+      animation-duration: 1s;
+    }
+
+    .codename.wave.diamond span {
+      animation-duration: 0.85s;
+    }
+
+    .codename.wave.grandmaster span {
+      animation-duration: 0.7s;
+    }
+
+    .codename.wave.legend span {
+      animation-duration: 0.6s;
+    }
+
+    .codename.wave span:nth-child(1) {
+      animation-delay: 0s;
+    }
+
+    .codename.wave span:nth-child(2) {
+      animation-delay: 0.08s;
+    }
+
+    .codename.wave span:nth-child(3) {
+      animation-delay: 0.16s;
+    }
+
+    .codename.wave span:nth-child(4) {
+      animation-delay: 0.24s;
+    }
+
+    .codename.wave span:nth-child(5) {
+      animation-delay: 0.32s;
+    }
+
+    .codename.wave span:nth-child(6) {
+      animation-delay: 0.40s;
+    }
+
+    .codename.wave span:nth-child(7) {
+      animation-delay: 0.48s;
+    }
+
+    .codename.wave span:nth-child(8) {
+      animation-delay: 0.56s;
+    }
+
+    .codename.wave span:nth-child(9) {
+      animation-delay: 0.64s;
+    }
+
+    .codename.wave span:nth-child(10) {
+      animation-delay: 0.72s;
+    }
+
     /* Bounce (Platinum) */
     @keyframes bounce {
-      0%, 100% { transform: translateY(0); }
-      50%      { transform: translateY(-18px); }
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-18px);
+      }
     }
+
     .codename.bounce {
       display: inline-block;
       animation: bounce 1s infinite;
     }
+
     /* Pulse (Diamond) */
     @keyframes pulse {
-      0%   { transform: scale(1);   opacity: 1; }
-      50%  { transform: scale(1.18); opacity: 0.7; }
-      100% { transform: scale(1);   opacity: 1; }
+      0% {
+        transform: scale(1);
+        opacity: 1;
+      }
+
+      50% {
+        transform: scale(1.18);
+        opacity: 0.7;
+      }
+
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
     }
+
     .codename.pulse {
       display: inline-block;
       animation: pulse 1.2s infinite;
     }
+
     /* Shake (Grandmaster) */
     @keyframes shake {
-      0%, 100% { transform: translateX(0); }
-      20% { transform: translateX(-2px); }
-      40% { transform: translateX(2px); }
-      60% { transform: translateX(-2px); }
-      80% { transform: translateX(2px); }
+
+      0%,
+      100% {
+        transform: translateX(0);
+      }
+
+      20% {
+        transform: translateX(-2px);
+      }
+
+      40% {
+        transform: translateX(2px);
+      }
+
+      60% {
+        transform: translateX(-2px);
+      }
+
+      80% {
+        transform: translateX(2px);
+      }
     }
+
     .codename.shake {
       display: inline-block;
       animation: shake 0.7s infinite;
     }
+
     /* Rainbow Spin (Legend) */
     @keyframes rainbow {
-      0% { filter: hue-rotate(0deg); }
-      100% { filter: hue-rotate(360deg); }
+      0% {
+        filter: hue-rotate(0deg);
+      }
+
+      100% {
+        filter: hue-rotate(360deg);
+      }
     }
+
     @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
     }
+
     .codename.rainbow-spin {
       display: inline-block;
       animation: rainbow 2s linear infinite, spin 1.5s linear infinite;
     }
+
     /* Neon Glow (Gold) */
 
 
@@ -206,14 +458,17 @@
       text-shadow: 0 0 5px #ffd700, 0 0 10px #ffd700, 0 0 20px #ffd700, 0 0 40px #ffd700, 0 0 80px #ffd700;
       animation: glow 1.5s infinite alternate;
     }
+
     @keyframes glow {
       0% {
         text-shadow: 0 0 5px #ffd700, 0 0 10px #ffd700, 0 0 20px #ffd700, 0 0 40px #ffd700, 0 0 80px #ffd700;
       }
+
       100% {
         text-shadow: 0 0 10px #00d4ff, 0 0 20px #00d4ff, 0 0 40px #00d4ff, 0 0 80px #00d4ff, 0 0 160px #00d4ff;
       }
     }
+
     /* Typewriter (Platinum) */
     .codename.typewriter {
       font-family: 'Fira Mono', monospace;
@@ -223,15 +478,33 @@
       animation: typing 2.5s steps(12, end) infinite, blink-caret .75s step-end infinite;
       font-size: 1.22em;
     }
+
     @keyframes typing {
-      0% { width: 0 }
-      50% { width: 100% }
-      100% { width: 0 }
+      0% {
+        width: 0
+      }
+
+      50% {
+        width: 100%
+      }
+
+      100% {
+        width: 0
+      }
     }
+
     @keyframes blink-caret {
-      from, to { border-color: transparent }
-      50% { border-color: #00bcd4; }
+
+      from,
+      to {
+        border-color: transparent
+      }
+
+      50% {
+        border-color: #00bcd4;
+      }
     }
+
     /* Glitch (Diamond) */
     .codename.glitch {
       position: relative;
@@ -240,54 +513,77 @@
       font-weight: bold;
       animation: glitch 2s infinite;
     }
+
     .codename.glitch::before,
     .codename.glitch::after {
       content: attr(data-text);
       position: absolute;
-      left: 0; top: 0;
-      width: 100%; height: 100%;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
       opacity: 0.7;
     }
+
     .codename.glitch::before {
       color: #ff005e;
       z-index: 1;
       clip-path: polygon(0 0, 100% 0, 100% 30%, 0 30%);
       animation: glitch 2s infinite;
     }
+
     .codename.glitch::after {
       color: #00d4ff;
       z-index: 2;
       clip-path: polygon(0 70%, 100% 70%, 100% 100%, 0 100%);
       animation: glitch 2s infinite;
     }
+
     @keyframes glitch {
-      0%, 100% { transform: translate(0);}
-      20% { transform: translate(-2px, 2px);}
-      40% { transform: translate(2px, -2px);}
-      60% { transform: translate(-1px, 1px);}
-      80% { transform: translate(1px, -1px);}
+
+      0%,
+      100% {
+        transform: translate(0);
+      }
+
+      20% {
+        transform: translate(-2px, 2px);
+      }
+
+      40% {
+        transform: translate(2px, -2px);
+      }
+
+      60% {
+        transform: translate(-1px, 1px);
+      }
+
+      80% {
+        transform: translate(1px, -1px);
+      }
     }
-    
+
     /* Mobile Responsive */
     @media (max-width: 768px) {
       .container {
         margin: 16px auto;
         padding: 16px;
       }
-      
+
       h2 {
         font-size: 1.2em;
       }
-      
-      th, td {
+
+      th,
+      td {
         padding: 6px 4px;
         font-size: 0.85em;
       }
-      
+
       th {
         font-size: 0.9em;
       }
-      
+
       #toggle-event-standings {
         font-size: 1em;
         padding: 12px 0;
@@ -299,108 +595,158 @@
         margin: 8px auto;
         padding: 8px;
       }
-      
+
       h2 {
         font-size: 1em;
       }
-      
-      th, td {
+
+      th,
+      td {
         padding: 4px 2px;
         font-size: 0.75em;
       }
-      
+
       th {
         font-size: 0.8em;
       }
-      
+
       #toggle-event-standings {
         font-size: 0.9em;
         padding: 10px 0;
       }
     }
-    
+
     @media (max-width: 360px) {
       .container {
         margin: 4px auto;
         padding: 4px;
       }
-      
+
       h2 {
         font-size: 10px;
       }
-      
-      th, td {
+
+      th,
+      td {
         padding: 2px 1px;
         font-size: 10px;
       }
-      
+
       th {
         font-size: 10px;
       }
-      
+
       #toggle-event-standings {
         font-size: 10px;
         padding: 6px 0;
       }
-      
+
       .leaderboard-title {
         font-size: 10px;
       }
     }
-    
+
     @media (max-width: 320px) {
       .container {
         margin: 2px auto;
         padding: 2px;
       }
-      
+
       h2 {
         font-size: 10px;
       }
-      
-      th, td {
+
+      th,
+      td {
         padding: 1px 1px;
         font-size: 10px;
       }
-      
+
       th {
         font-size: 10px;
       }
-      
+
       #toggle-event-standings {
         font-size: 10px;
         padding: 4px 0;
       }
-      
+
       .leaderboard-title {
         font-size: 10px;
       }
     }
-    
+
     /* Mobile responsive codename sizes */
     @media (max-width: 360px) {
-      .codename-rank[data-rank="Rookie"]      .codename { font-size: 10px; }
-      .codename-rank[data-rank="Bronze"]      .codename { font-size: 10px; }
-      .codename-rank[data-rank="Silver"]      .codename { font-size: 10px; }
-      .codename-rank[data-rank="Gold"]        .codename { font-size: 10px; }
-      .codename-rank[data-rank="Platinum"]    .codename { font-size: 10px; }
-      .codename-rank[data-rank="Diamond"]     .codename { font-size: 10px; }
-      .codename-rank[data-rank="Grandmaster"] .codename { font-size: 10px; }
-      .codename-rank[data-rank="Legend"]      .codename { font-size: 10px; }
+      .codename-rank[data-rank="Rookie"] .codename {
+        font-size: 10px;
+      }
+
+      .codename-rank[data-rank="Bronze"] .codename {
+        font-size: 10px;
+      }
+
+      .codename-rank[data-rank="Silver"] .codename {
+        font-size: 10px;
+      }
+
+      .codename-rank[data-rank="Gold"] .codename {
+        font-size: 10px;
+      }
+
+      .codename-rank[data-rank="Platinum"] .codename {
+        font-size: 10px;
+      }
+
+      .codename-rank[data-rank="Diamond"] .codename {
+        font-size: 10px;
+      }
+
+      .codename-rank[data-rank="Grandmaster"] .codename {
+        font-size: 10px;
+      }
+
+      .codename-rank[data-rank="Legend"] .codename {
+        font-size: 10px;
+      }
     }
-    
+
     @media (max-width: 320px) {
-      .codename-rank[data-rank="Rookie"]      .codename { font-size: 10px; }
-      .codename-rank[data-rank="Bronze"]      .codename { font-size: 10px; }
-      .codename-rank[data-rank="Silver"]      .codename { font-size: 10px; }
-      .codename-rank[data-rank="Gold"]        .codename { font-size: 10px; }
-      .codename-rank[data-rank="Platinum"]    .codename { font-size: 10px; }
-      .codename-rank[data-rank="Diamond"]     .codename { font-size: 10px; }
-      .codename-rank[data-rank="Grandmaster"] .codename { font-size: 10px; }
-      .codename-rank[data-rank="Legend"]      .codename { font-size: 10px; }
+      .codename-rank[data-rank="Rookie"] .codename {
+        font-size: 10px;
+      }
+
+      .codename-rank[data-rank="Bronze"] .codename {
+        font-size: 10px;
+      }
+
+      .codename-rank[data-rank="Silver"] .codename {
+        font-size: 10px;
+      }
+
+      .codename-rank[data-rank="Gold"] .codename {
+        font-size: 10px;
+      }
+
+      .codename-rank[data-rank="Platinum"] .codename {
+        font-size: 10px;
+      }
+
+      .codename-rank[data-rank="Diamond"] .codename {
+        font-size: 10px;
+      }
+
+      .codename-rank[data-rank="Grandmaster"] .codename {
+        font-size: 10px;
+      }
+
+      .codename-rank[data-rank="Legend"] .codename {
+        font-size: 10px;
+      }
     }
   </style>
 </head>
+
 <body>
   <a href="index.html" class="home-button" title="กลับหน้าหลัก"></a>
   <div class="container">
@@ -431,7 +777,8 @@
       <select id="event-select"></select>
       <input type="search" id="player-search" placeholder="ค้นหาผู้เล่น...">
     </div>
-    <button id="toggle-event-standings" style="display:block;margin:0 auto 16px auto;max-width:350px;padding:10px 0;background:#1976d2;color:#fff;font-size:1.1em;font-weight:bold;border:none;border-radius:8px;cursor:pointer;">แสดงตารางการแข่งขัน</button>
+    <button id="toggle-event-standings"
+      style="display:block;margin:0 auto 16px auto;max-width:350px;padding:10px 0;background:#1976d2;color:#fff;font-size:1.1em;font-weight:bold;border:none;border-radius:8px;cursor:pointer;">แสดงตารางการแข่งขัน</button>
     <div id="event-standings-wrap" style="display:none;">
       <table id="event-standings">
         <thead>
@@ -540,7 +887,7 @@
     // ฟังก์ชันสำหรับดึง base rank จาก rank ที่มี suffix
     function getBaseRank(rank) {
       if (!rank) return "Rookie";
-      
+
       // ลบ suffix เช่น II, III, IV, V, VI, VII, VIII, IX, X หรือตัวเลข
       const baseRank = rank.replace(/\s+(II|III|IV|V|VI|VII|VIII|IX|X|\d+)$/, '');
       return baseRank || "Rookie";
@@ -549,12 +896,12 @@
     // ฟังก์ชันสำหรับดึง emoji จาก rank (รองรับ rank ที่มี suffix)
     function getRankEmoji(rank) {
       if (!rank) return rankEmojis["Rookie"] || "🐣";
-      
+
       // ลองหาจาก rankEmojis ก่อน
       if (rankEmojis[rank]) {
         return rankEmojis[rank];
       }
-      
+
       // ถ้าไม่มี ให้ดึง base rank แล้วหาอิโมจิ
       const baseRank = getBaseRank(rank);
       return rankEmojis[baseRank] || rankEmojis["Rookie"] || "🐣";
@@ -602,7 +949,7 @@
         if (row["Rank"] == 3) stats[codename].third += 1;
         stats[codename].matches += Number(row["matches_played"] || 0);
         stats[codename].wins += Number(row["matches_won"] || 0);
-        stats[codename].winrateSum += Number(row["winrate (%)"]||0);
+        stats[codename].winrateSum += Number(row["winrate (%)"] || 0);
       });
       const arr = Object.values(stats).map(s => ({
         ...s,
@@ -630,11 +977,11 @@
       const eventName = select.value.split(' (')[0];
       const eventDate = select.value.match(/\(([^)]+)\)/)[1];
       const tbody = document.querySelector('#event-standings tbody');
-      
+
       // Debug: log the filter criteria
       console.log('Filtering for:', { eventName, eventDate });
       console.log('Available data:', data.map(row => ({ name: row["Event Name"], date: row["Event date"] })));
-      
+
       let rows = data.filter(row => {
         // Normalize date format for comparison
         let rowDate = row["Event date"];
@@ -643,9 +990,9 @@
         }
         return row["Event Name"] === eventName && rowDate === eventDate;
       });
-      
+
       console.log('Filtered rows before phone filter:', rows.length);
-      
+
       // Only filter by phone if we have data
       if (rows.length > 0) {
         rows = rows.filter(row => {
@@ -653,13 +1000,13 @@
           return !!phone; // filter out players without phone number
         });
       }
-      
+
       console.log('Filtered rows after phone filter:', rows.length);
-      
+
       if (search) {
-        rows = rows.filter(row => row["Player Name"].toLowerCase().includes(search) || (row["Codename"]||'').toLowerCase().includes(search));
+        rows = rows.filter(row => row["Player Name"].toLowerCase().includes(search) || (row["Codename"] || '').toLowerCase().includes(search));
       }
-      
+
       // Always show the table if we have data, even if empty
       document.getElementById('event-standings-wrap').style.display = 'block';
       tbody.innerHTML = rows.map(row => {
@@ -681,10 +1028,10 @@
           <td>${row["matches_lost"]}</td>
           <td>${row["winrate (%)"]}</td>
           <td>${row["opp_winrate (%)"]}</td>
-          <td>${row["note"]||""}</td>
+          <td>${row["note"] || ""}</td>
         </tr>`;
       }).join('');
-      
+
       // Show message if no data
       if (rows.length === 0) {
         tbody.innerHTML = `<tr><td colspan="11" style="text-align:center;padding:20px;color:#666;">ไม่พบข้อมูลสำหรับ Event นี้</td></tr>`;
@@ -692,35 +1039,95 @@
     }
 
     // Event listeners
+    // Event listeners
     document.addEventListener('DOMContentLoaded', async () => {
       // แสดง spinner loading
-      document.getElementById('loading-spinner').style.display = 'block';
-      data = await fetchGymStandingData();
-      // ดึงข้อมูลสมาชิกเพื่อ map เบอร์โทร -> codename, rank (เหมือน gymbattle)
-      let members = [];
+      const spinner = document.getElementById('loading-spinner');
+      spinner.style.display = 'block';
+
+      const CACHE_KEY_GYM = 'gym_standing_data_v1';
+      const CACHE_TIME_GYM = 'gym_standing_time_v1';
+      const CACHE_KEY_MEMBERS = 'member_dashboard_data_v1';
+
+      // 1. ลองโหลดจาก Cache ก่อน
+      const cachedGym = localStorage.getItem(CACHE_KEY_GYM);
+      const cachedMembers = localStorage.getItem(CACHE_KEY_MEMBERS);
+      const cachedTime = localStorage.getItem(CACHE_TIME_GYM);
+
+      if (cachedGym && cachedMembers) {
+        try {
+          data = JSON.parse(cachedGym);
+          const members = JSON.parse(cachedMembers);
+          phoneMap = buildPhoneMap(members);
+
+          if (cachedTime && (Date.now() - parseInt(cachedTime)) < 3600000) {
+            console.log("📦 ใช้ข้อมูลจาก Cache");
+            renderEventDropdown();
+            renderLeaderboard();
+            renderEventStandings();
+            spinner.style.display = 'none';
+          }
+        } catch (e) {
+          console.error("Cache error:", e);
+        }
+      }
+
+      // 2. โหลดข้อมูลจริง (Background Update)
       try {
-        const res = await fetch("https://script.google.com/macros/s/AKfycbxtjsDwHI6nJU4OIHExUxMaZwUn3qwakvdkzwbQO7C8Trzz5Gh84SX6F1gqb4BOFQcn/exec?func=getMemberDashboardData");
-        members = await res.json();
-      } catch(e) {}
-      phoneMap = buildPhoneMap(members);
-      document.getElementById('loading-spinner').style.display = 'none';
-      renderEventDropdown();
-      renderLeaderboard(); // Render leaderboard first
-      // ซ่อน standings และปุ่ม toggle
-      const standingsWrap = document.getElementById('event-standings-wrap');
-      const toggleBtn = document.getElementById('toggle-event-standings');
-      standingsWrap.style.display = 'none';
-      let standingsVisible = false;
-      toggleBtn.textContent = 'แสดงตารางการแข่งขัน';
-      toggleBtn.onclick = function() {
-        standingsVisible = !standingsVisible;
-        standingsWrap.style.display = standingsVisible ? '' : 'none';
-        toggleBtn.textContent = standingsVisible ? 'ซ่อนตารางการแข่งขัน' : 'แสดงตารางการแข่งขัน';
-      };
-      renderEventStandings();
+        console.log("🔄 กำลังโหลดข้อมูลล่าสุด...");
+
+        // โหลดข้อมูลพร้อมกัน
+        const [gymData, membersData] = await Promise.all([
+          fetchGymStandingData(),
+          fetch("https://script.google.com/macros/s/AKfycbxtjsDwHI6nJU4OIHExUxMaZwUn3qwakvdkzwbQO7C8Trzz5Gh84SX6F1gqb4BOFQcn/exec?func=getMemberDashboardData").then(res => res.json()).catch(() => [])
+        ]);
+
+        if (gymData.length > 0) {
+          data = gymData;
+          localStorage.setItem(CACHE_KEY_GYM, JSON.stringify(data));
+          localStorage.setItem(CACHE_TIME_GYM, Date.now().toString());
+        }
+
+        if (membersData.length > 0) {
+          localStorage.setItem(CACHE_KEY_MEMBERS, JSON.stringify(membersData));
+          phoneMap = buildPhoneMap(membersData);
+        }
+
+        console.log("✅ อัปเดตข้อมูลล่าสุดเรียบร้อย");
+        spinner.style.display = 'none';
+
+        renderEventDropdown();
+        renderLeaderboard();
+
+        // Setup UI logic
+        const standingsWrap = document.getElementById('event-standings-wrap');
+        const toggleBtn = document.getElementById('toggle-event-standings');
+
+        // ถ้ายังไม่ได้ setup toggle button (กรณีโหลดครั้งแรกจาก cache อาจจะ setup ไปแล้ว หรือยังไม่ได้ทำ)
+        // เพื่อความชัวร์ reset state
+        standingsWrap.style.display = 'none';
+        let standingsVisible = false;
+        toggleBtn.textContent = 'แสดงตารางการแข่งขัน';
+        toggleBtn.onclick = function () {
+          standingsVisible = !standingsVisible;
+          standingsWrap.style.display = standingsVisible ? '' : 'none';
+          toggleBtn.textContent = standingsVisible ? 'ซ่อนตารางการแข่งขัน' : 'แสดงตารางการแข่งขัน';
+        };
+
+        renderEventStandings();
+
+      } catch (error) {
+        console.error("Fetch error:", error);
+        if (!cachedGym) {
+          spinner.style.display = 'none';
+          alert("ไม่สามารถโหลดข้อมูลได้");
+        }
+      }
+
       document.getElementById('event-select').addEventListener('change', renderEventStandings);
       document.getElementById('player-search').addEventListener('input', renderEventStandings);
     });
   </script>
 </body>
+
 </html>

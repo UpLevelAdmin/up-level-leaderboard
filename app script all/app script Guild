@@ -501,6 +501,9 @@ function updateLeaderboard() {
   
   lb.clearContents();
   lb.getRange(1, 1, result.length, result[0].length).setValues(result);
+  
+  // Clear cache to ensure fresh data is served
+  CacheService.getScriptCache().remove('leaderboard_data');
 }
 
 
@@ -1414,6 +1417,15 @@ function undoLastExpBulk() {
 
 // ✅ ฟังก์ชันสำหรับ Web App - ส่ง Quest List เป็น JSON
 function getQuestList() {
+  const cache = CacheService.getScriptCache();
+  const CACHE_KEY = 'quest_list_data';
+  const cached = cache.get(CACHE_KEY);
+
+  if (cached) {
+    return ContentService.createTextOutput(cached)
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Quest List");
   const data = sheet.getDataRange().getValues();
   const headers = data[0];
@@ -1428,7 +1440,11 @@ function getQuestList() {
     });
     quests.push(quest);
   }
-  return ContentService.createTextOutput(JSON.stringify(quests)).setMimeType(ContentService.MimeType.JSON);
+  
+  const jsonResult = JSON.stringify(quests);
+  cache.put(CACHE_KEY, jsonResult, 600); // Cache for 10 minutes
+  
+  return ContentService.createTextOutput(jsonResult).setMimeType(ContentService.MimeType.JSON);
 }
 
 // ✅ ฟังก์ชัน submitQuest(phone, questId)
@@ -1531,6 +1547,15 @@ function doPost(e) {
 
 
 function getLeaderboardData() {
+  const cache = CacheService.getScriptCache();
+  const CACHE_KEY = 'leaderboard_data';
+  const cached = cache.get(CACHE_KEY);
+
+  if (cached) {
+    return ContentService.createTextOutput(cached)
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Leaderboard");
   const data = sheet.getDataRange().getValues();
   const headers = data[0];
@@ -1540,7 +1565,10 @@ function getLeaderboardData() {
     return obj;
   });
 
-  return ContentService.createTextOutput(JSON.stringify(result))
+  const jsonResult = JSON.stringify(result);
+  cache.put(CACHE_KEY, jsonResult, 600); // Cache for 10 minutes
+
+  return ContentService.createTextOutput(jsonResult)
     .setMimeType(ContentService.MimeType.JSON);
 }
 
@@ -3136,6 +3164,15 @@ function getMemberDashboardData() {
 }
 
 function getGymStandingData() {
+  const cache = CacheService.getScriptCache();
+  const CACHE_KEY = 'gym_standing_data';
+  const cached = cache.get(CACHE_KEY);
+
+  if (cached) {
+    return ContentService.createTextOutput(cached)
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Gym Standing");
   if (!sheet) {
     return ContentService.createTextOutput(JSON.stringify({ error: "ไม่พบชีท Gym Standing" }))
@@ -3148,7 +3185,11 @@ function getGymStandingData() {
     headers.forEach((h, i) => obj[h] = row[i]);
     return obj;
   });
-  return ContentService.createTextOutput(JSON.stringify(result))
+  
+  const jsonResult = JSON.stringify(result);
+  cache.put(CACHE_KEY, jsonResult, 600); // Cache for 10 minutes
+  
+  return ContentService.createTextOutput(jsonResult)
     .setMimeType(ContentService.MimeType.JSON);
 }
 
