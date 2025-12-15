@@ -189,6 +189,8 @@ function onOpen() {
     .addItem('🔍 ตรวจสอบ Standing แบบเร็ว', 'showStandingCheckResult')
     .addItem('🔄 บังคับอัปเดต Status ทั้งหมด', 'forceUpdateAllStatus')
     .addItem('🔧 แก้ไขปัญหาข้อมูล Player', 'fixPlayerDataIssues')
+    .addSeparator()
+    .addItem('🚨 รีเซ็ตระบบ (แก้ค้าง)', 'resetSystem')
     .addToUi();
   
   // 🎨 Formatting & Display - จัดรูปแบบและการแสดงผล
@@ -469,6 +471,46 @@ function pairNextRound() {
   if (roundData.length > 0) {
     const lastRound = Math.max(...roundData);
     const hasLastRound = roundData.some(r => r === lastRound);
+    
+    // ⚡ เพิ่ม: ตรวจสอบว่ารอบล่าสุดมีการกรอกผลครบถ้วนหรือไม่ (เฉพาะคู่ที่ไม่ใช่ BYE)
+    if (hasLastRound) {
+      const incompleteTables = [];
+      const colIndex = {
+         p1: 2, p2: 8, result: 10 // Based on typical layout
+      }; 
+      
+      // Auto-detect columns if header exists
+      const header = allPairingData[0];
+      if (header) {
+        colIndex.p1 = header.indexOf('P1_ID');
+        colIndex.p2 = header.indexOf('P2_ID');
+        colIndex.result = header.indexOf('RESULT');
+      }
+
+      for (let i = 1; i < allPairingData.length; i++) {
+        const row = allPairingData[i];
+        if (row[0] == lastRound) {
+           const p1 = row[colIndex.p1];
+           const p2 = row[colIndex.p2];
+           const res = row[colIndex.result];
+           
+           // ถ้าไม่ใช่ BYE และยังไม่มีผลการแข่งขัน
+           if (p1 !== 'BYE' && p2 !== 'BYE' && (!res || res.toString().trim() === '')) {
+             incompleteTables.push(row[1]); // Table number
+           }
+        }
+      }
+      
+      if (incompleteTables.length > 0) {
+        SpreadsheetApp.getUi().alert(
+          '❌ ไม่สามารถจับคู่รอบถัดไปได้', 
+          `ยังมีคู่ที่ยังไม่ได้กรอกผลการแข่งขันในรอบที่ ${lastRound}:\nโต๊ะ: ${incompleteTables.join(', ')}\n\nกรุณากรอกผลให้ครบก่อนจับคู่รอบถัดไป`, 
+          SpreadsheetApp.getUi().ButtonSet.OK
+        );
+        return;
+      }
+    }
+
     if (hasLastRound) {
       const response = SpreadsheetApp.getUi().alert(
         'คำเตือน', 
@@ -565,9 +607,20 @@ function pairNextRound() {
     }
   });
 
+  // ⚡ Load dropped players from Pairing sheet (Column M) as the source of truth
+  const dropList = pairingSheet.getRange('M2:M').getValues().flat().filter(name => name && String(name).trim() !== '');
+  const dropSet = new Set(dropList.map(x => String(x).trim()));
+
   // กรอง activePlayers จาก standings (ไม่รวมผู้เล่นที่ drop)
   let activePlayers = standings
-    .filter(player => player.status !== 'DROPPED' && player.id)
+    .filter(player => {
+      // Check status from standings
+      if (player.status === 'DROPPED') return false;
+      // Check manual drop list (ID or Name)
+      if (dropSet.has(String(player.id).trim())) return false;
+      if (dropSet.has(String(player.name).trim())) return false;
+      return !!player.id;
+    })
     .map(player => ({
       id: player.id,
       name: player.name,
@@ -905,24 +958,33 @@ function pairNextRound() {
     ]);
   }
 
-  // เขียนผลลัพธ์ลง Pairing
-  const startRow = pairingSheet.getLastRow() + 1;
-  pairingSheet.getRange(startRow, 1, output.length, output[0].length).setValues(output);
-  // ⚙️ แก้ชื่อผู้เล่นที่ format ผิดให้ถูกต้องแบบ idempotent เฉพาะแถวที่เพิ่มใหม่
-  normalizeNewPairingNames(pairingSheet, startRow, output.length);
-  addCheckboxes(pairingSheet, output.length);
-  
-  // ⚡ ข้ามการอัปเดต Bucket แบบเก่า (ใช้เวอร์ชันใหม่ด้านล่างไฟล์)
-  
-  // ⚡ จัดรูปแบบเฉพาะแถวที่เพิ่ม (incremental) เพื่อความเร็ว
-  const roundNumber = output.length > 0 ? output[0][0] : '';
-  formatPairingIncremental(pairingSheet, startRow, output.length, roundNumber);
-  
-  // อัปเดต Standings
+  // ⚡ Prevent onEdit from running during bulk update
+  const scriptProperties = PropertiesService.getScriptProperties();
+  scriptProperties.setProperty('IS_SCRIPT_RUNNING', 'true');
+
   try {
-    updateStandingsInBackground();
-  } catch (error) {
-    console.log('เกิดข้อผิดพลาดในการอัปเดต Standings (bg):', error);
+      // เขียนผลลัพธ์ลง Pairing
+      const startRow = pairingSheet.getLastRow() + 1;
+      pairingSheet.getRange(startRow, 1, output.length, output[0].length).setValues(output);
+      // ⚙️ แก้ชื่อผู้เล่นที่ format ผิดให้ถูกต้องแบบ idempotent เฉพาะแถวที่เพิ่มใหม่
+      normalizeNewPairingNames(pairingSheet, startRow, output.length);
+      addCheckboxes(pairingSheet, output.length);
+      
+      // ⚡ ข้ามการอัปเดต Bucket แบบเก่า (ใช้เวอร์ชันใหม่ด้านล่างไฟล์)
+      
+      // ⚡ จัดรูปแบบเฉพาะแถวที่เพิ่ม (incremental) เพื่อความเร็ว
+      const roundNumber = output.length > 0 ? output[0][0] : '';
+      formatPairingIncremental(pairingSheet, startRow, output.length, roundNumber);
+      
+      // อัปเดต Standings
+      try {
+        updateStandingsInBackground();
+      } catch (error) {
+        console.log('เกิดข้อผิดพลาดในการอัปเดต Standings (bg):', error);
+      }
+  } finally {
+      // ⚡ Always reset the flag
+      scriptProperties.setProperty('IS_SCRIPT_RUNNING', 'false');
   }
   
   // ⚡ เพิ่ม: แสดงผลลัพธ์การปรับปรุง
@@ -1434,12 +1496,9 @@ function updateStandings() {
     
     const owRate = calculateOW(player_id);
     const oowRate = calculateOOW(player_id);
-    const slowGames = calculateSwissSlowGames(player_id, mergedStandings);
+    const slowGames = calculateSwissSlowGames(player_id, mergedStandings, allPairingData);
     const winFirst2Rounds = calculateWinsFirst2Rounds(player_id);
     const pairingHistory = generatePairingHistory(player_id);
-    
-    // Debug: แสดงข้อมูลการคำนวณ
-    console.log(`Player: ${stats.name}, Played: ${stats.played}, Win: ${stats.win}, Draw: ${stats.draw}, Loss: ${stats.loss}, Points: ${points}, WinRate: ${winRate}%, OW: ${owRate}%, OOW: ${oowRate}%, SlowGames: ${slowGames}, Win2First: ${winFirst2Rounds}`);
     
     const playerData = [
       0, // Rank (will be filled later)
@@ -1460,9 +1519,6 @@ function updateStandings() {
       pairingHistory // Pairing History
     ];
     
-    // Debug: ตรวจสอบ playerData
-    console.log(`PlayerData for ${stats.name}:`, playerData);
-    
     if (dropSet.has(stats.name) || dropSet.has(player_id)) {
       droppedPlayers.push(playerData);
     } else {
@@ -1470,35 +1526,35 @@ function updateStandings() {
     }
   });
   
-  // Sort active players by points (descending), then win rate (descending), then OW% (descending)
+  // ⚡ Optimization: Sort active players once with all criteria
   activePlayers.sort((a, b) => {
-    if (b[8] !== a[8]) return b[8] - a[8]; // Points (index 8)
-    if (parseInt(b[9]) !== parseInt(a[9])) return parseInt(b[9]) - parseInt(a[9]); // Win Rate (index 9)
-    if (parseInt(b[10]) !== parseInt(a[10])) return parseInt(b[10]) - parseInt(a[10]); // OW% (index 10)
-    return a[2].localeCompare(b[2]); // เรียงตามชื่อ
+    // 1. Points (index 8)
+    if (b[8] !== a[8]) return b[8] - a[8]; 
+    
+    // 2. Win Rate (index 9)
+    const wrA = parseInt(a[9]) || 0;
+    const wrB = parseInt(b[9]) || 0;
+    if (wrB !== wrA) return wrB - wrA;
+    
+    // 3. OW% (index 10)
+    const owA = parseInt(a[10]) || 0;
+    const owB = parseInt(b[10]) || 0;
+    if (owB !== owA) return owB - owA;
+    
+    // 4. OOW% (index 11)
+    const oowA = parseInt(a[11]) || 0;
+    const oowB = parseInt(b[11]) || 0;
+    if (oowB !== oowA) return oowB - oowA;
+    
+    // 5. Name (index 2)
+    return a[2].localeCompare(b[2]);
   });
   
-  // Sort dropped players by points (descending) - เอาไว้ล่างสุด
-  droppedPlayers.sort((a, b) => b[8] - a[8]); // Sort by Points (index 8)
+  // Sort dropped players by points (descending)
+  droppedPlayers.sort((a, b) => b[8] - a[8]);
   
   // รวม active players และ dropped players
   let finalStandingsArray = [...activePlayers, ...droppedPlayers];
-  
-
-  
-  // ปิดการเติม H2H ระหว่างอัปเดต standings เพื่อความเร็ว (จะคำนวณเมื่อผู้ใช้สั่งจากเมนูเท่านั้น)
-  
-  // Re-sort active players with OOW and H2H as tie-breakers
-  activePlayers.sort((a, b) => {
-    if (b[8] !== a[8]) return b[8] - a[8]; // Points (index 8)
-    if (parseInt(b[9]) !== parseInt(a[9])) return parseInt(b[9]) - parseInt(a[9]); // Win Rate (index 9)
-    if (parseInt(b[10]) !== parseInt(a[10])) return parseInt(b[10]) - parseInt(a[10]); // OW% (index 10)
-    if (parseInt(b[11]) !== parseInt(a[11])) return parseInt(b[11]) - parseInt(a[11]); // OOW% (index 11)
-    return a[2].localeCompare(b[2]); // เรียงตามชื่อ
-  });
-  
-  // รวม active players และ dropped players อีกครั้ง (หลัง sort)
-  finalStandingsArray = [...activePlayers, ...droppedPlayers];
   
   // Add ranks และป้าย DROP - จัดการอันดับร่วม
   let rankCounter = 1;
@@ -1647,8 +1703,29 @@ function updateStandings() {
   standingSheet.setColumnWidth(15, 100); // WIN 2 รอบแรก
   standingSheet.setColumnWidth(16, 300); // Pairing History
   
-  // ใช้ Hide Standing controls ในชีท Paring เท่านั้น (ไม่สร้างในชีท Standing)
-  
+  // ⚡ Update Pairing Sheet Status: Change '⏳ SAVING...' to '✅ OK'
+  if (pairingSheet) {
+    const statusColIndex = 12; // Column L (Status)
+    const lastRow = pairingSheet.getLastRow();
+    if (lastRow > 1) {
+      const statusRange = pairingSheet.getRange(2, statusColIndex, lastRow - 1, 1);
+      const statuses = statusRange.getValues();
+      let updated = false;
+      
+      for (let i = 0; i < statuses.length; i++) {
+        if (statuses[i][0] === '⏳ SAVING...') {
+          statuses[i][0] = '✅ OK';
+          updated = true;
+        }
+      }
+      
+      if (updated) {
+        statusRange.setValues(statuses);
+        console.log('✅ Updated Pairing statuses to OK');
+      }
+    }
+  }
+
   // ⚡ เพิ่ม: ตรวจสอบความสมบูรณ์ของ Standing อัตโนมัติ
   try {
     // รอ 1 วินาทีเพื่อให้ Standing อัปเดตเสร็จสมบูรณ์
@@ -1897,50 +1974,50 @@ function fixTextOverlap() {
 
 
 function undoLastPairing() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const pairingSheet = ss.getSheetByName('Pairing');
-
-  // ดึงข้อมูลรอบทั้งหมดและกรองเฉพาะตัวเลข
-  const roundsData = pairingSheet.getRange('A2:A').getValues().flat();
-  const rounds = roundsData.filter(r => r && r !== '' && !isNaN(r)).map(r => parseInt(r));
-  
-  if (rounds.length === 0) {
-    SpreadsheetApp.getUi().alert('ยังไม่มีรอบใดให้ย้อน');
-    return;
-  }
-
-  const lastRound = Math.max(...rounds);
-  const data = pairingSheet.getDataRange().getValues();
-
-  // หาแถวที่ต้องการลบ (รอบล่าสุด) - ใช้วิธีใหม่ที่เร็วขึ้น
-  const rowsToDelete = [];
-  for (let i = 1; i < data.length; i++) {
-    const roundValue = data[i][0];
-    if (roundValue && roundValue !== '' && !isNaN(roundValue) && parseInt(roundValue) === lastRound) {
-      rowsToDelete.push(i + 1); // แถวที่ i+1 (เพราะ i เริ่มจาก 0)
-    }
-  }
-
-  if (rowsToDelete.length === 0) {
-    SpreadsheetApp.getUi().alert('ไม่พบข้อมูลรอบที่ ' + lastRound);
-    return;
-  }
-
-  // ยืนยันการลบ
-  const response = SpreadsheetApp.getUi().alert(
-    '↩️ ย้อนจับคู่รอบล่าสุด',
-    'ต้องการลบการจับคู่รอบที่ ' + lastRound + ' หรือไม่?\n\n' +
-    'จำนวนการจับคู่ที่จะลบ: ' + rowsToDelete.length + ' รายการ\n\n' +
-    '⚡ วิธีใหม่: ลบแถวทั้งหมดแล้วอัปเดต Standings ทีเดียว\n' +
-    'การดำเนินการนี้ไม่สามารถยกเลิกได้',
-    SpreadsheetApp.getUi().ButtonSet.YES_NO
-  );
-
-  if (response !== SpreadsheetApp.getUi().Button.YES) {
-    return;
-  }
-
   try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const pairingSheet = ss.getSheetByName('Pairing');
+
+    // ดึงข้อมูลรอบทั้งหมดและกรองเฉพาะตัวเลข
+    const roundsData = pairingSheet.getRange('A2:A').getValues().flat();
+    const rounds = roundsData.filter(r => r && r !== '' && !isNaN(r)).map(r => parseInt(r));
+    
+    if (rounds.length === 0) {
+      SpreadsheetApp.getUi().alert('ยังไม่มีรอบใดให้ย้อน');
+      return;
+    }
+
+    const lastRound = Math.max(...rounds);
+    const data = pairingSheet.getDataRange().getValues();
+
+    // หาแถวที่ต้องการลบ (รอบล่าสุด)
+    const rowsToDelete = [];
+    for (let i = 1; i < data.length; i++) {
+      const roundValue = data[i][0];
+      if (roundValue && roundValue !== '' && !isNaN(roundValue) && parseInt(roundValue) === lastRound) {
+        rowsToDelete.push(i + 1); // แถวที่ i+1 (เพราะ i เริ่มจาก 0)
+      }
+    }
+
+    if (rowsToDelete.length === 0) {
+      SpreadsheetApp.getUi().alert('ไม่พบข้อมูลรอบที่ ' + lastRound);
+      return;
+    }
+
+    // ยืนยันการลบ
+    const response = SpreadsheetApp.getUi().alert(
+      '↩️ ย้อนจับคู่รอบล่าสุด',
+      'ต้องการลบการจับคู่รอบที่ ' + lastRound + ' หรือไม่?\n\n' +
+      'จำนวนการจับคู่ที่จะลบ: ' + rowsToDelete.length + ' รายการ\n\n' +
+      '⚡ วิธีใหม่: ลบแถวทั้งหมดแล้วอัปเดต Standings ทีเดียว\n' +
+      'การดำเนินการนี้ไม่สามารถยกเลิกได้',
+      SpreadsheetApp.getUi().ButtonSet.YES_NO
+    );
+
+    if (response !== SpreadsheetApp.getUi().Button.YES) {
+      return;
+    }
+
     // ⚡ วิธีใหม่: ลบแถวทั้งหมดทีเดียว (เร็วและเรียบร้อย)
     // เรียงลำดับแถวจากมากไปน้อย เพื่อไม่ให้ index เปลี่ยน
     rowsToDelete.sort((a, b) => b - a);
@@ -1956,8 +2033,8 @@ function undoLastPairing() {
     updateStandings();
     
   } catch (error) {
-    console.log('เกิดข้อผิดพลาดในการลบแถว:', error);
-    SpreadsheetApp.getUi().alert('❌ เกิดข้อผิดพลาดในการลบแถว: ' + error.message);
+    console.log('Error in undoLastPairing:', error);
+    SpreadsheetApp.getUi().alert('❌ เกิดข้อผิดพลาดในการย้อนกลับ: ' + error);
   }
 }
 
@@ -3821,14 +3898,21 @@ function calculateSwissWinStreak(playerId, standings) {
 }
 
 // คำนวณ Slow Games สำหรับผู้เล่นใน Swiss Tournament
-function calculateSwissSlowGames(playerId, standings) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const pairingSheet = ss.getSheetByName("Pairing");
+function calculateSwissSlowGames(playerId, standings, cachedPairingData) {
+  let data;
+  let headers;
   
-  if (!pairingSheet) return 0;
-  
-  const data = pairingSheet.getDataRange().getValues();
-  const headers = data[0];
+  if (cachedPairingData && Array.isArray(cachedPairingData) && cachedPairingData.length > 0) {
+    data = cachedPairingData;
+    headers = data[0];
+  } else {
+    // Fallback if no cache provided
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const pairingSheet = ss.getSheetByName("Pairing");
+    if (!pairingSheet) return 0;
+    data = pairingSheet.getDataRange().getValues();
+    headers = data[0];
+  }
   
   const p1IdCol = headers.indexOf("P1_ID");
   const p2IdCol = headers.indexOf("P2_ID");
@@ -5441,48 +5525,39 @@ function formatPairingIncremental(pairingSheet, startRow, rowCount, roundNumber)
   try {
     if (!pairingSheet || rowCount <= 0) return;
 
-    // ตั้งค่าขนาดคอลัมน์พื้นฐานครั้งเดียว (idempotent)
-    const maxNameLength = getMaxNameLengthFromBucket();
-    const minWidth = 200;
-    const maxWidth = 400;
-    const playerNameWidth = Math.max(minWidth, Math.min(maxWidth, maxNameLength * 8 + 20));
-    const columnWidths = { 1: 80, 2: 80, 3: 100, 4: playerNameWidth, 5: 60, 6: 60, 7: 60, 8: 60, 9: 100, 10: playerNameWidth, 11: 80, 12: 100 };
-    Object.keys(columnWidths).forEach(col => {
-      pairingSheet.setColumnWidth(parseInt(col), columnWidths[col]);
-    });
+    // ⚡ Optimization: Skip column width setting here. 
+    // It should be handled by setupColumnWidthsOnce() globally.
 
-    // ช่วงที่เพิ่มใหม่
+    // Define range for new rows
     const range = pairingSheet.getRange(startRow, 1, rowCount, pairingSheet.getLastColumn());
 
-    // สีรอบตามรอบ
+    // Determine background color based on round
     const roundColors = ['#e3f2fd', '#f3e5f5', '#e8f5e8', '#fff3e0', '#fce4ec', '#e0f2f1', '#f1f8e9', '#fff8e1', '#e8eaf6', '#ffebee'];
     let bg = '#ffffff';
     if (roundNumber && typeof roundNumber === 'number') {
       bg = roundColors[(roundNumber - 1) % roundColors.length];
     }
+    
+    // ⚡ Batch Operation 1: Set Background for entire block
     range.setBackground(bg);
 
-    // ตั้งค่าความสูงแถวเฉพาะส่วนใหม่
-    for (let i = 0; i < rowCount; i++) {
-      pairingSheet.setRowHeight(startRow + i, 35);
-    }
-
-    // จัดรูปแบบหัวตาราง (idempotent)
-    const headerRange = pairingSheet.getRange(1, 1, 1, pairingSheet.getLastColumn());
-    headerRange.setBackground('#1f2937');
-    headerRange.setFontColor('#ffffff');
-    headerRange.setFontWeight('bold');
-    headerRange.setHorizontalAlignment('center');
-    headerRange.setBorder(true, true, true, true, true, true, '#374151', SpreadsheetApp.BorderStyle.SOLID);
-
-    // จัดชิดซ้ายชื่อผู้เล่น
-    const p1NameRange = pairingSheet.getRange(startRow, 4, rowCount, 1);
-    const p2NameRange = pairingSheet.getRange(startRow, 10, rowCount, 1);
-    p1NameRange.setHorizontalAlignment('left');
-    p2NameRange.setHorizontalAlignment('left');
-
-    // ใส่กรอบเส้น
+    // ⚡ Batch Operation 2: Set Borders for entire block
     range.setBorder(true, true, true, true, true, true, '#d1d5db', SpreadsheetApp.BorderStyle.SOLID);
+    
+    // ⚡ Batch Operation 3: Set Alignment for specific columns
+    // Player 1 Name (Col 4)
+    pairingSheet.getRange(startRow, 4, rowCount, 1).setHorizontalAlignment('left');
+    // Player 2 Name (Col 10)
+    pairingSheet.getRange(startRow, 10, rowCount, 1).setHorizontalAlignment('left');
+
+    // ⚡ Optimization: Avoid setting row height one by one if possible.
+    // If absolutely necessary, we have to loop, but it's slow. 
+    // Let's try to set it only if strictly needed. 
+    // For now, removing the loop to speed up rendering as per user request.
+    // If rows look too squashed, we can add a separate "Fix Row Height" tool.
+
+    // ⚡ Optimization: Skip Header formatting. 
+    // Header is static and shouldn't be reformatted on every incremental update.
 
   } catch (error) {
     console.log('formatPairingIncremental error:', error);
@@ -5627,7 +5702,15 @@ function separateRoundsVisually() {
 // 🎯 ฟังก์ชัน onEdit - ทำงานอัตโนมัติเมื่อแก้ไขชีท
 
 // 🎯 ฟังก์ชัน onEdit - ทำงานอัตโนมัติเมื่อแก้ไขชีท (ปรับปรุงให้เร็วขึ้น)
+// 🎯 ฟังก์ชัน onEdit - ทำงานอัตโนมัติเมื่อแก้ไขชีท (แบบ Original Synchronous)
+// 🎯 ฟังก์ชัน onEdit - ทำงานอัตโนมัติเมื่อแก้ไขชีท (แบบ Original Synchronous)
 function onEdit(e) {
+  const lock = LockService.getScriptLock();
+  // รอคิวสูงสุด 30 วินาที (เพื่อให้กดรัวได้โดยไม่เทงานทิ้ง)
+  if (!lock.tryLock(30000)) {
+    return;
+  }
+
   try {
     const sheet = e.source.getActiveSheet();
     const sheetName = sheet.getName();
@@ -5635,117 +5718,128 @@ function onEdit(e) {
     const row = range.getRow();
     const col = range.getColumn();
     
-    // ทำงานเฉพาะชีท Pairing ตามเวอร์ชันเก่า
-    if (sheetName === 'Pairing') {
-      console.log(`onEdit triggered: ${sheetName}, Row: ${row}, Col: ${col}`);
-      
-      // ข้ามแถวแรก (header)
-      if (row === 1) return;
-      
-      // ⚡ เพิ่ม: ตรวจสอบ Standing อัตโนมัติทุกครั้งที่มีการแก้ไขเซลใดๆ
-      try {
-        // รอ 1 วินาทีเพื่อให้การแก้ไขเสร็จสมบูรณ์
-        Utilities.sleep(1000);
-        checkStandingCompletenessAuto();
-      } catch (checkError) {
-        console.log('เกิดข้อผิดพลาดในการตรวจสอบ Standing อัตโนมัติ:', checkError);
-      }
-      
-      // ใช้ตำแหน่งคงที่แบบเวอร์ชันเก่า
-      const winP1Col = 5;
-      const drawCol = 6;
-      const winP2Col = 7;
-      const doubleLossCol = 8;
-      const resultCol = 11;
-      const statusCol = 12;
+    // Only work on 'Pairing' sheet
+    if (sheetName !== 'Pairing') return;
+    
+    // Skip header
+    if (row === 1) return;
 
-      // เมื่อแก้ไขคอลัมน์ RESULT โดยตรง ให้ตั้ง STATUS=OK และอัปเดต Standings
-      if (col === resultCol) {
-        const v = sheet.getRange(row, resultCol).getValue();
-        if (v && v !== '') {
-          try {
-            // เวอร์ชันที่เวิร์คเดิม: ตั้งสถานะเป็น OK แล้วอัปเดต standings ทันที
-            if (statusCol > 0) sheet.getRange(row, statusCol).setValue('OK');
-            updateStandings();
-            SpreadsheetApp.flush();
-          } catch (errR) {
-            console.log('updateStandings from RESULT edit error:', errR);
-          }
-        } else {
-          if (statusCol > 0) sheet.getRange(row, statusCol).setValue('');
+    // Fixed column indices (Legacy version)
+    const winP1Col = 5;
+    const drawCol = 6;
+    const winP2Col = 7;
+    const doubleLossCol = 8;
+    const resultCol = 11;
+    const statusCol = 12;
+
+    // Case 1: Direct edit to RESULT column
+    if (col === resultCol) {
+      const v = sheet.getRange(row, resultCol).getValue();
+      if (v && v !== '') {
+        if (statusCol > 0) sheet.getRange(row, statusCol).setValue('⏳ SAVING...');
+        SpreadsheetApp.flush(); // Force UI update
+        updateStandings(); // Synchronous update
+        if (statusCol > 0) sheet.getRange(row, statusCol).setValue('✅ OK');
+      } else {
+        if (statusCol > 0) sheet.getRange(row, statusCol).setValue('');
+      }
+      return;
+    }
+    
+    // Case 2: Checkbox edit
+    if (col === winP1Col || col === drawCol || col === winP2Col || col === doubleLossCol) {
+      // Read all checkboxes for this row in one go (Cols 5-8)
+      const checkboxRange = sheet.getRange(row, winP1Col, 1, 4);
+      const values = checkboxRange.getValues()[0]; // [winP1, draw, winP2, doubleLoss]
+      
+      // Identify which checkbox was just clicked based on column index
+      const clickedIdx = col - winP1Col;
+      const isChecked = values[clickedIdx] === true;
+      
+      // If clicked and checked, clear others (exclusive logic)
+      if (isChecked) {
+        for (let i = 0; i < 4; i++) {
+          if (i !== clickedIdx) values[i] = false;
         }
-        return;
+        checkboxRange.setValues([values]);
       }
       
-      // ตรวจสอบว่าการแก้ไขเกิดขึ้นในคอลัมน์ checkbox หรือไม่
-      if (col === winP1Col || col === drawCol || col === winP2Col || col === doubleLossCol) {
-        console.log(`Checkbox changed at row ${row}, col ${col}`);
-        
-        // เมื่อติ๊กช่องใหม่ ลบช่องเก่าออกก่อน (ยกเว้น Double Loss)
-        const currentValue = sheet.getRange(row, col).getValue() === true;
-        
-        if (currentValue && col !== doubleLossCol) {
-          // ลบ checkbox อื่นๆ เมื่อติ๊กช่องใหม่
-          if (col !== winP1Col) sheet.getRange(row, winP1Col).setValue(false);
-          if (col !== drawCol) sheet.getRange(row, drawCol).setValue(false);
-          if (col !== winP2Col) sheet.getRange(row, winP2Col).setValue(false);
-          if (col !== doubleLossCol) sheet.getRange(row, doubleLossCol).setValue(false);
-        }
-        
-        // ดึงค่า checkbox ทั้ง 4 ตัวหลังจากการล้างแล้ว
-        const winP1 = sheet.getRange(row, winP1Col).getValue() === true;
-        const draw = sheet.getRange(row, drawCol).getValue() === true;
-        const winP2 = sheet.getRange(row, winP2Col).getValue() === true;
-        const doubleLoss = sheet.getRange(row, doubleLossCol).getValue() === true;
-        
-        let result = "";
-        
-        // กำหนด result ตามการติ๊ก checkbox
-        if (doubleLoss) {
-          result = "0:0";
-          // ยกเลิก checkbox อื่นๆ เมื่อติ๊ก Double Loss
-          if (winP1) sheet.getRange(row, winP1Col).setValue(false);
-          if (draw) sheet.getRange(row, drawCol).setValue(false);
-          if (winP2) sheet.getRange(row, winP2Col).setValue(false);
-        } else if (winP1) {
-          result = "1:0";
-        } else if (draw) {
-          result = "1:1";
-        } else if (winP2) {
-          result = "0:1";
-        } else {
-          result = "";
-        }
-        
-        // อัปเดต RESULT
-        if (resultCol > 0) {
-          sheet.getRange(row, resultCol).setValue(result);
-        }
-        // ไม่ตั้ง PENDING ล่วงหน้าอีกต่อไป
-        if (statusCol > 0 && !result) {
-          sheet.getRange(row, statusCol).setValue('');
-        }
-        
-        console.log(`Updated Row ${row}: Result="${result}"`);
-        
-        // ⚡ ปรับปรุง: ใช้ระบบ debouncing เพื่อป้องกันการทำงานซ้ำซ้อน
-        if (result && result !== "") {
-          console.log(`Result updated for row ${row}: ${result}`);
+      // Determine Result string based on new state
+      let result = "";
+      if (values[3]) result = "0:0";      // Double Loss
+      else if (values[0]) result = "1:0"; // Win P1
+      else if (values[1]) result = "1:1"; // Draw
+      else if (values[2]) result = "0:1"; // Win P2
+      
+      // Update RESULT immediately (Instant Feedback)
+      if (resultCol > 0) {
+        sheet.getRange(row, resultCol).setValue(result);
+      }
+      
+      if (statusCol > 0) {
+        if (result) {
+          // 1. แจ้ง User ว่ากำลังทำงาน
+          sheet.getRange(row, statusCol).setValue('⏳ SAVING...');
+          SpreadsheetApp.flush(); // 🚀 Force UI update: คะแนนและสถานะจะขึ้นทันที
           
-          // ✅ เมื่อ RESULT พร้อม: ตั้งสถานะเป็น OK และอัปเดต Standings ทันที (synchronous)
-          try {
-            if (statusCol > 0) sheet.getRange(row, statusCol).setValue('OK');
-            updateStandings();
-            SpreadsheetApp.flush();
-          } catch (syncErr) {
-            console.log('updateStandings (sync) error:', syncErr);
-            // ถ้าพัง ให้คงสถานะเป็น PENDING เพื่อบอกผู้ใช้ว่า standings ยังไม่อัปเดต
+          // 2. คำนวณ Standings (Heavy lifting)
+          updateStandings();
+          
+          // 3. Sweep & Fix (เก็บตกแถวอื่นๆ ที่อาจหลุด)
+          // สแกนหาแถวที่มี Checkbox ติ๊กแต่ไม่มีคะแนน หรือสถานะค้าง
+          const lastRow = sheet.getLastRow();
+          if (lastRow > 1) {
+            const range = sheet.getRange(2, 1, lastRow - 1, 12);
+            const data = range.getValues();
+            const fixes = []; // เก็บรายการที่จะแก้ [[row, col, value]]
+            
+            for (let i = 0; i < data.length; i++) {
+              const r = data[i];
+              // Checkbox columns: 4, 5, 6, 7 (Indices in data array: 0-based from col 1) -> Indices 4,5,6,7
+              // Result col: 11 -> Index 10
+              // Status col: 12 -> Index 11
+              
+              const winP1 = r[4];
+              const draw = r[5];
+              const winP2 = r[6];
+              const doubleLoss = r[7];
+              const resultVal = r[10];
+              const statusVal = r[11];
+              
+              let expectedResult = "";
+              if (doubleLoss === true) expectedResult = "0:0";
+              else if (winP1 === true) expectedResult = "1:0";
+              else if (draw === true) expectedResult = "1:1";
+              else if (winP2 === true) expectedResult = "0:1";
+              
+              const realRow = i + 2; // 0-based index + 2 (start row)
+              
+              if (expectedResult !== "") {
+                // Case A: มีผลแต่ช่อง Result ว่างหรือผิด
+                if (resultVal !== expectedResult) {
+                  sheet.getRange(realRow, 11).setValue(expectedResult); // Fix Result
+                  sheet.getRange(realRow, 12).setValue('✅ OK (Fixed)'); // Fix Status
+                } 
+                // Case B: Result ถูกแล้ว แต่ Status ยังไม่ OK (เช่น ค้าง SAVING หรือว่าง)
+                else if (statusVal !== '✅ OK' && statusVal !== '✅ OK (Fixed)') {
+                  sheet.getRange(realRow, 12).setValue('✅ OK');
+                }
+              }
+            }
           }
+          
+          // Update current row status explicitly to be sure
+          sheet.getRange(row, statusCol).setValue('✅ OK');
+        } else {
+          sheet.getRange(row, statusCol).setValue('');
         }
       }
     }
+    
   } catch (error) {
-    console.log('Error in onEdit:', error);
+    console.log('onEdit error:', error);
+  } finally {
+    lock.releaseLock();
   }
 }
 
@@ -5905,13 +5999,25 @@ function getStandingsFromStandingSheet() {
 
     const standings = data.slice(1)
       .filter(row => row && row[idCol - 1])
-      .map(row => ({
-        id: row[idCol - 1],
-        name: row[nameCol - 1],
-        points: row[pointsCol - 1] || 0,
-        rank: rankCol ? (row[rankCol - 1] || 0) : 0,
-        status: statusCol ? (row[statusCol - 1] || 'ACTIVE') : 'ACTIVE'
-      }))
+      .map(row => {
+        // Check for DROP status in Rank column (as seen in user screenshot)
+        const rankVal = rankCol ? (row[rankCol - 1] || 0) : 0;
+        let isDropped = false;
+        if (typeof rankVal === 'string' && rankVal.toUpperCase().includes('DROP')) {
+            isDropped = true;
+        }
+        
+        let statusVal = statusCol ? (row[statusCol - 1] || 'ACTIVE') : 'ACTIVE';
+        if (isDropped) statusVal = 'DROPPED';
+
+        return {
+          id: row[idCol - 1],
+          name: row[nameCol - 1],
+          points: row[pointsCol - 1] || 0,
+          rank: rankVal,
+          status: statusVal
+        };
+      })
       .filter(p => p.status !== 'DROPPED');
 
     console.log('getStandingsFromStandingSheet: พบ', standings.length, 'ผู้เล่น');
@@ -6142,42 +6248,40 @@ function updateStandingsInBackground() {
 // ⚡ ฟังก์ชันใหม่: ระบบ debouncing สำหรับการอัปเดต Standings
 function scheduleStandingsUpdate() {
   try {
-    // ตรวจสอบว่ามีการตั้งเวลาอัปเดตอยู่แล้วหรือไม่
-    if (globalStandingsUpdateScheduled) {
-      console.log('⏳ การอัปเดต Standings ถูกตั้งเวลาไว้แล้ว - ข้าม');
-      return;
-    }
-    
-    // ตั้งค่าสถานะว่ามีการตั้งเวลาแล้ว
-    globalStandingsUpdateScheduled = true;
-    
-    console.log('⏰ ตั้งเวลาอัปเดต Standings ใน 3 วินาที...');
-    
-    // รอ 3 วินาทีเพื่อให้ผู้ใช้หยุดกด checkbox
-    Utilities.sleep(3000);
-    
-    // ตรวจสอบว่าควรอัปเดต Standings หรือไม่
-    const shouldAutoUpdate = checkIfShouldAutoUpdateStandings();
-    if (shouldAutoUpdate) {
-      console.log('🔄 ตรวจพบว่าควรอัปเดต Standings - เริ่มอัปเดต...');
+    // 1. Mark as Dirty (Work needed)
+    const cache = CacheService.getScriptCache();
+    cache.put('STANDINGS_DIRTY', 'true', 21600); // 6 hours expiration
+
+    // 2. Try to become the Worker
+    const lock = LockService.getScriptLock();
+    if (lock.tryLock(0)) { // Non-blocking lock
       try {
-        // อัปเดต Standings ในพื้นหลัง
-        updateStandingsInBackground();
-        console.log('✅ อัปเดต Standings อัตโนมัติสำเร็จ');
-      } catch (error) {
-        console.log('❌ เกิดข้อผิดพลาดในการอัปเดต Standings:', error);
+        // Worker Loop
+        let pass = 0;
+        while (pass < 5) { // Limit passes to prevent infinite loops (e.g. 5 batches max)
+          const isDirty = cache.get('STANDINGS_DIRTY');
+          if (isDirty === 'true') {
+            console.log(`🔄 Worker Pass ${pass + 1}: Processing Dirty Queue...`);
+            
+            // Clear dirty flag BEFORE processing
+            // If new edits come during processing, they will set it to true again
+            cache.remove('STANDINGS_DIRTY');
+            
+            updateStandingsInBackground();
+            pass++;
+          } else {
+            console.log('✅ Queue Empty - Worker Sleeping');
+            break;
+          }
+        }
+      } finally {
+        lock.releaseLock();
       }
     } else {
-      console.log('⏳ ยังไม่ต้องอัปเดต Standings - รอให้ครบก่อน');
+      console.log('⏳ Worker busy - Added to queue (Dirty Flag set)');
     }
-    
-    // รีเซ็ตสถานะ
-    globalStandingsUpdateScheduled = false;
-    
   } catch (error) {
-    console.log('❌ เกิดข้อผิดพลาดใน scheduleStandingsUpdate:', error);
-    // รีเซ็ตสถานะในกรณีที่เกิดข้อผิดพลาด
-    globalStandingsUpdateScheduled = false;
+    console.log('❌ Error in scheduleStandingsUpdate:', error);
   }
 }
 
@@ -6717,11 +6821,16 @@ function updateBucketCache(standings, dropSet, playerTrIdMap) {
       return;
     }
     
-    // ล้างข้อมูลเก่า
-    bucketSheet.clearContents();
+    // ล้างข้อมูลเก่า (เฉพาะส่วนข้อมูลผู้เล่น ไม่ลบส่วน Cache อื่นๆ เช่น NEXT_ROUND_PREP)
+    // bucketSheet.clearContents(); // <--- เดิมลบทั้งหมดทำให้ Cache หาย
     
     // สร้าง header
     const headers = ['Player ID', 'Player Name', 'TR_ID', 'Status', 'Played', 'Win', 'Draw', 'Loss', 'Points'];
+    
+    // เคลียร์เฉพาะพื้นที่ที่จะเขียนข้อมูลผู้เล่น (Columns 1 to headers.length)
+    const lastRow = Math.max(bucketSheet.getLastRow(), 2);
+    bucketSheet.getRange(1, 1, lastRow, headers.length).clearContent();
+    
     bucketSheet.getRange(1, 1, 1, headers.length).setValues([headers]);
     
     // เพิ่มข้อมูลผู้เล่น
@@ -7459,39 +7568,45 @@ function checkStandingCompletenessAuto() {
     
     // แจ้งเตือนอัตโนมัติ
     if (incompletePlayers.length === 0) {
-      // ทุกคนครบแล้ว - เปลี่ยน Status เป็น "Ready for next round"
+      // ทุกคนครบแล้ว
+      const msg = `🎉 Round ${currentRound} Complete! Ready for next round.`;
+      console.log(msg);
+      
+      // 1. Show non-intrusive Toast
+      SpreadsheetApp.getActiveSpreadsheet().toast(msg, '✅ Round Complete', 10);
+      
+      // 2. Visual Indicator on Sheet (Cell M1 - above Status/Drop)
+      // Check if M1 is available or use a specific cell for status
       try {
-        const statusCol = 12; // คอลัมน์ Status
-        const pairingData = pairingSheet.getDataRange().getValues();
-        
-        // หาแถวที่มี Status = "OK" และเปลี่ยนเป็น "Ready for next round"
-        for (let i = 1; i < pairingData.length; i++) {
-          const row = pairingData[i];
-          if (row[statusCol] === 'OK') {
-            pairingSheet.getRange(i + 1, statusCol + 1).setValue('Ready for next round');
-          }
-        }
-        
-        // แสดง toast notification
-        const message = `🎉 Standing รอบที่ ${currentRound} สมบูรณ์! พร้อมจับคู่รอบถัดไปได้`;
-        SpreadsheetApp.getActiveSpreadsheet().toast(message, 'Standing สมบูรณ์', 5);
-        console.log(`✅ Standing รอบที่ ${currentRound} สมบูรณ์ - ผู้เล่นครบ ${completePlayers.length} คน - เปลี่ยน Status เป็น "Ready for next round"`);
-        
-      } catch (statusError) {
-        console.log('เกิดข้อผิดพลาดในการเปลี่ยน Status:', statusError);
-        // แสดง toast notification แบบปกติ
-        const message = `🎉 Standing รอบที่ ${currentRound} สมบูรณ์! พร้อมจับคู่รอบถัดไปได้`;
-        SpreadsheetApp.getActiveSpreadsheet().toast(message, 'Standing สมบูรณ์', 5);
+        const headerRange = pairingSheet.getRange('K1'); // Above RESULT/STATUS area usually
+        // Or maybe just update the STATUS header itself temporarily? No, that's risky.
+        // Let's put it in a fixed cell like 'E1' or somewhere visible.
+        // Actually, let's use the "Check Round Completion" logic to update a specific status cell if it exists.
+        // For now, Toast is the best "non-intrusive" way.
+        // But user asked for "display something".
+        // Let's try to set the background of the "ROUND" header (A1) to Green to indicate completion.
+        pairingSheet.getRange('A1').setBackground('#34d399'); // Green
+        pairingSheet.getRange('A1').setValue(`ROUND ${currentRound} (✅ DONE)`);
+      } catch (e) {
+        console.log('Error updating visual indicator:', e);
       }
+
     } else {
-      // ยังมีคนไม่ครบ - ไม่แจ้งเตือน (เพื่อไม่ให้รบกวน)
-      console.log(`⚠️ Standing รอบที่ ${currentRound} ยังไม่สมบูรณ์ - ${incompletePlayers.length} คนยังไม่ครบ (ไม่แจ้งเตือน)`);
+      // ยังไม่ครบ - Reset header if needed
+      try {
+        const a1 = pairingSheet.getRange('A1');
+        if (a1.getValue().toString().includes('DONE')) {
+           a1.setBackground('#1f2937'); // Default Dark Grey
+           a1.setValue('ROUND');
+        }
+      } catch (e) {}
     }
-    
+
   } catch (error) {
     console.log('Error in checkStandingCompletenessAuto:', error);
   }
 }
+
 
 // 🔍 ตรวจสอบความสมบูรณ์ของ Standing และแจ้งเตือน
 function checkStandingCompleteness() {
@@ -8353,5 +8468,28 @@ function removeOldMenuSheet() {
     }
   } catch (error) {
     console.error('Error removing old menu sheet:', error);
+  }
+}
+
+// 🚨 ฟังก์ชันรีเซ็ตระบบ (แก้ค้าง)
+function resetSystem() {
+  try {
+    // 1. Clear Script Property Flag
+    const scriptProperties = PropertiesService.getScriptProperties();
+    scriptProperties.setProperty('IS_SCRIPT_RUNNING', 'false');
+    
+    // 2. Try to release lock (just in case, though locks are usually session-bound)
+    try {
+      LockService.getScriptLock().releaseLock();
+    } catch (e) {
+      // Ignore error if no lock held
+    }
+    
+    console.log('✅ System Reset Successfully');
+    SpreadsheetApp.getUi().alert('✅ รีเซ็ตระบบเรียบร้อยแล้ว\n\n- สถานะ "Working" ควรจะหายไป\n- สามารถใช้งานต่อได้ทันที');
+    
+  } catch (error) {
+    console.log('Error in resetSystem:', error);
+    SpreadsheetApp.getUi().alert('❌ เกิดข้อผิดพลาดในการรีเซ็ต: ' + error);
   }
 }

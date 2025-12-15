@@ -1540,6 +1540,70 @@
       return 0;
     }
 
+    /**
+     * ค้นหาและคำนวณจำนวน Box จากข้อมูล participant
+     * พยายามหาจาก Column J (Booster Box) ก่อน แล้วค่อย Fallback ไป Column E (จำนวนที่สั่ง)
+     */
+    function extractBoxCount(p) {
+      if (!p) return 0;
+
+      const keys = Object.keys(p);
+
+      // 1. ลองหาจาก Column J (Header ที่มีคำว่า Box, J, หรือ จำนวน box)
+      // Prioritize keys containing "box" or explicitly "J"
+      const boxKeys = keys.filter(k => {
+        const lower = k.toLowerCase();
+        return (lower.includes('box') && lower.includes('จำนวน')) ||
+          lower === 'box' ||
+          lower === 'boxes' ||
+          lower === 'j' ||
+          lower.includes('total box');
+      });
+
+      // เรียงลำดับความสำคัญ: "จำนวน box" -> "box" -> "j"
+      boxKeys.sort((a, b) => {
+        const aLower = a.toLowerCase();
+        const bLower = b.toLowerCase();
+        if (aLower.includes('จำนวน box')) return -1;
+        if (bLower.includes('จำนวน box')) return 1;
+        return 0;
+      });
+
+      for (const key of boxKeys) {
+        const val = p[key];
+        if (typeof val === 'number') return val;
+        if (val && typeof val === 'string' && val.trim() !== '') {
+          // ลอง parse เป็นตัวเลข
+          const num = parseFloat(val);
+          if (!isNaN(num)) return num;
+          // ถ้า parse ไม่ได้ (เช่น "2 กล่อง") ให้ใช้ parser
+          const parsed = parseBoxQuantityFromString(val);
+          if (parsed > 0) return parsed;
+        }
+      }
+
+      // 2. Fallback: หาจาก Column E (จำนวนที่ต้องการสั่งซื้อ)
+      // Keys containing "จำนวน" but NOT "box" (unless we missed it above)
+      // Or specifically the standard form headers
+      const quantityKeys = [
+        'จำนวน',
+        'จำนวนที่ต้องการสั่งซื้อ (1 BOX = 1,550 บาท, 1 C/)',
+        'จำนวนที่ต้องการสั่งซื้อ'
+      ];
+
+      for (const key of quantityKeys) {
+        if (p[key]) {
+          const val = p[key];
+          if (typeof val === 'number') return val;
+          // ใช้ parser เพราะคอลัมน์นี้มักเป็น "1 Box", "2 Boxes"
+          const parsed = parseBoxQuantityFromString(val);
+          if (parsed > 0) return parsed;
+        }
+      }
+
+      return 0;
+    }
+
     // ⚠️ สำคัญ: ต้อง Deploy App Script ก่อนใช้งาน!
     // 1. ไปที่ Google Sheet: https://docs.google.com/spreadsheets/d/1wi2OXnelj5D61E8Jv6wBN0RwCRbsQlgiWXnfGxrjlww/edit
     // 2. คลิก Extensions > Apps Script
@@ -1680,37 +1744,9 @@
               // ใช้เบอร์โทรจาก column D
               const phone = p['เบอร์ติดต่อ (0xx-xxx-xxxx)'] || p['เบอร์ติดต่อ'] || p['เบอร์โทร'] || p['Phone'] || p['phone'] || p.phone || '';
 
-              // ใช้ Column J (จำนวน box) โดยตรง - แปลงเป็นตัวเลขเรียบร้อยแล้ว
-              let boxes = 0;
-              const boxColumnJ = p['จำนวน box'] || p['จำนวน Box'] || p['จำนวน box '] || '';
-              let boxData = ''; // Initialize variable to avoid ReferenceError
-
-              // ถ้า Column J เป็นตัวเลขให้ใช้เลย
-              if (typeof boxColumnJ === 'number') {
-                boxes = boxColumnJ;
-                boxData = String(boxes);
-              } else if (boxColumnJ !== null && boxColumnJ !== undefined && boxColumnJ !== '') {
-                // ลองแปลงเป็นตัวเลข
-                if (typeof boxColumnJ === 'string') {
-                  const numValue = parseFloat(boxColumnJ.toString().trim());
-                  if (!isNaN(numValue) && isFinite(numValue)) {
-                    boxes = numValue;
-                    boxData = String(boxes);
-                  } else {
-                    // ถ้าแปลงไม่ได้ให้ลอง parse จาก Column E (backup)
-                    boxData = p['จำนวน'] ||
-                      p['จำนวนที่ต้องการสั่งซื้อ (1 BOX = 1,550 บาท, 1 C/)'] ||
-                      p['จำนวนที่ต้องการสั่งซื้อ'] || '';
-                    boxes = parseBoxQuantityFromString(boxData);
-                  }
-                }
-              } else {
-                // ถ้า Column J ว่างให้ลอง parse จาก Column E (backup)
-                boxData = p['จำนวน'] ||
-                  p['จำนวนที่ต้องการสั่งซื้อ (1 BOX = 1,550 บาท, 1 C/)'] ||
-                  p['จำนวนที่ต้องการสั่งซื้อ'] || '';
-                boxes = parseBoxQuantityFromString(boxData);
-              }
+              // ใช้ฟังก์ชัน extractBoxCount เพื่อดึงจำนวน Box อย่างถูกต้อง
+              let boxes = extractBoxCount(p);
+              let boxData = String(boxes);
 
               // ใช้ข้อมูล Spot - อาจจะต้องคำนวณจากจำนวนที่ต้องการ
               // ตัด Spot ออกแล้ว
@@ -1761,36 +1797,7 @@
               };
             }),
             total: data.participants.length,
-            totalBoxes: data.participants.reduce((sum, p) => {
-              // ใช้ Column J (จำนวน box) โดยตรง
-              const boxColumnJ = p['จำนวน box'] || p['จำนวน Box'] || p['จำนวน box '] || '';
-              let boxes = 0;
-
-              if (typeof boxColumnJ === 'number') {
-                boxes = boxColumnJ;
-              } else if (boxColumnJ !== null && boxColumnJ !== undefined && boxColumnJ !== '') {
-                if (typeof boxColumnJ === 'string') {
-                  const numValue = parseFloat(boxColumnJ.toString().trim());
-                  if (!isNaN(numValue) && isFinite(numValue)) {
-                    boxes = numValue;
-                  } else {
-                    // Backup: parse จาก Column E
-                    const boxData = p['จำนวน'] ||
-                      p['จำนวนที่ต้องการสั่งซื้อ (1 BOX = 1,550 บาท, 1 C/)'] ||
-                      p['จำนวนที่ต้องการสั่งซื้อ'] || '';
-                    boxes = parseBoxQuantityFromString(boxData);
-                  }
-                }
-              } else {
-                // Backup: parse จาก Column E
-                const boxData = p['จำนวน'] ||
-                  p['จำนวนที่ต้องการสั่งซื้อ (1 BOX = 1,550 บาท, 1 C/)'] ||
-                  p['จำนวนที่ต้องการสั่งซื้อ'] || '';
-                boxes = parseBoxQuantityFromString(boxData);
-              }
-
-              return sum + boxes;
-            }, 0),
+            totalBoxes: data.participants.reduce((sum, p) => sum + extractBoxCount(p), 0),
             totalSpots: 0 // จะเพิ่มเมื่อมีข้อมูล Spot
           };
 
@@ -2024,64 +2031,7 @@
       }
     }
 
-    // ✅ ฟังก์ชันโหลดข้อมูล (พร้อมระบบ Caching)
-    async function loadData() {
-      const container = document.getElementById('registered-users-list');
-      const loadingElement = document.getElementById('loading-animation');
-      const countElement = document.getElementById('participant-count');
 
-      // 1. ลองแสดงข้อมูลจาก Cache ก่อน (เพื่อให้ User เห็นทันที)
-      const cachedData = localStorage.getItem('ma3_preorder_data');
-      const cachedTime = localStorage.getItem('ma3_preorder_time');
-
-      if (cachedData) {
-        try {
-          const parsedData = JSON.parse(cachedData);
-          // ถ้า Cache ไม่เก่าเกิน 1 ชั่วโมง ให้แสดงผลเลย
-          if (cachedTime && (Date.now() - parseInt(cachedTime)) < 3600000) {
-            console.log("📦 ใช้ข้อมูลจาก Cache");
-            renderParticipants(parsedData.participants);
-            if (countElement) countElement.textContent = parsedData.participants.length;
-            if (loadingElement) loadingElement.style.display = 'none';
-          }
-        } catch (e) {
-          console.error("Cache error:", e);
-        }
-      }
-
-      try {
-        // 2. โหลดข้อมูลจริงจาก API (Background Update)
-        console.log("🔄 กำลังโหลดข้อมูลล่าสุด...");
-        const response = await fetch(apiUrl + "?type=json");
-        const data = await response.json();
-
-        if (data.participants) {
-          // บันทึกลง Cache
-          localStorage.setItem('ma3_preorder_data', JSON.stringify(data));
-          localStorage.setItem('ma3_preorder_time', Date.now().toString());
-
-          // แสดงผลข้อมูลใหม่
-          renderParticipants(data.participants);
-          if (countElement) countElement.textContent = data.participants.length;
-          if (loadingElement) loadingElement.style.display = 'none';
-          console.log("✅ อัปเดตข้อมูลล่าสุดเรียบร้อย");
-        } else if (data.error) {
-          console.error("API Error:", data.error);
-          if (!cachedData) {
-            container.innerHTML = `<div class="error-message">เกิดข้อผิดพลาด: ${data.error}</div>`;
-          }
-        }
-      } catch (error) {
-        console.error("Fetch error:", error);
-        if (!cachedData) {
-          container.innerHTML = `<div class="error-message">ไม่สามารถโหลดข้อมูลได้ กรุณาลองใหม่ภายหลัง</div>`;
-        }
-        if (loadingElement) loadingElement.style.display = 'none';
-      }
-    }
-
-    // เรียกใช้งานฟังก์ชัน
-    loadData();
     // ฟังก์ชันเปิด Modal การ์ดโปรโม
     function openPromoCardModal(imageUrl) {
       const modal = document.getElementById('promoCardModal');
