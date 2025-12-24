@@ -1,0 +1,358 @@
+:root {
+    --bg-gradient: radial-gradient(circle at top right, #2b1055, #7597de);
+    --glass-bg: rgba(255, 255, 255, 0.1);
+    --glass-border: rgba(255, 255, 255, 0.2);
+    --text-color: #ffffff;
+    --accent-color: #ffd700;
+    --paper-color: #fdfbf7;
+    --paper-text: #2c3e50;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Kanit', 'Outfit', sans-serif;
+    background: var(--bg-gradient);
+    min-height: 100vh;
+    color: var(--text-color);
+    overflow: hidden; /* Prevent scrolling during animations */
+}
+
+.app-container {
+    width: 100%;
+    height: 100vh;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.screen {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    transition: opacity 0.5s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.screen.hidden {
+    opacity: 0;
+    pointer-events: none;
+    z-index: -1;
+}
+
+.screen.active {
+    opacity: 1;
+    z-index: 10;
+}
+
+/* Setup Screen */
+#setup-screen {
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.setup-card {
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(20px);
+    padding: 40px;
+    border-radius: 24px;
+    border: 1px solid var(--glass-border);
+    width: 100%;
+    max-width: 500px;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    text-align: center;
+}
+
+.setup-card h1 {
+    margin-bottom: 10px;
+    font-size: 2rem;
+    color: var(--accent-color);
+}
+
+.setup-card p {
+    margin-bottom: 20px;
+    opacity: 0.8;
+}
+
+textarea {
+    width: 100%;
+    height: 300px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    color: white;
+    padding: 15px;
+    font-size: 1rem;
+    font-family: 'Kanit', sans-serif;
+    resize: none;
+    margin-bottom: 20px;
+}
+
+textarea:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    background: rgba(255, 255, 255, 0.15);
+}
+
+button {
+    cursor: pointer;
+    font-family: 'Kanit', sans-serif;
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.primary-btn {
+    background: linear-gradient(45deg, #ff6b6b, #ff8e53);
+    color: white;
+    padding: 12px 30px;
+    border-radius: 50px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+}
+
+.primary-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 107, 107, 0.6);
+}
+
+/* Picker Screen Layout */
+#picker-screen header {
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 80px;
+}
+
+.icon-btn {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    font-size: 1.2rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid var(--glass-border);
+}
+
+.icon-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.remaining-badge {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-weight: 600;
+}
+
+#picker-screen main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+/* The Jar */
+.jar-wrapper {
+    position: relative;
+    width: 200px;
+    height: 300px;
+    margin-bottom: 40px;
+}
+
+.jar {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+.glass {
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 20px 20px 40px 40px;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    box-shadow: 
+        inset 0 0 20px rgba(255, 255, 255, 0.2),
+        0 10px 30px rgba(0, 0, 0, 0.2);
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(5px);
+    z-index: 2;
+}
+
+.jar .lid {
+    position: absolute;
+    top: -20px;
+    left: -10px;
+    width: calc(100% + 20px);
+    height: 25px;
+    background: #e0e0e0;
+    border-radius: 5px;
+    box-shadow: 0 4px 5px rgba(0,0,0,0.2);
+    z-index: 3;
+    background: linear-gradient(90deg, #d4af37, #fdf5e6, #d4af37);
+}
+
+/* Paper Scraps inside Jar */
+.papers-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+.paper-scrap {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    background-color: var(--paper-color);
+    box-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+    transition: transform 0.5s ease;
+}
+
+/* Picking Animation */
+.pick-button {
+    background: #ffffff;
+    color: #2b1055;
+    padding: 15px 40px;
+    font-size: 1.5rem;
+    font-weight: bold;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); box-shadow: 0 0 20px rgba(255, 255, 255, 0.5); }
+    50% { transform: scale(1.05); box-shadow: 0 0 40px rgba(255, 255, 255, 0.8); }
+    100% { transform: scale(1); box-shadow: 0 0 20px rgba(255, 255, 255, 0.5); }
+}
+
+/* History Panel */
+.history-panel {
+    height: 200px;
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid var(--glass-border);
+    padding: 20px;
+    overflow-y: auto;
+    width: 100%;
+}
+
+.history-panel h3 {
+    margin-bottom: 10px;
+    font-size: 1rem;
+    opacity: 0.8;
+}
+
+#history-list {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+#history-list li {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 5px 15px;
+    border-radius: 15px;
+    font-size: 0.9rem;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+/* Result Modal */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+    opacity: 1;
+    transition: opacity 0.3s;
+}
+
+.modal.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.modal-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+.paper-fold {
+    background: var(--paper-color);
+    padding: 40px;
+    min-width: 300px;
+    max-width: 80%;
+    min-height: 200px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    color: var(--paper-text);
+    border-radius: 5px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    transform: rotate(-2deg);
+    animation: unfold 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes unfold {
+    0% { transform: scale(0) rotate(180deg); }
+    100% { transform: scale(1) rotate(-2deg); }
+}
+
+.paper-content h2 {
+    font-size: 2rem;
+    word-wrap: break-word;
+}
+
+.secondary-btn {
+    background: transparent;
+    border: 2px solid white;
+    color: white;
+    padding: 10px 30px;
+    border-radius: 30px;
+    font-size: 1rem;
+    margin-top: 20px;
+}
+
+.secondary-btn:hover {
+    background: white;
+    color: #2b1055;
+}
+
+/* Animations for jar shake */
+@keyframes shake {
+    0% { transform: rotate(0deg); }
+    25% { transform: rotate(5deg); }
+    50% { transform: rotate(-5deg); }
+    75% { transform: rotate(5deg); }
+    100% { transform: rotate(0deg); }
+}
+
+.jar.shake {
+    animation: shake 0.5s ease-in-out;
+}

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Magic Jar Picker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&family=Outfit:wght@400;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="app-container">
+        <!-- Setup Screen -->
+        <div id="setup-screen" class="screen active">
+            <div class="setup-card">
+                <h1>🔮 Magic Jar Setup</h1>
+                <p>ใส่รายการที่ต้องการสุ่ม (หนึ่งบรรทัดต่อหนึ่งรายการ)</p>
+                <textarea id="items-input" placeholder="คำถามที่ 1&#10;คำถามที่ 2&#10;ผู้โชคดี A&#10;..."></textarea>
+                <div class="setup-actions">
+                    <button id="start-btn" class="primary-btn">ปิดฝาโหล (Start)</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Picker Screen -->
+        <div id="picker-screen" class="screen hidden">
+            <header>
+                <button id="reset-btn" class="icon-btn" title="เริ่มใหม่">↺</button>
+                <div class="remaining-badge">เหลือ <span id="item-count">0</span> ใบ</div>
+                <button id="edit-btn" class="icon-btn" title="แก้ไข (GM Only)">✎</button>
+            </header>
+
+            <main>
+                <div class="jar-wrapper">
+                    <div class="jar" id="jar">
+                        <div class="lid"></div>
+                        <div class="glass">
+                            <div class="papers-container" id="papers-container">
+                                <!-- Paper particles will be injected here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="controls">
+                    <button id="pick-btn" class="pick-button">✨ หยิบ 1 ใบ ✨</button>
+                </div>
+            </main>
+
+            <aside class="history-panel">
+                <h3>เปิดไปแล้ว (<span id="history-count">0</span>)</h3>
+                <ul id="history-list">
+                    <!-- History items -->
+                </ul>
+            </aside>
+        </div>
+    </div>
+
+    <!-- Result Modal -->
+    <div id="result-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="paper-fold">
+                <div class="paper-content">
+                    <h2 id="result-text">...</h2>
+                </div>
+            </div>
+            <button id="close-modal-btn" class="secondary-btn">เก็บไว้ในประวัติ</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
