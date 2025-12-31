@@ -1,56 +1,150 @@
 <!DOCTYPE html>
 <html lang="th">
+
 <head>
   <meta charset="UTF-8">
   <title>รายชื่อผู้สมัคร Gym Battle</title>
   <link rel="stylesheet" href="style.css">
-  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Chonburi&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Chonburi&display=swap"
+    rel="stylesheet">
   <style>
     * {
       font-family: 'Kanit', sans-serif;
     }
+
     body {
-      background: linear-gradient(135deg, #e0f2f7 0%, #b8d4e3 50%, #a8c8d8 100%);
+      background: linear-gradient(to bottom, #020024 0%, #090979 35%, #00d4ff 100%);
       background-attachment: fixed;
+      margin: 0;
+      overflow-x: hidden;
+      color: #333;
     }
+
+    #fireworks-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 999;
+      pointer-events: none;
+      opacity: 0.3;
+    }
+
     .gymbattle-container {
       max-width: 900px;
       margin: 32px auto;
       padding: 0 8px 32px 8px;
-      background: linear-gradient(180deg, #ffffff 0%, #f0f8ff 100%);
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(5px);
       border-radius: 16px;
-      box-shadow: 0 8px 24px rgba(70, 130, 180, 0.3);
-      border: 2px solid rgba(176, 224, 230, 0.5);
+      box-shadow: 0 0 30px rgba(255, 215, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.5);
+      border: 2px solid rgba(255, 215, 0, 0.5);
+      position: relative;
+      z-index: 10;
     }
+
+    /* Card pack animation */
+    .floating-card-pack {
+      position: absolute;
+      width: 80px;
+      height: auto;
+      z-index: 20;
+      pointer-events: none;
+      opacity: 0.9;
+      animation: cuteShake 2s ease-in-out infinite;
+    }
+
+    .floating-card-pack:nth-of-type(1) {
+      top: 20px;
+      right: 20px;
+      animation-delay: 0s;
+    }
+
+    .floating-card-pack:nth-of-type(2) {
+      top: 20px;
+      left: 20px;
+      animation-delay: 0.3s;
+    }
+
+    @keyframes cuteShake {
+
+      0%,
+      100% {
+        transform: translate(0, 0) rotate(0deg) scale(1);
+      }
+
+      10% {
+        transform: translate(-3px, -2px) rotate(-3deg) scale(1.05);
+      }
+
+      20% {
+        transform: translate(3px, 2px) rotate(3deg) scale(1.02);
+      }
+
+      30% {
+        transform: translate(-2px, 3px) rotate(-2deg) scale(1.03);
+      }
+
+      40% {
+        transform: translate(2px, -3px) rotate(2deg) scale(1.04);
+      }
+
+      50% {
+        transform: translate(-1px, -1px) rotate(-1deg) scale(1.05);
+      }
+
+      60% {
+        transform: translate(1px, 2px) rotate(1deg) scale(1.03);
+      }
+
+      70% {
+        transform: translate(-2px, 1px) rotate(-2deg) scale(1.04);
+      }
+
+      80% {
+        transform: translate(2px, -2px) rotate(2deg) scale(1.02);
+      }
+
+      90% {
+        transform: translate(-1px, 1px) rotate(-1deg) scale(1.03);
+      }
+    }
+
     .logo {
       display: flex;
       justify-content: center;
       align-items: center;
       margin-bottom: 16px;
       width: 100%;
+      gap: 0px;
     }
+
     .logo img {
       max-width: 120px;
       display: block;
-      margin: 0 auto;
+      margin: 0;
     }
+
     h2 {
       color: #1e3a5f;
       text-align: center;
-      font-family: 'Chonburi', cursive;
-      font-weight: 400;
+      font-weight: 700;
       text-shadow: 0 2px 4px rgba(70, 130, 180, 0.3);
     }
+
     .date-header {
       padding: 12px 16px;
       margin-top: 32px;
       font-size: 1.1em;
       font-weight: 600;
       border-radius: 8px 8px 0 0;
-      border-left: 6px solid #4682b4;
+      border-left: 6px solid #FFD700;
+      background: linear-gradient(90deg, #fff 0%, #fff9c4 100%);
       text-align: left;
-      box-shadow: 0 2px 8px rgba(70, 130, 180, 0.2);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
+
     table {
       width: 100%;
       border-collapse: collapse;
@@ -60,18 +154,23 @@
       border-radius: 0 0 12px 12px;
       overflow: hidden;
     }
-    th, td {
+
+    th,
+    td {
       padding: 10px 8px;
       text-align: center;
       border-bottom: 1px solid #d0e8f0;
     }
+
     th {
       font-weight: 600;
       font-size: 1.05em;
     }
+
     tr:hover td {
       background: #e6f3ff;
     }
+
     .register-btn {
       display: block;
       width: 100%;
@@ -90,12 +189,14 @@
       max-width: 350px;
       box-shadow: 0 4px 12px rgba(70, 130, 180, 0.4);
     }
+
     .register-btn:hover {
       background: linear-gradient(135deg, #5a9bd4 0%, #6ba8e0 100%);
       color: #fff;
       transform: translateY(-2px);
       box-shadow: 0 6px 20px rgba(70, 130, 180, 0.6);
     }
+
     /* Spinner */
     .spinner {
       margin: 24px auto 8px auto;
@@ -106,101 +207,270 @@
       height: 48px;
       animation: spin 1s linear infinite;
     }
+
     @keyframes spin {
-      0% { transform: rotate(0deg);}
-      100% { transform: rotate(360deg);}
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
     }
+
     /* Codename สี/ขนาด/กระพริบตาม rank */
-    .codename-rank[data-rank="Rookie"]      .codename { color: #888888; font-size: 1.05em; }
-    .codename-rank[data-rank="Bronze"]      .codename { color: #b87333; font-size: 1.08em; }
-    .codename-rank[data-rank="Silver"]      .codename { color: #9e9e9e; font-size: 1.12em; }
-    .codename-rank[data-rank="Gold"]        .codename { color: #ffd700; font-size: 1.18em; font-weight: bold; }
-    .codename-rank[data-rank="Platinum"]    .codename { color: #00bcd4; font-size: 1.22em; font-weight: bold; }
-    .codename-rank[data-rank="Diamond"]     .codename { color: #00bfff; font-size: 1.28em; font-weight: bold; }
-    .codename-rank[data-rank="Grandmaster"] .codename { color: #8e24aa; font-size: 1.35em; font-weight: bold; }
-    .codename-rank[data-rank="Legend"]      .codename { color: #e53935; font-size: 1.45em; font-weight: bold; }
-    .codename-rank[data-rank="Gold"]        .codename,
-    .codename-rank[data-rank="Platinum"]    .codename,
-    .codename-rank[data-rank="Diamond"]     .codename,
+    .codename-rank[data-rank="Rookie"] .codename {
+      color: #888888;
+      font-size: 1.05em;
+    }
+
+    .codename-rank[data-rank="Bronze"] .codename {
+      color: #b87333;
+      font-size: 1.08em;
+    }
+
+    .codename-rank[data-rank="Silver"] .codename {
+      color: #9e9e9e;
+      font-size: 1.12em;
+    }
+
+    .codename-rank[data-rank="Gold"] .codename {
+      color: #ffd700;
+      font-size: 1.18em;
+      font-weight: bold;
+    }
+
+    .codename-rank[data-rank="Platinum"] .codename {
+      color: #00bcd4;
+      font-size: 1.22em;
+      font-weight: bold;
+    }
+
+    .codename-rank[data-rank="Diamond"] .codename {
+      color: #00bfff;
+      font-size: 1.28em;
+      font-weight: bold;
+    }
+
+    .codename-rank[data-rank="Grandmaster"] .codename {
+      color: #8e24aa;
+      font-size: 1.35em;
+      font-weight: bold;
+    }
+
+    .codename-rank[data-rank="Legend"] .codename {
+      color: #e53935;
+      font-size: 1.45em;
+      font-weight: bold;
+    }
+
+    .codename-rank[data-rank="Gold"] .codename,
+    .codename-rank[data-rank="Platinum"] .codename,
+    .codename-rank[data-rank="Diamond"] .codename,
     .codename-rank[data-rank="Grandmaster"] .codename,
-    .codename-rank[data-rank="Legend"]      .codename {
+    .codename-rank[data-rank="Legend"] .codename {
       animation: blink 1s step-end infinite alternate;
     }
+
     @keyframes blink {
-      0%   { opacity: 1;   text-shadow: 0 0 8px #fff, 0 0 16px currentColor; }
-      100% { opacity: 0.6; text-shadow: 0 0 2px #fff, 0 0 4px currentColor; }
+      0% {
+        opacity: 1;
+        text-shadow: 0 0 8px #fff, 0 0 16px currentColor;
+      }
+
+      100% {
+        opacity: 0.6;
+        text-shadow: 0 0 2px #fff, 0 0 4px currentColor;
+      }
     }
+
     /* Wave (Gold) */
     @keyframes wave {
-      0%, 100% { transform: translateY(0);}
-      20%      { transform: translateY(-5px);}
-      40%      { transform: translateY(-10px);}
-      60%      { transform: translateY(-5px);}
-      80%      { transform: translateY(0);}
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      20% {
+        transform: translateY(-5px);
+      }
+
+      40% {
+        transform: translateY(-10px);
+      }
+
+      60% {
+        transform: translateY(-5px);
+      }
+
+      80% {
+        transform: translateY(0);
+      }
     }
+
     .codename.wave span {
       display: inline-block;
-      animation: wave 1.2s cubic-bezier(0.4,0,0.2,1) infinite;
+      animation: wave 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
     }
-    .codename.wave.gold span { animation-duration: 1.2s; }
-    .codename.wave.platinum span { animation-duration: 1s; }
-    .codename.wave.diamond span { animation-duration: 0.85s; }
-    .codename.wave.grandmaster span { animation-duration: 0.7s; }
-    .codename.wave.legend span { animation-duration: 0.6s; }
-    .codename.wave span:nth-child(1) { animation-delay: 0s; }
-    .codename.wave span:nth-child(2) { animation-delay: 0.08s; }
-    .codename.wave span:nth-child(3) { animation-delay: 0.16s; }
-    .codename.wave span:nth-child(4) { animation-delay: 0.24s; }
-    .codename.wave span:nth-child(5) { animation-delay: 0.32s; }
-    .codename.wave span:nth-child(6) { animation-delay: 0.40s; }
-    .codename.wave span:nth-child(7) { animation-delay: 0.48s; }
-    .codename.wave span:nth-child(8) { animation-delay: 0.56s; }
-    .codename.wave span:nth-child(9) { animation-delay: 0.64s; }
-    .codename.wave span:nth-child(10){ animation-delay: 0.72s; }
+
+    .codename.wave.gold span {
+      animation-duration: 1.2s;
+    }
+
+    .codename.wave.platinum span {
+      animation-duration: 1s;
+    }
+
+    .codename.wave.diamond span {
+      animation-duration: 0.85s;
+    }
+
+    .codename.wave.grandmaster span {
+      animation-duration: 0.7s;
+    }
+
+    .codename.wave.legend span {
+      animation-duration: 0.6s;
+    }
+
+    .codename.wave span:nth-child(1) {
+      animation-delay: 0s;
+    }
+
+    .codename.wave span:nth-child(2) {
+      animation-delay: 0.08s;
+    }
+
+    .codename.wave span:nth-child(3) {
+      animation-delay: 0.16s;
+    }
+
+    .codename.wave span:nth-child(4) {
+      animation-delay: 0.24s;
+    }
+
+    .codename.wave span:nth-child(5) {
+      animation-delay: 0.32s;
+    }
+
+    .codename.wave span:nth-child(6) {
+      animation-delay: 0.40s;
+    }
+
+    .codename.wave span:nth-child(7) {
+      animation-delay: 0.48s;
+    }
+
+    .codename.wave span:nth-child(8) {
+      animation-delay: 0.56s;
+    }
+
+    .codename.wave span:nth-child(9) {
+      animation-delay: 0.64s;
+    }
+
+    .codename.wave span:nth-child(10) {
+      animation-delay: 0.72s;
+    }
+
     /* Bounce (Platinum) */
     @keyframes bounce {
-      0%, 100% { transform: translateY(0); }
-      50%      { transform: translateY(-18px); }
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-18px);
+      }
     }
+
     .codename.bounce {
       display: inline-block;
       animation: bounce 1s infinite;
     }
+
     /* Pulse (Diamond) */
     @keyframes pulse {
-      0%   { transform: scale(1);   opacity: 1; }
-      50%  { transform: scale(1.18); opacity: 0.7; }
-      100% { transform: scale(1);   opacity: 1; }
+      0% {
+        transform: scale(1);
+        opacity: 1;
+      }
+
+      50% {
+        transform: scale(1.18);
+        opacity: 0.7;
+      }
+
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
     }
+
     .codename.pulse {
       display: inline-block;
       animation: pulse 1.2s infinite;
     }
+
     /* Shake (Grandmaster) */
     @keyframes shake {
-      0%, 100% { transform: translateX(0); }
-      20% { transform: translateX(-2px); }
-      40% { transform: translateX(2px); }
-      60% { transform: translateX(-2px); }
-      80% { transform: translateX(2px); }
+
+      0%,
+      100% {
+        transform: translateX(0);
+      }
+
+      20% {
+        transform: translateX(-2px);
+      }
+
+      40% {
+        transform: translateX(2px);
+      }
+
+      60% {
+        transform: translateX(-2px);
+      }
+
+      80% {
+        transform: translateX(2px);
+      }
     }
+
     .codename.shake {
       display: inline-block;
       animation: shake 0.7s infinite;
     }
+
     /* Rainbow Spin (Legend) */
     @keyframes rainbow {
-      0% { filter: hue-rotate(0deg); }
-      100% { filter: hue-rotate(360deg); }
+      0% {
+        filter: hue-rotate(0deg);
+      }
+
+      100% {
+        filter: hue-rotate(360deg);
+      }
     }
+
     @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
     }
+
     .codename.rainbow-spin {
       display: inline-block;
       animation: rainbow 2s linear infinite, spin 1.5s linear infinite;
     }
+
     /* Neon Glow (Gold) */
     .codename.neon {
       font-size: 1.18em;
@@ -208,6 +478,7 @@
       text-shadow: 0 0 5px #ffd700, 0 0 10px #ffd700, 0 0 20px #ffd700, 0 0 40px #ffd700, 0 0 80px #ffd700;
       animation: glow 1.5s infinite alternate;
     }
+
     @keyframes glow {
       0% {
         text-shadow: 0 0 5px #ffd700, 0 0 10px #ffd700, 0 0 20px #ffd700, 0 0 40px #ffd700, 0 0 80px #ffd700;
@@ -224,15 +495,33 @@
       animation: typing 2.5s steps(12, end) infinite, blink-caret .75s step-end infinite;
       font-size: 1.22em;
     }
+
     @keyframes typing {
-      0% { width: 0 }
-      50% { width: 100% }
-      100% { width: 0 }
+      0% {
+        width: 0
+      }
+
+      50% {
+        width: 100%
+      }
+
+      100% {
+        width: 0
+      }
     }
+
     @keyframes blink-caret {
-      from, to { border-color: transparent }
-      50% { border-color: #00bcd4; }
+
+      from,
+      to {
+        border-color: transparent
+      }
+
+      50% {
+        border-color: #00bcd4;
+      }
     }
+
     /* Glitch (Diamond) */
     .codename.glitch {
       position: relative;
@@ -241,32 +530,54 @@
       font-weight: bold;
       animation: glitch 2s infinite;
     }
+
     .codename.glitch::before,
     .codename.glitch::after {
       content: attr(data-text);
       position: absolute;
-      left: 0; top: 0;
-      width: 100%; height: 100%;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
       opacity: 0.7;
     }
+
     .codename.glitch::before {
       color: #ff005e;
       z-index: 1;
       clip-path: polygon(0 0, 100% 0, 100% 30%, 0 30%);
       animation: glitch 2s infinite;
     }
+
     .codename.glitch::after {
       color: #00d4ff;
       z-index: 2;
       clip-path: polygon(0 70%, 100% 70%, 100% 100%, 0 100%);
       animation: glitch 2s infinite;
     }
+
     @keyframes glitch {
-      0%, 100% { transform: translate(0);}
-      20% { transform: translate(-2px, 2px);}
-      40% { transform: translate(2px, -2px);}
-      60% { transform: translate(-1px, 1px);}
-      80% { transform: translate(1px, -1px);}
+
+      0%,
+      100% {
+        transform: translate(0);
+      }
+
+      20% {
+        transform: translate(-2px, 2px);
+      }
+
+      40% {
+        transform: translate(2px, -2px);
+      }
+
+      60% {
+        transform: translate(-1px, 1px);
+      }
+
+      80% {
+        transform: translate(1px, -1px);
+      }
     }
 
     /* Promo Cards Section */
@@ -363,7 +674,7 @@
       top: 0;
       width: 100%;
       height: 100%;
-      background-color: rgba(0,0,0,0.8);
+      background-color: rgba(0, 0, 0, 0.8);
       backdrop-filter: blur(4px);
     }
 
@@ -387,6 +698,7 @@
         opacity: 0;
         transform: translateY(-50px);
       }
+
       to {
         opacity: 1;
         transform: translateY(0);
@@ -403,7 +715,7 @@
       cursor: pointer;
       transition: color 0.3s;
       z-index: 1001;
-      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
     }
 
     .modal-close:hover {
@@ -417,7 +729,7 @@
       height: auto;
       border-radius: 12px;
       margin: 0;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     }
 
     .modal-title {
@@ -440,25 +752,25 @@
         padding: 0 16px;
         justify-content: center;
       }
-      
+
       .promo-card {
         padding: 8px;
       }
-      
+
       .promo-card img {
         margin-bottom: 6px;
       }
-      
+
       .promo-card-title {
         font-size: 0.8em;
       }
-      
+
       .modal-content {
         margin: 10% auto;
         width: 95%;
         padding: 16px;
       }
-      
+
       .modal img {
         max-width: 350px;
       }
@@ -471,38 +783,113 @@
         padding: 0 12px;
         justify-content: center;
       }
-      
+
       .promo-card {
         padding: 6px;
       }
-      
+
       .promo-card-title {
         font-size: 0.75em;
       }
-      
+
       .promo-cards-title {
         font-size: 1.5em;
       }
-      
+
       .promo-cards-subtitle {
         font-size: 1em;
       }
-      
+
       .modal img {
         max-width: 300px;
       }
     }
   </style>
 </head>
+
 <body>
+  <canvas id="fireworks-canvas"></canvas>
   <a href="index.html" class="home-button" title="กลับหน้าหลัก"></a>
   <div class="gymbattle-container">
+    <!-- Floating Card Packs -->
+    <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_ma3_pkg.png" alt="Card Pack"
+      class="floating-card-pack">
+    <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_ma3_pkg.png" alt="Card Pack"
+      class="floating-card-pack">
+
     <div class="logo">
       <img src="https://i.postimg.cc/wjzpnxjB/Up-Level-01-1.png" alt="Up Level Logo">
+      <img src="local-tournament-manager/public/assets/tournament-logos/gym_battle.png" alt="Gym Battle Logo"
+        style="max-height: 100px; width: auto;">
     </div>
-    <h2 style="text-align:center; margin-bottom: 24px;">รายชื่อผู้สมัคร Gym Battle เดือนธันวาคม 2568 ❄️</h2>
+    <h2 style="text-align:center; margin-bottom: 24px;">รายชื่อผู้สมัคร Gym Battle เดือนมกราคม 2569</h2>
+
+    <!-- Details Section -->
+    <div class="details-section"
+      style="max-width: 800px; margin: 0 auto 24px auto; padding: 24px; background: rgba(255, 255, 255, 0.9); border-radius: 16px; box-shadow: 0 4px 15px rgba(70, 130, 180, 0.15); border: 2px solid #e0f2f7;">
+      <h3 style="color: #1e3a5f; margin-top: 0; text-align: center; cursor: pointer; user-select: none;"
+        onclick="toggleDetails()">
+        📋 รายละเอียดการแข่งขัน
+        <span id="details-arrow" style="font-size: 0.8em; margin-left: 8px;">▼</span>
+      </h3>
+
+      <div style="text-align: center; margin: 10px 0 20px 0;">
+        <div style="font-size: 1.3em; color: #333; font-weight: bold;">
+          💸 ค่าสมัคร: <span style="color: #d32f2f;">220 บาท</span>
+        </div>
+        <div style="font-size: 1.2em; color: #f57f17; font-weight: bold; margin-top: 8px;">
+          🎁 Door Gift: Mega Dream ex (MA3) 1 ซอง
+        </div>
+      </div>
+
+      <div style="text-align: center; margin-bottom: 15px;">
+        <button class="toggle-btn" onclick="toggleDetails()"
+          style="background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); color: white; border: none; padding: 8px 16px; border-radius: 20px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: transform 0.2s;">
+          ดูของรางวัลเพิ่มเติม
+        </button>
+      </div>
+
+      <div id="details-content" style="display: none; animation: fadeIn 0.5s;">
+
+        <h4 style="color: #33691E; text-align: center; margin-top: 0;">🎁 ของรางวัล: Booster Pack (MA3)</h4>
+
+        <div style="margin-bottom: 15px;">
+          <strong>❗️กรณีมีผู้สมัคร 1 - 7 คน</strong><br>
+          🥇 อันดับ 1: Booster Pack (MA3) 2 ซอง<br>
+          • อันดับอื่นๆ: Booster Pack (MA3) 1 ซอง
+        </div>
+
+        <div style="margin-bottom: 15px;">
+          <strong>❗️ผู้สมัคร 8 - 15 คน</strong><br>
+          🥇 อันดับ 1: Booster Pack (MA3) 2 ซอง<br>
+          🥈 อันดับ 2: Booster Pack (MA3) 1 ซอง + Booster Pack (50บาท) 2 ซอง<br>
+          🥉 อันดับ 3: Booster Pack (MA3) 1 ซอง + Booster Pack (50บาท) 1 ซอง<br>
+          • อันดับอื่นๆ: Booster Pack (MA3) 1 ซอง
+        </div>
+
+        <div>
+          <strong>❗️ผู้สมัคร 16 คนขึ้นไป</strong><br>
+          🥇 อันดับ 1: Booster Pack (MA3) 2 ซอง + Booster Pack (50บาท) 2 ซอง<br>
+          🥈 อันดับ 2: Booster Pack (MA3) 2 ซอง + Booster Pack (50บาท) 1 ซอง<br>
+          🥉 อันดับ 3: Booster Pack (MA3) 1 ซอง + Booster Pack (50บาท) 2 ซอง<br>
+          🏅 อันดับ 4 - 6: Booster Pack (MA3) 1 ซอง + Booster Pack (50บาท) 1 ซอง<br>
+          • อันดับอื่นๆ: Booster Pack (MA3) 1 ซอง
+        </div>
+
+        <div class="note"
+          style="margin-top: 20px; font-size: 0.9em; color: #666; background: #fffbe6; padding: 10px; border-radius: 8px; border: 1px solid #ffe58f;">
+          📌 <strong>หมายเหตุ:</strong><br>
+          *เนื่องจาก <strong>วิวัฒนาการเมก้าดรีม ex (MA3 T)</strong> จะสามารถวางขายได้ตั้งแต่ 16 มกราคม 2569 เป็นต้นไป
+          ทางร้านจึงขอทำเป็นการสะสมรางวัลในวันยิมก่อนสินค้าจะเข้า และรับของรางวัลยิมที่สะสมไว้ในวันที่ 16 มกราคม 2569
+          เป็นต้นไป<br>
+          *Booster Pack (มูลค่า 50บาท) ที่ใช้แจกจะประกาศในวันยิมนั้นผ่าน line openchat : uplevel pokemon club
+        </div>
+      </div>
+    </div>
+
     <div style="display: flex; justify-content: center; margin-bottom: 24px;">
-      <a class="register-btn" href="https://forms.gle/tgw95ZL5YxHnLpAM6" target="_blank" style="text-align: center;">สมัครแข่งขัน Gym Battle</a>
+      <a class="register-btn" href="https://forms.gle/vq2b1SkKKDsHsHDx9" target="_blank"
+        style="text-align: center;">สมัครแข่งขัน Gym Battle</a>
     </div>
     <div id="gymbattle-list" style="text-align:center;">
       <div class="spinner"></div>
@@ -513,7 +900,7 @@
     <div class="promo-cards-section">
       <h3 class="promo-cards-title">การ์ดโปรโม Gym Battle</h3>
       <p class="promo-cards-subtitle">การ์ดโปรโมที่สามารถรับได้เมื่อเข้าร่วมหรือชนะการแข่งขันยิมแบตเทิล</p>
-      
+
       <div class="promo-cards-grid" id="promo-cards-grid">
         <!-- Cards will be generated by JavaScript -->
       </div>
@@ -547,21 +934,22 @@
       { bg: "#C5CAE9", border: "#7986CB", th: "#5C6BC0" }      // ม่วง-น้ำเงินอ่อน
     ];
 
-    // วันที่แข่งขันเดือนธันวาคม 2568
-    const decemberDates = [
-      "วันอังคารที่ 2 ธันวาคม 2568",
-      "วันศุกร์ที่ 5 ธันวาคม 2568",
-      "วันเสาร์ที่ 6 ธันวาคม 2568",
-      "วันอังคารที่ 9 ธันวาคม 2568",
-      "วันศุกร์ที่ 12 ธันวาคม 2568",
-      "วันเสาร์ที่ 13 ธันวาคม 2568",
-      "วันอังคารที่ 16 ธันวาคม 2568",
-      "วันศุกร์ที่ 19 ธันวาคม 2568",
-      "วันเสาร์ที่ 20 ธันวาคม 2568",
-      "วันอังคารที่ 23 ธันวาคม 2568",
-      "วันศุกร์ที่ 26 ธันวาคม 2568",
-      "วันเสาร์ที่ 27 ธันวาคม 2568",
-      "วันอังคารที่ 30 ธันวาคม 2568"
+    // วันที่แข่งขันเดือนมกราคม 2569
+    const januaryDates = [
+      "วันศุกร์ที่ 2 มกราคม 2569",
+      "วันเสาร์ที่ 3 มกราคม 2569",
+      "วันอังคารที่ 6 มกราคม 2569",
+      "วันศุกร์ที่ 9 มกราคม 2569",
+      "วันเสาร์ที่ 10 มกราคม 2569",
+      "วันอังคารที่ 13 มกราคม 2569",
+      "วันศุกร์ที่ 16 มกราคม 2569",
+      "วันเสาร์ที่ 17 มกราคม 2569",
+      "วันอังคารที่ 20 มกราคม 2569",
+      "วันศุกร์ที่ 23 มกราคม 2569",
+      "วันเสาร์ที่ 24 มกราคม 2569",
+      "วันอังคารที่ 27 มกราคม 2569",
+      "วันศุกร์ที่ 30 มกราคม 2569",
+      "วันเสาร์ที่ 31 มกราคม 2569"
     ];
 
     // ดึงข้อมูลสมาชิกจาก Member Dashboard (API ใหม่)
@@ -612,7 +1000,7 @@
     // ฟังก์ชันสำหรับดึง base rank จาก rank ที่มี suffix
     function getBaseRank(rank) {
       if (!rank) return "Rookie";
-      
+
       // ลบ suffix เช่น II, III, IV, V, VI, VII, VIII, IX, X หรือตัวเลข
       const baseRank = rank.replace(/\s+(II|III|IV|V|VI|VII|VIII|IX|X|\d+)$/, '');
       return baseRank || "Rookie";
@@ -621,12 +1009,12 @@
     // ฟังก์ชันสำหรับดึง emoji จาก rank (รองรับ rank ที่มี suffix)
     function getRankEmoji(rank) {
       if (!rank) return rankEmojis["Rookie"] || "🐣";
-      
+
       // ลองหาจาก rankEmojis ก่อน
       if (rankEmojis[rank]) {
         return rankEmojis[rank];
       }
-      
+
       // ถ้าไม่มี ให้ดึง base rank แล้วหาอิโมจิ
       const baseRank = getBaseRank(rank);
       return rankEmojis[baseRank] || rankEmojis["Rookie"] || "🐣";
@@ -661,53 +1049,30 @@
       let html = '';
       // วันที่ปัจจุบัน (ไทย)
       const today = new Date();
-      today.setHours(0,0,0,0);
-      
-      // ใช้ข้อมูลวันที่จาก API หรือ fallback ไปใช้ข้อมูลที่กำหนดไว้
-      let datesToUse = data && data.dates ? data.dates : decemberDates;
+      today.setHours(0, 0, 0, 0);
 
-      // รวมวันที่จากระบบ (decemberDates) ก่อน เพื่อให้เริ่มที่ 2 ธันวาคมแน่นอน
-      // จากนั้นตามด้วยวันที่จาก API ที่ถูกแปลงเป็นธันวาคม และตัดซ้ำ/จัดเรียง
-      const normalizedApiDates = (Array.isArray(datesToUse) ? datesToUse : []).map(date =>
-        date && typeof date === 'string' && (date.includes('พฤศจิกายน') || date.includes('ตุลาคม')) ? date.replace(/พฤศจิกายน|ตุลาคม/g, 'ธันวาคม') : date
-      ).filter(Boolean);
+      // ใช้ข้อมูลวันที่จาก januaryDates เท่านั้น เพื่อป้องกันชื่อวันซ้ำซ้อน
+      const datesToUse = januaryDates;
 
-      // รวมและตัดซ้ำโดยคงลำดับเริ่มจาก decemberDates
-      const combinedDates = [...decemberDates, ...normalizedApiDates];
-      const seen = new Set();
-      datesToUse = combinedDates.filter(d => {
-        if (seen.has(d)) return false;
-        seen.add(d);
-        return true;
-      });
-
-      // จัดเรียงวันที่ตามลำดับเวลา เพื่อให้รายการเริ่มที่ 2 ธันวาคมเสมอ
-      datesToUse.sort((a, b) => {
-        const da = parseThaiDate(a);
-        const db = parseThaiDate(b);
-        if (!da || !db) return 0;
-        return da - db;
-      });
-      
       datesToUse.forEach((date, idx) => {
         // หาข้อมูลผู้สมัครสำหรับวันที่นี้ (ถ้ามี)
         let players = [];
         if (data && data.groupedData) {
-          // ตรวจสอบทั้งวันที่ปัจจุบันและวันที่พฤศจิกายน/ตุลาคม (กรณีข้อมูลเก่า)
+          // ตรวจสอบทั้งวันที่ปัจจุบันและวันที่ธันวาคม/พฤศจิกายน (กรณีข้อมูลเก่า)
           if (data.groupedData[date]) {
             players = data.groupedData[date];
           } else {
-            // ลองหาจากวันที่พฤศจิกายนหรือตุลาคมที่ตรงกัน
-            const novemberDate = date.replace('ธันวาคม', 'พฤศจิกายน');
-            const octoberDate = date.replace('ธันวาคม', 'ตุลาคม');
-            if (data.groupedData[novemberDate]) {
-              players = data.groupedData[novemberDate];
-            } else if (data.groupedData[octoberDate]) {
-              players = data.groupedData[octoberDate];
+            // ลองหาจากวันที่ธันวาคมหรือพฤศจิกายนที่ตรงกัน
+            const prevMonthDate = date.replace('มกราคม', 'ธันวาคม');
+            const prevPrevMonthDate = date.replace('มกราคม', 'พฤศจิกายน');
+            if (data.groupedData[prevMonthDate]) {
+              players = data.groupedData[prevMonthDate];
+            } else if (data.groupedData[prevPrevMonthDate]) {
+              players = data.groupedData[prevPrevMonthDate];
             }
           }
         }
-        
+
         // Debug: แสดงข้อมูลที่หาเจอ
         console.log(`Date: ${date}`);
         console.log(`Players found:`, players);
@@ -728,7 +1093,7 @@
         const tableStyle = isPast ? 'style="display:none;"' : '';
         html += `<div class="date-header" style="background:${color.bg};border-left:6px solid ${color.border};display:flex;justify-content:space-between;align-items:center;">` +
           `<span>วันที่: ${date} (จำนวน ${players.length} คน)</span> ${toggleBtn}</div>`;
-        
+
         // Debug: แสดงข้อมูลใน HTML
         html += `<!-- Debug: Date: ${date}, Players: ${JSON.stringify(players)} -->`;
         html += `<table id="${groupId}" ${tableStyle}><thead><tr>\n            <th style="background:${color.border};color:#fff;">ลำดับ</th><th style="background:${color.border};color:#fff;">ชื่อเล่น</th><th style="background:${color.border};color:#fff;">ระดับการเล่น</th></tr></thead><tbody>`;
@@ -752,7 +1117,7 @@
       document.getElementById('gymbattle-list').innerHTML = html;
       // เพิ่ม event listener ให้ปุ่ม toggle
       document.querySelectorAll('.toggle-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', function () {
           const groupId = this.getAttribute('data-group');
           const table = document.getElementById(groupId);
           if (table.style.display === "none") {
@@ -769,9 +1134,9 @@
       // แสดงข้อมูลวันที่ทั้งหมดแม้ว่า API จะมีปัญหา
       let html = '';
       const today = new Date();
-      today.setHours(0,0,0,0);
-      
-      decemberDates.forEach((date, idx) => {
+      today.setHours(0, 0, 0, 0);
+
+      januaryDates.forEach((date, idx) => {
         const color = pastelColors[idx % pastelColors.length];
         const dateObj = parseThaiDate(date);
         let isPast = false;
@@ -788,10 +1153,10 @@
         html += `</tbody></table>`;
       });
       document.getElementById('gymbattle-list').innerHTML = html;
-      
+
       // เพิ่ม event listener ให้ปุ่ม toggle
       document.querySelectorAll('.toggle-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', function () {
           const groupId = this.getAttribute('data-group');
           const table = document.getElementById(groupId);
           if (table.style.display === "none") {
@@ -811,7 +1176,7 @@
       const baseRank = getBaseRank(rank);
       if (waveRanks.includes(baseRank)) {
         // wave + class ตาม rank, ใส่วงเล็บเหลี่ยมขยับด้วย
-        return `<span class="codename wave ${baseRank.toLowerCase()}">${chars.map((ch,i)=>`<span>${ch}</span>`).join('')}</span>`;
+        return `<span class="codename wave ${baseRank.toLowerCase()}">${chars.map((ch, i) => `<span>${ch}</span>`).join('')}</span>`;
       } else {
         // ใส่วงเล็บเหลี่ยมธรรมดา
         return `<span class="codename">[${codename}]</span>`;
@@ -867,20 +1232,20 @@
     }
 
     // Modal event listeners
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
       // Generate promo cards when page loads
       generatePromoCards();
 
       // Modal close events
       const modal = document.getElementById('cardModal');
       const closeBtn = document.querySelector('.modal-close');
-      
+
       if (closeBtn) {
         closeBtn.addEventListener('click', closeCardModal);
       }
-      
+
       if (modal) {
-        modal.addEventListener('click', function(event) {
+        modal.addEventListener('click', function (event) {
           if (event.target === modal) {
             closeCardModal();
           }
@@ -888,7 +1253,7 @@
       }
 
       // Close modal with Escape key
-      document.addEventListener('keydown', function(event) {
+      document.addEventListener('keydown', function (event) {
         if (event.key === 'Escape') {
           closeCardModal();
         }
@@ -896,4 +1261,139 @@
     });
   </script>
 </body>
-</html> 
+
+<script>
+  function toggleDetails() {
+    const content = document.getElementById('details-content');
+    const arrow = document.getElementById('details-arrow');
+    const btn = document.querySelector('.toggle-btn');
+
+    if (content.style.display === "none") {
+      content.style.display = "block";
+      arrow.textContent = "▲";
+      if (btn) btn.textContent = "ซ่อนข้อมูลเพิ่มเติม";
+    } else {
+      content.style.display = "none";
+      arrow.textContent = "▼";
+      if (btn) btn.textContent = "ดูของรางวัลเพิ่มเติม";
+    }
+  }
+
+  // Fireworks Animation
+  const canvas = document.getElementById('fireworks-canvas');
+  const ctx = canvas.getContext('2d');
+
+  let w, h, particles = [];
+  let fireworks = [];
+
+  function resize() {
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = window.innerHeight;
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  class Firework {
+    constructor() {
+      this.x = Math.random() * w;
+      this.y = h;
+      this.targetY = Math.random() * (h * 0.5);
+      this.speed = Math.random() * 3 + 5;
+      this.angle = Math.atan2(this.targetY - this.y, Math.random() * w - this.x);
+      this.vx = Math.cos(this.angle) * 0.5; // slight drift
+      this.vy = -this.speed;
+      this.hue = Math.random() * 360;
+      this.trail = [];
+      this.exploded = false;
+    }
+
+    update() {
+      this.trail.push({ x: this.x, y: this.y });
+      if (this.trail.length > 5) this.trail.shift();
+
+      this.x += this.vx;
+      this.y += this.vy;
+      this.vy += 0.1; // gravity
+
+      if (this.vy >= 0 || this.y <= this.targetY) {
+        this.explode();
+        return false; // remove
+      }
+      return true;
+    }
+
+    draw() {
+      ctx.beginPath();
+      ctx.strokeStyle = `hsl(${this.hue}, 100%, 50%)`;
+      ctx.lineWidth = 2;
+      if (this.trail.length > 1) {
+        ctx.moveTo(this.trail[0].x, this.trail[0].y);
+        for (let i = 1; i < this.trail.length; i++) {
+          ctx.lineTo(this.trail[i].x, this.trail[i].y);
+        }
+        ctx.stroke();
+      }
+    }
+
+    explode() {
+      const particleCount = 50 + Math.random() * 50;
+      for (let i = 0; i < particleCount; i++) {
+        particles.push(new Particle(this.x, this.y, this.hue));
+      }
+    }
+  }
+
+  class Particle {
+    constructor(x, y, hue) {
+      this.x = x;
+      this.y = y;
+      this.hue = hue;
+      const angle = Math.random() * Math.PI * 2;
+      const speed = Math.random() * 4 + 1;
+      this.vx = Math.cos(angle) * speed;
+      this.vy = Math.sin(angle) * speed;
+      this.alpha = 1;
+      this.decay = Math.random() * 0.015 + 0.01;
+      this.gravity = 0.1;
+    }
+
+    update() {
+      this.x += this.vx;
+      this.y += this.vy;
+      this.vy += this.gravity;
+      this.alpha -= this.decay;
+      return this.alpha > 0;
+    }
+
+    draw() {
+      ctx.fillStyle = `hsla(${this.hue}, 100%, 60%, ${this.alpha})`;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  function animate() {
+    ctx.clearRect(0, 0, w, h);
+
+    if (Math.random() < 0.03) {
+      fireworks.push(new Firework());
+    }
+
+    fireworks = fireworks.filter(fw => {
+      fw.draw();
+      return fw.update();
+    });
+
+    particles = particles.filter(p => {
+      p.draw();
+      return p.update();
+    });
+
+    requestAnimationFrame(animate);
+  }
+  animate();
+</script>
+</body>
+
+</html>
