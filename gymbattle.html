@@ -1054,6 +1054,16 @@
       // ใช้ข้อมูลวันที่จาก januaryDates เท่านั้น เพื่อป้องกันชื่อวันซ้ำซ้อน
       const datesToUse = januaryDates;
 
+      // หา index ของวันที่ใกล้ถึงที่สุด (หรือวันนี้)
+      let upcomingIndex = -1;
+      for (let i = 0; i < datesToUse.length; i++) {
+        const d = parseThaiDate(datesToUse[i]);
+        if (d && d >= today) {
+          upcomingIndex = i;
+          break;
+        }
+      }
+
       datesToUse.forEach((date, idx) => {
         // หาข้อมูลผู้สมัครสำหรับวันที่นี้ (ถ้ามี)
         let players = [];
@@ -1079,18 +1089,16 @@
         console.log(`Available keys in groupedData:`, Object.keys(data.groupedData || {}));
         const color = pastelColors[idx % pastelColors.length];
         const dateObj = parseThaiDate(date);
-        let isPast = false, isToday = false, isFuture = false;
-        if (dateObj) {
-          if (dateObj < today) isPast = true;
-          else if (dateObj.getTime() === today.getTime()) isToday = true;
-          else isFuture = true;
-        }
+
+        // กำหนดสถานะการแสดงผล: แสดงเฉพาะวันที่ใกล้ถึงที่สุดวันเดียวเท่านั้น
+        const isUpcoming = (idx === upcomingIndex);
+
         // id เฉพาะกลุ่มวัน
         const groupId = `group-${idx}`;
         // ปุ่ม toggle
-        const toggleBtn = `<button class="toggle-btn" data-group="${groupId}">${isPast ? "แสดง" : "ซ่อน"}</button>`;
-        // ซ่อน table ถ้าเป็นอดีต
-        const tableStyle = isPast ? 'style="display:none;"' : '';
+        const toggleBtn = `<button class="toggle-btn" data-group="${groupId}">${isUpcoming ? "ซ่อน" : "แสดง"}</button>`;
+        // ซ่อน table ถ้าไม่ใช่วันที่ใกล้ถึง (ซ่อนทั้งอดีตและอนาคตที่ยังไม่ถึง)
+        const tableStyle = isUpcoming ? '' : 'style="display:none;"';
         html += `<div class="date-header" style="background:${color.bg};border-left:6px solid ${color.border};display:flex;justify-content:space-between;align-items:center;">` +
           `<span>วันที่: ${date} (จำนวน ${players.length} คน)</span> ${toggleBtn}</div>`;
 
