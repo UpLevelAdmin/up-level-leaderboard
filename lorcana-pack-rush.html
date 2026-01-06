@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Disney Lorcana: Pack Rush Registration</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Chonburi&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Kanit', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(to bottom, #1a0b2e 0%, #3e1b6b 35%, #6a359c 100%);
+            background-attachment: fixed;
+            margin: 0;
+            overflow-x: hidden;
+            color: #333;
+        }
+
+        #fireworks-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 999;
+            pointer-events: none;
+            opacity: 0.3;
+        }
+
+        .lorcana-container {
+            max-width: 900px;
+            margin: 32px auto;
+            padding: 0 8px 32px 8px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(5px);
+            border-radius: 16px;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(255, 215, 0, 0.5);
+            position: relative;
+            z-index: 10;
+        }
+
+        .logo {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 16px;
+            width: 100%;
+            padding-top: 20px;
+            gap: 12px;
+        }
+
+        .logo img {
+            max-height: 120px;
+            width: auto;
+            display: block;
+            margin: 0;
+        }
+
+        h2 {
+            color: #1a0b2e;
+            text-align: center;
+            font-weight: 700;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            margin-bottom: 8px;
+        }
+
+        .details-section {
+            max-width: 800px;
+            margin: 0 auto 24px auto;
+            padding: 24px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            border: 2px solid #f3e5f5;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .info-item {
+            background: #f8f9fa;
+            padding: 16px;
+            border-radius: 12px;
+            border-left: 4px solid #6a359c;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #4a148c;
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        .register-btn {
+            display: block;
+            width: 100%;
+            margin: 32px auto 0 auto;
+            padding: 16px 0;
+            background: linear-gradient(135deg, #6a359c 0%, #8e24aa 100%);
+            color: #fff;
+            font-size: 1.25em;
+            font-weight: 600;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+            transition: all 0.3s ease;
+            max-width: 400px;
+            box-shadow: 0 4px 12px rgba(106, 53, 156, 0.4);
+        }
+
+        .register-btn:hover {
+            background: linear-gradient(135deg, #7b1fa2 0%, #aa00ff 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(106, 53, 156, 0.6);
+        }
+
+        .home-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 40px;
+            height: 40px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-decoration: none;
+            transition: background-color 0.3s;
+            z-index: 1000;
+            cursor: pointer;
+        }
+
+        .home-button::before {
+            content: '🏠';
+            font-size: 24px;
+        }
+
+        .home-button:hover {
+            background-color: rgba(255, 255, 255, 0.4);
+        }
+
+        .rules-list {
+            margin-top: 16px;
+            padding-left: 20px;
+        }
+
+        .rules-list li {
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="fireworks-canvas"></canvas>
+    <a href="index.html" class="home-button" title="กลับหน้าหลัก"></a>
+
+    <div class="lorcana-container">
+        <div class="logo">
+            <img src="https://i.postimg.cc/wjzpnxjB/Up-Level-01-1.png" alt="Up Level Logo">
+            <img src="https://static.wixstatic.com/media/91be11_f9288d8f9cea4f0eaf0c28960445cecf~mv2.png/v1/crop/x_60,y_0,w_624,h_355/fill/w_748,h_426,fp_0.50_0.50,lg_1,q_85,enc_avif,quality_auto/Disney%20Lorcana_TCG_Logo%20transparent.png"
+                alt="Disney Lorcana Logo">
+        </div>
+
+        <h2>Pack Rush @ Up Level Academy</h2>
+
+        <div class="details-section">
+            <h3 onclick="toggleDetails()"
+                style="cursor: pointer; user-select: none; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                📋 รายละเอียดการแข่งขัน <span id="details-arrow">▼</span>
+            </h3>
+
+            <!-- Collapsible Content -->
+            <div id="details-content" style="display: none;">
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">📅 วันที่</span>
+                        <div class="info-value">วันพุธที่ 7 มกราคม 2569</div>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">⏰ เวลา</span>
+                        <div class="info-value">ลงทะเบียน 18:30 น.<br>(เริ่มแข่ง 19:00 น.)</div>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">📍 สถานที่</span>
+                        <div class="info-value">Up Level (ติด MRT บางแค)</div>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">💰 ค่าสมัคร</span>
+                        <div class="info-value">400 บาท<br><span style="font-size:0.9em">(ได้ 2 Booster Packs)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="rules-box">
+                    <h4 style="color: #4a148c; margin-bottom: 12px; text-align: center;">🎮 กติกา Pack Rush</h4>
+                    <div class="rule-item">📦 <strong>เปิด 2 ซอง</strong> รวมการ์ดเป็น Deck (ไม่แยกสี)</div>
+                    <div class="rule-item">💧 <strong>เริ่ม 2 Ink</strong> (ใช้ Token/Marketing Card)</div>
+                    <div class="rule-item">🃏 <strong>จั่ว 5 ใบ</strong> เริ่มเกมได้เลย</div>
+                    <div class="rule-item">🏆 <strong>15 Lore</strong> ชนะทันที</div>
+                    <div class="rule-item">🔄 <strong>Reshuffle</strong> กองทิ้งเมื่อการ์ดหมดกอง</div>
+                </div>
+
+                <div class="beginner-note">
+                    <div style="font-weight: bold; font-size: 1.1em; margin-bottom: 4px;">🐣 มือใหม่เล่นได้!</div>
+                    <div>มีสอนเล่นฟรี (มาก่อน 18:30 น.)</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="lorcana-list" style="text-align:center; margin-bottom: 24px;">
+            <div class="spinner"
+                style="margin: 20px auto; border: 4px solid #f3f3f3; border-top: 4px solid #6a359c; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite;">
+            </div>
+            <div style="color: #6a359c;">กำลังโหลดรายชื่อ...</div>
+        </div>
+
+        <div style="display: flex; justify-content: center; margin-bottom: 24px;">
+            <a class="register-btn" href="https://forms.gle/K7X3bZFuaCAvJXeJ9" target="_blank">
+                สมัครแข่งขัน Pack Rush
+            </a>
+        </div>
+
+    </div>
+
+    <style>
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        th,
+        td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        th {
+            background-color: #6a359c;
+            color: white;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        td {
+            text-align: center;
+            color: #333;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .date-header {
+            background-color: #ede7f6;
+            color: #4a148c;
+            padding: 10px;
+            border-radius: 8px 8px 0 0;
+            font-weight: bold;
+            margin-top: 20px;
+            border: 1px solid #d1c4e9;
+        }
+
+        /* New Styles */
+        .rules-box {
+            background: #fff;
+            border: 1px solid #e1bee7;
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 16px;
+        }
+
+        .rule-item {
+            padding: 8px 0;
+            border-bottom: 1px solid #f3e5f5;
+            text-align: center;
+        }
+
+        .rule-item:last-child {
+            border-bottom: none;
+        }
+
+        .beginner-note {
+            margin-top: 16px;
+            text-align: center;
+            background-color: #f3e5f5;
+            padding: 15px;
+            border-radius: 12px;
+            color: #6a359c;
+        }
+
+        .info-value {
+            font-weight: 500;
+            margin-top: 4px;
+        }
+    </style>
+
+    <script>
+        console.log('DEBUG: version 3 - Collapsible Details');
+        const apiUrl = "https://script.google.com/macros/s/AKfycbw3kS9F6EoOT7ntM9YWbjggI7jMT_A3GWTEhTzETxY6DqZxn2ueZV_hsqat-TeGqlfgSw/exec";
+
+        function toggleDetails() {
+            const content = document.getElementById('details-content');
+            const arrow = document.getElementById('details-arrow');
+            if (content.style.display === 'none') {
+                content.style.display = 'block';
+                arrow.innerHTML = '▲';
+            } else {
+                content.style.display = 'none';
+                arrow.innerHTML = '▼';
+            }
+        }
+
+        // Fireworks Context
+        const canvas = document.getElementById('fireworks-canvas');
+        const ctx = canvas.getContext('2d');
+
+        // Fetch Data
+        fetch(apiUrl)
+            .then(res => res.json())
+            .then(data => {
+                const listContainer = document.getElementById('lorcana-list');
+                let html = '';
+
+                console.log("Data received:", data); // Debug
+
+                if (data && data.groupedData) {
+                    const dates = Object.keys(data.groupedData);
+                    if (dates.length > 0) {
+                        dates.forEach(date => {
+                            const players = data.groupedData[date];
+                            html += `<div class="date-header">📅 ${date} (จำนวน ${players.length} คน)</div>`;
+
+                            if (players.length > 0) {
+                                html += `<table>
+                                <thead>
+                                    <tr>
+                                        <th style="width: 15%">ลำดับ</th>
+                                        <th style="width: 45%">ชื่อเล่น</th>
+                                        <th style="width: 40%">Level</th>
+                                    </tr>
+                                </thead>
+                                <tbody>`;
+                                players.forEach((p, idx) => {
+                                    html += `<tr>
+                                    <td>${idx + 1}</td>
+                                    <td>${p.nickname}</td>
+                                    <td>${p.level}</td>
+                                </tr>`;
+                                });
+                                html += `</tbody></table>`;
+                            } else {
+                                html += `<div style="padding: 20px; text-align: center; background: rgba(255,255,255,0.6); border-radius: 0 0 8px 8px;">ยังไม่มีผู้สมัคร</div>`;
+                            }
+                        });
+                    } else {
+                        html = '<div style="padding: 20px; text-align: center; color: #6a359c;">ยังไม่มีข้อมูลผู้สมัคร</div>';
+                    }
+                } else {
+                    html = '<div style="color: red;">ไม่พบข้อมูลการสมัคร (Format Error)</div>';
+                }
+
+                listContainer.innerHTML = html;
+            })
+            .catch(err => {
+                console.error("Fetch Error:", err);
+                // Fallback for demo if fetch fails (e.g. CORS local)
+                document.getElementById('lorcana-list').innerHTML = `
+                <div style="color: #d32f2f; margin: 10px;">
+                    ไม่สามารถโหลดรายชื่อได้<br>
+                    <small>${err.message}</small>
+                </div>`;
+            });
+
+        // ธีมสี Lorcana (ม่วง/ทอง/ดำ)
+
+        let w, h, particles = [];
+        let fireworks = [];
+
+        function resize() {
+            w = canvas.width = window.innerWidth;
+            h = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        class Firework {
+            constructor() {
+                this.x = Math.random() * w;
+                this.y = h;
+                this.targetY = Math.random() * (h * 0.5);
+                this.speed = Math.random() * 3 + 5;
+                this.angle = Math.atan2(this.targetY - this.y, Math.random() * w - this.x);
+                this.vx = Math.cos(this.angle) * 0.5;
+                this.vy = -this.speed;
+                this.hue = Math.random() * 360; // Random hue for magical feel
+                this.trail = [];
+                this.exploded = false;
+            }
+
+            update() {
+                this.trail.push({ x: this.x, y: this.y });
+                if (this.trail.length > 5) this.trail.shift();
+
+                this.x += this.vx;
+                this.y += this.vy;
+                this.vy += 0.1;
+
+                if (this.vy >= 0 || this.y <= this.targetY) { this.explode(); return false; } return true;
+            } draw() {
+                ctx.beginPath(); ctx.strokeStyle = `hsl(${this.hue}, 100%, 50%)`; ctx.lineWidth = 2; if (this.trail.length > 1) {
+                    ctx.moveTo(this.trail[0].x, this.trail[0].y);
+                    for (let i = 1; i < this.trail.length; i++) { ctx.lineTo(this.trail[i].x, this.trail[i].y); } ctx.stroke();
+                }
+            }
+            explode() {
+                const particleCount = 50 + Math.random() * 50; for (let i = 0; i < particleCount; i++) {
+                    particles.push(new Particle(this.x, this.y, this.hue));
+                }
+            }
+        } class Particle {
+            constructor(x, y, hue) {
+                this.x = x; this.y = y; this.hue = hue; const angle = Math.random() * Math.PI * 2; const speed = Math.random() * 4 +
+                    1; this.vx = Math.cos(angle) * speed; this.vy = Math.sin(angle) * speed; this.alpha = 1; this.decay = Math.random()
+                        * 0.015 + 0.01; this.gravity = 0.1;
+            } update() {
+                this.x += this.vx; this.y += this.vy; this.vy += this.gravity;
+                this.alpha -= this.decay; return this.alpha > 0;
+            }
+
+            draw() {
+                ctx.fillStyle = `hsla(${this.hue}, 100%, 60%, ${this.alpha})`;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 2, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, w, h);
+
+            if (Math.random() < 0.03) { fireworks.push(new Firework()); } fireworks = fireworks.filter(fw => {
+                fw.draw();
+                return fw.update();
+            });
+
+            particles = particles.filter(p => {
+                p.draw();
+                return p.update();
+            });
+
+            requestAnimationFrame(animate);
+        }
+        animate();
+    </script>
+</body>
+
+</html>

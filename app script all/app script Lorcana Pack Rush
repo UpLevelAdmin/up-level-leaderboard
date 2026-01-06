@@ -1,0 +1,159 @@
+// --- Telegram Configuration ---
+const BOT_TOKEN = "8124787979:AAEWOqfiEACRxkrtZSWdTNuvGQr7uff_UoI";
+const CHAT_ID = "-4911555842"; // Group Chat ID for Up Level
+
+// --- Web App (GET) ---
+function doGet(e) {
+  return handleGet(e);
+}
+
+function handleGet(e) {
+  // Default to returning JSON
+  return getRegistrantsJSON();
+}
+
+function getRegistrantsJSON() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheets()[0]; // Assumes Form Responses is the first sheet
+  var data = sheet.getDataRange().getValues();
+  var headers = data[0];
+  
+  // Column Mapping
+  var colMap = {};
+  headers.forEach(function(h, i) {
+    colMap[h.trim()] = i;
+  });
+  
+  // Identify columns
+  var colNickname = colMap["ชื่อเล่น"];
+  var colPhone = colMap["เบอร์โทรศัพท์ที่ติดต่อได้"];
+  var colLevel = colMap["ระดับประสบการณ์ในการเล่น Lorcana"];
+  
+  // Create response structure
+  var groupedData = {};
+  var eventDate = "วันพุธที่ 7 มกราคม 2569"; // Fixed Date for Pack Rush
+
+  for (var i = 1; i < data.length; i++) {
+    var row = data[i];
+    var timestamp = row[0];
+    
+    // Skip if no timestamp
+    if (!timestamp) continue;
+    
+    var nickname = row[colNickname];
+    var phone = normalizePhone(row[colPhone]);
+    var level = row[colLevel];
+    
+    // Only add if nickname and phone exist
+    if (nickname && phone) {
+      if (!groupedData[eventDate]) {
+        groupedData[eventDate] = [];
+      }
+      
+      groupedData[eventDate].push({
+        nickname: nickname,
+        phone: phone,
+        level: level,
+        timestamp: timestamp
+      }); 
+    }
+  }
+  
+  return ContentService.createTextOutput(JSON.stringify({groupedData: groupedData}))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+// --- Trigger (Form Submit) ---
+function onFormSubmit(e) {
+  try {
+    // Check if event object exists (it won't when running manually)
+    if (!e || !e.namedValues) {
+      console.error("No event object found. This function must be triggered by a Form Submit.");
+      return;
+    }
+
+    var namedValues = e.namedValues;
+    
+    // Extract values using Header Names
+    // Note: namedValues returns an array for each key
+    var nickname = namedValues["ชื่อเล่น"] ? namedValues["ชื่อเล่น"][0] : "-";
+    var phone = namedValues["เบอร์โทรศัพท์ที่ติดต่อได้"] ? namedValues["เบอร์โทรศัพท์ที่ติดต่อได้"][0] : "-";
+    var level = namedValues["ระดับประสบการณ์ในการเล่น Lorcana"] ? namedValues["ระดับประสบการณ์ในการเล่น Lorcana"][0] : "-";
+    var tutorial = namedValues["คุณต้องการให้ทีมงานสอนเล่นเบื้องต้นก่อนเริ่มกิจกรรมหรือไม่?"] ? namedValues["คุณต้องการให้ทีมงานสอนเล่นเบื้องต้นก่อนเริ่มกิจกรรมหรือไม่?"][0] : "-";
+    var timestamp = namedValues["Timestamp"] ? namedValues["Timestamp"][0] : new Date().toLocaleString();
+    var paymentProof = namedValues["แนบหลักฐานการโอนเงิน"] ? namedValues["แนบหลักฐานการโอนเงิน"][0] : "-";
+
+    // Clean Phone
+    phone = normalizePhone(phone);
+    
+    // Check total count for the event
+    var currentCount = 0;
+    try {
+      var ss = SpreadsheetApp.getActiveSpreadsheet();
+      var sheet = ss.getSheets()[0];
+      currentCount = sheet.getLastRow() - 1; // Approximate count (minus header)
+    } catch(err) {
+      console.log("Could not get count: " + err);
+    }
+
+    // Construct Message
+    var message = `🎮 *มีผู้สมัคร Pack Rush ใหม่!* (คนที่ ${currentCount})
+    
+👤 *ชื่อเล่น:* ${nickname}
+📱 *เบอร์โทร:* ${phone}
+🔰 *Level:* ${level}
+📚 *สอนเล่น:* ${tutorial}
+⏰ *เวลา:* ${timestamp}
+
+---
+🔎 [ตรวจสอบรายชื่อทั้งหมด](https://uplevelguild.netlify.app/lorcana-pack-rush)
+`;
+
+    // Send to Telegram
+    sendTelegramMessage(message);
+
+  } catch (error) {
+    console.error("Error in onFormSubmit: " + error);
+    sendTelegramMessage("❌ Error processing Pack Rush registration: " + error);
+  }
+}
+
+function sendTelegramMessage(text) {
+  var url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+  var payload = {
+    "chat_id": CHAT_ID,
+    "text": text,
+    "parse_mode": "Markdown",
+    "disable_web_page_preview": true
+  };
+  
+  var options = {
+    "method": "post",
+    "contentType": "application/json",
+    "payload": JSON.stringify(payload)
+  };
+  
+  try {
+    UrlFetchApp.fetch(url, options);
+    console.log("Sent Telegram message: " + text);
+  } catch(e) {
+    // Retry without markdown if failed (often due to special chars)
+    payload.parse_mode = undefined;
+    payload.text = text; // Use original text
+    options.payload = JSON.stringify(payload);
+    try {
+      UrlFetchApp.fetch(url, options);
+      console.log("Retry sent Telegram message (Plain Text): " + text);
+    } catch(e2) {
+      console.error("Failed to send Telegram message: " + e2);
+    }
+  }
+}
+
+// Helper to clean phone number
+function normalizePhone(input) {
+  var phone = String(input).replace(/[^\d]/g, "").trim();
+  if (phone.length === 9 && phone[0] !== "0") return "0" + phone;
+  if (phone.length === 10 && phone.startsWith("0")) return phone;
+  return input; 
+}
