@@ -226,24 +226,25 @@
             <div style="color: #6a359c;">กำลังโหลดรายชื่อ...</div>
         </div>
 
-        <div style="display: flex; justify-content: center; margin-bottom: 24px;">
-            <div style="display: flex; justify-content: center; margin-bottom: 24px;">
-                <a class="register-btn" href="https://forms.gle/K7X3bZFuaCAvJXeJ9" target="_blank">
-                    สมัครแข่งขัน Pack Rush
-                </a>
-            </div>
+        <!-- Primary Action: Register in Google Form -->
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 16px; margin-bottom: 32px;">
+            <a class="register-btn" href="https://forms.gle/K7X3bZFuaCAvJXeJ9" target="_blank">
+                📝 สมัครแข่งขัน Pack Rush
+            </a>
+            <div style="font-size: 0.9em; color: #666;">(กรอกข้อมูลใน Google Form เพื่อจองสิทธิ์)</div>
+        </div>
 
-            <div style="text-align: center; margin-top: 20px; padding-top: 16px; border-top: 1px dashed #d1c4e9;">
-                <p style="margin-bottom: 12px; font-size: 0.95em; color: #4a148c;">
-                    ✅ สมัครใน Google Form เรียบร้อยแล้ว?<br>
-                    อย่าลืมกด <strong>Join Event</strong> ในระบบ Official ด้วยนะครับ
-                </p>
-                <a href="https://tcg.ravensburgerplay.com/events/327342" target="_blank"
-                    style="display: inline-block; padding: 10px 20px; background-color: #ffca28; color: #4a148c; border-radius: 8px; text-decoration: none; font-weight: 600; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: transform 0.2s;">
-                    🔗 Join Event on Ravensburger Play
-                </a>
-            </div>
-
+        <!-- Secondary Action: Join Official System -->
+        <div class="official-link-card">
+            <h4 style="margin: 0 0 8px 0; color: #4a148c; font-size: 1.1em;">
+                ✅ ขั้นตอนที่ 2: ระบบ Official
+            </h4>
+            <p style="margin: 0 0 16px 0; font-size: 0.95em; color: #555;">
+                เมื่อสมัครใน Google Form แล้ว<br>อย่าลืมกด <strong>Join Event</strong> ในระบบ Ravensburger Play
+            </p>
+            <a href="https://tcg.ravensburgerplay.com/events/327342" target="_blank" class="melee-btn">
+                🔗 Join Event on Ravensburger Play
+            </a>
         </div>
 
         <style>
@@ -330,6 +331,35 @@
             .info-value {
                 font-weight: 500;
                 margin-top: 4px;
+            }
+
+            .official-link-card {
+                background: #fff8e1;
+                border: 1px solid #ffecb3;
+                border-radius: 12px;
+                padding: 20px;
+                text-align: center;
+                max-width: 400px;
+                margin: 0 auto;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            }
+
+            .melee-btn {
+                display: inline-block;
+                padding: 12px 24px;
+                background-color: #ffca28;
+                color: #4a148c;
+                border-radius: 8px;
+                text-decoration: none;
+                font-weight: 600;
+                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+                transition: all 0.2s ease;
+            }
+
+            .melee-btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+                background-color: #ffc107;
             }
         </style>
 
