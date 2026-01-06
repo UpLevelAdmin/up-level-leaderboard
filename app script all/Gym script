@@ -1,18 +1,19 @@
 function doGet(e) {
   var dates = [
-    "วันอังคารที่ 2 ธันวาคม 2568",
-    "วันศุกร์ที่ 5 ธันวาคม 2568",
-    "วันเสาร์ที่ 6 ธันวาคม 2568",
-    "วันอังคารที่ 9 ธันวาคม 2568",
-    "วันศุกร์ที่ 12 ธันวาคม 2568",
-    "วันเสาร์ที่ 13 ธันวาคม 2568",
-    "วันอังคารที่ 16 ธันวาคม 2568",
-    "วันศุกร์ที่ 19 ธันวาคม 2568",
-    "วันเสาร์ที่ 20 ธันวาคม 2568",
-    "วันอังคารที่ 23 ธันวาคม 2568",
-    "วันศุกร์ที่ 26 ธันวาคม 2568",
-    "วันเสาร์ที่ 27 ธันวาคม 2568",
-    "วันอังคารที่ 30 ธันวาคม 2568"
+    "วันศุกร์ที่ 2 มกราคม 2569",
+    "วันเสาร์ที่ 3 มกราคม 2569",
+    "วันอังคารที่ 6 มกราคม 2569",
+    "วันศุกร์ที่ 9 มกราคม 2569",
+    "วันเสาร์ที่ 10 มกราคม 2569",
+    "วันอังคารที่ 13 มกราคม 2569",
+    "วันศุกร์ที่ 16 มกราคม 2569",
+    "วันเสาร์ที่ 17 มกราคม 2569",
+    "วันอังคารที่ 20 มกราคม 2569",
+    "วันศุกร์ที่ 23 มกราคม 2569",
+    "วันเสาร์ที่ 24 มกราคม 2569",
+    "วันอังคารที่ 27 มกราคม 2569",
+    "วันศุกร์ที่ 30 มกราคม 2569",
+    "วันเสาร์ที่ 31 มกราคม 2569"
   ];
 
   var pastelColors = [
@@ -43,120 +44,90 @@ function doGet(e) {
     groupedData[date] = [];
   });
   
-  // เพิ่มรูปแบบวันที่ที่อาจแตกต่างกัน (เช่น 2568 vs 2025)
+  // เพิ่มรูปแบบวันที่ที่อาจแตกต่างกัน (เช่น 2569 vs 2026)
   var alternativeDates = [
-    "วันอังคารที่ 2 ธันวาคม 2025",
-    "วันศุกร์ที่ 5 ธันวาคม 2025",
-    "วันเสาร์ที่ 6 ธันวาคม 2025",
-    "วันอังคารที่ 9 ธันวาคม 2025",
-    "วันศุกร์ที่ 12 ธันวาคม 2025"
+    "วันศุกร์ที่ 2 มกราคม 2026",
+    "วันเสาร์ที่ 3 มกราคม 2026",
+    "วันอังคารที่ 6 มกราคม 2026",
+    "วันศุกร์ที่ 9 มกราคม 2026",
+    "วันเสาร์ที่ 10 มกราคม 2026"
   ];
   
   alternativeDates.forEach(date => {
     groupedData[date] = [];
   });
 
+  var unmatched = [];
+
   for (var i = 1; i < data.length; i++) {
-    var date = data[i][1];
+    // แปลงข้อมูลเป็น String
+    var rawDate = String(data[i][1]);
+    
+    // Normalization:
+    // 1. เปลี่ยน Non-breaking space เป็น space ธรรมดา
+    // 2. ยุบรวมช่องว่างหลายอันให้เหลืออันเดียว (\s+ -> ' ')
+    // 3. ตัดช่องว่างหน้าหลัง
+    var date = rawDate.replace(/\u00A0/g, ' ').replace(/\s+/g, ' ').trim();
+
     var nickname = data[i][3];
     var level = data[i][6];
     var phone = data[i][5];
     
+    var matched = false;
+
     // ตรวจสอบว่าวันที่นี้ตรงกับวันที่ใดใน groupedData
     if (groupedData[date]) {
       groupedData[date].push({ nickname: nickname, level: level, phone: phone });
+      matched = true;
     } else {
-      // ลองแปลงปี 2568 เป็น 2025 หรือกลับกัน
-      var convertedDate = date.replace('2568', '2025');
+      // ลองแปลงปี 2569 เป็น 2026 หรือกลับกัน
+      var convertedDate = date.replace('2569', '2026');
+      var convertedDate2 = date.replace('2026', '2569');
+      
       if (groupedData[convertedDate]) {
         groupedData[convertedDate].push({ nickname: nickname, level: level, phone: phone });
+        matched = true;
+      } else if (groupedData[convertedDate2]) {
+        groupedData[convertedDate2].push({ nickname: nickname, level: level, phone: phone });
+        matched = true;
       }
+    }
+    
+    if (!matched && date) {
+        unmatched.push({
+            row: i + 1,
+            rawDate: rawDate,
+            processedDate: date,
+            nickname: nickname
+        });
     }
   }
   
   // Debug: แสดงข้อมูลที่สร้างขึ้น
   console.log("Debug - groupedData keys:", Object.keys(groupedData));
-  console.log("Debug - Sample data:", groupedData["วันอังคารที่ 2 ธันวาคม 2568"]);
-  console.log("Debug - วันที่ 5 ธันวาคม:", groupedData["วันศุกร์ที่ 5 ธันวาคม 2568"]);
   
-  // Debug: เปรียบเทียบวันที่ 2 และ 5
-  console.log("=== เปรียบเทียบวันที่ 2 และ 5 ===");
-  console.log("วันที่ 2:", groupedData["วันอังคารที่ 2 ธันวาคม 2568"].length);
-  console.log("วันที่ 5:", groupedData["วันศุกร์ที่ 5 ธันวาคม 2568"].length);
-  
-  // Debug: แสดงข้อมูลดิบจาก Google Sheets
-  console.log("Debug - Raw data from sheet:");
-  for (var i = 1; i < Math.min(data.length, 20); i++) {
-    console.log(`Row ${i}: Date="${data[i][1]}", Nickname="${data[i][3]}"`);
-  }
-  
-  // Debug: ตรวจสอบรูปแบบวันที่ที่แตกต่างกัน
-  console.log("Debug - ตรวจสอบรูปแบบวันที่ที่แตกต่างกัน:");
-  for (var i = 1; i < data.length; i++) {
-    var date = data[i][1];
-    if (date && (date.includes("2 ธันวาคม") || date.includes("5 ธันวาคม"))) {
-      console.log(`Row ${i}: "${date}" - Length: ${date.length}`);
-      // ตรวจสอบว่ามีช่องว่างหรืออักขระพิเศษหรือไม่
-      for (var j = 0; j < date.length; j++) {
-        if (date.charCodeAt(j) > 127) {
-          console.log(`  Char ${j}: "${date[j]}" (${date.charCodeAt(j)})`);
-        }
-      }
-    }
-  }
-  
-  // Debug: ตรวจสอบข้อมูลวันที่ 5 ธันวาคมโดยเฉพาะ
-  console.log("Debug - ตรวจสอบข้อมูลวันที่ 5 ธันวาคม:");
-  for (var i = 1; i < data.length; i++) {
-    var date = data[i][1];
-    if (date && date.includes("5 ธันวาคม")) {
-      console.log(`Found date 5: "${date}", Nickname: "${data[i][3]}"`);
-      
-      // ตรวจสอบรูปแบบวันที่ที่แตกต่างกัน
-      if (date.includes("2568")) {
-        console.log(`Date format with 2568: "${date}"`);
-      }
-      if (date.includes("2025")) {
-        console.log(`Date format with 2025: "${date}"`);
-      }
-      
-      // ตรวจสอบว่าข้อมูลนี้ถูกใส่ใน groupedData ตรงไหน
-      console.log(`Checking groupedData for: "${date}"`);
-      if (groupedData[date]) {
-        console.log(`Found in groupedData["${date}"]: ${groupedData[date].length} items`);
-      } else {
-        console.log(`NOT found in groupedData["${date}"]`);
-      }
-    }
-  }
-  
-  // Debug: แสดงข้อมูลทั้งหมดใน groupedData
-  console.log("Debug - All groupedData:");
-  Object.keys(groupedData).forEach(function(key) {
-    console.log(`${key}: ${groupedData[key].length} players`);
-  });
-
   if (e && e.parameter && e.parameter.type === "json") {
     // สร้าง groupedData ที่รวมข้อมูลจากทั้งสองแหล่ง
     var finalGroupedData = {};
     dates.forEach(function(date) {
       var players = groupedData[date] || [];
       
-      // เพิ่มข้อมูลจากรูปแบบที่ไม่มีช่องว่างระหว่าง "ธันวาคม" กับ "2568"
-      var dateNoSpace = date.replace("ธันวาคม 2568", "ธันวาคม2568");
+      // เพิ่มข้อมูลจากรูปแบบที่ไม่มีช่องว่างระหว่าง "มกราคม" กับ "2569"
+      var dateNoSpace = date.replace("มกราคม 2569", "มกราคม2569");
       var playersNoSpace = groupedData[dateNoSpace] || [];
       
-      // เพิ่มข้อมูลจากรูปแบบวันที่ที่แตกต่างกัน (2568 vs 2025)
-      var alternativeDate = date.replace('2568', '2025');
+      // เพิ่มข้อมูลจากรูปแบบวันที่ที่แตกต่างกัน (2569 vs 2026)
+      var alternativeDate = date.replace('2569', '2026');
       var altPlayers = groupedData[alternativeDate] || [];
       
       finalGroupedData[date] = players.concat(playersNoSpace, altPlayers);
-      
-      // Debug: แสดงข้อมูลที่รวมแล้ว
-      console.log(`Final data for ${date}: ${finalGroupedData[date].length} players`);
     });
     
-    return ContentService.createTextOutput(JSON.stringify({dates: dates, groupedData: finalGroupedData})).setMimeType(ContentService.MimeType.JSON);
+    return ContentService.createTextOutput(JSON.stringify({
+        dates: dates, 
+        groupedData: finalGroupedData,
+        unmatched: unmatched // ส่งข้อมูลที่ไม่ matched กลับไปด้วยเพื่อ debug
+    })).setMimeType(ContentService.MimeType.JSON);
   }
 
   var html = `
@@ -165,7 +136,7 @@ function doGet(e) {
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>รายชื่อผู้สมัคร Gym Battle ธันวาคม 2568</title>
+      <title>รายชื่อผู้สมัคร Gym Battle มกราคม 2569</title>
       <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
       <style>
         body {
@@ -220,7 +191,7 @@ function doGet(e) {
         <div class="logo">
           <img src="${logoUrl}" alt="Up Level Logo">
         </div>
-        <h2>รายชื่อผู้สมัคร Gym Battle เดือนธันวาคม 2568</h2>
+        <h2>รายชื่อผู้สมัคร Gym Battle เดือนมกราคม 2569</h2>
   `;
 
   dates.forEach(function(date, index) {
@@ -262,7 +233,7 @@ function doGet(e) {
 // ===== ฟังก์ชันแจ้งเตือน Telegram =====
 
 // แก้ไขข้อมูลเหล่านี้
-const BOT_TOKEN = "8284717743:AAGfu8Z-r6SI_TeAslai9vA600nNagjzH5k";
+const BOT_TOKEN = "8124787979:AAEWOqfiEACRxkrtZSWdTNuvGQr7uff_UoI";
 const CHAT_ID = "-4911555842"; // Group Chat ID
 
 const TELEGRAM_API_URL = `https://api.telegram.org/bot${BOT_TOKEN}`;
@@ -315,15 +286,43 @@ function onFormSubmit(e) {
       disable_web_page_preview: true
     };
     
-    UrlFetchApp.fetch(`${TELEGRAM_API_URL}/sendMessage`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      payload: JSON.stringify(payload)
-    });
+    try {
+      UrlFetchApp.fetch(`${TELEGRAM_API_URL}/sendMessage`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        payload: JSON.stringify(payload)
+      });
+      console.log("✅ ส่งการแจ้งเตือนไปยัง Telegram สำเร็จ");
+    } catch (e) {
+      console.warn("⚠️ ส่งแบบ Markdown ไม่สำเร็จ ลองส่งแบบข้อความธรรมดา...", e);
+      // Fallback: ส่งแบบไม่มี Markdown (กรณีชื่อมีอักขระพิเศษ)
+      payload.parse_mode = undefined; 
+      payload.text = `🏟️ มีคนสมัคร Gym Battle ใหม่!
+
+👤 ชื่อเล่น: ${nickname}
+📱 เบอร์โทร: ${phone}
+🎮 ระดับการเล่น: ${level}
+📅 วันที่เลือก: ${selectedDate}
+⏰ เวลาที่สมัคร: ${timestamp}
+
+📊 รวมวันที่ ${selectedDate}: ${countForDate} คน
+
+---
+📊 ตรวจสอบรายชื่อทั้งหมด: https://uplevelguild.netlify.app/gymbattle`;
+
+      UrlFetchApp.fetch(`${TELEGRAM_API_URL}/sendMessage`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        payload: JSON.stringify(payload)
+      });
+      console.log("✅ ส่งการแจ้งเตือนแบบข้อความธรรมดาสำเร็จ");
+    }
     
-    console.log("✅ ส่งการแจ้งเตือนไปยัง Telegram สำเร็จ");
+
     
   } catch (error) {
     console.error("❌ เกิดข้อผิดพลาด:", error);
@@ -337,7 +336,7 @@ function testTelegramNotification() {
     const testData = {
       values: [
         new Date().toLocaleString('th-TH'),
-        "วันอังคารที่ 2 ธันวาคม 2568",
+        "วันศุกร์ที่ 2 มกราคม 2569",
         "",
         "ผู้ทดสอบ",
         "",
