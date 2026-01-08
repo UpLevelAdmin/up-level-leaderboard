@@ -1,0 +1,18 @@
+{
+  "/_global-error/page": "app/_global-error/page.js",
+  "/_not-found/page": "app/_not-found/page.js",
+  "/admin/page": "app/admin/page.js",
+  "/api/verify-slip/route": "app/api/verify-slip/route.js",
+  "/api/webhook/sync-user/route": "app/api/webhook/sync-user/route.js",
+  "/dashboard/page": "app/dashboard/page.js",
+  "/debug-slip/page": "app/debug-slip/page.js",
+  "/favicon.ico/route": "app/favicon.ico/route.js",
+  "/leaderboard/page": "app/leaderboard/page.js",
+  "/map/page": "app/map/page.js",
+  "/page": "app/page.js",
+  "/party/page": "app/party/page.js",
+  "/pay/page": "app/pay/page.js",
+  "/quests/page": "app/quests/page.js",
+  "/register/page": "app/register/page.js",
+  "/shop/page": "app/shop/page.js"
+}

@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium Pokemon Scorecard Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Kanit:ital,wght@0,300;0,400;0,600;0,800;1,600&display=swap"
+        rel="stylesheet">
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #0f172a;
+            color: white;
+        }
+
+        .font-kanit {
+            font-family: 'Kanit', sans-serif;
+        }
+
+        .text-shadow-glow {
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        .glass {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .scorecard-container {
+            width: 600px;
+            padding: 24px;
+            border-radius: 24px;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .scorecard-container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at center, rgba(59, 130, 246, 0.1) 0%, transparent 70%);
+            z-index: 0;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 3px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex items-center justify-center p-8 flex-col gap-8">
+    <div class="flex flex-col lg:flex-row gap-8 mb-4 no-print max-w-7xl w-full">
+        <!-- Editor Side -->
+        <div class="glass p-6 rounded-2xl w-full lg:w-96 shrink-0 h-fit sticky top-8">
+            <h2 class="text-xl font-bold mb-4 flex items-center gap-2"><span class="text-blue-400">📝</span> Edit
+                Scorecard</h2>
+            <div class="space-y-4">
+                <div><label class="block text-xs font-bold text-gray-400 uppercase mb-1">Player Name</label><input
+                        type="text" id="inputName" oninput="updatePreview()"
+                        class="w-full bg-slate-800 border border-slate-700 p-2 rounded text-sm outline-none focus:border-blue-500"
+                        value="Ash Ketchum"></div>
+                <div><label class="block text-xs font-bold text-gray-400 uppercase mb-1">Tournament</label><input
+                        type="text" id="inputTournament" oninput="updatePreview()"
+                        class="w-full bg-slate-800 border border-slate-700 p-2 rounded text-sm outline-none focus:border-blue-500"
+                        value="Up-Level Championship 2025"></div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div><label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Type</label>
+                        <select id="inputTournamentType" onchange="updatePreview()"
+                            class="w-full bg-slate-800 border border-slate-700 p-2 rounded text-xs outline-none focus:border-blue-500">
+                            <option value="">General</option>
+                            <option value="gym_battle">Gym Battle</option>
+                            <option value="great_ball">Great Ball League</option>
+                            <option value="ultra_ball">Ultra Ball League</option>
+                            <option value="premier_ball">Premier Ball League</option>
+                            <option value="master_ball">Master Ball League</option>
+                            <option value="wc">World Championship</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Rank</label>
+                        <input list="rankOptions" type="text" id="inputRank" oninput="updatePreview()"
+                            class="w-full bg-slate-800 border border-slate-700 p-2 rounded text-xs outline-none focus:border-blue-500 placeholder-slate-500"
+                            placeholder="Select or Type...">
+                        <datalist id="rankOptions">
+                            <option value="Winner 🏆">
+                            <option value="Finalist 🥈">
+                            <option value="Top 4 🥉">
+                            <option value="Top 8">
+                            <option value="Top 16">
+                            <option value="Top 32">
+                            <option value="Day 2">
+                        </datalist>
+                    </div>
+                </div>
+                <!-- My Deck -->
+                <div class="bg-indigo-900/20 p-4 rounded-xl border border-indigo-500/30">
+                    <label class="block text-[10px] font-bold text-indigo-300 uppercase mb-2 tracking-wider">My
+                        Deck</label>
+                    <input type="text" id="inputDeckName" oninput="updatePreview()"
+                        class="w-full bg-slate-900 border border-slate-700 p-2 rounded text-sm mb-3 focus:border-indigo-400 outline-none"
+                        placeholder="Deck Name (e.g. Charizard ex)">
+
+                    <div class="bg-slate-900/50 p-2 rounded-lg border border-slate-700 min-h-[50px] flex flex-wrap gap-2 mb-2"
+                        id="myDeckIconsContainer">
+                        <!-- Added JS -->
+                    </div>
+                    <input type="text" id="myDeckSearch" oninput="handleDeckAutocomplete(event)"
+                        class="w-full bg-slate-800 text-xs p-2 rounded border border-slate-700 focus:border-indigo-500 outline-none"
+                        placeholder="+ Add Pokemon Object...">
+                    <div id="deckSearchResults"
+                        class="hidden bg-slate-800 border border-slate-600 rounded mt-1 max-h-40 overflow-y-auto absolute z-50 w-64 shadow-xl">
+                    </div>
+                </div>
+                <div class="pt-4 border-t border-white/5">
+                    <div class="flex flex-col gap-2 mb-4">
+                        <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest">Icon
+                            Style</label>
+                        <select id="iconStyle" onchange="updatePreview()"
+                            class="w-full bg-slate-800 border border-slate-700 p-2 rounded text-xs outline-none focus:border-blue-500 font-bold">
+                            <option value="uplevel">✨ UpLevel Premium (3D Chubby)</option>
+                            <option value="classic">Pixel Sprite (Classic)</option>
+                            <option value="home">3D Render (Home Style)</option>
+                            <option value="official">Official Artwork (HQ)</option>
+                        </select>
+                    </div>
+                    <div id="roundsList" class="space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar pb-4">
+                    </div>
+                    <button onclick="addRound()"
+                        class="w-full bg-slate-700 hover:bg-slate-600 border border-slate-500 border-dashed text-slate-300 font-bold py-2 px-4 rounded-xl transition-all mb-4">+
+                        Add Round</button>
+                </div>
+            </div>
+            <button onclick="downloadScorecard()"
+                class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-xl transition-all mt-8 flex items-center justify-center gap-2 shadow-lg shadow-indigo-900/20"><span>📸</span>
+                Download Image</button>
+        </div>
+        <!-- Preview Side -->
+        <div class="flex-1 flex justify-center">
+            <div id="captureArea" class="scorecard-container relative">
+                <div id="displayContent"></div>
+            </div>
+        </div>
+    </div>
+    <div id="autocompleteDropdown"
+        class="fixed z-[100] hidden glass rounded-xl border border-slate-700 max-h-48 overflow-y-auto w-48 text-sm shadow-2xl">
+    </div>
+
+    <script>
+        let rounds = [{ result: 'WIN', opponent: 'Charizard / Pidgeot', icons: ['6', '18'] }, { result: 'LOSS', opponent: 'Dragapult', icons: ['887'] }];
+        let pokemonData = [], thaiNames = [], myDeckIcons = [], searchTimeout, deckSearchTimeout;
+
+        async function loadPokemonList() {
+            try {
+                // Fetch ALL forms including Megas
+                const res1 = await fetch('https://pokeapi.co/api/v2/pokemon?limit=10000');
+                const data1 = await res1.json();
+                try {
+                    const resThai = await fetch('https://raw.githubusercontent.com/sindresorhus/pokemon/main/data/th.json');
+                    thaiNames = await resThai.json();
+                } catch (e) { console.warn('Thai names failed', e); }
+
+                pokemonData = data1.results.map((p, idx) => {
+                    const id = p.url.split('/').filter(Boolean).pop();
+                    let thName = '';
+
+                    if (id <= 1025 && id <= thaiNames.length) {
+                        thName = thaiNames[id - 1];
+                    } else if (p.name.includes('-mega')) {
+                        thName = "ร่างเมก้า";
+                    }
+
+                    return {
+                        name: p.name,
+                        id: id,
+                        thaiName: thName,
+                        displayName: thName ? `${thName} (${p.name})` : p.name
+                    };
+                });
+
+                // Sort or Filter if needed, but raw list is fine
+                console.log('Loaded', pokemonData.length, 'pokemon');
+                updatePreview();
+            } catch (e) { console.error("Failed to load list", e); }
+        }
+
+        const IconManager = {
+            manifest: {
+                "952": "source-grids/uplevel_meta_grid_9x9_v15_specialists_niche_1766059261104_pieces/1.png",
+                "40": "source-grids/uplevel_meta_grid_9x9_v15_specialists_niche_1766059261104_pieces/2.png",
+                "65": "source-grids/uplevel_meta_grid_9x9_v15_specialists_niche_1766059261104_pieces/3.png",
+                "135": "source-grids/uplevel_meta_grid_9x9_v15_specialists_niche_1766059261104_pieces/4.png",
+                "134": "source-grids/uplevel_meta_grid_9x9_v15_specialists_niche_1766059261104_pieces/5.png",
+                "470": "source-grids/uplevel_meta_grid_9x9_v15_specialists_niche_1766059261104_pieces/6.png",
+                "471": "source-grids/uplevel_meta_grid_9x9_v15_specialists_niche_1766059261104_pieces/7.png",
+                "993": "source-grids/uplevel_meta_grid_9x9_v15_specialists_niche_1766059261104_pieces/8.png",
+                "1004": "source-grids/uplevel_meta_grid_9x9_v15_specialists_niche_1766059261104_pieces/9.png",
+                "1017": "source-grids/uplevel_meta_grid_9x9_v10_ogerpon_friends_1766058805609_pieces/1.png",
+                "1018": "source-grids/uplevel_meta_grid_9x9_v16_critical_must_haves_1766059534519_pieces/5.png",
+                "1022": "source-grids/uplevel_meta_grid_9x9_v14_limitless_rogues_1766059227418_pieces/9.png",
+                "1023": "source-grids/uplevel_meta_grid_9x9_v7_city_winners_final_1766058385610_pieces/7.png",
+                "1003": "source-grids/uplevel_meta_grid_9x9_v10_ogerpon_friends_1766058805609_pieces/5.png",
+                "995": "source-grids/uplevel_meta_grid_9x9_v10_ogerpon_friends_1766058805609_pieces/6.png",
+                "1014": "source-grids/uplevel_meta_grid_9x9_v5_support_meta_1766045420785_pieces/3.png",
+                "1015": "source-grids/uplevel_meta_grid_9x9_v10_ogerpon_friends_1766058805609_pieces/8.png",
+                "646": "source-grids/uplevel_meta_grid_9x9_v10_ogerpon_friends_1766058805609_pieces/9.png",
+                "792": "source-grids/uplevel_meta_grid_9x9_v20_legends_dark_1766059837213_pieces/1.png",
+                "492": "source-grids/uplevel_meta_grid_9x9_v20_legends_dark_1766059837213_pieces/2.png",
+                "1025": "source-grids/uplevel_meta_grid_9x9_v20_legends_dark_1766059837213_pieces/3.png",
+                "169": "source-grids/uplevel_meta_grid_9x9_v20_legends_dark_1766059837213_pieces/4.png",
+                "219": "source-grids/uplevel_meta_grid_9x9_v20_legends_dark_1766059837213_pieces/5.png",
+                "461": "source-grids/uplevel_meta_grid_9x9_v20_legends_dark_1766059837213_pieces/6.png",
+                "491": "source-grids/uplevel_meta_grid_9x9_v20_legends_dark_1766059837213_pieces/7.png",
+                "908": "source-grids/uplevel_meta_grid_9x9_v20_legends_dark_1766059837213_pieces/8.png",
+                "809": "source-grids/uplevel_meta_grid_9x9_v20_legends_dark_1766059837213_pieces/9.png",
+                "998": "source-grids/uplevel_meta_grid_9x9_v2_retry_1766044407433_pieces/1.png",
+                "1005": "source-grids/uplevel_meta_grid_9x9_v8_gym_rogues_1766058502448_pieces/3.png",
+                "18": "source-grids/uplevel_meta_grid_9x9_v2_retry_1766044407433_pieces/3.png",
+                "764": "source-grids/uplevel_meta_grid_9x9_v12_lost_ancient_1766059018877_pieces/3.png",
+                "244": "source-grids/uplevel_meta_grid_9x9_v2_retry_1766044407433_pieces/5.png",
+                "245": "source-grids/uplevel_meta_grid_9x9_v2_retry_1766044407433_pieces/6.png",
+                "1024": "source-grids/uplevel_meta_grid_9x9_v2_retry_1766044407433_pieces/7.png",
+                "1008": "source-grids/uplevel_meta_grid_9x9_v13_final_bosses_1766059039877_pieces/7.png",
+                "1002": "source-grids/uplevel_meta_grid_9x9_v2_retry_1766044407433_pieces/9.png",
+                "382": "source-grids/uplevel_meta_grid_9x9_v3_legends_1766044931614_pieces/1.png",
+                "383": "source-grids/uplevel_meta_grid_9x9_v3_legends_1766044931614_pieces/2.png",
+                "384": "source-grids/uplevel_meta_grid_9x9_v3_legends_1766044931614_pieces/3.png",
+                "483": "source-grids/uplevel_meta_grid_9x9_v3_legends_1766044931614_pieces/4.png",
+                "484": "source-grids/uplevel_meta_grid_9x9_v7_city_winners_final_1766058385610_pieces/5.png",
+                "493": "source-grids/uplevel_meta_grid_9x9_v3_legends_1766044931614_pieces/6.png",
+                "487": "source-grids/uplevel_meta_grid_9x9_v12_lost_ancient_1766059018877_pieces/5.png",
+                "716": "source-grids/uplevel_meta_grid_9x9_v3_legends_1766044931614_pieces/8.png",
+                "717": "source-grids/uplevel_meta_grid_9x9_v19_megas_partners_1766059817950_pieces/5.png",
+                "136": "source-grids/uplevel_meta_grid_9x9_v14_limitless_rogues_1766059227418_pieces/1.png",
+                "157": "source-grids/uplevel_meta_grid_9x9_v21_final_cut_eevee_scyther_1766059857202_pieces/3.png",
+                "478": "source-grids/uplevel_meta_grid_9x9_v14_limitless_rogues_1766059227418_pieces/3.png",
+                "389": "source-grids/uplevel_meta_grid_9x9_v14_limitless_rogues_1766059227418_pieces/4.png",
+                "445": "source-grids/uplevel_meta_grid_9x9_v14_limitless_rogues_1766059227418_pieces/5.png",
+                "763": "source-grids/uplevel_meta_grid_9x9_v14_limitless_rogues_1766059227418_pieces/6.png",
+                "956": "source-grids/uplevel_meta_grid_9x9_v14_limitless_rogues_1766059227418_pieces/7.png",
+                "949": "source-grids/uplevel_meta_grid_9x9_v14_limitless_rogues_1766059227418_pieces/8.png",
+                "400": "source-grids/uplevel_meta_grid_9x9_v9_cute_engines_1766058673382_pieces/1.png",
+                "819": "source-grids/uplevel_meta_grid_9x9_v9_cute_engines_1766058673382_pieces/2.png",
+                "173": "source-grids/uplevel_meta_grid_9x9_v9_cute_engines_1766058673382_pieces/3.png",
+                "778": "source-grids/uplevel_meta_grid_9x9_v9_cute_engines_1766058673382_pieces/4.png",
+                "280": "source-grids/uplevel_meta_grid_9x9_v9_cute_engines_1766058673382_pieces/5.png",
+                "281": "source-grids/uplevel_meta_grid_9x9_v9_cute_engines_1766058673382_pieces/6.png",
+                "147": "source-grids/uplevel_meta_grid_9x9_v11_support_squad_1766058998402_pieces/3.png",
+                "4": "source-grids/uplevel_meta_grid_9x9_v4_starters_g1_1766045007452_pieces/4.png",
+                "399": "source-grids/uplevel_meta_grid_9x9_v9_cute_engines_1766058673382_pieces/9.png",
+                "6": "source-grids/uplevel_meta_grid_9x9_v4_starters_g1_1766045007452_pieces/6.png",
+                "1000": "source-grids/uplevel_meta_grid_9x9_v1_1766044286836_pieces/2.png",
+                "282": "source-grids/uplevel_meta_grid_9x9_v1_1766044286836_pieces/3.png",
+                "887": "source-grids/uplevel_meta_grid_9x9_v1_1766044286836_pieces/4.png",
+                "658": "source-grids/uplevel_meta_grid_9x9_v11_support_squad_1766058998402_pieces/8.png",
+                "249": "source-grids/uplevel_meta_grid_9x9_v1_1766044286836_pieces/6.png",
+                "150": "source-grids/uplevel_meta_grid_9x9_v13_final_bosses_1766059039877_pieces/5.png",
+                "992": "source-grids/uplevel_meta_grid_9x9_v13_final_bosses_1766059039877_pieces/6.png",
+                "1021": "source-grids/uplevel_meta_grid_9x9_v1_1766044286836_pieces/9.png",
+                "16": "source-grids/uplevel_meta_grid_9x9_v11_support_squad_1766058998402_pieces/1.png",
+                "17": "source-grids/uplevel_meta_grid_9x9_v11_support_squad_1766058998402_pieces/2.png",
+                "148": "source-grids/uplevel_meta_grid_9x9_v11_support_squad_1766058998402_pieces/4.png",
+                "996": "source-grids/uplevel_meta_grid_9x9_v11_support_squad_1766058998402_pieces/5.png",
+                "997": "source-grids/uplevel_meta_grid_9x9_v11_support_squad_1766058998402_pieces/6.png",
+                "490": "source-grids/uplevel_meta_grid_9x9_v5_support_meta_1766045420785_pieces/5.png",
+                "931": "source-grids/uplevel_meta_grid_9x9_v13_final_bosses_1766059039877_pieces/4.png",
+                "479": "source-grids/uplevel_meta_grid_9x9_v13_final_bosses_1766059039877_pieces/2.png",
+                "457": "source-grids/uplevel_meta_grid_9x9_v13_final_bosses_1766059039877_pieces/3.png",
+                "385": "source-grids/uplevel_meta_grid_9x9_v5_support_meta_1766045420785_pieces/6.png",
+                "765": "source-grids/uplevel_meta_grid_9x9_v5_support_meta_1766045420785_pieces/7.png",
+                "359": "source-grids/uplevel_meta_grid_9x9_v19_megas_partners_1766059817950_pieces/1.png",
+                "571": "source-grids/uplevel_meta_grid_9x9_v5_support_meta_1766045420785_pieces/9.png",
+                "164": "source-grids/uplevel_meta_grid_9x9_v16_critical_must_haves_1766059534519_pieces/1.png",
+                "901": "source-grids/uplevel_meta_grid_9x9_v16_critical_must_haves_1766059534519_pieces/2.png",
+                "991": "source-grids/uplevel_meta_grid_9x9_v16_critical_must_haves_1766059534519_pieces/3.png",
+                "982": "source-grids/uplevel_meta_grid_9x9_v16_critical_must_haves_1766059534519_pieces/4.png",
+                "936": "source-grids/uplevel_meta_grid_9x9_v16_critical_must_haves_1766059534519_pieces/6.png",
+                "250": "source-grids/uplevel_meta_grid_9x9_v16_critical_must_haves_1766059534519_pieces/7.png",
+                "448": "source-grids/uplevel_meta_grid_9x9_v16_critical_must_haves_1766059534519_pieces/8.png",
+                "861": "source-grids/uplevel_meta_grid_9x9_v16_critical_must_haves_1766059534519_pieces/9.png",
+                "3": "source-grids/uplevel_meta_grid_9x9_v4_starters_g1_1766045007452_pieces/3.png",
+                "428": "source-grids/uplevel_meta_grid_9x9_v18_megas_hitters_1766059569762_pieces/3.png",
+                "319": "source-grids/uplevel_meta_grid_9x9_v18_megas_hitters_1766059569762_pieces/5.png",
+                "795": "source-grids/uplevel_meta_grid_9x9_v18_megas_hitters_1766059569762_pieces/6.png",
+                "376": "source-grids/uplevel_meta_grid_9x9_v18_megas_hitters_1766059569762_pieces/7.png",
+                "297": "source-grids/uplevel_meta_grid_9x9_v18_megas_hitters_1766059569762_pieces/8.png",
+                "593": "source-grids/uplevel_meta_grid_9x9_v18_megas_hitters_1766059569762_pieces/9.png",
+                "123": "source-grids/uplevel_meta_grid_9x9_v21_final_cut_eevee_scyther_1766059857202_pieces/1.png",
+                "900": "source-grids/uplevel_meta_grid_9x9_v21_final_cut_eevee_scyther_1766059857202_pieces/2.png",
+                "197": "source-grids/uplevel_meta_grid_9x9_v21_final_cut_eevee_scyther_1766059857202_pieces/5.png",
+                "196": "source-grids/uplevel_meta_grid_9x9_v21_final_cut_eevee_scyther_1766059857202_pieces/6.png",
+                "700": "source-grids/uplevel_meta_grid_9x9_v21_final_cut_eevee_scyther_1766059857202_pieces/7.png",
+                "896": "source-grids/uplevel_meta_grid_9x9_v21_final_cut_eevee_scyther_1766059857202_pieces/8.png",
+                "897": "source-grids/uplevel_meta_grid_9x9_v21_final_cut_eevee_scyther_1766059857202_pieces/9.png",
+                "811": "source-grids/uplevel_meta_grid_9x9_v17_fun_strategies_1766059552155_pieces/1.png",
+                "1011": "source-grids/uplevel_meta_grid_9x9_v17_fun_strategies_1766059552155_pieces/2.png",
+                "595": "source-grids/uplevel_meta_grid_9x9_v17_fun_strategies_1766059552155_pieces/3.png",
+                "289": "source-grids/uplevel_meta_grid_9x9_v17_fun_strategies_1766059552155_pieces/4.png",
+                "242": "source-grids/uplevel_meta_grid_9x9_v17_fun_strategies_1766059552155_pieces/5.png",
+                "199": "source-grids/uplevel_meta_grid_9x9_v17_fun_strategies_1766059552155_pieces/6.png",
+                "715": "source-grids/uplevel_meta_grid_9x9_v17_fun_strategies_1766059552155_pieces/7.png",
+                "849": "source-grids/uplevel_meta_grid_9x9_v17_fun_strategies_1766059552155_pieces/8.png",
+                "558": "source-grids/uplevel_meta_grid_9x9_v17_fun_strategies_1766059552155_pieces/9.png",
+                "115": "source-grids/uplevel_meta_grid_9x9_v19_megas_partners_1766059817950_pieces/2.png",
+                "94": "source-grids/uplevel_meta_grid_9x9_v19_megas_partners_1766059817950_pieces/3.png",
+                "9": "source-grids/uplevel_meta_grid_9x9_v4_starters_g1_1766045007452_pieces/9.png",
+                "338": "source-grids/uplevel_meta_grid_9x9_v19_megas_partners_1766059817950_pieces/6.png",
+                "337": "source-grids/uplevel_meta_grid_9x9_v19_megas_partners_1766059817950_pieces/7.png",
+                "626": "source-grids/uplevel_meta_grid_9x9_v19_megas_partners_1766059817950_pieces/8.png",
+                "534": "source-grids/uplevel_meta_grid_9x9_v19_megas_partners_1766059817950_pieces/9.png",
+                "1": "source-grids/uplevel_meta_grid_9x9_v4_starters_g1_1766045007452_pieces/1.png",
+                "2": "source-grids/uplevel_meta_grid_9x9_v4_starters_g1_1766045007452_pieces/2.png",
+                "5": "source-grids/uplevel_meta_grid_9x9_v4_starters_g1_1766045007452_pieces/5.png",
+                "7": "source-grids/uplevel_meta_grid_9x9_v4_starters_g1_1766045007452_pieces/7.png",
+                "8": "source-grids/uplevel_meta_grid_9x9_v4_starters_g1_1766045007452_pieces/8.png",
+                "302": "source-grids/uplevel_meta_grid_9x9_v12_lost_ancient_1766059018877_pieces/1.png",
+                "845": "source-grids/uplevel_meta_grid_9x9_v12_lost_ancient_1766059018877_pieces/2.png",
+                "987": "source-grids/uplevel_meta_grid_9x9_v12_lost_ancient_1766059018877_pieces/6.png",
+                "984": "source-grids/uplevel_meta_grid_9x9_v8_gym_rogues_1766058502448_pieces/5.png",
+                "986": "source-grids/uplevel_meta_grid_9x9_v12_lost_ancient_1766059018877_pieces/8.png",
+                "988": "source-grids/uplevel_meta_grid_9x9_v12_lost_ancient_1766059018877_pieces/9.png",
+                "1007": "source-grids/uplevel_meta_grid_9x9_v8_gym_rogues_1766058502448_pieces/4.png",
+                "212": "source-grids/uplevel_meta_grid_9x9_v8_gym_rogues_1766058502448_pieces/1.png",
+                "375": "source-grids/uplevel_meta_grid_9x9_v8_gym_rogues_1766058502448_pieces/2.png",
+                "989": "source-grids/uplevel_meta_grid_9x9_v8_gym_rogues_1766058502448_pieces/6.png",
+                "1010": "source-grids/uplevel_meta_grid_9x9_v8_gym_rogues_1766058502448_pieces/7.png",
+                "1009": "source-grids/uplevel_meta_grid_9x9_v8_gym_rogues_1766058502448_pieces/8.png",
+                "1020": "source-grids/uplevel_meta_grid_9x9_v8_gym_rogues_1766058502448_pieces/9.png",
+                "477": "source-grids/uplevel_meta_grid_9x9_v7_city_winners_final_1766058385610_pieces/1.png",
+                "356": "source-grids/uplevel_meta_grid_9x9_v7_city_winners_final_1766058385610_pieces/2.png",
+                "937": "source-grids/uplevel_meta_grid_9x9_v7_city_winners_final_1766058385610_pieces/3.png",
+                "486": "source-grids/uplevel_meta_grid_9x9_v7_city_winners_final_1766058385610_pieces/4.png",
+                "1019": "source-grids/uplevel_meta_grid_9x9_v7_city_winners_final_1766058385610_pieces/6.png",
+                "257": "source-grids/uplevel_meta_grid_9x9_v7_city_winners_final_1766058385610_pieces/8.png",
+                "567": "source-grids/uplevel_meta_grid_9x9_v7_city_winners_final_1766058385610_pieces/9.png"
+            },
+            getUrl(id, style) {
+                const official = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`;
+                if (style === 'uplevel') {
+                    if (this.manifest[id]) return `assets/uplevel-icons/${this.manifest[id]}`;
+                    return official;
+                }
+                if (style === 'classic') return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
+                if (style === 'home') return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/${id}.png`;
+                return official;
+            }
+        };
+
+        // Auto-load updates from Debug Tool
+        try {
+            const updates = localStorage.getItem('uplevel_manifest_updates');
+            if (updates) {
+                const parsed = JSON.parse(updates);
+                Object.assign(IconManager.manifest, parsed);
+                console.log('Loaded manifest updates from Debug Tool:', Object.keys(parsed).length);
+            }
+        } catch (e) { console.error('Failed to load local updates', e); }
+
+        function getSpriteUrl(id, style) { return IconManager.getUrl(id, style); }
+        function updateRound(index, key, value) {
+            rounds[index][key] = value;
+            updatePreview(); // Always update preview on any change (result or opponent name)
+        }
+
+        // ... existing codes ...
+
+        function handleDeckAutocomplete(event) {
+            const input = event.target; // Fixed: Get input from event
+            clearTimeout(deckSearchTimeout);
+            const dropdown = document.getElementById('deckSearchResults'); // Fixed ID based on HTML change in Step 1261
+            const rect = input.getBoundingClientRect();
+            const value = input.value.toLowerCase().trim();
+
+            deckSearchTimeout = setTimeout(() => {
+                if (value.length < 2) { dropdown.classList.add('hidden'); return; }
+
+                const manualMatches = manualDict.filter(p => p.name.includes(value) || (p.thaiName && p.thaiName.includes(value)));
+                const idMatches = pokemonData.filter(p => p.id.toString() === value).slice(0, 1);
+                const apiMatches = pokemonData.filter(p => p.name.includes(value) || (p.thaiName && p.thaiName.includes(value))).slice(0, 10);
+
+                const allMatches = [...idMatches, ...manualMatches, ...apiMatches];
+                const seen = new Set();
+                const matches = allMatches.filter(m => { if (seen.has(m.id)) return false; seen.add(m.id); return true; }).slice(0, 8);
+
+                if (matches.length > 0) {
+                    dropdown.innerHTML = '';
+                    matches.forEach(m => {
+                        const item = document.createElement('div');
+                        item.className = 'flex gap-2 p-2 hover:bg-slate-700 cursor-pointer border-b border-white/5 items-center';
+
+                        const displayName = m.thaiName ? `<span class="text-xs font-bold">${m.thaiName}</span> <span class="text-[10px] text-gray-400">(${m.name})</span>` : `<span class="text-xs font-bold capitalize">${m.name}</span>`;
+                        const debugInfo = `<span class="text-[8px] text-slate-500 ml-auto">#${m.id}</span>`;
+
+                        item.innerHTML = `<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${m.id}.png" class="w-8 h-8 bg-slate-800 rounded"><div class="flex flex-col leading-tight">${displayName}</div>${debugInfo}`;
+
+                        item.onmousedown = (e) => {
+                            e.preventDefault();
+                            if (!myDeckIcons.includes(m.id.toString())) {
+                                myDeckIcons.push(m.id.toString());
+                            }
+                            dropdown.classList.add('hidden');
+                            input.value = '';
+                            renderMyDeckIconsList(); // Important: Render the list
+                            updatePreview(); // Update the main preview
+                        };
+                        dropdown.appendChild(item);
+                    });
+                    dropdown.style.top = `${rect.bottom}px`;
+                    dropdown.style.left = `${rect.left}px`;
+                    dropdown.classList.remove('hidden');
+                } else {
+                    dropdown.classList.add('hidden');
+                }
+            }, 100);
+        }
+
+        function updateScorecardPreview() {
+            const name = document.getElementById('inputName').value || 'Player Name';
+            const tourney = document.getElementById('inputTournament').value || 'Tournament Event';
+            const tourneyType = document.getElementById('inputTournamentType')?.value || 'other';
+            const rank = document.getElementById('inputRank')?.value || '';
+
+            // Explicitly get deck name
+            const deckNameVal = document.getElementById('inputDeckName')?.value;
+            const deckName = deckNameVal ? deckNameVal.trim() : '';
+
+            const style = document.getElementById('iconStyle')?.value || 'classic';
+            const wins = rounds.filter(r => r.result === 'WIN').length;
+            const losses = rounds.filter(r => ['LOSS', 'LOSE'].includes(r.result)).length;
+            const logoMap = { 'great_ball': 'assets/tournament-logos/great_ball.svg', 'ultra_ball': 'assets/tournament-logos/ultra_ball.svg', 'premier_ball': 'assets/tournament-logos/premier_ball.svg', 'master_ball': 'assets/tournament-logos/master_ball.svg', 'wc': 'assets/tournament-logos/wc.svg', 'gym_battle': 'assets/tournament-logos/gym_battle.png' };
+            const logoUrl = logoMap[tourneyType] || (tourneyType !== 'other' ? `assets/tournament-logos/${tourneyType}.png` : '');
+
+            let myDeckHtml = '';
+            const onErrorHandler = `this.onerror=null; this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/'+this.getAttribute('data-id')+'.png'`;
+
+            if (myDeckIcons.length > 0) {
+                myDeckHtml = `<div class="flex gap-2 mb-1">`;
+                myDeckIcons.forEach(id => {
+                    let src = IconManager.getUrl(id, style);
+                    const corsAttr = src.startsWith('http') ? 'crossorigin="anonymous"' : '';
+                    // V3 Theme: Blue bg, Yellow border
+                    myDeckHtml += `<div class="w-16 h-16 md:w-20 md:h-20 rounded-full bg-[#0f172a] border-2 border-yellow-400 flex items-center justify-center overflow-hidden shadow-2xl relative z-0 hover:z-10 transition-transform hover:scale-110"><img src="${src}" data-id="${id}" onerror="${onErrorHandler}" ${corsAttr} class="w-full h-full object-contain p-1"></div>`;
+                });
+                myDeckHtml += `</div>`;
+            }
+
+            let contentHTML = `
+                <!-- HEADER SECTION -->
+                <div class="flex justify-between items-start mb-4 relative z-10 w-full pl-1">
+                    <div class="flex flex-col gap-2 w-full pr-2">
+                        <div class="flex items-center gap-4">
+                            ${myDeckHtml}
+                            <div class="flex flex-col pt-1 min-w-0 flex-1">
+                                <h1 class="text-3xl font-extrabold text-white italic tracking-tight drop-shadow-lg leading-none flex flex-wrap items-center gap-2 font-kanit">
+                                    <span class="mr-1">${name}</span>
+                                    ${rank ? `<span class="text-xs bg-gradient-to-r from-amber-300 to-yellow-500 text-black px-2 py-0.5 rounded font-black uppercase tracking-wider transform -skew-x-12 shadow-md border border-white/20 whitespace-nowrap shrink-0 mt-1 font-sans">${rank}</span>` : ''}
+                                </h1>
+                                ${deckName ? `<div class="text-blue-400 font-bold text-lg leading-tight mt-1 line-clamp-1 font-kanit">${deckName}</div>` : ''}
+                                <div class="text-slate-500 font-semibold text-[10px] uppercase tracking-widest mt-1 font-sans">${tourney}</div>
+                            </div>
+                        </div>
+                    </div>
+                     ${logoUrl ? `<img src="${logoUrl}" ${logoUrl.startsWith('http') ? 'crossorigin="anonymous"' : ''} class="h-16 w-16 object-contain drop-shadow-xl shrink-0">` : ''}
+                </div>
+                
+                <!-- STATS GRID -->
+                <div class="grid grid-cols-2 gap-3 mb-4 relative z-10">
+                   <div class="bg-gradient-to-br from-slate-800/80 to-slate-900/80 rounded-xl p-2 flex flex-col items-center justify-center border border-emerald-500/30 shadow-lg backdrop-blur-sm relative overflow-hidden group">
+                        <div class="absolute inset-0 bg-emerald-500/10 group-hover:bg-emerald-500/20 transition-colors"></div>
+                        <span class="text-[9px] text-emerald-400 font-black uppercase tracking-[0.2em] relative z-10">Wins</span>
+                        <span class="text-4xl font-black text-white leading-none relative z-10 drop-shadow-md mt-1 font-sans">${wins}</span>
+                    </div>
+                    <div class="bg-gradient-to-br from-slate-800/80 to-slate-900/80 rounded-xl p-2 flex flex-col items-center justify-center border border-rose-500/30 shadow-lg backdrop-blur-sm relative overflow-hidden group">
+                        <div class="absolute inset-0 bg-rose-500/10 group-hover:bg-rose-500/20 transition-colors"></div>
+                        <span class="text-[9px] text-rose-400 font-black uppercase tracking-[0.2em] relative z-10">Losses</span>
+                        <span class="text-4xl font-black text-white leading-none relative z-10 drop-shadow-md mt-1 font-sans">${losses}</span>
+                    </div>
+                </div>
+                
+                <!-- Watermark Centered -->
+                <div class="absolute inset-x-0 bottom-20 flex justify-center pointer-events-none opacity-5 z-0 grayscale mix-blend-overlay">
+                     <img src="assets/uplevel-logo.png" class="w-48 object-contain">
+                </div>
+
+                <!-- ROUNDS LIST -->
+                <div class="space-y-2 relative z-10">
+            `;
+
+            rounds.forEach((r, i) => {
+                const isWin = r.result === 'WIN';
+                const resultColor = isWin ? 'text-emerald-400' : (r.result === 'DRAW' ? 'text-slate-400' : 'text-rose-400');
+                const stripColor = isWin ? 'bg-emerald-500' : (r.result === 'DRAW' ? 'bg-slate-500' : 'bg-rose-500');
+
+                let iconsHTML = (r.icons || []).map(id => {
+                    let url = getSpriteUrl(id, style);
+                    const corsAttr = url.startsWith('http') ? 'crossorigin="anonymous"' : '';
+                    return `<div class="w-9 h-9 md:w-10 md:h-10 rounded-full bg-slate-200 border border-slate-600 overflow-hidden shrink-0 shadow-sm relative"><img src="${url}" data-id="${id}" onerror="${onErrorHandler}" ${corsAttr} class="w-full h-full object-contain p-0.5 relative z-10"></div>`;
+                }).join('');
+
+                contentHTML += `
+                    <div class="group relative flex items-center bg-slate-800/60 border border-white/5 rounded-lg overflow-hidden h-12 md:h-14 transition-all hover:bg-slate-800/80">
+                        <!-- Strip -->
+                        <div class="absolute left-0 top-0 bottom-0 w-1 ${stripColor} shadow-[0_0_8px_rgba(0,0,0,0.5)]"></div>
+                        
+                        <!-- Content -->
+                        <div class="flex items-center w-full px-3 gap-3">
+                            <!-- Round Number -->
+                            <div class="flex flex-col items-center justify-center w-6 shrink-0">
+                                <span class="text-[9px] text-slate-500 font-bold uppercase">RD</span>
+                                <span class="text-xs text-slate-300 font-black leading-none font-sans">${i + 1}</span>
+                            </div>
+                            
+                            <!-- Result Badge -->
+                            <div class="w-10 text-center shrink-0">
+                                <span class="text-xs font-black ${resultColor} drop-shadow-sm tracking-wide font-sans">${r.result}</span>
+                            </div>
+
+                            <!-- Opponent Icons -->
+                             <div class="flex items-center -space-x-2 shrink-0 pl-1 border-l border-white/10 ml-1 py-1">
+                                ${iconsHTML}
+                            </div>
+                            
+                            <!-- Opponent Name -->
+                            <div class="flex-1 text-right min-w-0 flex flex-col justify-center h-full pl-2">
+                                <span class="text-sm font-bold text-slate-100 truncate w-full block leading-tight font-kanit">${r.opponent || '-'}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            contentHTML += `</div>`;
+            document.getElementById('displayContent').innerHTML = contentHTML;
+        }
+
+        function updatePreview() { updateScorecardPreview(); renderRoundsList(); renderMyDeckIconsList(); }
+
+        function renderMyDeckIconsList() {
+            const container = document.getElementById('myDeckIconsContainer'); if (!container) return; container.innerHTML = '';
+            if (myDeckIcons.length === 0) { container.innerHTML = '<span class="text-[10px] text-slate-500 italic p-1">No icons selected</span>'; return; }
+            myDeckIcons.forEach((id, idx) => {
+                const div = document.createElement('div'); div.className = 'relative group w-8 h-8';
+                div.innerHTML = `<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png" class="w-full h-full object-contain bg-slate-800 rounded border border-slate-600"><button onclick="removeDeckIcon(${idx})" class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-[8px] hover:bg-red-600 shadow-md">×</button>`;
+                container.appendChild(div);
+            });
+        }
+        function removeDeckIcon(idx) { myDeckIcons.splice(idx, 1); updatePreview(); }
+
+        function renderRoundsList() {
+            const list = document.getElementById('roundsList');
+            if (!list || document.activeElement.closest('#roundsList') && (document.activeElement.tagName === 'INPUT' && !document.activeElement.id.includes('search'))) { } else {
+                list.innerHTML = '';
+                rounds.forEach((r, index) => {
+                    const div = document.createElement('div'); div.className = 'bg-slate-800/40 p-3 rounded-xl border border-dashed border-slate-700 flex flex-col gap-2 hover:bg-slate-800/60 transition-colors';
+                    let iconsList = '';
+                    (r.icons || []).forEach((id, iconIdx) => { iconsList += `<div class="relative group w-8 h-8 shrink-0"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png" class="w-full h-full object-contain bg-slate-900 rounded border border-slate-600"><button onclick="removeIcon(${index}, ${iconIdx})" class="absolute -top-1 -right-1 bg-red-600 w-4 h-4 rounded-full text-[8px] flex items-center justify-center text-white shadow">×</button></div>`; });
+                    div.innerHTML = `<div class="flex justify-between items-center pb-1 border-b border-white/5"><span class="text-[10px] font-black text-slate-500">ROUND ${index + 1}</span><button onclick="removeRound(${index})" class="text-rose-400 hover:text-rose-300 text-[10px] font-bold">REMOVE</button></div><div class="flex items-center gap-2 mt-1"><select onchange="updateRound(${index}, 'result', this.value)" class="bg-slate-900 text-[10px] font-bold p-2 h-9 rounded-lg border border-slate-700 w-20 text-center ${r.result === 'WIN' ? 'text-emerald-400' : (r.result === 'LOSS' ? 'text-rose-400' : 'text-gray-400')}"><option value="WIN" ${r.result === 'WIN' ? 'selected' : ''}>WIN</option><option value="LOSS" ${r.result === 'LOSS' ? 'selected' : ''}>LOSS</option><option value="DRAW" ${r.result === 'DRAW' ? 'selected' : ''}>DRAW</option></select><input type="text" oninput="updateRound(${index}, 'opponent', this.value)" value="${r.opponent}" class="bg-slate-900 text-xs p-2 h-9 rounded-lg border border-slate-700 flex-1 placeholder-slate-600 focus:border-blue-500 outline-none" placeholder="Opponent Deck Name..."></div><div class="bg-slate-900/50 p-2 rounded-lg border border-slate-700/50 flex flex-col gap-2"><div class="flex flex-wrap gap-2 min-h-[32px] items-center">${iconsList.length ? iconsList : '<span class="text-[10px] text-slate-600 italic">No Opponent Icons</span>'}</div><div class="relative"><input type="text" id="round-icon-search-${index}" oninput="handleAutocomplete(event, ${index})" onfocus="handleAutocomplete(event, ${index})" class="bg-slate-800 text-[10px] p-1.5 rounded border border-slate-600 w-full placeholder-slate-500 focus:border-blue-500 outline-none" placeholder="+ Add Opponent Icon..."></div></div>`;
+                    list.appendChild(div);
+                });
+            }
+        }
+        function removeIcon(rIdx, iIdx) { rounds[rIdx].icons.splice(iIdx, 1); updatePreview(); renderRoundsList(); }
+        function removeRound(index) { rounds.splice(index, 1); updatePreview(); }
+        function addRound() { rounds.push({ result: 'WIN', opponent: '', icons: [] }); updatePreview(); renderRoundsList(); }
+
+        const manualDict = [{ name: "ogerpon-teal-mask", thaiName: "โอกาปอง (หน้ากากเขียว)", id: 1017 }, { name: "ogerpon-wellspring-mask", thaiName: "โอกาปองน้ำ (หน้ากากบ่อน้ำ)", id: 10273 }, { name: "ogerpon-hearthflame-mask", thaiName: "โอกาปองไฟ (หน้ากากเตาไฟ)", id: 10274 }, { name: "ogerpon-cornerstone-mask", thaiName: "โอกาปองหิน (หน้ากากศิลา)", id: 10275 }, { name: "pecharunt", thaiName: "เปชารันท์ (Pecharunt)", id: 1025 }, { name: "feandipiti", thaiName: "เฟซันดิพิติ", id: 1016 }, { name: "okidogi", thaiName: "อิดเนะ (Okidogi)", id: 1014 }, { name: "munkidori", thaiName: "มาชิมาชิระ (Munkidori)", id: 1015 }, { name: "roaring-moon", thaiName: "โทโดโรคุสึกิ (Roaring Moon)", id: 1005 }, { name: "iron-valiant", thaiName: "บุจิน (Iron Valiant)", id: 1006 }, { name: "typhlosion", thaiName: "บาคูฟุน (Typhlosion)", id: 157 }, { name: "typhlosion-hisui", thaiName: "บาคูฟุน ฮิซุย (Hisuian Typhlosion)", id: 10233 }, { name: "pikachu", thaiName: "พิคาชู (Pikachu)", id: 25 }, { name: "charizard", thaiName: "ลิซาร์ดอน (Charizard)", id: 6 }, { name: "dragapult", thaiName: "ดราพา (Dragapult)", id: 887 }, { name: "comfey", thaiName: "คิววา (Comfey)", id: 764 }, { name: "sableye", thaiName: "ยามิรามิ (Sableye)", id: 302 }, { name: "giratina", thaiName: "กิราตินา (Giratina)", id: 487 }, { name: "pidgeot", thaiName: "พิจิออต (Pidgeot)", id: 18 }];
+
+        function handleAutocomplete(event, roundIndex) {
+            const input = event.target; const value = input.value.toLowerCase().trim(); const dropdown = document.getElementById('autocompleteDropdown'); const rect = input.getBoundingClientRect();
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                if (value.length < 2) { dropdown.classList.add('hidden'); return; }
+                const manualMatches = manualDict.filter(p => p.name.includes(value) || (p.thaiName && p.thaiName.includes(value)));
+                const idMatches = pokemonData.filter(p => p.id.toString() === value).slice(0, 1);
+                const apiMatches = pokemonData.filter(p => p.name.includes(value) || (p.thaiName && p.thaiName.includes(value))).slice(0, 10);
+                const allMatches = [...idMatches, ...manualMatches, ...apiMatches];
+                const seen = new Set();
+                const matches = allMatches.filter(m => { if (seen.has(m.id)) return false; seen.add(m.id); return true; }).slice(0, 8);
+                if (matches.length > 0) {
+                    dropdown.innerHTML = '';
+                    matches.forEach(m => {
+                        const item = document.createElement('div'); item.className = 'flex gap-2 p-2 hover:bg-slate-700 cursor-pointer border-b border-white/5 items-center';
+                        const displayName = m.thaiName ? `<span class="text-xs font-bold">${m.thaiName}</span> <span class="text-[10px] text-gray-400">(${m.name})</span>` : `<span class="text-xs font-bold capitalize">${m.name}</span>`;
+                        const debugInfo = `<span class="text-[8px] text-slate-500 ml-auto">#${m.id}</span>`;
+                        item.innerHTML = `<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${m.id}.png" class="w-8 h-8 bg-slate-800 rounded"><div class="flex flex-col leading-tight">${displayName}</div>${debugInfo}`;
+                        item.onmousedown = (e) => { e.preventDefault(); if (!rounds[roundIndex].icons) rounds[roundIndex].icons = []; if (!rounds[roundIndex].icons.includes(m.id.toString())) { rounds[roundIndex].icons.push(m.id.toString()); } dropdown.classList.add('hidden'); input.value = ''; renderRoundsList(); updatePreview(); }; dropdown.appendChild(item);
+                    });
+                    dropdown.style.top = `${rect.bottom}px`; dropdown.style.left = `${rect.left}px`; dropdown.classList.remove('hidden');
+                } else { dropdown.classList.add('hidden'); }
+            }, 100);
+        }
+
+        document.addEventListener('click', (e) => {
+            const deckSearch = document.getElementById('myDeckSearch');
+            const deckDropdown = document.getElementById('deckSearchResults');
+            if (deckSearch && !deckSearch.contains(e.target) && deckDropdown) {
+                deckDropdown.classList.add('hidden');
+            }
+            if (!e.target.closest('#roundsList') && !e.target.closest('#autocompleteDropdown')) {
+                document.getElementById('autocompleteDropdown')?.classList.add('hidden');
+            }
+        });
+
+        window.addRound = addRound;
+        window.removeRound = removeRound;
+        window.removeIcon = removeIcon;
+        window.removeDeckIcon = removeDeckIcon;
+        window.updatePreview = updatePreview;
+        window.handleAutocomplete = handleAutocomplete;
+        window.updateRound = updateRound;
+        window.handleDeckAutocomplete = handleDeckAutocomplete;
+
+
+        // --- ROBUST DOWNLOADER (Base64 Bypass) ---
+        // --- ROBUST DOWNLOADER V5 (Fetch-Blob & No Taint) ---
+        window.downloadScorecard = async function () {
+            const btn = document.querySelector('button[onclick="downloadScorecard()"]');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '⏳ Downloading Assets...';
+            btn.disabled = true;
+
+            const el = document.getElementById('captureArea');
+            const images = el.querySelectorAll('img');
+            const originalSrcs = [];
+
+            // Helper: Fetch as Blob -> DataURL (Cleanest CORS Bypass)
+            const toBase64 = async (url) => {
+                try {
+                    // Fetch with 'cors' mode to ensure we get a clean response
+                    const response = await fetch(url, { mode: 'cors' });
+                    if (!response.ok) throw new Error('Network err');
+                    const blob = await response.blob();
+                    return new Promise((resolve) => {
+                        const reader = new FileReader();
+                        reader.onloadend = () => resolve(reader.result);
+                        reader.readAsDataURL(blob);
+                    });
+                } catch (e) {
+                    console.warn('Fetch failed for:', url, e);
+                    return url; // Return original if failed (might break, but worth a try)
+                }
+            }
+
+            try {
+                // 1. Pre-convert ALL images (External + Local) to dataURLs
+                for (let i = 0; i < images.length; i++) {
+                    const img = images[i];
+                    originalSrcs[i] = img.src; // Backup
+
+                    // Attempt to convert EVERYTHING to Base64
+                    // This is the only way to avoid Taint on file:// protocol
+                    try {
+                        const dataUrl = await toBase64(img.src);
+                        if (dataUrl) img.src = dataUrl;
+                    } catch (e) { console.error('B64 conversion failed', e); }
+                }
+
+                btn.innerHTML = '📸 Generating Image...';
+
+                // Give DOM a split second to update image sources
+                await new Promise(r => setTimeout(r, 100));
+
+                // 2. Capture
+                // IMPORTANT: useCORS: true, but allowTaint: FALSE (default)
+                const canvas = await html2canvas(el, {
+                    backgroundColor: '#0f172a',
+                    scale: 3,
+                    useCORS: true,
+                    logging: false,
+                    imageTimeout: 5000
+                });
+
+                // 3. Download
+                const link = document.createElement('a');
+                link.download = `uplevel-scorecard-${Date.now()}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+
+                // Success feedback
+                const prev = btn.className;
+                btn.className = "w-full bg-emerald-600 text-white font-bold py-3 px-4 rounded-xl transition-all mt-8 flex items-center justify-center gap-2";
+                btn.innerHTML = "✅ Downloaded!";
+                setTimeout(() => {
+                    btn.className = prev;
+                    btn.innerHTML = originalText;
+                }, 2000);
+
+            } catch (err) {
+                console.error('Download critical error:', err);
+                // Fallback to Image Modal if direct download fails
+                generateImageForSave();
+            } finally {
+                // 4. Restore original images
+                images.forEach((img, i) => {
+                    img.src = originalSrcs[i];
+                });
+                if (btn.innerHTML !== "✅ Downloaded!") {
+                    btn.innerHTML = originalText;
+                }
+                btn.disabled = false;
+            }
+        }
+
+        // --- MOBILE FRIENDLY IMAGE SAVER (New Feature) ---
+        window.generateImageForSave = async function () {
+            // 1. Setup Overlay
+            const overlayId = 'image-save-overlay';
+            let overlay = document.getElementById(overlayId);
+            if (!overlay) {
+                overlay = document.createElement('div');
+                overlay.id = overlayId;
+                overlay.className = 'fixed inset-0 z-50 bg-slate-900/95 flex flex-col items-center justify-center p-4 backdrop-blur-sm animate-fade-in';
+                overlay.innerHTML = `
+                    <div class="relative max-w-full max-h-full flex flex-col items-center">
+                        <p class="text-white text-lg font-bold mb-4 animate-pulse">👇 Tap & Hold Image to Save</p>
+                        <div id="generated-img-container" class="shadow-2xl rounded-xl overflow-hidden border border-white/10"></div>
+                        <button onclick="document.getElementById('${overlayId}').style.display='none'" class="mt-6 bg-slate-700 hover:bg-slate-600 text-white px-6 py-2 rounded-full font-bold transition-all shadow-lg border border-white/20">
+                            ✕ Close / Edit
+                        </button>
+                    </div>
+                `;
+                document.body.appendChild(overlay);
+            } else {
+                overlay.style.display = 'flex';
+            }
+
+            const imgContainer = overlay.querySelector('#generated-img-container');
+            imgContainer.innerHTML = '<div class="text-white">Generating Preview...</div>';
+
+            try {
+                // Reuse the robust capture logic (simplified)
+                const el = document.getElementById('captureArea');
+
+                // Temp fix for images (convert to base64 if possible, or leave as is)
+                // Note: In this mode, even if tainted, we can't 'download' programmatically, 
+                // BUT we CAN display it in an IMG tag for the user to save manually!
+                // Actually, tainted canvas can't be toDataURL'd. So we must try to clean it.
+
+                const canvas = await html2canvas(el, {
+                    backgroundColor: '#0f172a',
+                    scale: 3,
+                    useCORS: true,
+                    logging: false,
+                    allowTaint: true // Allow taint for display only (browser might block saving, but let's try)
+                });
+
+                // DIRECT CANVAS APPEND (Bypass toDataURL security)
+                // Since toDataURL throws on tainted canvas (local files),
+                // we just show the Canvas itself! Modern browsers allow right-click save on Canvas too.
+
+                canvas.className = 'max-w-full max-h-[70vh] object-contain shadow-2xl';
+                // Add a hint that this is a canvas
+                canvas.setAttribute('role', 'img');
+                canvas.setAttribute('aria-label', 'Generated Scorecard');
+
+                imgContainer.innerHTML = '';
+                imgContainer.appendChild(canvas);
+
+                // Try to add instructions based on device
+                const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                const hintText = isMobile ? "👇 Tap & Hold Canvas to Save" : "👇 Right Click > Save Image As...";
+                overlay.querySelector('p').innerText = hintText;
+
+            } catch (e) {
+                console.error("Image Gen Failed", e);
+                imgContainer.innerHTML = `
+                    <div class="text-rose-400 text-center p-4">
+                        <p class="font-bold">⚠️ Cannot Create Image</p>
+                        <p class="text-sm mt-2">Browser security blocked the image generation.</p>
+                        <p class="text-xs mt-4 text-slate-400">Please take a screenshot of the main screen instead.</p>
+                        <div class="mt-4 text-xs text-slate-500">
+                             Tech info: ${e.message}
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+
+        // --- STATE MANAGEMENT ---
+        let isLoaded = false;
+
+        function saveState() {
+            if (!isLoaded) return; // Prevent saving empty state during load
+            const state = {
+                name: document.getElementById('inputName').value,
+                tourney: document.getElementById('inputTournament').value,
+                type: document.getElementById('inputTournamentType').value,
+                rank: document.getElementById('inputRank').value,
+                deckName: document.getElementById('inputDeckName').value,
+                style: document.getElementById('iconStyle').value,
+                myDeckIcons: myDeckIcons || [],
+                rounds: rounds || []
+            };
+            localStorage.setItem('uplevel_scorecard_state', JSON.stringify(state));
+            console.log('State saved');
+        }
+
+        function loadState() {
+            try {
+                const saved = localStorage.getItem('uplevel_scorecard_state');
+                if (saved) {
+                    const state = JSON.parse(saved);
+                    if (state.name) document.getElementById('inputName').value = state.name;
+                    if (state.tourney) document.getElementById('inputTournament').value = state.tourney;
+                    if (state.type) document.getElementById('inputTournamentType').value = state.type;
+                    if (state.rank) document.getElementById('inputRank').value = state.rank;
+                    if (state.deckName) document.getElementById('inputDeckName').value = state.deckName;
+                    if (state.style) document.getElementById('iconStyle').value = state.style;
+
+                    if (state.myDeckIcons && Array.isArray(state.myDeckIcons)) {
+                        myDeckIcons = state.myDeckIcons;
+                    }
+                    if (state.rounds && Array.isArray(state.rounds)) {
+                        rounds = state.rounds;
+                    }
+                    console.log('State loaded successfully');
+                }
+            } catch (e) { console.error('Load state failed', e); }
+        }
+
+        function resetState() {
+            if (confirm('Clear all scorecard data?')) {
+                localStorage.removeItem('uplevel_scorecard_state');
+                location.reload();
+            }
+        }
+
+        // Updated Update Function with Save Guard
+        window.updatePreview = function () {
+            updateScorecardPreview();
+            renderRoundsList();
+            renderMyDeckIconsList();
+            saveState();
+        };
+
+        // --- INIT SEQUENCE ---
+
+        // 1. Load saved text inputs immediately (before API)
+        loadState();
+
+        // 2. Load API
+        loadPokemonList().then(() => {
+            // 3. Render everything with loaded data
+            updateScorecardPreview();
+            renderRoundsList();
+            renderMyDeckIconsList();
+
+            // 4. Enable Saving
+            isLoaded = true;
+            console.log('Initialization complete. Auto-save enabled.');
+        });
+
+        // Add Reset Button to UI
+        const downloadBtn = document.querySelector('button[onclick="downloadScorecard()"]');
+        if (downloadBtn) {
+            const resetBtn = document.createElement('button');
+            resetBtn.className = "w-full bg-slate-800 hover:bg-red-900/30 text-slate-400 hover:text-red-400 font-bold py-2 px-4 rounded-xl transition-all mt-4 text-xs uppercase tracking-widest border border-slate-700 hover:border-red-900";
+            resetBtn.innerText = "⚠️ Reset Form Data";
+            resetBtn.onclick = resetState;
+            downloadBtn.parentNode.insertBefore(resetBtn, downloadBtn.nextSibling);
+        }
+
+        // --- V3 OVERRIDE: Blue-Yellow Theme & Auto Layout ---
+        window.updateScorecardPreview = function () {
+            const name = document.getElementById('inputName').value || 'Player Name';
+            const tourney = document.getElementById('inputTournament').value || 'Tournament Event';
+            const tourneyType = document.getElementById('inputTournamentType')?.value || 'other';
+            const rank = document.getElementById('inputRank')?.value || '';
+            const deckNameVal = document.getElementById('inputDeckName')?.value;
+            const deckName = deckNameVal ? deckNameVal.trim() : '';
+            const style = document.getElementById('iconStyle')?.value || 'classic';
+
+            const wins = rounds.filter(r => r.result === 'WIN').length;
+            const losses = rounds.filter(r => ['LOSS', 'LOSE'].includes(r.result)).length;
+
+            const logoMap = { 'great_ball': 'assets/tournament-logos/great_ball.svg', 'ultra_ball': 'assets/tournament-logos/ultra_ball.svg', 'premier_ball': 'assets/tournament-logos/premier_ball.svg', 'master_ball': 'assets/tournament-logos/master_ball.svg', 'wc': 'assets/tournament-logos/wc.svg', 'gym_battle': 'assets/tournament-logos/gym_battle.png' };
+            const logoUrl = logoMap[tourneyType] || (tourneyType !== 'other' ? `assets/tournament-logos/${tourneyType}.png` : '');
+
+            let myDeckHtml = '';
+            const onErrorHandler = `this.onerror=null; this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/'+this.getAttribute('data-id')+'.png'`;
+
+            if (myDeckIcons.length > 0) {
+                myDeckHtml = `<div class="flex gap-2 mb-1">`;
+                myDeckIcons.forEach(id => {
+                    let src = IconManager.getUrl(id, style);
+                    const corsAttr = src.startsWith('http') ? 'crossorigin="anonymous"' : '';
+                    myDeckHtml += `<div class="w-16 h-16 md:w-20 md:h-20 rounded-full bg-white border-2 border-yellow-400 flex items-center justify-center overflow-hidden shadow-2xl relative z-0 hover:z-10 transition-transform hover:scale-110"><img src="${src}" data-id="${id}" onerror="${onErrorHandler}" ${corsAttr} class="w-full h-full object-contain p-1"></div>`;
+                });
+                myDeckHtml += `</div>`;
+            }
+
+            // Force Container Styles (Blue-Yellow + Auto Height)
+            const captureArea = document.getElementById('captureArea');
+            if (captureArea) {
+                captureArea.className = 'w-full bg-[#0B1120] relative overflow-hidden shadow-2xl rounded-2xl border-2 border-indigo-500/30 transition-all duration-500 font-kanit self-start';
+                captureArea.style.minHeight = '0px';
+            }
+
+            let contentHTML = `
+                <!-- DECORATION -->
+                <div class="absolute top-0 right-0 w-48 h-48 bg-blue-600/20 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none z-0"></div>
+                <div class="absolute bottom-0 left-0 w-48 h-48 bg-yellow-500/10 rounded-full blur-3xl -ml-10 -mb-10 pointer-events-none z-0"></div>
+
+                <!-- HEADER -->
+                <div class="flex justify-between items-start mb-4 relative z-10 w-full pl-1 pt-6 px-6">
+                    <div class="flex flex-col w-full pr-3 min-w-0">
+                         ${myDeckHtml}
+                        <div class="flex flex-col mt-2 pr-2">
+                             <div class="flex items-center flex-wrap gap-2">
+                                <h1 class="text-2xl font-extrabold text-white leading-normal tracking-wide font-kanit drop-shadow-md pb-0.5 z-20">
+                                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-sky-100 to-blue-200">${name}</span>
+                                </h1>
+                                ${rank ? `<span class="text-[10px] bg-yellow-400 text-black px-1.5 py-0.5 rounded font-black uppercase tracking-wider shadow-sm -skew-x-12 transform shrink-0 font-sans mt-0.5">${rank}</span>` : ''}
+                            </div>
+                            ${deckName ? `<div class="text-sky-400 text-sm font-semibold font-kanit mt-0.5 leading-snug w-full truncate">${deckName}</div>` : ''}
+                            <div class="w-full h-[1px] bg-gradient-to-r from-blue-500/30 to-transparent my-1.5"></div>
+                            <div class="text-slate-400 text-[10px] font-bold uppercase tracking-widest font-sans truncate">${tourney}</div>
+                        </div>
+                    </div>
+                     ${logoUrl ? `<div class="w-14 h-14 shrink-0 bg-[#1e293b]/50 rounded-xl flex items-center justify-center border border-white/10 shadow-lg backdrop-blur-sm self-start mt-1 mr-4"><img src="${logoUrl}" ${logoUrl.startsWith('http') ? 'crossorigin="anonymous"' : ''} class="w-10 h-10 object-contain"></div>` : ''}
+                </div>
+                
+                <!-- CONTENT WRAPPER -->
+                <div class="px-6 pb-4">
+                    <!-- STATS -->
+                    <div class="flex w-full rounded-lg overflow-hidden h-9 mb-4 font-sans text-xs font-black shadow-lg border border-white/5 relative z-10">
+                        <div class="bg-blue-600 flex-1 flex items-center justify-center text-white gap-1.5 relative overflow-hidden group">
+                           <div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/20"></div>
+                            <span class="relative z-10 text-[10px] tracking-widest opacity-80">WINS</span> 
+                            <span class="bg-white/20 px-2 py-0.5 rounded relative z-10 text-sm shadow-sm">${wins}</span>
+                        </div>
+                        <div class="bg-slate-700 flex-1 flex items-center justify-center text-slate-300 gap-1.5 relative border-l border-slate-600 group">
+                             <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors"></div>
+                             <span class="relative z-10 text-[10px] tracking-widest opacity-80">LOSS</span> 
+                             <span class="bg-black/20 px-2 py-0.5 rounded relative z-10 text-sm shadow-sm border border-white/5">${losses}</span>
+                        </div>
+                    </div>
+
+                    <!-- ROUNDS -->
+                    <div class="space-y-1.5 relative z-10">
+            `;
+
+            rounds.forEach((r, i) => {
+                const isWin = r.result === 'WIN';
+                let stripColor = isWin ? 'bg-blue-500' : (r.result === 'DRAW' ? 'bg-yellow-500' : 'bg-slate-600');
+                let badgeColor = isWin ? 'text-blue-400' : (r.result === 'DRAW' ? 'text-yellow-400' : 'text-slate-400');
+                let textColor = isWin ? 'text-sky-100' : (r.result === 'DRAW' ? 'text-yellow-100' : 'text-slate-300');
+
+                let iconsHTML = (r.icons || []).map(id => {
+                    let url = IconManager.getUrl(id, style);
+                    const corsAttr = url.startsWith('http') ? 'crossorigin="anonymous"' : '';
+                    // V3.1: White BG and Light Border for Opponent Icons
+                    return `<div class="w-8 h-8 rounded-full bg-white border border-slate-300 overflow-hidden shrink-0 relative shadow-sm"><img src="${url}" data-id="${id}" onerror="${onErrorHandler}" ${corsAttr} class="w-full h-full object-contain p-0.5 relative z-10"></div>`;
+                }).join('');
+
+                contentHTML += `
+                    <div class="relative flex items-center bg-[#111827] border border-blue-900/20 rounded-lg overflow-hidden h-11 shadow-sm group hover:border-blue-500/30 transition-colors">
+                        <div class="absolute left-0 top-0 bottom-0 w-1 ${stripColor} shadow-[1px_0_8px_rgba(0,0,0,0.5)]"></div>
+                        <div class="flex items-center w-full px-3 gap-2">
+                            <div class="flex items-center gap-2 w-14 shrink-0">
+                                <span class="text-[9px] text-slate-500 font-bold w-3">#${i + 1}</span>
+                                <span class="text-[9px] font-black ${badgeColor} uppercase tracking-wider">${r.result.substring(0, 1)}</span>
+                            </div>
+                             <!-- V3.1: Fixed Spacing (gap-1) and removed negative space -->
+                             <div class="flex items-center gap-1 shrink-0 pl-2 border-l border-white/5 ml-0.5 py-1">
+                                ${iconsHTML}
+                            </div>
+                            <div class="flex-1 text-right min-w-0 pl-2 flex items-center justify-end">
+                                <span class="text-[13px] font-medium truncate block leading-tight font-kanit ${textColor} opacity-90">${r.opponent || '-'}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            contentHTML += `</div></div>`;
+
+            // Footer
+            contentHTML += `
+                <div class="bg-[#080c17] p-2 flex justify-center items-center gap-2 border-t border-white/5 mt-2">
+                    <span class="text-[8px] uppercase tracking-[0.2em] text-cyan-500/50 font-black">Powered by</span>
+                     <img src="assets/uplevel-logo.png" class="h-4 object-contain opacity-80 grayscale-0">
+                </div>
+             `;
+
+            document.getElementById('displayContent').innerHTML = contentHTML;
+        };
+
+        // --- V5 OVERRIDE: Robust Image Generation (Clone Method) ---
+        window.generateImageForSave = async function () {
+            const overlayId = 'image-save-overlay';
+            let overlay = document.getElementById(overlayId);
+            if (!overlay) {
+                overlay = document.createElement('div');
+                overlay.id = overlayId;
+                overlay.className = 'fixed inset-0 z-[999] bg-slate-900/95 flex flex-col items-center justify-center p-4 backdrop-blur-sm animate-fade-in';
+                overlay.innerHTML = `
+                    <div class="relative max-w-full max-h-full flex flex-col items-center">
+                        <p class="text-white text-lg font-bold mb-4 animate-pulse">👇 Tap & Hold Image to Save</p>
+                        <div id="generated-img-container" class="shadow-2xl rounded-xl overflow-hidden border border-white/10 bg-slate-900 min-h-[200px] flex items-center justify-center"></div>
+                        <button onclick="document.getElementById('${overlayId}').style.display='none'" class="mt-6 bg-slate-700 hover:bg-slate-600 text-white px-6 py-2 rounded-full font-bold transition-all shadow-lg border border-white/20">
+                            ✕ Close / Edit
+                        </button>
+                    </div>
+                `;
+                document.body.appendChild(overlay);
+            } else {
+                overlay.style.display = 'flex';
+            }
+
+            const imgContainer = overlay.querySelector('#generated-img-container');
+            imgContainer.innerHTML = '<div class="text-white flex flex-col items-center gap-2"><span class="text-2xl animate-spin">⏳</span><span>Generating HQ Preview...</span></div>';
+
+            try {
+                const originalEl = document.getElementById('captureArea');
+
+                // 1. CLONE & FORCE LAYOUT
+                // We clone the element and put it in a fixed container off-screen
+                // This guarantees it has dimensions and isn't affected by flexbox shrinking or 'min-height: 0' quirks
+                const cloneWrapper = document.createElement('div');
+                cloneWrapper.style.position = 'absolute';
+                cloneWrapper.style.top = '-9999px';
+                cloneWrapper.style.left = '-9999px';
+                cloneWrapper.style.width = '600px'; // Force standard width for high quality
+                cloneWrapper.style.zIndex = '-1';
+                document.body.appendChild(cloneWrapper);
+
+                const clone = originalEl.cloneNode(true);
+                // Ensure clone is visible and has height
+                clone.style.display = 'block';
+                clone.style.minHeight = 'auto';
+                clone.style.height = 'auto';
+                clone.style.width = '100%';
+                clone.style.transform = 'none'; // reset any transforms
+                cloneWrapper.appendChild(clone);
+
+                // Wait for images in clone to be "ready" (though they should be cached)
+                await new Promise(r => setTimeout(r, 100));
+
+                // 2. CAPTURE THE CLONE
+                const canvas = await html2canvas(clone, {
+                    backgroundColor: '#0B1120', // Match theme bg
+                    scale: 3, // High Res
+                    useCORS: true,
+                    logging: false,
+                    allowTaint: true,
+                    width: 600, // Explicit width
+                    windowWidth: 1200
+                });
+
+                // Cleanup
+                document.body.removeChild(cloneWrapper);
+
+                // 3. DISPLAY
+                canvas.className = 'max-w-full max-h-[70vh] object-contain shadow-2xl';
+                imgContainer.innerHTML = '';
+                imgContainer.appendChild(canvas);
+
+                const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                const hintText = isMobile ? "👇 Tap & Hold Canvas to Save" : "👇 Right Click > Save Image As...";
+                overlay.querySelector('p').innerText = hintText;
+
+            } catch (e) {
+                console.error("Clone Gen Failed", e);
+                imgContainer.innerHTML = `
+                    <div class="text-rose-400 text-center p-4">
+                        <p class="font-bold">⚠️ Generation Failed</p>
+                        <p class="text-xs mt-2 text-slate-400 max-w-xs break-words">${e.message}</p>
+                    </div>
+                `;
+            }
+        };
+    </script>
+</body>
+
+</html>

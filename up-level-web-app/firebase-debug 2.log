@@ -1,0 +1,22 @@
+[debug] [2026-01-02T04:39:30.770Z] ----------------------------------------------------------------------
+[debug] [2026-01-02T04:39:30.774Z] Command:       /usr/local/bin/node /Users/chawanutcharoenthammachoke/.local/bin/firebase deploy --only functions
+[debug] [2026-01-02T04:39:30.774Z] CLI Version:   15.1.0
+[debug] [2026-01-02T04:39:30.774Z] Platform:      darwin
+[debug] [2026-01-02T04:39:30.774Z] Node Version:  v24.12.0
+[debug] [2026-01-02T04:39:30.774Z] Time:          Fri Jan 02 2026 11:39:30 GMT+0700 (Indochina Time)
+[debug] [2026-01-02T04:39:30.774Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-01-02T04:39:32.231Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-01-02T04:39:32.231Z] > authorizing via signed-in user (uplevel.ad@gmail.com)
+[debug] [2026-01-02T04:39:32.231Z] [iam] checking project up-level-guild for permissions ["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]
+[debug] [2026-01-02T04:39:32.232Z] Checked if tokens are valid: true, expires at: 1767330751087
+[debug] [2026-01-02T04:39:32.232Z] Checked if tokens are valid: true, expires at: 1767330751087
+[debug] [2026-01-02T04:39:32.233Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/up-level-guild:testIamPermissions [none]
+[debug] [2026-01-02T04:39:32.233Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/up-level-guild:testIamPermissions x-goog-quota-user=projects/up-level-guild
+[debug] [2026-01-02T04:39:32.233Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/up-level-guild:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]}
+[debug] [2026-01-02T04:39:32.605Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/up-level-guild:testIamPermissions 200
+[debug] [2026-01-02T04:39:32.605Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/up-level-guild:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]}
+[debug] [2026-01-02T04:39:32.605Z] Checked if tokens are valid: true, expires at: 1767330751087
+[debug] [2026-01-02T04:39:32.605Z] Checked if tokens are valid: true, expires at: 1767330751087
+[debug] [2026-01-02T04:39:32.605Z] >>> [apiv2][query] POST https://iam.googleapis.com/v1/projects/up-level-guild/serviceAccounts/up-level-guild@appspot.gserviceaccount.com:testIamPermissions [none]
+[debug] [2026-01-02T04:39:32.605Z] >>> [apiv2][body] POST https://iam.googleapis.com/v1/projects/up-level-guild/serviceAccounts/up-level-guild@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}

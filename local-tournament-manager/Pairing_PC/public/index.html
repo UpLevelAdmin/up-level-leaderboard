@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tournament Manager Sheet</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        /* Spreadsheet-like custom styles */
+        .sheet-table th {
+            background-color: #f3f4f6;
+            border: 1px solid #d1d5db;
+            padding: 4px 8px;
+            font-weight: 600;
+            font-size: 13px;
+            text-align: center;
+        }
+
+        .sheet-table td {
+            border: 1px solid #e5e7eb;
+            padding: 4px 8px;
+            font-size: 13px;
+        }
+
+        .sheet-table tr:hover td {
+            background-color: #f9fafb;
+        }
+
+        .tab-active {
+            background-color: white;
+            border-bottom: 2px solid #2563eb;
+            color: #2563eb;
+        }
+
+        .tab-inactive {
+            color: #6b7280;
+            hover: text-gray-900;
+        }
+
+        input:focus,
+        textarea:focus {
+            outline: 2px solid #2563eb;
+            outline-offset: -1px;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 flex flex-col h-screen overflow-hidden">
+
+    <!-- Header / Toolbar -->
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <header class="flex justify-between items-center mb-8">
+            <div class="flex items-center gap-4">
+                <div
+                    class="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-xl">
+                    TM</div>
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-800">Tournament Manager</h1>
+                    <p class="text-sm text-gray-500">Local Edition</p>
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="syncToSheet()"
+                    class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                    </svg>
+                    Sync to Cloud
+                </button>
+                <button onclick="showSettings()"
+                    class="bg-gray-100 hover:bg-gray-200 text-gray-600 p-2 rounded-lg transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- Toolkit Menu matching App Script -->
+        <div
+            class="bg-white rounded-lg shadow-sm p-3 mb-4 flex flex-wrap gap-2 items-center text-sm border border-gray-100">
+            <span class="text-xs font-bold text-gray-400 uppercase tracking-wider mr-2">Tools:</span>
+
+            <button onclick="fixPhones()"
+                class="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded border border-gray-200 transition-colors">
+                📞 Fix Phones
+            </button>
+
+            <button onclick="generatePairings()"
+                class="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded border border-blue-200 transition-colors font-medium">
+                🎲 Pair Next Round
+            </button>
+
+            <button onclick="undoLastPairing()"
+                class="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded border border-gray-200 transition-colors">
+                ↩️ Undo Last Round
+            </button>
+
+            <button onclick="updateStandings()"
+                class="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded border border-gray-200 transition-colors">
+                🔁 Update Standings
+            </button>
+
+            <div class="h-6 w-px bg-gray-300 mx-1"></div>
+
+            <button onclick="clearPairings()"
+                class="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 rounded border border-red-200 transition-colors">
+                🗑️ Clear Pairing
+            </button>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="bg-white border-b px-4 flex gap-6 text-sm font-medium pt-2 flex-shrink-0">
+        <button onclick="switchTab('players')" id="tab-btn-players" class="pb-2 tab-active px-2">Players</button>
+        <button onclick="switchTab('pairing')" id="tab-btn-pairing" class="pb-2 tab-inactive px-2">Pairing</button>
+        <button onclick="switchTab('standing')" id="tab-btn-standing" class="pb-2 tab-inactive px-2">Standing</button>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="flex-1 overflow-hidden relative bg-white">
+
+        <!-- PLAYERS TAB -->
+        <div id="tab-players" class="h-full flex flex-col p-4 overflow-y-auto">
+
+            <!-- Bulk Add Section -->
+            <div class="mb-6 bg-gray-50 border rounded p-4">
+                <h3 class="font-bold text-gray-700 mb-2 text-sm">📝 Add Players (Bulk)</h3>
+                <p class="text-xs text-gray-500 mb-2">Paste from Excel: [Name] or [Name, ID] or [Name, ID, Phone]</p>
+                <div class="flex gap-2">
+                    <textarea id="playerData" rows="3" class="flex-1 border p-2 rounded text-xs font-mono"
+                        placeholder="Paste your player list here..."></textarea>
+                    <div class="flex flex-col gap-2">
+                        <button onclick="addPlayersBulk()"
+                            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded text-sm h-full">Add</button>
+                        <button onclick="clearPlayers()"
+                            class="text-red-500 hover:text-red-700 text-xs text-center">Reset All</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Players List Table -->
+            <div class="flex-1 overflow-auto border rounded">
+                <table class="w-full text-left border-collapse sheet-table">
+                    <thead class="sticky top-0 z-10">
+                        <tr>
+                            <th class="w-12">#</th>
+                            <th class="w-32">ID</th>
+                            <th>Name</th>
+                            <th>Phone</th>
+                            <th class="w-24 text-center">Status</th>
+                            <th class="w-24 text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="playersTableBody" class="bg-white">
+                        <!-- Filled by JS -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="text-xs text-gray-400 mt-2 text-right" id="playerCount">0 Players</div>
+        </div>
+
+        <!-- PAIRING TAB -->
+        <div id="tab-pairing" class="h-full flex flex-col p-4 overflow-y-auto hidden">
+
+            <!-- Controls -->
+            <div class="flex justify-between items-center mb-4 bg-gray-50 p-3 rounded border">
+                <div class="flex items-center gap-3">
+                    <label class="font-bold text-gray-700">Viewing:</label>
+                    <select id="roundSelect" onchange="renderPairingCurrentView()"
+                        class="border p-1 rounded text-sm font-medium text-gray-700 bg-white">
+                        <option value="-1">Loading...</option>
+                    </select>
+                    <span class="text-xs text-gray-500 ml-2" id="pairingStatus">Waiting to pair...</span>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="undoLastPairing()"
+                        class="bg-red-100 text-red-700 px-3 py-2 rounded text-sm hover:bg-red-200 border border-red-200">
+                        ↩️ Undo Round
+                    </button>
+                    <button onclick="generatePairings()"
+                        class="bg-indigo-600 text-white px-4 py-2 rounded text-sm hover:bg-indigo-700 shadow-sm">
+                        ⚡ Generate Next Round
+                    </button>
+                </div>
+            </div>
+
+            <!-- Pairing Table -->
+            <div class="flex-1 overflow-auto border rounded">
+                <table class="w-full border-collapse sheet-table">
+                    <thead class="sticky top-0 z-10">
+                        <tr>
+                            <th class="w-16">Table</th>
+                            <th class="w-1/3 text-right">Player 1</th>
+                            <th class="w-48">Result</th>
+                            <th class="w-1/3 text-left">Player 2</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pairingTableBody">
+                        <!-- Filled by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- STANDING TAB -->
+        <div id="tab-standing" class="h-full flex flex-col p-4 overflow-y-auto hidden">
+            <div class="flex-1 overflow-auto border rounded">
+                <table class="w-full border-collapse sheet-table">
+                    <thead class="sticky top-0 z-10">
+                        <tr>
+                            <th class="w-12">Rank</th>
+                            <th class="w-24">ID</th>
+                            <th class="text-left pl-4">Name</th>
+                            <th class="w-20">Points</th>
+                            <th class="w-20">Win</th>
+                            <th class="w-20">Draw</th>
+                            <th class="w-20">Loss</th>
+                            <th class="w-24">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="standingTableBody">
+                        <!-- Filled by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Settings Modal (Same as before) -->
+    <div id="settingsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+        <div class="bg-white p-6 rounded-lg w-full max-w-md shadow-lg border">
+            <h2 class="text-xl font-bold mb-4">⚙️ Sheet Settings</h2>
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase">Sheet ID</label>
+                    <input type="text" id="settingSheetId" class="w-full border p-2 rounded text-sm mt-1">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase">Email</label>
+                    <input type="text" id="settingEmail" class="w-full border p-2 rounded text-sm mt-1">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase">Private Key</label>
+                    <textarea id="settingKey" rows="3"
+                        class="w-full border p-2 rounded text-xs font-mono mt-1"></textarea>
+                </div>
+            </div>
+            <div class="mt-6 flex justify-end gap-2 text-sm">
+                <button onclick="document.getElementById('settingsModal').classList.add('hidden')"
+                    class="px-3 py-1.5 border rounded hover:bg-gray-50">Cancel</button>
+                <button onclick="saveSettings()"
+                    class="px-3 py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        // Inline simple tab switcher to avoid FOUC or complex logic in app.js
+        function switchTab(tabName) {
+            // Hide all
+            ['players', 'pairing', 'standing'].forEach(t => {
+                document.getElementById(`tab-${t}`).classList.add('hidden');
+                document.getElementById(`tab-btn-${t}`).classList.remove('tab-active');
+                document.getElementById(`tab-btn-${t}`).classList.add('tab-inactive');
+                // Remove border bottom logic from classes if needed or handle via CSS class swap
+                document.getElementById(`tab-btn-${t}`).style.borderBottom = 'none';
+                document.getElementById(`tab-btn-${t}`).style.color = '#6b7280';
+            });
+
+            // Show active
+            document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+            const btn = document.getElementById(`tab-btn-${tabName}`);
+            btn.classList.add('tab-active');
+            btn.classList.remove('tab-inactive');
+            btn.style.borderBottom = '2px solid #2563eb';
+            btn.style.color = '#2563eb';
+        }
+
+        // Initialize default styling
+        switchTab('players');
+    </script>
+</body>
+
+</html>

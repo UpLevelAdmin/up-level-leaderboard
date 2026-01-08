@@ -1,0 +1,13 @@
+__turbopack_load_page_chunks__("/_app", [
+  "static/chunks/f4d5c_next_dist_compiled_48f3e441._.js",
+  "static/chunks/f4d5c_next_dist_shared_lib_ed63c4a9._.js",
+  "static/chunks/f4d5c_next_dist_client_e60a1c56._.js",
+  "static/chunks/f4d5c_next_dist_6419c23f._.js",
+  "static/chunks/f4d5c_next_app_a216504c.js",
+  "static/chunks/[next]_entry_page-loader_ts_25e58d69._.js",
+  "static/chunks/f4d5c_react-dom_ffbebd5f._.js",
+  "static/chunks/f4d5c_1fc1e2df._.js",
+  "static/chunks/[root-of-the-server]__0350f4a0._.js",
+  "static/chunks/Documents_Cursor_up-level-leaderboard_up-level-web-app_pages__app_2da965e7._.js",
+  "static/chunks/358b3_Cursor_up-level-leaderboard_up-level-web-app_pages__app_600810f5._.js"
+])

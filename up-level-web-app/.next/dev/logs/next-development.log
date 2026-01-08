@@ -1,0 +1,76 @@
+[00:00:02.081] Server  LOG     ✓ Ready in 1664ms
+[00:00:04.482] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:00:04.487] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:00:04.498] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:00:04.514] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:17:20.557] Server  LOG     ✓ Compiled in 1073ms
+[00:25:17.774] Server  LOG       Reload env: .env.local
+[00:49:41.942] Server  LOG     ✓ Compiled in 3.4s
+[00:52:52.330] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:53:07.894] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:53:42.942] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[01:00:16.446] Server  LOG     ✓ Compiled in 916ms
+[01:01:29.683] Server  LOG     ✓ Compiled in 930ms
+[01:05:18.385] Server  LOG     ✓ Compiled in 984ms
+[01:20:51.633] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[01:25:24.348] Server  LOG     ✓ Compiled in 3.4s
+[01:26:38.630] Server  LOG     ✓ Compiled in 89ms
+[01:31:34.750] Server  LOG     ✓ Compiled in 4.8s
+[01:31:35.798] Server  LOG     ✓ Compiled in 8ms
+[01:32:20.135] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[01:37:07.912] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[01:38:35.826] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[01:39:31.805] Browser WARN    You are trying to animate width from "NaN%" to "6.666666666666667%". NaN% is not an animatable value - to enable this animation set NaN% to a value animatable to 6.666666666666667% via the `style` property.
+[01:39:38.013] Server  LOG     ✓ Compiled in 676ms
+[01:39:49.207] Browser WARN    You are trying to animate width from "NaN%" to "6.666666666666667%". NaN% is not an animatable value - to enable this animation set NaN% to a value animatable to 6.666666666666667% via the `style` property.
+[01:39:57.503] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[01:40:14.542] Server  LOG     ✓ Compiled in 689ms
+[01:40:31.675] Server  LOG     ✓ Compiled in 277ms
+[01:40:57.343] Server  LOG     ✓ Compiled in 496ms
+[01:41:12.260] Server  LOG     ✓ Compiled in 148ms
+[01:43:00.636] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[01:46:41.826] Server  LOG     ✓ Compiled in 357ms
+[01:47:18.197] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[01:47:18.429] Browser ERROR   A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+%s%s https://react.dev/link/hydration-mismatch 
+
+  ...
+    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>
+      <AppDevOverlayErrorBoundary globalError={[...]}>
+        <ReplaySsrOnlyErrors>
+        <DevRootHTTPAccessFallbackBoundary>
+          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
+            <HTTPAccessFallbackErrorBoundary pathname="/admin" notFound={<NotAllowedRootHTTPFallbackError>} ...>
+              <RedirectBoundary>
+                <RedirectErrorBoundary router={{...}}>
+                  <Head>
+                  <__next_root_layout_boundary__>
+                    <SegmentViewNode type="layout" pagePath="/Documents...">
+                      <SegmentTrieNode>
+                      <link>
+                      <script>
+                      <script>
+                      <script>
+                      <script>
+                      <script>
+                      <script>
+                      <RootLayout>
+                        <html
+                          lang="en"
+-                         data-jetski-tab-id="1818684481"
+                        >
+                  ...
+
+[01:49:16.533] Server  LOG     ✓ Compiled in 1306ms
+[01:53:10.316] Browser WARN    [2026-01-02T05:15:35.287Z]  @firebase/firestore: Firestore (12.6.0): WebChannelConnection RPC 'Listen' stream 0x2f208052 transport errored. Name: undefined Message: undefined
+[02:05:50.807] Browser WARN    [2026-01-02T05:28:16.364Z]  @firebase/firestore: Firestore (12.6.0): WebChannelConnection RPC 'Listen' stream 0x2f208053 transport errored. Name: undefined Message: undefined
+[02:22:15.883] Browser ERROR   uncaughtError: ReferenceError: Check is not defined

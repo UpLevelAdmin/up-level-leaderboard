@@ -1184,6 +1184,7 @@ function updateStandings() {
   const opponentHistory = {};
   
   allPairingData.slice(1).forEach(row => {
+    
     const p1_id = row[idxP1Id];
     const p2_id = row[idxP2Id];
     const p1_name = row[idxP1Name];
@@ -1413,7 +1414,8 @@ function updateStandings() {
         const status = row[idxStatus];
         
         // ปฏิบัติถ้าเป็นรอบ 1 หรือ 2 เท่านั้น
-        if (round !== 1 && round !== 2) continue;
+        // ใช้ Loose equality (==) หรือแปลงเป็นตัวเลขเพื่อให้แน่ใจว่า "1" == 1
+        if (row[idxRound] != 1 && row[idxRound] != 2) continue;
         
         // ตรวจสอบว่าผู้เล่นที่สนใจอยู่ในคู่นี้หรือไม่
         let isPlayerInMatch = false;
@@ -1430,13 +1432,17 @@ function updateStandings() {
         if (!isPlayerInMatch) continue;
         
         // ตรวจสอบว่ามีผลการแข่งขันที่ถูกต้องหรือไม่
-        if (result && result !== '' && status && status.toLowerCase() === 'ok') {
+        // ⚡ ผ่อนปรนเงื่อนไข: ไม่ต้องเช็ค STATUS ก็ได้ ขอแค่มี RESULT ที่บอกว่าชนะ
+        if (result && result !== '') {
+          const resStr = String(result).trim();
+          
           // ตรวจสอบผลการแข่งขัน
-          if (result === '1:0' && playerIndex === 1) {
-            // Player 1 ชนะ
+          if (resStr === '1:0' && playerIndex === 1) {
             first2RoundsWins++;
-          } else if (result === '0:1' && playerIndex === 2) {
-            // Player 2 ชนะ
+          } else if (resStr === '0:1' && playerIndex === 2) {
+            first2RoundsWins++;
+          } else if ((p2Id === 'BYE' || p2Name === 'BYE') && playerIndex === 1) {
+            // ชนะบาย นับเป็นชนะ
             first2RoundsWins++;
           }
         }
@@ -1824,11 +1830,12 @@ function formatPairingSheet() {
   
   // จัดรูปแบบหัวตาราง
   const headerRange = sheet.getRange(1, 1, 1, 12);
-  headerRange.setBackground('#f3f4f6');
+  headerRange.setBackground('#1f2937');
+  headerRange.setFontColor('#ffffff');
   headerRange.setFontWeight('bold');
   headerRange.setHorizontalAlignment('center');
   headerRange.setVerticalAlignment('middle');
-  headerRange.setBorder(true, true, true, true, true, true, '#d1d5db', SpreadsheetApp.BorderStyle.SOLID);
+  headerRange.setBorder(true, true, true, true, true, true, '#374151', SpreadsheetApp.BorderStyle.SOLID);
   
   // จัดรูปแบบคอลัมน์ checkbox
   const checkboxRange = sheet.getRange(2, 5, sheet.getLastRow() - 1, 4);

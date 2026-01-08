@@ -72,12 +72,13 @@ function doGet(e) {
     var nickname = data[i][3];
     var level = data[i][6];
     var phone = data[i][5];
+    var hasSlip = (data[i][8] && String(data[i][8]).trim() !== "") ? true : false;
     
     var matched = false;
 
     // ตรวจสอบว่าวันที่นี้ตรงกับวันที่ใดใน groupedData
     if (groupedData[date]) {
-      groupedData[date].push({ nickname: nickname, level: level, phone: phone });
+      groupedData[date].push({ nickname: nickname, level: level, phone: phone, paid: hasSlip });
       matched = true;
     } else {
       // ลองแปลงปี 2569 เป็น 2026 หรือกลับกัน
@@ -85,10 +86,10 @@ function doGet(e) {
       var convertedDate2 = date.replace('2026', '2569');
       
       if (groupedData[convertedDate]) {
-        groupedData[convertedDate].push({ nickname: nickname, level: level, phone: phone });
+        groupedData[convertedDate].push({ nickname: nickname, level: level, phone: phone, paid: hasSlip });
         matched = true;
       } else if (groupedData[convertedDate2]) {
-        groupedData[convertedDate2].push({ nickname: nickname, level: level, phone: phone });
+        groupedData[convertedDate2].push({ nickname: nickname, level: level, phone: phone, paid: hasSlip });
         matched = true;
       }
     }

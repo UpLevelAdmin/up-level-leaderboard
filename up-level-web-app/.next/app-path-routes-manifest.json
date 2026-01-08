@@ -1,0 +1,18 @@
+{
+  "/_global-error/page": "/_global-error",
+  "/_not-found/page": "/_not-found",
+  "/admin/page": "/admin",
+  "/api/verify-slip/route": "/api/verify-slip",
+  "/api/webhook/sync-user/route": "/api/webhook/sync-user",
+  "/dashboard/page": "/dashboard",
+  "/debug-slip/page": "/debug-slip",
+  "/favicon.ico/route": "/favicon.ico",
+  "/leaderboard/page": "/leaderboard",
+  "/map/page": "/map",
+  "/page": "/",
+  "/party/page": "/party",
+  "/pay/page": "/pay",
+  "/quests/page": "/quests",
+  "/register/page": "/register",
+  "/shop/page": "/shop"
+}

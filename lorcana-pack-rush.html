@@ -363,7 +363,22 @@
             }
         </style>
 
+        <!-- Firebase SDK -->
+        <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
         <script>
+            // Firebase Config
+            const firebaseConfig = {
+                apiKey: "AIzaSyAKxWv3FI7HrdrRlnJhsQbJ-97Pb_sdiOQ",
+                authDomain: "up-level-guild.firebaseapp.com",
+                projectId: "up-level-guild",
+                storageBucket: "up-level-guild.firebasestorage.app",
+                messagingSenderId: "721710985300",
+                appId: "1:721710985300:web:c51e13963373a6feadbdc1"
+            };
+            firebase.initializeApp(firebaseConfig);
+            const db = firebase.firestore();
+
             console.log('DEBUG: version 3 - Collapsible Details');
             const apiUrl = "https://script.google.com/macros/s/AKfycbw3kS9F6EoOT7ntM9YWbjggI7jMT_A3GWTEhTzETxY6DqZxn2ueZV_hsqat-TeGqlfgSw/exec";
 
@@ -384,52 +399,69 @@
             const ctx = canvas.getContext('2d');
 
             // Fetch Data
-            fetch(apiUrl)
-                .then(res => res.json())
-                .then(data => {
-                    const listContainer = document.getElementById('lorcana-list');
-                    let html = '';
+            Promise.all([
+                fetch(apiUrl).then(res => res.json()),
+                db.collection('public_payments').get().then(snapshot => snapshot.docs.map(doc => doc.data())).catch(err => [])
+            ]).then(([data, payments]) => {
+                // Payment Map
+                const paymentMap = {};
+                payments.forEach(p => {
+                    if (p.phoneNumber) {
+                        const cleanPhone = String(p.phoneNumber).replace(/[^\d]/g, "");
+                        paymentMap[cleanPhone] = p;
+                    }
+                });
+                const listContainer = document.getElementById('lorcana-list');
+                let html = '';
 
-                    console.log("Data received:", data); // Debug
+                console.log("Data received:", data); // Debug
 
-                    if (data && data.groupedData) {
-                        const dates = Object.keys(data.groupedData);
-                        if (dates.length > 0) {
-                            dates.forEach(date => {
-                                const players = data.groupedData[date];
-                                html += `<div class="date-header">📅 ${date} (จำนวน ${players.length} คน)</div>`;
+                if (data && data.groupedData) {
+                    const dates = Object.keys(data.groupedData);
+                    if (dates.length > 0) {
+                        dates.forEach(date => {
+                            const players = data.groupedData[date];
+                            html += `<div class="date-header">📅 ${date} (จำนวน ${players.length} คน)</div>`;
 
-                                if (players.length > 0) {
-                                    html += `<table>
+                            if (players.length > 0) {
+                                html += `<table>
                                 <thead>
                                     <tr>
                                         <th style="width: 15%">ลำดับ</th>
-                                        <th style="width: 45%">ชื่อเล่น</th>
-                                        <th style="width: 40%">Level</th>
+                                        <th style="width: 40%">ชื่อเล่น</th>
+                                        <th style="width: 25%">Level</th>
+                                        <th style="width: 20%">Status</th>
                                     </tr>
                                 </thead>
                                 <tbody>`;
-                                    players.forEach((p, idx) => {
-                                        html += `<tr>
+                                players.forEach((p, idx) => {
+                                    let paymentBadge = '';
+                                    const cleanPhone = String(p.phone || '').replace(/[^\d]/g, "");
+                                    if (cleanPhone && paymentMap[cleanPhone]) {
+                                        paymentBadge = '<span style="background: #4caf50; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.8em; font-weight: bold;">PAID</span>';
+                                    }
+
+                                    html += `<tr>
                                     <td>${idx + 1}</td>
                                     <td>${p.nickname}</td>
                                     <td>${p.level}</td>
+                                    <td>${paymentBadge}</td>
                                 </tr>`;
-                                    });
-                                    html += `</tbody></table>`;
-                                } else {
-                                    html += `<div style="padding: 20px; text-align: center; background: rgba(255,255,255,0.6); border-radius: 0 0 8px 8px;">ยังไม่มีผู้สมัคร</div>`;
-                                }
-                            });
-                        } else {
-                            html = '<div style="padding: 20px; text-align: center; color: #6a359c;">ยังไม่มีข้อมูลผู้สมัคร</div>';
-                        }
+                                });
+                                html += `</tbody></table>`;
+                            } else {
+                                html += `<div style="padding: 20px; text-align: center; background: rgba(255,255,255,0.6); border-radius: 0 0 8px 8px;">ยังไม่มีผู้สมัคร</div>`;
+                            }
+                        });
                     } else {
-                        html = '<div style="color: red;">ไม่พบข้อมูลการสมัคร (Format Error)</div>';
+                        html = '<div style="padding: 20px; text-align: center; color: #6a359c;">ยังไม่มีข้อมูลผู้สมัคร</div>';
                     }
+                } else {
+                    html = '<div style="color: red;">ไม่พบข้อมูลการสมัคร (Format Error)</div>';
+                }
 
-                    listContainer.innerHTML = html;
-                })
+                listContainer.innerHTML = html;
+            })
                 .catch(err => {
                     console.error("Fetch Error:", err);
                     // Fallback for demo if fetch fails (e.g. CORS local)

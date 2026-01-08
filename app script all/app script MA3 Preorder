@@ -30,7 +30,7 @@
 // ===== ฟังก์ชันแจ้งเตือน Telegram =====
 
 // แก้ไขข้อมูลเหล่านี้
-const BOT_TOKEN = "8284717743:AAGfu8Z-r6SI_TeAslai9vA600nNagjzH5k";
+const BOT_TOKEN = "8124787979:AAEWOqfiEACRxkrtZSWdTNuvGQr7uff_UoI";
 const CHAT_ID = "-4911555842"; // Group Chat ID
 
 const TELEGRAM_API_URL = `https://api.telegram.org/bot${BOT_TOKEN}`;

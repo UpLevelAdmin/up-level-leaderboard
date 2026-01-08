@@ -914,8 +914,23 @@
       <img id="modalCardImage" src="" alt="Card Image">
     </div>
   </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
   <script>
-    console.log('DEBUG: version 2 - Winter Theme');
+    // Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyAKxWv3FI7HrdrRlnJhsQbJ-97Pb_sdiOQ",
+      authDomain: "up-level-guild.firebaseapp.com",
+      projectId: "up-level-guild",
+      storageBucket: "up-level-guild.firebasestorage.app",
+      messagingSenderId: "721710985300",
+      appId: "1:721710985300:web:c51e13963373a6feadbdc1"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
     const apiUrl = "https://script.google.com/macros/s/AKfycbxUSBsZARIhvnyIB345NxLkM2NjHaKjRd5eeKY4Q762i3BZsV72SUXQE8Y9H1hVbKJD/exec?type=json";
     // สีธีม Winter (แตกต่างกันมากขึ้นเพื่อให้แยกแยะได้ง่าย)
     const pastelColors = [
@@ -1036,8 +1051,18 @@
 
     Promise.all([
       fetch(apiUrl).then(res => res.json()).catch(err => ({ error: null, groupedData: {} })), // ข้อมูลผู้สมัคร gym battle
-      fetch(memberDashboardApi).then(res => res.json()).catch(err => []) // สมาชิกทั้งหมด
-    ]).then(([data, members]) => {
+      fetch(memberDashboardApi).then(res => res.json()).catch(err => []), // สมาชิกทั้งหมด
+      db.collection('public_payments').get().then(snapshot => snapshot.docs.map(doc => doc.data())).catch(err => []) // ข้อมูลการชำระเงิน
+    ]).then(([data, members, payments]) => {
+      // สร้าง map phone -> payment record
+      const paymentMap = {};
+      payments.forEach(p => {
+        if (p.phoneNumber) {
+          const cleanPhone = String(p.phoneNumber).replace(/[^\d]/g, "");
+          // เก็บยอดเงินที่โอนสูงสุด หรือจะเก็บเป็น array ก็ได้ แต่ในที่นี้ถ้ามี record แปลว่าโอนแล้ว
+          paymentMap[cleanPhone] = p;
+        }
+      });
       // สร้าง map เบอร์โทร -> { codename, rank }
       const phoneMap = {};
       if (members && Array.isArray(members)) {
@@ -1102,22 +1127,30 @@
         html += `<div class="date-header" style="background:${color.bg};border-left:6px solid ${color.border};display:flex;justify-content:space-between;align-items:center;">` +
           `<span>วันที่: ${date} (จำนวน ${players.length} คน)</span> ${toggleBtn}</div>`;
 
-        // Debug: แสดงข้อมูลใน HTML
         html += `<!-- Debug: Date: ${date}, Players: ${JSON.stringify(players)} -->`;
-        html += `<table id="${groupId}" ${tableStyle}><thead><tr>\n            <th style="background:${color.border};color:#fff;">ลำดับ</th><th style="background:${color.border};color:#fff;">ชื่อเล่น</th><th style="background:${color.border};color:#fff;">ระดับการเล่น</th></tr></thead><tbody>`;
+        html += `<table id="${groupId}" ${tableStyle}><thead><tr>\n            <th style="background:${color.border};color:#fff;">ลำดับ</th><th style="background:${color.border};color:#fff;">ชื่อเล่น</th><th style="background:${color.border};color:#fff;">ระดับการเล่น</th><th style="background:${color.border};color:#fff;">สถานะ</th></tr></thead><tbody>`;
         if (players.length === 0) {
-          html += `<tr><td colspan="3">ยังไม่มีผู้สมัคร</td></tr>`;
+          html += `<tr><td colspan="4">ยังไม่มีผู้สมัคร</td></tr>`;
         } else {
           players.forEach((player, idx2) => {
             let displayName = player.nickname;
             let phone = String(player.phone || '').replace(/[^\d]/g, "");
             const profile = phoneMap[phone];
+
             if (profile && profile.codename && profile.rank) {
               const emoji = getRankEmoji(profile.rank);
               const codenameHtml = renderCodenameEffect(profile.codename, profile.rank);
               displayName += `<br><span class="codename-rank" data-rank="${profile.rank}"><span>${emoji}</span> ${codenameHtml} <span>${emoji}</span></span>`;
             }
-            html += `<tr><td>${idx2 + 1}</td><td>${displayName}</td><td>${player.level}</td></tr>`;
+
+            // ตรวจสอบสถานะการเงิน
+            let paymentStatus = '';
+            const payment = paymentMap[phone];
+            if (payment || player.paid) {
+              paymentStatus = '<span style="background: #4caf50; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.8em; font-weight: bold;">PAID</span>';
+            }
+
+            html += `<tr><td>${idx2 + 1}</td><td>${displayName}</td><td>${player.level}</td><td>${paymentStatus}</td></tr>`;
           });
         }
         html += `</tbody></table>`;

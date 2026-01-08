@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Icon Manifest Helper</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #0f172a;
+            color: white;
+            font-family: monospace;
+        }
+
+        .grid-overlay {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .grid-cell {
+            border: 1px dashed rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .grid-cell:hover {
+            background-color: rgba(59, 130, 246, 0.4);
+            color: white;
+            border-color: white;
+            text-shadow: 0 2px 4px black;
+        }
+
+        .sticky-header {
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+
+<body class="pb-24">
+
+    <!-- HEADER TOOLS -->
+    <div class="sticky-header fixed top-0 w-full z-50 p-4 flex flex-col items-center gap-4 shadow-2xl">
+        <h1 class="text-xl font-bold text-blue-400">⚡️ UpLevel Icon Mapper</h1>
+        <div class="flex gap-4 items-end bg-slate-800 p-4 rounded-xl border border-slate-700">
+            <div>
+                <label class="block text-xs text-gray-400 mb-1">1. Enter Pokemon ID</label>
+                <input type="number" id="targetId" placeholder="e.g. 157"
+                    class="bg-slate-900 border border-blue-500 text-white p-2 rounded w-32 text-center text-xl font-bold focus:ring-2 ring-blue-500 outline-none">
+            </div>
+            <div class="pb-3 text-gray-400">➜</div>
+            <div class="pb-2">
+                <p class="text-sm">2. Click the matching image below</p>
+                <p class="text-xs text-gray-500">Code will be copied to clipboard automatically!</p>
+            </div>
+        </div>
+        <div id="toast"
+            class="hidden bg-green-500 text-black font-bold px-6 py-2 rounded-full shadow-lg transform transition-all scale-0">
+            ✅ Copied to Clipboard!
+        </div>
+    </div>
+
+    <!-- GRID CONTAINER -->
+    <div id="container" class="space-y-16 mt-48 px-4"></div>
+
+    <script>
+        const files = [
+            "uplevel_meta_grid_9x9_v10_ogerpon_friends_1766058805609.png",
+            "uplevel_meta_grid_9x9_v11_support_squad_1766058998402.png",
+            "uplevel_meta_grid_9x9_v12_lost_ancient_1766059018877.png",
+            "uplevel_meta_grid_9x9_v13_final_bosses_1766059039877.png",
+            "uplevel_meta_grid_9x9_v14_limitless_rogues_1766059227418.png",
+            "uplevel_meta_grid_9x9_v15_specialists_niche_1766059261104.png",
+            "uplevel_meta_grid_9x9_v16_critical_must_haves_1766059534519.png",
+            "uplevel_meta_grid_9x9_v17_fun_strategies_1766059552155.png",
+            "uplevel_meta_grid_9x9_v18_megas_hitters_1766059569762.png",
+            "uplevel_meta_grid_9x9_v19_megas_partners_1766059817950.png",
+            "uplevel_meta_grid_9x9_v1_1766044286836.png",
+            "uplevel_meta_grid_9x9_v20_legends_dark_1766059837213.png",
+            "uplevel_meta_grid_9x9_v21_final_cut_eevee_scyther_1766059857202.png",
+            "uplevel_meta_grid_9x9_v22_stellar_meta_1766108848277.png",
+            "uplevel_meta_grid_9x9_v23_paradox_completion_1766109537133.png",
+            "uplevel_meta_grid_9x9_v24_missing_support_legends_1766116351619.png",
+            "uplevel_meta_grid_9x9_v25_rogue_challenge_1766116569136.png",
+            "uplevel_meta_grid_9x9_v26_superstars_mascots_1766116796241.png",
+            "uplevel_meta_grid_9x9_v27_eevee_party_1766120234263.png",
+            "uplevel_meta_grid_9x9_v2_retry_1766044407433.png",
+            "uplevel_meta_grid_9x9_v3_legends_1766044931614.png",
+            "uplevel_meta_grid_9x9_v4_starters_g1_1766045007452.png",
+            "uplevel_meta_grid_9x9_v5_support_meta_1766045420785.png",
+            "uplevel_meta_grid_9x9_v7_city_winners_final_1766058385610.png",
+            "uplevel_meta_grid_9x9_v8_gym_rogues_1766058502448.png",
+            "uplevel_meta_grid_9x9_v9_cute_engines_1766058673382.png"
+        ];
+
+        const container = document.getElementById('container');
+        const gridPath = 'assets/uplevel-icons/source-grids/';
+
+        files.forEach(file => {
+            const section = document.createElement('div');
+            section.className = "flex flex-col items-center";
+
+            // Extract meaningful name
+            let niceName = file.replace('uplevel_meta_grid_9x9_', '').split('_').slice(0, 3).join(' ').toUpperCase();
+
+            // Generate grid overlay
+            let gridCellsHtml = '';
+            // Construct the path for the PIECES folder (remove .png, add _pieces)
+            const piecesFolder = "source-grids/" + file.replace('.png', '_pieces');
+
+            for (let i = 1; i <= 9; i++) {
+                gridCellsHtml += `<div class="grid-cell" onclick="copyPath('${piecesFolder}/${i}.png', ${i})">${i}</div>`;
+            }
+
+            section.innerHTML = `
+                <div class="bg-slate-800 p-2 rounded mb-2 text-xs font-mono text-gray-400">${niceName}</div>
+                <div class="relative w-[300px] h-[300px] group">
+                    <img src="${gridPath}${file}" class="w-full h-full rounded-xl shadow-2xl object-contain bg-white/5 border border-slate-600">
+                    <div class="grid-overlay rounded-xl overflow-hidden">
+                        ${gridCellsHtml}
+                    </div>
+                </div>
+                <div class="text-[10px] text-gray-600 mt-1 break-all max-w-xs text-center">${file}</div>
+            `;
+            container.appendChild(section);
+        });
+
+        function copyPath(assetPath, slot) {
+            const idInput = document.getElementById('targetId');
+            const id = idInput.value.trim();
+
+            let textToCopy = "";
+
+            if (id) {
+                // Generate full JSON line
+                textToCopy = `"${id}": "${assetPath}",`;
+            } else {
+                // Just the path if no ID
+                textToCopy = assetPath;
+            }
+
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                showToast(textToCopy);
+                // Auto inc/clear? Maybe keep it for next one or clear it.
+                // idInput.value = ''; 
+                // idInput.focus();
+            });
+        }
+
+        function showToast(text) {
+            const toast = document.getElementById('toast');
+            toast.innerText = `✅ Copied: ${text}`;
+            toast.classList.remove('hidden', 'scale-0');
+            toast.classList.add('scale-100');
+            setTimeout(() => {
+                toast.classList.remove('scale-100');
+                toast.classList.add('scale-0');
+                setTimeout(() => toast.classList.add('hidden'), 200);
+            }, 2000);
+        }
+    </script>
+</body>
+
+</html>

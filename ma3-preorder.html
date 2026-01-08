@@ -1467,7 +1467,23 @@
     </div>
   </div>
 
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
   <script>
+    // Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyAKxWv3FI7HrdrRlnJhsQbJ-97Pb_sdiOQ",
+      authDomain: "up-level-guild.firebaseapp.com",
+      projectId: "up-level-guild",
+      storageBucket: "up-level-guild.firebasestorage.app",
+      messagingSenderId: "721710985300",
+      appId: "1:721710985300:web:c51e13963373a6feadbdc1"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
     console.log('DEBUG: MA3 Pre-order & Midnight Party Registration System');
 
     /**
@@ -1604,13 +1620,6 @@
       return 0;
     }
 
-    // ⚠️ สำคัญ: ต้อง Deploy App Script ก่อนใช้งาน!
-    // 1. ไปที่ Google Sheet: https://docs.google.com/spreadsheets/d/1wi2OXnelj5D61E8Jv6wBN0RwCRbsQlgiWXnfGxrjlww/edit
-    // 2. คลิก Extensions > Apps Script
-    // 3. Copy โค้ดจากไฟล์ "app script MA3 Preorder" ไปวาง
-    // 4. คลิก Deploy > New deployment > เลือก Type: Web app
-    // 5. Execute as: Me, Who has access: Anyone
-    // 6. Copy URL ที่ได้มาแทนที่ด้านล่างนี้
     const apiUrl = "https://script.google.com/macros/s/AKfycbzjBOVrpzhWSG2PhqttAyIX9jHA1seaNrtiXD-2Zkyk1iAFxfTySAhHrQ2ElRS2aXeenQ/exec?type=json";
     const memberDashboardApi = "https://script.google.com/macros/s/AKfycbxtjsDwHI6nJU4OIHExUxMaZwUn3qwakvdkzwbQO7C8Trzz5Gh84SX6F1gqb4BOFQcn/exec?func=getMemberDashboardData";
 
@@ -1648,8 +1657,18 @@
         }).catch(err => {
           console.warn('⚠️ Error fetching member dashboard:', err);
           return [];
-        })
-      ]).then(([data, members]) => {
+        }),
+        db.collection('public_payments').get().then(snapshot => snapshot.docs.map(doc => doc.data())).catch(err => [])
+      ]).then(([data, members, payments]) => {
+        // สร้าง map phone -> payment
+        const paymentMap = {};
+        payments.forEach(p => {
+          if (p.phoneNumber) {
+            const cleanPhone = String(p.phoneNumber).replace(/[^\d]/g, "");
+            paymentMap[cleanPhone] = p;
+          }
+        });
+        window.paymentMap = paymentMap;
         // ตรวจสอบว่า data ถูกต้องหรือไม่
         if (!data) {
           console.error('❌ No data received');
@@ -1669,7 +1688,7 @@
           return;
         }
 
-        // สร้าง map เบอร์โทร -> { codename, rank }
+        // สร้าง map เบอร์โทร -> {codename, rank}
         console.log('=== Creating phone map from members ===');
         const phoneMap = {};
         if (members && Array.isArray(members)) {
@@ -1908,6 +1927,10 @@
           if (newAttending) {
             userMap[key].attendingParty = user.attendingParty;
           }
+          // เก็บเบอร์โทรไว้เช็ค payment (ใช้เบอร์แรกที่เจอ)
+          if (!userMap[key].phone && user.phone) {
+            userMap[key].phone = user.phone;
+          }
         } else {
           // สร้างข้อมูลใหม่
           userMap[key] = {
@@ -1948,7 +1971,8 @@
       html += '<thead><tr style="background: linear-gradient(45deg, #ffd700, #ffaa00); box-shadow: 0 2px 10px rgba(255, 215, 0, 0.3);">';
       html += '<th style="padding:12px 8px; text-align:center; color:#1a0f00; font-weight:bold; font-size:1.05em; width:60px; text-shadow: 0 1px 2px rgba(255,255,255,0.3);">ลำดับ</th>';
       html += '<th style="padding:12px 8px; text-align:center; color:#1a0f00; font-weight:bold; font-size:1.05em; text-shadow: 0 1px 2px rgba(255,255,255,0.3);">ชื่อเล่น / Codename</th>';
-      html += '<th style="padding:12px 8px; text-align:center; color:#1a0f00; font-weight:bold; font-size:1.05em; width:120px; text-shadow: 0 1px 2px rgba(255,255,255,0.3);">มาร่วมงาน Midnight Party</th>';
+      html += '<th style="padding:12px 8px; text-align:center; color:#1a0f00; font-weight:bold; font-size:1.05em; width:120px; text-shadow: 0 1px 2px rgba(255,255,255,0.3);">Midnight Party</th>';
+      html += '<th style="padding:12px 8px; text-align:center; color:#1a0f00; font-weight:bold; font-size:1.05em; width:100px; text-shadow: 0 1px 2px rgba(255,255,255,0.3);">การชำระเงิน</th>';
       html += '</tr></thead><tbody>';
 
       uniqueUsers.forEach((user, index) => {
@@ -1981,7 +2005,17 @@
         // Column G: ถ้าเขียนว่า "มาร่วมงาน" = มาได้, ถ้าไม่ใช่ = ไม่มา
         const attendingPartyText = (user.attendingParty || '').trim();
         const attending = attendingPartyText === 'มาร่วมงาน' || attendingPartyText.toLowerCase().includes('มาร่วมงาน');
-        html += `<td style="padding:12px 8px; text-align:center; color:#2c3e50; font-size:0.9em; font-weight:600;">${attending ? '✅ ใช่' : '❌ ไม่ได้มา'}</td>`;
+        html += `<td style="padding:12px 8px; text-align:center; color:#2c3e50; font-size:0.9em; font-weight:600;">${attending ? '✅' : '❌'}</td>`;
+
+        // ตรวจสอบ Payment
+        let paymentStatus = '';
+        const cleanPhone = String(user.phone || '').replace(/[^\d]/g, "");
+        if (cleanPhone && window.paymentMap && window.paymentMap[cleanPhone]) {
+          paymentStatus = '✅ โอนแล้ว';
+        } else if (user.paid) { // เผื่อมี column paid ในชีท
+          paymentStatus = '✅ โอนแล้ว';
+        }
+        html += `<td style="padding:12px 8px; text-align:center; color:#4caf50; font-size:0.9em; font-weight:bold;">${paymentStatus}</td>`;
 
         html += '</tr>';
       });
