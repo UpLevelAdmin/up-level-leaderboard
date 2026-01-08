@@ -106,3 +106,34 @@ exports.verifySlip = onRequest({ cors: true, maxInstances: 10 }, async (req, res
         return res.status(error.response?.status || 500).json(errorData);
     }
 });
+
+exports.addPayment = onRequest({ cors: true, maxInstances: 10 }, async (req, res) => {
+    const secret = req.body.secret || req.query.secret;
+    if (secret !== API_SECRET) {
+        return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    try {
+        const { payment } = req.body;
+        if (!payment || !payment.phoneNumber) {
+            return res.status(400).json({ error: "Missing payment data" });
+        }
+
+        // Clean phone number for consistency
+        const phone = String(payment.phoneNumber).replace(/[^\d]/g, "");
+
+        const docId = `${phone}_${Date.now()}`;
+        await db.collection("public_payments").doc(docId).set({
+            ...payment,
+            phoneNumber: phone,
+            verifiedAt: admin.firestore.FieldValue.serverTimestamp(),
+            status: 'verified',
+            createdAt: admin.firestore.FieldValue.serverTimestamp()
+        });
+
+        return res.json({ success: true, id: docId });
+    } catch (error) {
+        console.error("Add Payment Error:", error);
+        return res.status(500).json({ error: error.message });
+    }
+});

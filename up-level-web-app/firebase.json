@@ -13,6 +13,10 @@
                 "function": "verifySlip"
             },
             {
+                "source": "/api/webhook/add-payment",
+                "function": "addPayment"
+            },
+            {
                 "source": "**",
                 "destination": "/index.html"
             }
