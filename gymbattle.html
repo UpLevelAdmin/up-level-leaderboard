@@ -1146,8 +1146,12 @@
             // ตรวจสอบสถานะการเงิน
             let paymentStatus = '';
             const payment = paymentMap[phone];
-            if (payment || player.paid) {
+            if (payment) {
+              // จ่ายผ่านระบบใหม่และผ่าน SlipOK แล้ว
               paymentStatus = '<span style="background: #4caf50; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.8em; font-weight: bold;">PAID</span>';
+            } else if (player.paid) {
+              // แนบสลิปมาในฟอร์ม แต่ยังไม่ได้ตรวจผ่านระบบใหม่
+              paymentStatus = '<span style="background: #ff9800; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.8em; font-weight: bold;">PENDING</span>';
             }
 
             html += `<tr><td>${idx2 + 1}</td><td>${displayName}</td><td>${player.level}</td><td>${paymentStatus}</td></tr>`;

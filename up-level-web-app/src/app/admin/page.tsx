@@ -621,6 +621,37 @@ export default function AdminControlPanel() {
                             </h2>
                         </div>
 
+                        {/* Payment Summary Stats */}
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div className="bg-gradient-to-br from-amber-600/20 to-amber-900/10 p-4 rounded-2xl border border-amber-500/30">
+                                <div className="text-[10px] font-bold text-amber-300 mb-1 tracking-wider uppercase">Total Verified</div>
+                                <div className="text-2xl font-black text-white">
+                                    ฿{publicPayments.filter(p => p.status !== 'pending_admin').reduce((sum, p) => sum + (Number(p.amount) || 0), 0).toLocaleString()}
+                                </div>
+                                <div className="text-[10px] text-amber-500/70 mt-1">{publicPayments.filter(p => p.status !== 'pending_admin').length} Transactions</div>
+                            </div>
+                            <div className="bg-gradient-to-br from-blue-600/20 to-blue-900/10 p-4 rounded-2xl border border-blue-500/30">
+                                <div className="text-[10px] font-bold text-blue-300 mb-1 tracking-wider uppercase">Total Pending</div>
+                                <div className="text-2xl font-black text-white">
+                                    ฿{publicPayments.filter(p => p.status === 'pending_admin').reduce((sum, p) => sum + (Number(p.amount) || 0), 0).toLocaleString()}
+                                </div>
+                                <div className="text-[10px] text-blue-500/70 mt-1">{publicPayments.filter(p => p.status === 'pending_admin').length} Transactions</div>
+                            </div>
+                            {/* Category Breakdown - Top 2 Categories */}
+                            {Object.entries(
+                                publicPayments.reduce((acc: any, p) => {
+                                    if (p.category) acc[p.category] = (acc[p.category] || 0) + (Number(p.amount) || 0);
+                                    return acc;
+                                }, {})
+                            ).slice(0, 2).map(([cat, amt]: any) => (
+                                <div key={cat} className="bg-slate-800/40 p-4 rounded-2xl border border-slate-700/50">
+                                    <div className="text-[10px] font-bold text-slate-400 mb-1 tracking-wider uppercase">{cat}</div>
+                                    <div className="text-2xl font-black text-white">฿{amt.toLocaleString()}</div>
+                                    <div className="text-[10px] text-slate-500 mt-1">Total Category Income</div>
+                                </div>
+                            ))}
+                        </div>
+
                         {publicPayments.length === 0 ? (
                             <div className="p-12 text-center text-slate-500 bg-[#2b2d42] rounded-2xl border border-slate-700/50 border-dashed">
                                 <RefreshCw className="w-12 h-12 mx-auto mb-4 opacity-20" />
