@@ -1,2110 +1,516 @@
-<!DOCTYPE html>
-<html lang="th">
-
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>🎉 พรีออเดอร์ MA3 & Midnight Party - Up Level Academy</title>
-
-  <!-- Add Google Font 'Kanit' -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;700&display=swap" rel="stylesheet">
-
-  <style>
-    body {
-      font-family: 'Kanit', 'Segoe UI', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
-      background: linear-gradient(135deg, #1a0f00 0%, #2d1a00 25%, #3d2500 50%, #2d1a00 75%, #1a0f00 100%);
-      background-size: 400% 400%;
-      animation: gradientShift 15s ease infinite;
-      margin: 0;
-      padding: 1rem;
-      text-align: center;
-      min-height: 100vh;
-      color: #fff;
-      position: relative;
-      overflow-x: hidden;
-    }
-
-    @keyframes gradientShift {
-
-      0%,
-      100% {
-        background-position: 0% 50%;
-      }
-
-      50% {
-        background-position: 100% 50%;
-      }
-    }
-
-    /* Card pack near logo - cute shake animation */
-    .floating-card-pack {
-      position: absolute;
-      width: 80px;
-      height: auto;
-      z-index: 5;
-      pointer-events: none;
-      opacity: 0.9;
-      animation: cuteShake 2s ease-in-out infinite;
-    }
-
-    .floating-card-pack:nth-child(1) {
-      top: 20px;
-      right: 20px;
-      animation-delay: 0s;
-    }
-
-    .floating-card-pack:nth-child(2) {
-      top: 20px;
-      left: 20px;
-      animation-delay: 0.3s;
-    }
-
-    .floating-card-pack:nth-child(3),
-    .floating-card-pack:nth-child(4) {
-      display: none;
-    }
-
-    @keyframes cuteShake {
-
-      0%,
-      100% {
-        transform: translate(0, 0) rotate(0deg) scale(1);
-      }
-
-      10% {
-        transform: translate(-3px, -2px) rotate(-3deg) scale(1.05);
-      }
-
-      20% {
-        transform: translate(3px, 2px) rotate(3deg) scale(1.02);
-      }
-
-      30% {
-        transform: translate(-2px, 3px) rotate(-2deg) scale(1.03);
-      }
-
-      40% {
-        transform: translate(2px, -3px) rotate(2deg) scale(1.04);
-      }
-
-      50% {
-        transform: translate(-1px, -1px) rotate(-1deg) scale(1.05);
-      }
-
-      60% {
-        transform: translate(1px, 2px) rotate(1deg) scale(1.03);
-      }
-
-      70% {
-        transform: translate(-2px, 1px) rotate(-2deg) scale(1.04);
-      }
-
-      80% {
-        transform: translate(2px, -2px) rotate(2deg) scale(1.02);
-      }
-
-      90% {
-        transform: translate(-1px, 1px) rotate(-1deg) scale(1.03);
-      }
-    }
-
-    /* Responsive for mobile - smaller cards */
-    @media (max-width: 768px) {
-      .floating-card-pack {
-        width: 60px;
-        opacity: 0.85;
-      }
-
-      .floating-card-pack:nth-child(1) {
-        top: 10px;
-        right: 10px;
-      }
-
-      .floating-card-pack:nth-child(2) {
-        top: 10px;
-        left: 10px;
-      }
-
-      .floating-card-pack:nth-child(3),
-      .floating-card-pack:nth-child(4) {
-        display: none;
-      }
-    }
-
-    .container {
-      max-width: 900px;
-      margin: auto;
-      background: linear-gradient(135deg, rgba(30, 20, 5, 0.85) 0%, rgba(40, 25, 10, 0.85) 100%);
-      border-radius: 25px;
-      padding: 2rem;
-      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4), 0 0 100px rgba(255, 215, 0, 0.2);
-      backdrop-filter: blur(20px);
-      border: 2px solid rgba(255, 215, 0, 0.4);
-      position: relative;
-      z-index: 10;
-    }
-
-    .home-button {
-      position: fixed;
-      top: 20px;
-      left: 20px;
-      width: 60px;
-      height: 60px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      border: none;
-      border-radius: 50%;
-      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-      cursor: pointer;
-      transition: all 0.3s ease;
-      z-index: 1000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-decoration: none;
-    }
-
-    .home-button:hover {
-      transform: translateY(-3px) scale(1.05);
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
-      background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
-    }
-
-    .home-button::before {
-      content: "🏠";
-      font-size: 24px;
-      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
-    }
-
-    .header {
-      text-align: center;
-      margin-bottom: 2rem;
-      position: relative;
-    }
-
-    .logo {
-      width: 120px;
-      margin-bottom: 1rem;
-      filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
-    }
-
-    .event-title {
-      font-size: 3rem;
-      font-weight: 700;
-      background: linear-gradient(45deg, #ffd700, #ffed4e, #ffaa00, #ffd700);
-      background-size: 300% 300%;
-      animation: gradientFlow 3s ease infinite, glow 2s ease-in-out infinite alternate;
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-      margin-bottom: 0.5rem;
-      filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.8));
-    }
-
-    @keyframes gradientFlow {
-
-      0%,
-      100% {
-        background-position: 0% 50%;
-      }
-
-      50% {
-        background-position: 100% 50%;
-      }
-    }
-
-    @keyframes glow {
-      from {
-        filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.8));
-      }
-
-      to {
-        filter: drop-shadow(0 0 25px rgba(255, 200, 0, 1));
-      }
-    }
-
-    .event-subtitle {
-      font-size: 1.3rem;
-      color: #ffd700;
-      margin-bottom: 1rem;
-      font-weight: 600;
-      text-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
-      animation: subtitlePulse 2s ease-in-out infinite;
-    }
-
-    @keyframes subtitlePulse {
-
-      0%,
-      100% {
-        opacity: 1;
-      }
-
-      50% {
-        opacity: 0.8;
-      }
-    }
-
-    .event-date {
-      font-size: 1.5rem;
-      color: #ffd700;
-      margin-bottom: 2rem;
-      font-weight: 700;
-      text-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
-    }
-
-    .product-showcase {
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
-      border-radius: 20px;
-      padding: 6px;
-      margin: 2rem 0;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-
-    .product-title {
-      font-size: 1.8rem;
-      color: #ffd700;
-      margin-bottom: 1rem;
-      font-weight: 700;
-      text-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
-      animation: titleShimmer 3s ease-in-out infinite;
-    }
-
-    @keyframes titleShimmer {
-
-      0%,
-      100% {
-        text-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
-      }
-
-      50% {
-        text-shadow: 0 0 25px rgba(255, 200, 0, 1), 0 0 35px rgba(255, 180, 0, 0.7);
-      }
-    }
-
-    .product-description {
-      font-size: 1.1rem;
-      color: #e0e0e0;
-      margin-bottom: 1.5rem;
-      line-height: 1.6;
-    }
-
-    .pricing-section {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-      margin: 1.5rem 0;
-      align-items: center;
-    }
-
-    .pricing-card {
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
-      border-radius: 15px;
-      padding: 1rem;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      transition: all 0.3s ease;
-      width: 100%;
-      max-width: 350px;
-    }
-
-    .pricing-card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
-      border-color: rgba(255, 217, 61, 0.5);
-    }
-
-    .promo-campaign-section {
-      background: linear-gradient(135deg, rgba(255, 217, 61, 0.15) 0%, rgba(255, 193, 7, 0.1) 100%);
-      border-radius: 20px;
-      padding: 1.5rem;
-      margin: 2rem 0;
-      border: 2px solid rgba(255, 217, 61, 0.4);
-      box-shadow: 0 0 20px rgba(255, 217, 61, 0.2);
-    }
-
-    .promo-campaign-title {
-      font-size: 1.8rem;
-      color: #ffd93d;
-      margin-bottom: 1rem;
-      font-weight: 700;
-      text-shadow: 0 0 15px rgba(255, 217, 61, 0.6);
-      animation: titleShimmer 3s ease-in-out infinite;
-    }
-
-    .promo-campaign-description {
-      font-size: 1.1rem;
-      color: #e0e0e0;
-      margin-bottom: 1.5rem;
-      line-height: 1.6;
-    }
-
-    .promo-cards-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap: 1rem;
-      margin-top: 1.5rem;
-      max-width: 800px;
-      margin-left: auto;
-      margin-right: auto;
-      justify-items: center;
-    }
-
-    .promo-card-item {
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 12px;
-      padding: 0.8rem;
-      border: 2px solid rgba(255, 217, 61, 0.3);
-      transition: all 0.3s ease;
-      cursor: pointer;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .promo-card-item:hover {
-      transform: translateY(-5px) scale(1.05);
-      box-shadow: 0 10px 25px rgba(255, 217, 61, 0.4);
-      border-color: rgba(255, 217, 61, 0.6);
-    }
-
-    .promo-card-item img {
-      width: 100%;
-      height: auto;
-      border-radius: 8px;
-      display: block;
-      margin: 0 auto;
-    }
-
-    .promo-card-modal {
-      display: none;
-      position: fixed;
-      z-index: 10000;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.9);
-      backdrop-filter: blur(10px);
-    }
-
-    .promo-card-modal-content {
-      position: relative;
-      margin: auto;
-      padding: 20px;
-      max-width: 90%;
-      max-height: 90vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100%;
-    }
-
-    .promo-card-modal-image {
-      max-width: 100%;
-      max-height: 90vh;
-      border-radius: 12px;
-      box-shadow: 0 0 50px rgba(255, 217, 61, 0.5);
-    }
-
-    .modal-close {
-      position: absolute;
-      top: 20px;
-      right: 40px;
-      color: #fff;
-      font-size: 40px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      z-index: 10001;
-      background: rgba(0, 0, 0, 0.5);
-      border-radius: 50%;
-      width: 50px;
-      height: 50px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .modal-close:hover {
-      background: rgba(255, 107, 107, 0.8);
-      transform: rotate(90deg);
-    }
-
-    .user-promo-cards {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      justify-content: center;
-      margin-top: 0.5rem;
-    }
-
-    .user-promo-card-mini {
-      width: 40px;
-      height: auto;
-      border-radius: 4px;
-      border: 1px solid rgba(255, 217, 61, 0.5);
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .user-promo-card-mini:hover {
-      transform: scale(1.2);
-      border-color: #ffd93d;
-      box-shadow: 0 0 10px rgba(255, 217, 61, 0.6);
-    }
-
-    .pricing-title {
-      font-size: 1.4rem;
-      color: #ffd93d;
-      margin-bottom: 1rem;
-      font-weight: 700;
-    }
-
-    .price {
-      font-size: 2rem;
-      color: #6bcf7f;
-      margin-bottom: 1rem;
-      font-weight: 700;
-    }
-
-    .price-note {
-      font-size: 0.9rem;
-      color: #b0b0b0;
-      margin-bottom: 1rem;
-    }
-
-    .benefits {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-
-    .benefits li {
-      background: rgba(255, 255, 255, 0.05);
-      margin-bottom: 0.5rem;
-      padding: 0.5rem;
-      border-radius: 8px;
-      color: #e0e0e0;
-      font-size: 0.9rem;
-    }
-
-    .spot-info {
-      background: linear-gradient(135deg, rgba(255, 107, 107, 0.1) 0%, rgba(255, 107, 107, 0.05) 100%);
-      border-radius: 20px;
-      padding: 1.5rem;
-      margin: 2rem 0;
-      border: 1px solid rgba(255, 107, 107, 0.3);
-    }
-
-    .spot-title {
-      font-size: 1.6rem;
-      color: #ff6b6b;
-      margin-bottom: 1rem;
-      font-weight: 700;
-    }
-
-    .spot-description {
-      font-size: 1.1rem;
-      color: #e0e0e0;
-      margin-bottom: 1rem;
-      line-height: 1.6;
-    }
-
-    .bonus-section {
-      background: linear-gradient(135deg, rgba(107, 207, 127, 0.1) 0%, rgba(107, 207, 127, 0.05) 100%);
-      border-radius: 20px;
-      padding: 1.5rem;
-      margin: 2rem 0;
-      border: 1px solid rgba(107, 207, 127, 0.3);
-    }
-
-    .bonus-title {
-      font-size: 1.6rem;
-      color: #6bcf7f;
-      margin-bottom: 1rem;
-      font-weight: 700;
-    }
-
-    .bonus-list {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-
-    .bonus-list li {
-      background: rgba(255, 255, 255, 0.05);
-      margin-bottom: 0.8rem;
-      padding: 0.8rem;
-      border-radius: 10px;
-      color: #e0e0e0;
-      font-size: 1rem;
-      border-left: 4px solid #6bcf7f;
-    }
-
-    .important-notes {
-      background: linear-gradient(135deg, rgba(255, 217, 61, 0.1) 0%, rgba(255, 217, 61, 0.05) 100%);
-      border-radius: 20px;
-      padding: 1.5rem;
-      margin: 2rem 0;
-      border: 1px solid rgba(255, 217, 61, 0.3);
-    }
-
-    .notes-title {
-      font-size: 1.6rem;
-      color: #ffd93d;
-      margin-bottom: 1rem;
-      font-weight: 700;
-    }
-
-    .notes-list {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-
-    .notes-list li {
-      background: rgba(255, 255, 255, 0.05);
-      margin-bottom: 0.8rem;
-      padding: 0.8rem;
-      border-radius: 10px;
-      color: #e0e0e0;
-      font-size: 1rem;
-      border-left: 4px solid #ffd93d;
-    }
-
-    .cta-section {
-      text-align: center;
-      margin: 3rem 0;
-    }
-
-    .cta-button {
-      display: inline-block;
-      background: linear-gradient(45deg, #ffd700, #ffed4e, #ffaa00);
-      background-size: 200% 200%;
-      animation: buttonGradient 3s ease infinite;
-      color: #1a0f00;
-      padding: 1.5rem 3rem;
-      border-radius: 50px;
-      text-decoration: none;
-      font-size: 1.3rem;
-      font-weight: 700;
-      box-shadow: 0 10px 30px rgba(255, 215, 0, 0.6), 0 0 40px rgba(255, 200, 0, 0.4);
-      transition: all 0.3s ease;
-      border: 2px solid rgba(255, 215, 0, 0.6);
-      cursor: pointer;
-    }
-
-    @keyframes buttonGradient {
-
-      0%,
-      100% {
-        background-position: 0% 50%;
-      }
-
-      50% {
-        background-position: 100% 50%;
-      }
-    }
-
-    .cta-button:hover {
-      transform: translateY(-5px) scale(1.05);
-      box-shadow: 0 15px 40px rgba(255, 215, 0, 0.8), 0 0 60px rgba(255, 200, 0, 0.6);
-      border-color: rgba(255, 215, 0, 0.9);
-    }
-
-    .cta-top {
-      text-align: center;
-      margin: 2rem 0;
-    }
-
-    .cta-button-top {
-      display: inline-block;
-      background: linear-gradient(45deg, #ffd700, #ffed4e, #ffaa00);
-      background-size: 200% 200%;
-      animation: buttonGradient 3s ease infinite;
-      color: #1a0f00;
-      padding: 1rem 2.5rem;
-      border-radius: 50px;
-      text-decoration: none;
-      font-size: 1.1rem;
-      font-weight: 700;
-      box-shadow: 0 8px 25px rgba(255, 215, 0, 0.6), 0 0 30px rgba(255, 200, 0, 0.4);
-      transition: all 0.3s ease;
-      border: 2px solid rgba(255, 215, 0, 0.6);
-      cursor: pointer;
-    }
-
-    .cta-button-top:hover {
-      transform: translateY(-3px) scale(1.05);
-      box-shadow: 0 12px 30px rgba(255, 215, 0, 0.8), 0 0 50px rgba(255, 200, 0, 0.6);
-      border-color: rgba(255, 215, 0, 0.9);
-    }
-
-    .guild-button {
-      display: inline-block;
-      background: linear-gradient(45deg, #ffd700, #ffed4e, #ffaa00);
-      background-size: 200% 200%;
-      animation: buttonGradient 3s ease infinite;
-      color: #1a0f00;
-      padding: 1rem 2.5rem;
-      border-radius: 50px;
-      text-decoration: none;
-      font-weight: 700;
-      font-size: 1.1rem;
-      transition: all 0.3s ease;
-      box-shadow: 0 8px 25px rgba(255, 215, 0, 0.6), 0 0 30px rgba(255, 200, 0, 0.4);
-      border: 2px solid rgba(255, 215, 0, 0.6);
-      cursor: pointer;
-      margin-top: 1rem;
-    }
-
-    .guild-button:hover {
-      transform: translateY(-3px) scale(1.05);
-      box-shadow: 0 12px 30px rgba(255, 215, 0, 0.8), 0 0 50px rgba(255, 200, 0, 0.6);
-      border-color: rgba(255, 215, 0, 0.9);
-    }
-
-    .info-section {
-      background: transparent;
-      border-radius: 20px;
-      padding: 1.5rem;
-      margin: 2rem 0;
-      border: none;
-    }
-
-    .info-title {
-      font-size: 1.6rem;
-      color: #ffd700;
-      margin-bottom: 1.5rem;
-      font-weight: 700;
-      text-align: center;
-      text-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
-      animation: titleShimmer 3s ease-in-out infinite;
-    }
-
-    .info-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 1.5rem;
-    }
-
-    .info-card {
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 15px;
-      padding: 1.2rem;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      transition: all 0.3s ease;
-    }
-
-    .info-card:hover {
-      transform: translateY(-3px);
-      background: rgba(255, 255, 255, 0.08);
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-    }
-
-    .info-card.bonus {
-      border-color: rgba(107, 207, 127, 0.3);
-    }
-
-    .info-card.notes {
-      border-color: rgba(255, 217, 61, 0.3);
-    }
-
-    .info-card h4 {
-      color: #ffd93d;
-      font-size: 1.3rem;
-      margin-bottom: 1rem;
-      font-weight: 700;
-      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-    }
-
-    .info-list {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-
-    .info-list li {
-      background: rgba(255, 255, 255, 0.05);
-      margin-bottom: 0.8rem;
-      padding: 0.8rem;
-      border-radius: 10px;
-      color: #e0e0e0;
-      font-size: 1rem;
-      border-left: 4px solid #6bcf7f;
-    }
-
-    .info-card.notes .info-list li {
-      border-left-color: #ffd93d;
-    }
-
-    .footer {
-      margin-top: 3rem;
-      padding: 2rem;
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 20px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .footer-title {
-      font-size: 1.4rem;
-      color: #ffd700;
-      margin-bottom: 1rem;
-      font-weight: 700;
-      text-shadow: 0 0 10px rgba(255, 215, 0, 0.7);
-    }
-
-    .contact-info {
-      display: flex;
-      justify-content: center;
-      gap: 2rem;
-      flex-wrap: wrap;
-      margin-top: 1rem;
-    }
-
-    .contact-item {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      color: #e0e0e0;
-      text-decoration: none;
-      transition: color 0.3s ease;
-    }
-
-    .contact-item:hover {
-      color: #ffd700;
-      text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
-    }
-
-    /* เพิ่ม CSS สำหรับส่วนแสดงรายชื่อ */
-    .registered-users-section {
-      background: linear-gradient(135deg, rgba(107, 207, 127, 0.1) 0%, rgba(107, 207, 127, 0.05) 100%);
-      border-radius: 20px;
-      padding: 2rem;
-      margin: 2rem 0;
-      border: 1px solid rgba(107, 207, 127, 0.3);
-    }
-
-    .users-title {
-      font-size: 1.8rem;
-      color: #ffd700;
-      margin-bottom: 1.5rem;
-      font-weight: 700;
-      text-align: center;
-      text-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      animation: titleShimmer 3s ease-in-out infinite;
-    }
-
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 0.8rem;
-      margin-bottom: 2rem;
-      max-width: 100%;
-      justify-content: center;
-    }
-
-    .stat-card {
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 15px;
-      padding: 0.8rem;
-      text-align: center;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      min-width: 0;
-      overflow: hidden;
-    }
-
-    .stat-number {
-      font-size: 2rem;
-      color: #ffd700;
-      font-weight: 700;
-      margin-bottom: 0.5rem;
-      text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
-      animation: numberPulse 2s ease-in-out infinite;
-    }
-
-    @keyframes numberPulse {
-
-      0%,
-      100% {
-        transform: scale(1);
-      }
-
-      50% {
-        transform: scale(1.05);
-      }
-    }
-
-    .stat-label {
-      color: #e0e0e0;
-      font-size: 0.8rem;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      line-height: 1.2;
-    }
-
-    .users-list {
-      max-height: 400px;
-      overflow-y: auto;
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 15px;
-      padding: 1rem;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .refresh-button {
-      background: linear-gradient(45deg, #ffd700, #ffaa00);
-      color: #1a0f00;
-      padding: 0.8rem 1.5rem;
-      border-radius: 25px;
-      border: 1px solid rgba(255, 215, 0, 0.4);
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      margin-bottom: 1rem;
-      box-shadow: 0 4px 15px rgba(255, 215, 0, 0.5), 0 0 20px rgba(255, 200, 0, 0.3);
-    }
-
-    .refresh-button:hover {
-      transform: translateY(-2px) scale(1.05);
-      box-shadow: 0 8px 20px rgba(255, 215, 0, 0.7), 0 0 30px rgba(255, 200, 0, 0.5);
-      border-color: rgba(255, 215, 0, 0.7);
-    }
-
-    .loading {
-      text-align: center;
-      color: #ffd700;
-      font-size: 1.1rem;
-      padding: 2rem;
-      text-shadow: 0 0 10px rgba(255, 215, 0, 0.7);
-    }
-
-    /* Loading spinner */
-    .spinner {
-      margin: 24px auto 8px auto;
-      border: 6px solid #e0e0e0;
-      border-top: 6px solid #ffd700;
-      border-radius: 50%;
-      width: 48px;
-      height: 48px;
-      animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-      0% {
-        transform: rotate(0deg);
-      }
-
-      100% {
-        transform: rotate(360deg);
-      }
-    }
-
-    .error-message {
-      background: rgba(255, 107, 107, 0.1);
-      border: 1px solid rgba(255, 107, 107, 0.3);
-      border-radius: 10px;
-      padding: 1rem;
-      color: #ff6b6b;
-      text-align: center;
-      margin: 1rem 0;
-    }
-
-    /* Codename สี/ขนาด/กระพริบตาม rank */
-    .codename-rank[data-rank="Rookie"] .codename {
-      color: #888888;
-      font-size: 1.05em;
-    }
-
-    .codename-rank[data-rank="Bronze"] .codename {
-      color: #b87333;
-      font-size: 1.08em;
-    }
-
-    .codename-rank[data-rank="Silver"] .codename {
-      color: #9e9e9e;
-      font-size: 1.12em;
-    }
-
-    .codename-rank[data-rank="Gold"] .codename {
-      color: #ffd700;
-      font-size: 1.18em;
-      font-weight: bold;
-    }
-
-    .codename-rank[data-rank="Platinum"] .codename {
-      color: #00bcd4;
-      font-size: 1.22em;
-      font-weight: bold;
-    }
-
-    .codename-rank[data-rank="Diamond"] .codename {
-      color: #ffd700;
-      font-size: 1.28em;
-      font-weight: bold;
-    }
-
-    .codename-rank[data-rank="Grandmaster"] .codename {
-      color: #8e24aa;
-      font-size: 1.35em;
-      font-weight: bold;
-    }
-
-    .codename-rank[data-rank="Legend"] .codename {
-      color: #e53935;
-      font-size: 1.45em;
-      font-weight: bold;
-    }
-
-    .codename-rank[data-rank="Gold"] .codename,
-    .codename-rank[data-rank="Platinum"] .codename,
-    .codename-rank[data-rank="Diamond"] .codename,
-    .codename-rank[data-rank="Grandmaster"] .codename,
-    .codename-rank[data-rank="Legend"] .codename {
-      animation: blink 1s step-end infinite alternate;
-    }
-
-    @keyframes blink {
-      0% {
-        opacity: 1;
-        text-shadow: 0 0 8px #fff, 0 0 16px currentColor;
-      }
-
-      100% {
-        opacity: 0.6;
-        text-shadow: 0 0 2px #fff, 0 0 4px currentColor;
-      }
-    }
-
-    /* Wave (Gold) */
-    @keyframes wave {
-
-      0%,
-      100% {
-        transform: translateY(0);
-      }
-
-      20% {
-        transform: translateY(-5px);
-      }
-
-      40% {
-        transform: translateY(-10px);
-      }
-
-      60% {
-        transform: translateY(-5px);
-      }
-
-      80% {
-        transform: translateY(0);
-      }
-    }
-
-    .codename.wave span {
-      display: inline-block;
-      animation: wave 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-    }
-
-    .codename.wave.gold span {
-      animation-duration: 1.2s;
-    }
-
-    .codename.wave.platinum span {
-      animation-duration: 1s;
-    }
-
-    .codename.wave.diamond span {
-      animation-duration: 0.85s;
-    }
-
-    .codename.wave.grandmaster span {
-      animation-duration: 0.7s;
-    }
-
-    .codename.wave.legend span {
-      animation-duration: 0.6s;
-    }
-
-    .codename.wave span:nth-child(1) {
-      animation-delay: 0s;
-    }
-
-    .codename.wave span:nth-child(2) {
-      animation-delay: 0.08s;
-    }
-
-    .codename.wave span:nth-child(3) {
-      animation-delay: 0.16s;
-    }
-
-    .codename.wave span:nth-child(4) {
-      animation-delay: 0.24s;
-    }
-
-    .codename.wave span:nth-child(5) {
-      animation-delay: 0.32s;
-    }
-
-    .codename.wave span:nth-child(6) {
-      animation-delay: 0.40s;
-    }
-
-    .codename.wave span:nth-child(7) {
-      animation-delay: 0.48s;
-    }
-
-    .codename.wave span:nth-child(8) {
-      animation-delay: 0.56s;
-    }
-
-    .codename.wave span:nth-child(9) {
-      animation-delay: 0.64s;
-    }
-
-    .codename.wave span:nth-child(10) {
-      animation-delay: 0.72s;
-    }
-
-    /* Responsive */
-    @media (max-width: 768px) {
-      .container {
-        padding: 1rem;
-        margin: 0.5rem;
-      }
-
-      .event-title {
-        font-size: 2rem;
-      }
-
-      .event-subtitle {
-        font-size: 1.1rem;
-      }
-
-      .event-date {
-        font-size: 1.2rem;
-      }
-
-      .pricing-section {
-        grid-template-columns: 1fr;
-      }
-
-      .contact-info {
-        flex-direction: column;
-        gap: 1rem;
-      }
-
-      .home-button {
-        top: 15px;
-        left: 15px;
-        width: 50px;
-        height: 50px;
-      }
-
-      .home-button::before {
-        font-size: 20px;
-      }
-
-      .stats-grid {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 0.6rem;
-        padding: 0 0.5rem;
-      }
-
-      .stat-card {
-        padding: 0.6rem 0.4rem;
-      }
-
-      .stat-number {
-        font-size: 1.5rem;
-      }
-
-      .stat-label {
-        font-size: 0.7rem;
-        line-height: 1.1;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
-      .info-grid {
-        grid-template-columns: 1fr;
-        gap: 1rem;
-      }
-
-      .users-title {
-        font-size: 1.4rem;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
-      .promo-cards-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 0.8rem;
-      }
-
-      .promo-campaign-title {
-        font-size: 1.4rem;
-      }
-
-      .promo-campaign-description {
-        font-size: 1rem;
-      }
-    }
-
-    @media (max-width: 480px) {
-      .container {
-        padding: 0.8rem;
-        margin: 0.3rem;
-      }
-
-      .event-title {
-        font-size: 1.8rem;
-      }
-
-      .event-subtitle {
-        font-size: 1rem;
-      }
-
-      .event-date {
-        font-size: 1.1rem;
-      }
-
-      .users-title {
-        font-size: 1.2rem;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
-      .stats-grid {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 0.4rem;
-        padding: 0 0.3rem;
-      }
-
-      .stat-card {
-        padding: 0.5rem 0.3rem;
-      }
-
-      .stat-number {
-        font-size: 1.3rem;
-      }
-
-      .stat-label {
-        font-size: 0.65rem;
-        line-height: 1.1;
-      }
-
-      .promo-cards-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 0.6rem;
-      }
-
-      .promo-campaign-title {
-        font-size: 1.2rem;
-      }
-
-      .promo-campaign-description {
-        font-size: 0.9rem;
-      }
-
-      .user-promo-card-mini {
-        width: 35px;
-      }
-    }
-  </style>
-</head>
-
-<body>
-  <a href="index.html" class="home-button" title="กลับหน้าหลัก"></a>
-
-  <div class="container">
-    <!-- Card packs near logo - cute shake animation -->
-    <!-- ใช้รูปซอง MA3 ที่ผู้ใช้ให้มา - ต้องอัปเดต URL เมื่อมี -->
-    <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_ma3_pkg.png"
-      alt="MA3 Booster Pack" class="floating-card-pack"
-      onerror="this.src='https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/09/th_news_MA2_pillow_img-1.png'">
-    <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_ma3_pkg.png"
-      alt="MA3 Booster Pack" class="floating-card-pack"
-      onerror="this.src='https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/09/th_news_MA2_pillow_img-1.png'">
-
-    <div class="header">
-      <img src="https://i.postimg.cc/wjzpnxjB/Up-Level-01-1.png" alt="Up Level Academy Logo" class="logo">
-      <h1 class="event-title">🎉 พรีออเดอร์ Booster Box MA3 & ลงทะเบียนร่วมงาน Midnight Party 🎉</h1>
-      <div class="event-subtitle">วิวัฒนาการเมก้า ดรีมex</div>
-      <div class="product-description" style="text-align: center; margin-top: 1rem; font-size: 1.2rem;">
-        เตรียมพบกับการ์ดชุดใหม่ล่าสุด “วิวัฒนาการเมก้าดรีม (MA3)”<br>
-        <strong>งานนี้รวมทุกอย่างไว้ในฟอร์มเดียว — ทั้ง พรีออเดอร์สินค้า และ ลงทะเบียนเข้าร่วมงาน</strong>
-      </div>
-
-      <!-- ปุ่มสั่งซื้อด้านบน -->
-      <div class="cta-top">
-        <a href="https://forms.gle/3xZG8VewZjJtepQN6" target="_blank" class="cta-button-top">
-          🎯 คลิกเพื่อสั่งซื้อ
-        </a>
-      </div>
-    </div>
-
-    <div class="product-showcase">
-      <!-- ส่วนแสดงรายชื่อผู้ลงทะเบียน (ย้ายขึ้นมาบนสุดของ section) -->
-      <div class="registered-users-section" style="margin-top: 0;">
-        <h3 class="users-title">📋 รายชื่อผู้สั่งซื้อและลงทะเบียน</h3>
-
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-number" id="totalUsers">-</div>
-            <div class="stat-label">จำนวนผู้สั่งซื้อทั้งหมด</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-number" id="totalBoxes">-</div>
-            <div class="stat-label">จำนวนบ็อครวมทั้งหมด</div>
-          </div>
-        </div>
-
-        <button class="refresh-button" onclick="loadRegisteredUsers()">
-          🔄 รีเฟรชข้อมูล
-        </button>
-
-        <div id="usersContainer">
-          <div class="spinner"></div>
-          <div class="loading">กำลังโหลดข้อมูล...</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="pricing-section">
-      <div class="pricing-card" style="border-color: #4facfe; box-shadow: 0 0 15px rgba(79, 172, 254, 0.3);">
-        <h3 class="pricing-title" style="color: #4facfe;">🔵 พรีออเดอร์สินค้า MA3</h3>
-        <div class="price">💸 Booster Box 1,550 บาท / Box</div>
-        <div class="price-note">✨ ซื้อ 2 Box รับโปรโม 1 ซอง</div>
-        <ul class="benefits">
-          <li>✅ รับ 5 EXP ต่อ 1 Box (ปกติ)</li>
-          <li>✅ รับสินค้าตั้งแต่ 16 ม.ค. 2026 เป็นต้นไป</li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="promo-campaign-section">
-      <h3 class="promo-campaign-title">🎁 แคมเปญพิเศษ: การ์ดโปรโม MA3</h3>
-      <div class="promo-campaign-description">
-        <strong>✨ ซื้อ Booster Box 2 กล่อง → รับการ์ดโปรโม 1 ซอง ✨</strong><br><br>
-        แต่ละซองมีการ์ดสุ่ม 1 ใบจากการ์ดโปรโมทั้งหมด 4 แบบ<br>
-        คลิกที่รูปการ์ดด้านล่างเพื่อดูรายละเอียด
-      </div>
-      <div class="promo-cards-grid">
-        <div class="promo-card-item"
-          onclick="openPromoCardModal('https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_MPromo_047.png')">
-          <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_MPromo_047.png"
-            alt="Promo Card 047" loading="lazy">
-        </div>
-        <div class="promo-card-item"
-          onclick="openPromoCardModal('https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_MPromo_048.png')">
-          <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_MPromo_048.png"
-            alt="Promo Card 048" loading="lazy">
-        </div>
-        <div class="promo-card-item"
-          onclick="openPromoCardModal('https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_MPromo_049.png')">
-          <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_MPromo_049.png"
-            alt="Promo Card 049" loading="lazy">
-        </div>
-        <div class="promo-card-item"
-          onclick="openPromoCardModal('https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_MPromo_050.png')">
-          <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_MPromo_050.png"
-            alt="Promo Card 050" loading="lazy">
-        </div>
-      </div>
-    </div>
-
-    <!-- Modal for viewing promo cards -->
-    <div id="promoCardModal" class="promo-card-modal">
-      <span class="modal-close" onclick="closePromoCardModal()">&times;</span>
-      <div class="promo-card-modal-content">
-        <img id="promoCardModalImage" class="promo-card-modal-image" src="" alt="Promo Card">
-      </div>
-    </div>
-
-    <!-- ส่วนแสดงการ์ดพิเศษจากชุด MA3 -->
-    <div class="promo-campaign-section" style="margin-top: 2rem;">
-      <h3 class="promo-campaign-title">🌟 การ์ดพิเศษจากชุด MA3</h3>
-      <div class="promo-campaign-description">
-        การ์ดแกร่งที่เคยโชว์ฟอร์มในงานแข่งต่าง ๆ และการ์ดอื่น ๆ กลับมารวมตัวกันอีกครั้ง!
-      </div>
-      <div class="promo-cards-grid">
-        <div class="promo-card-item"
-          onclick="openPromoCardModal('https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_ma3_card_223-1.png')">
-          <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_ma3_card_223-1.png"
-            alt="MA3 Card 223" loading="lazy">
-        </div>
-        <div class="promo-card-item"
-          onclick="openPromoCardModal('https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_ma3_card_228-1.png')">
-          <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_ma3_card_228-1.png"
-            alt="MA3 Card 228" loading="lazy">
-        </div>
-        <div class="promo-card-item"
-          onclick="openPromoCardModal('https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_ma3_card_226-1.png')">
-          <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_ma3_card_226-1.png"
-            alt="MA3 Card 226" loading="lazy">
-        </div>
-        <div class="promo-card-item"
-          onclick="openPromoCardModal('https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_ma3_card_243.png')">
-          <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_ma3_card_243.png"
-            alt="MA3 Card 243" loading="lazy">
-        </div>
-      </div>
-    </div>
-
-    <div class="spot-info" style="text-align: center; position: relative; overflow: hidden;">
-      <div
-        style="position: absolute; top: -50px; right: -50px; width: 150px; height: 150px; background: radial-gradient(circle, rgba(255, 107, 107, 0.2) 0%, rgba(0,0,0,0) 70%); border-radius: 50%; pointer-events: none;">
-      </div>
-      <div
-        style="position: absolute; bottom: -50px; left: -50px; width: 150px; height: 150px; background: radial-gradient(circle, rgba(255, 107, 107, 0.2) 0%, rgba(0,0,0,0) 70%); border-radius: 50%; pointer-events: none;">
-      </div>
-
-      <h3 class="spot-title"
-        style="font-size: 2.2rem; margin-bottom: 0.5rem; text-shadow: 0 0 20px rgba(255, 107, 107, 0.6);">🔴 Midnight
-        Party</h3>
-      <div style="font-size: 1.1rem; color: #ff8a8a; margin-bottom: 1.5rem; font-weight: 600;">คืนวันที่ 15 ม.ค. 2026
-        (ข้ามเข้า 16 ม.ค.)</div>
-
-      <div class="spot-description"
-        style="background: rgba(0, 0, 0, 0.2); border-radius: 15px; padding: 1.5rem; margin-bottom: 2rem; border: 1px solid rgba(255, 107, 107, 0.1);">
-        <p style="margin: 0 0 1rem 0; font-size: 1.2rem; line-height: 1.6;">
-          <strong>เปิดบ็อคก่อนใคร!</strong> เริ่มลงทะเบียน 23:30 น.<br>
-          <span style="font-size: 0.95rem; color: #e0e0e0; opacity: 0.8;">(ไม่มีการไลฟ์สด
-            เปิดกล่องเฉพาะภายในงานเท่านั้น)</span>
-        </p>
-      </div>
-
-      <h4
-        style="color: #ffd700; font-size: 1.4rem; margin-bottom: 1.5rem; text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);">
-        🎁 สิทธิพิเศษสำหรับผู้มาร่วมงาน</h4>
-
-      <div
-        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; max-width: 800px; margin: 0 auto;">
-        <div
-          style="background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%); padding: 1rem; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
-          <span style="font-size: 1.5rem;">✨</span>
-          <span style="font-weight: 600; color: #fff;">+2 EXP</span>
-        </div>
-        <div
-          style="background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%); padding: 1rem; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
-          <span style="font-size: 1.5rem;">🎉</span>
-          <span style="font-weight: 600; color: #fff;">+2 Party Point</span>
-        </div>
-        <div
-          style="background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%); padding: 1rem; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
-          <span style="font-size: 1.5rem;">📦</span>
-          <span style="font-weight: 600; color: #fff;">+6 EXP ต่อ 1 Box</span>
-        </div>
-        <div
-          style="background: linear-gradient(135deg, rgba(255, 215, 0, 0.15) 0%, rgba(255, 215, 0, 0.05) 100%); padding: 1rem; border-radius: 12px; border: 1px solid rgba(255, 215, 0, 0.3); display: flex; align-items: center; justify-content: center; gap: 0.5rem; grid-column: 1 / -1;">
-          <span style="font-size: 1.5rem;">👨‍👩‍👧‍👦</span>
-          <span style="font-weight: 600; color: #ffd700;">มาครบทั้งปาร์ตี้ → +5 Party Point</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="info-section">
-      <h3 class="info-title">📋 เงื่อนไขสำคัญ</h3>
-      <div class="info-grid">
-        <div class="info-card notes" style="border-color: #ffd93d; grid-column: 1 / -1;">
-          <h4>📌 ข้อตกลงและเงื่อนไข</h4>
-          <ul class="info-list">
-            <li>📌 ลูกค้าที่สั่งซื้อ แม้ไม่มาร่วมงาน ยังได้รับสินค้า + EXP ตามยอดซื้อปกติ</li>
-            <li>📌 แบบฟอร์มนี้คือการสั่งซื้อล่วงหน้า พร้อมชำระเงินทันที</li>
-            <li>📌 การจองถือว่าสมบูรณ์เมื่อแนบสลิปถูกต้อง</li>
-            <li>📌 รับสินค้าตั้งแต่ 16 ม.ค. 2026 เป็นต้นไป</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-
-    <div class="cta-section">
-      <a href="https://forms.gle/3xZG8VewZjJtepQN6" target="_blank" class="cta-button">
-        🎯 คลิกเพื่อสั่งซื้อ
-      </a>
-      <a href="https://forms.gle/5ctkLmT3FwLW9oRi6" target="_blank" class="guild-button">
-        🏰 สมัครสมาชิกกิลด์เพื่อสะสม EXP
-      </a>
-    </div>
-
-    <div class="footer">
-      <h3 class="footer-title">📍 สถานที่รับสินค้า/Midnight Party</h3>
-      <p style="color: #e0e0e0; margin-bottom: 1rem;">ร้าน Up Level Academy<br>(ติด MRT บางแค ทางออก 2)</p>
-
-      <h3 class="footer-title">หากมีคำถามเพิ่มเติม</h3>
-      <div class="contact-info">
-        <a href="tel:097-115-6555" class="contact-item">
-          📞 097-115-6555
-        </a>
-        <a href="https://line.me/ti/p/@uplevelacademy" target="_blank" class="contact-item">
-          💬 @uplevelacademy
-        </a>
-        <a href="https://www.facebook.com/uplevel.acad" target="_blank" class="contact-item">
-          👍 Up Level Academy
-        </a>
-        <a href="https://www.instagram.com/uplevel.acad" target="_blank" class="contact-item">
-          📸 uplevel.acad
-        </a>
-      </div>
-      <div style="margin-top: 1rem;">
-        <a href="https://shorturl.at/8r2Aw" target="_blank" class="contact-item" style="display: inline-block;">
-          💬 Line Open chat Pokemon
-        </a>
-        <a href="https://uplevelguild.netlify.app/" target="_blank" class="contact-item" style="display: inline-block;">
-          🌐 Up Level Guild Website
-        </a>
-      </div>
-    </div>
-  </div>
-
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-
-  <script>
-    // Firebase Config
-    const firebaseConfig = {
-      apiKey: "AIzaSyAKxWv3FI7HrdrRlnJhsQbJ-97Pb_sdiOQ",
-      authDomain: "up-level-guild.firebaseapp.com",
-      projectId: "up-level-guild",
-      storageBucket: "up-level-guild.firebasestorage.app",
-      messagingSenderId: "721710985300",
-      appId: "1:721710985300:web:c51e13963373a6feadbdc1"
+/**
+ * Google Apps Script สำหรับระบบพรีออเดอร์ MA3 และลงทะเบียน Midnight Party
+ * 
+ * ⚠️ วิธีตั้งค่า:
+ * 1. ไปที่ Google Sheet: https://docs.google.com/spreadsheets/d/1wi2OXnelj5D61E8Jv6wBN0RwCRbsQlgiWXnfGxrjlww/edit
+ * 2. คลิก Extensions > Apps Script
+ * 3. Copy โค้ดทั้งหมดจากไฟล์นี้ไปวางใน Apps Script Editor
+ * 4. ตั้งค่า Trigger: คลิก Triggers (นาฬิกา) > Add Trigger
+ *    - Choose which function to run: onFormSubmit
+ *    - Select event source: From spreadsheet
+ *    - Select event type: On form submit
+ * 5. Deploy เป็น Web App:
+ *    - คลิก Deploy > New deployment
+ *    - Type: Web app
+ *    - Execute as: Me
+ *    - Who has access: Anyone
+ *    - คลิก Deploy และ Copy URL ที่ได้
+ * 6. นำ URL ที่ได้ไปอัปเดตในไฟล์ ma3-preorder.html (บรรทัดที่กำหนด apiUrl)
+ * 
+ * Sheet Structure (Sheet1):
+ * - Column A: Timestamp (เวลาที่ประทับ)
+ * - Column B: ชื่อ - นามสกุล
+ * - Column C: ชื่อเล่น
+ * - Column D: เบอร์โทร
+ * - Column E: จำนวน (raw data)
+ * - Column G: มาร่วมงานไหม (ถ้าเป็น "มาร่วมงาน" = มาได้, ถ้าไม่ใช่ = ไม่มา)
+ * - Column J: จำนวน box (แปลงเป็นตัวเลขเรียบร้อยแล้ว)
+ */
+
+// ===== ฟังก์ชันแจ้งเตือน Telegram =====
+
+// แก้ไขข้อมูลเหล่านี้
+const BOT_TOKEN = "8124787979:AAEWOqfiEACRxkrtZSWdTNuvGQr7uff_UoI";
+const CHAT_ID = "-4911555842"; // Group Chat ID
+
+const TELEGRAM_API_URL = `https://api.telegram.org/bot${BOT_TOKEN}`;
+
+// ===== ข้อมูลการ์ดโปรโม =====
+const PROMO_CARDS = [
+  {
+    number: "047",
+    imageUrl: "https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_MPromo_047.png"
+  },
+  {
+    number: "048",
+    imageUrl: "https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_MPromo_048.png"
+  },
+  {
+    number: "049",
+    imageUrl: "https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_MPromo_049.png"
+  },
+  {
+    number: "050",
+    imageUrl: "https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_MPromo_050.png"
+  }
+];
+
+/**
+ * คำนวณจำนวน promo card packs จากจำนวน Box
+ * ซื้อ 2 Box = 1 Promo Card Pack
+ */
+function calculatePromoPacks(boxes) {
+  if (!boxes || boxes < 2) return 0;
+  return Math.floor(boxes / 2);
+}
+
+/**
+ * สุ่มการ์ดโปรโม 1 ใบจาก 4 แบบ
+ * ใช้ phone + timestamp เป็น seed เพื่อให้ผลลัพธ์คงที่สำหรับผู้ใช้คนเดียวกัน
+ */
+function getRandomPromoCard(phone, timestamp) {
+  // สร้าง seed จาก phone และ timestamp
+  var seed = 0;
+  if (phone) {
+    for (var i = 0; i < phone.length; i++) {
+      seed += phone.charCodeAt(i);
+    }
+  }
+  if (timestamp) {
+    seed += new Date(timestamp).getTime();
+  }
+  
+  // ใช้ seed เพื่อสุ่มการ์ด
+  var random = seed % PROMO_CARDS.length;
+  return PROMO_CARDS[random];
+}
+
+/**
+ * แปลงข้อมูล Box/Carton จาก string เป็นจำนวน Box (รวม carton ที่แปลงเป็น box แล้ว)
+ * รองรับรูปแบบต่างๆ เช่น:
+ * - "4 boxes", "1 BOX", "2 BOX"
+ * - "5 บ็อค", "1 ตั้น" (ตั้น = carton = 20 boxes)
+ * - "1 BOX (1,550 บาท)"
+ * - "1 C/" (C = Carton)
+ */
+function parseBoxQuantity(boxData) {
+  if (!boxData) return 0;
+  
+  if (typeof boxData === 'number') {
+    return boxData;
+  }
+  
+  if (typeof boxData === 'string') {
+    var totalBoxes = 0;
+    var text = boxData.trim();
+    
+    // ลบข้อมูลราคาออก (เช่น "(1,550 บาท)")
+    text = text.replace(/\([^)]*\)/g, '');
+    
+    // แปลง carton (ตั้น, C, Carton) เป็น boxes (1 carton = 20 boxes)
+    // รูปแบบ: "1 ตั้น", "1 C", "1 Carton", "1 C/", "1 carton"
+    var cartonPatterns = [
+      /(\d+)\s*(?:ตั้น|ตัน|carton|Carton|CARTON|C\/|C\b)/gi,
+      /(\d+)\s*(?:คาตั้น|คาตัน)/gi
+    ];
+    
+    for (var i = 0; i < cartonPatterns.length; i++) {
+      var cartonMatch = text.match(cartonPatterns[i]);
+      if (cartonMatch) {
+        var cartonCount = parseInt(cartonMatch[1]) || 0;
+        totalBoxes += cartonCount * 20; // 1 carton = 20 boxes
+        // ลบส่วนที่ match ออกเพื่อไม่ให้นับซ้ำ
+        text = text.replace(cartonPatterns[i], '');
+      }
+    }
+    
+    // หาจำนวน Box จากรูปแบบต่างๆ
+    // รูปแบบ: "4 boxes", "1 BOX", "2 Box", "5 บ็อค", "3 บ็อก", "2 กล่อง"
+    var boxPatterns = [
+      /(\d+)\s*(?:BOX|Box|box|boxes|BOXES)/gi,
+      /(\d+)\s*(?:บ็อค|บ็อก|บ็อกซ์|กล่อง)/gi
+    ];
+    
+    for (var j = 0; j < boxPatterns.length; j++) {
+      var boxMatch = text.match(boxPatterns[j]);
+      if (boxMatch) {
+        var boxCount = parseInt(boxMatch[1]) || 0;
+        totalBoxes += boxCount;
+        // ลบส่วนที่ match ออกเพื่อไม่ให้นับซ้ำ
+        text = text.replace(boxPatterns[j], '');
+      }
+    }
+    
+    // ถ้ายังไม่มีตัวเลขที่ match ลองหาแค่ตัวเลขเดียว (อาจเป็น box)
+    if (totalBoxes === 0) {
+      var numMatch = text.match(/(\d+)/);
+      if (numMatch) {
+        totalBoxes = parseInt(numMatch[1]) || 0;
+      }
+    }
+    
+    return totalBoxes;
+  }
+  
+  return 0;
+}
+
+/**
+ * ฟังก์ชันที่ทำงานเมื่อมีการส่งฟอร์ม
+ */
+function onFormSubmit(e) {
+  try {
+    // ดึงข้อมูลจากฟอร์ม
+    const responses = e.values;
+    const timestamp = responses[0] || new Date().toLocaleString('th-TH');
+    
+    // Column B: ชื่อ - นามสกุล
+    const fullName = responses[1] || 'ไม่ระบุชื่อ';
+    
+    // Column C: ชื่อเล่น
+    const nickname = responses[2] || responses[1] || 'ไม่ระบุชื่อ';
+    
+    // Column D: เบอร์ติดต่อ
+    const phone = responses[3] || 'ไม่ระบุเบอร์โทร';
+    
+    // Column E: จำนวนที่ต้องการสั่งซื้อ
+    const quantity = responses[4] || '0';
+    
+    // Column G: มาร่วมงาน Midnight Party หรือไม่
+    const attendingParty = responses[6] || 'ไม่ระบุ';
+    
+    // นับจำนวนคนที่สั่งซื้อ
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Form Responses 1");
+    let totalCount = 0;
+    
+    if (sheet) {
+      try {
+        const data = sheet.getDataRange().getValues();
+        totalCount = data.length - 1; // ลบ header row
+      } catch (countError) {
+        console.warn('Warning: Could not count total participants:', countError);
+      }
+    }
+    
+    // สร้างข้อความแจ้งเตือน
+    const message = `🎉 *มีคนสั่งซื้อ MA3 และลงทะเบียน Midnight Party ใหม่!*
+
+👤 *ชื่อเล่น:* ${nickname}
+📱 *เบอร์โทร:* ${phone}
+📦 *จำนวนที่สั่งซื้อ:* ${quantity}
+🎉 *เข้าร่วมงาน:* ${attendingParty}
+⏰ *เวลาที่สั่งซื้อ:* ${timestamp}
+
+📊 *รวมผู้สั่งซื้อ: ${totalCount} คน*
+
+📎 *แนบสลิป:* ${responses[8] ? `[ดูรูปภาพ](${responses[8]})` : '❌ ไม่ได้แนบ'}
+
+---
+📊 [ตรวจสอบรายชื่อทั้งหมด](https://uplevelguild.netlify.app/ma3-preorder)`;
+    
+    // ส่งไปยัง Telegram
+    const payload = {
+      chat_id: CHAT_ID,
+      text: message,
+      parse_mode: "Markdown",
+      disable_web_page_preview: true
     };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-
-    console.log('DEBUG: MA3 Pre-order & Midnight Party Registration System');
-
-    /**
-     * แปลงข้อมูล Box/Carton จาก string เป็นจำนวน Box (รวม carton ที่แปลงเป็น box แล้ว)
-     * รองรับรูปแบบต่างๆ เช่น:
-     * - "4 boxes", "1 BOX", "2 BOX"
-     * - "5 บ็อค", "1 ตั้น" (ตั้น = carton = 20 boxes)
-     * - "1 BOX (1,550 บาท)"
-     * - "1 C/" (C = Carton)
-     */
-    function parseBoxQuantityFromString(boxData) {
-      if (!boxData) return 0;
-
-      if (typeof boxData === 'number') {
-        return boxData;
-      }
-
-      if (typeof boxData === 'string') {
-        let totalBoxes = 0;
-        let text = boxData.trim();
-
-        // ลบข้อมูลราคาออก (เช่น "(1,550 บาท)")
-        text = text.replace(/\([^)]*\)/g, '');
-
-        // แปลง carton (ตั้น, C, Carton) เป็น boxes (1 carton = 20 boxes)
-        // รูปแบบ: "1 ตั้น", "1 C", "1 Carton", "1 C/", "1 carton"
-        const cartonPatterns = [
-          /(\d+)\s*(?:ตั้น|ตัน|carton|Carton|CARTON|C\/|C\b)/gi,
-          /(\d+)\s*(?:คาตั้น|คาตัน)/gi
-        ];
-
-        for (let i = 0; i < cartonPatterns.length; i++) {
-          const cartonMatch = text.match(cartonPatterns[i]);
-          if (cartonMatch) {
-            const cartonCount = parseInt(cartonMatch[1]) || 0;
-            totalBoxes += cartonCount * 20; // 1 carton = 20 boxes
-            // ลบส่วนที่ match ออกเพื่อไม่ให้นับซ้ำ
-            text = text.replace(cartonPatterns[i], '');
-          }
-        }
-
-        // หาจำนวน Box จากรูปแบบต่างๆ
-        // รูปแบบ: "4 boxes", "1 BOX", "2 Box", "5 บ็อค", "3 บ็อก", "2 กล่อง"
-        const boxPatterns = [
-          /(\d+)\s*(?:BOX|Box|box|boxes|BOXES)/gi,
-          /(\d+)\s*(?:บ็อค|บ็อก|บ็อกซ์|กล่อง)/gi
-        ];
-
-        for (let j = 0; j < boxPatterns.length; j++) {
-          const boxMatch = text.match(boxPatterns[j]);
-          if (boxMatch) {
-            const boxCount = parseInt(boxMatch[1]) || 0;
-            totalBoxes += boxCount;
-            // ลบส่วนที่ match ออกเพื่อไม่ให้นับซ้ำ
-            text = text.replace(boxPatterns[j], '');
-          }
-        }
-
-        // ถ้ายังไม่มีตัวเลขที่ match ลองหาแค่ตัวเลขเดียว (อาจเป็น box)
-        if (totalBoxes === 0) {
-          const numMatch = text.match(/(\d+)/);
-          if (numMatch) {
-            totalBoxes = parseInt(numMatch[1]) || 0;
-          }
-        }
-
-        return totalBoxes;
-      }
-
-      return 0;
-    }
-
-    /**
-     * ค้นหาและคำนวณจำนวน Box จากข้อมูล participant
-     * พยายามหาจาก Column J (Booster Box) ก่อน แล้วค่อย Fallback ไป Column E (จำนวนที่สั่ง)
-     */
-    function extractBoxCount(p) {
-      if (!p) return 0;
-
-      const keys = Object.keys(p);
-
-      // 1. ลองหาจาก Column J (Header ที่มีคำว่า Box, J, หรือ จำนวน box)
-      // Prioritize keys containing "box" or explicitly "J"
-      const boxKeys = keys.filter(k => {
-        const lower = k.toLowerCase();
-        return (lower.includes('box') && lower.includes('จำนวน')) ||
-          lower === 'box' ||
-          lower === 'boxes' ||
-          lower === 'j' ||
-          lower.includes('total box');
-      });
-
-      // เรียงลำดับความสำคัญ: "จำนวน box" -> "box" -> "j"
-      boxKeys.sort((a, b) => {
-        const aLower = a.toLowerCase();
-        const bLower = b.toLowerCase();
-        if (aLower.includes('จำนวน box')) return -1;
-        if (bLower.includes('จำนวน box')) return 1;
-        return 0;
-      });
-
-      for (const key of boxKeys) {
-        const val = p[key];
-        if (typeof val === 'number') return val;
-        if (val && typeof val === 'string' && val.trim() !== '') {
-          // ลอง parse เป็นตัวเลข
-          const num = parseFloat(val);
-          if (!isNaN(num)) return num;
-          // ถ้า parse ไม่ได้ (เช่น "2 กล่อง") ให้ใช้ parser
-          const parsed = parseBoxQuantityFromString(val);
-          if (parsed > 0) return parsed;
-        }
-      }
-
-      // 2. Fallback: หาจาก Column E (จำนวนที่ต้องการสั่งซื้อ)
-      // Keys containing "จำนวน" but NOT "box" (unless we missed it above)
-      // Or specifically the standard form headers
-      const quantityKeys = [
-        'จำนวน',
-        'จำนวนที่ต้องการสั่งซื้อ (1 BOX = 1,550 บาท, 1 C/)',
-        'จำนวนที่ต้องการสั่งซื้อ'
-      ];
-
-      for (const key of quantityKeys) {
-        if (p[key]) {
-          const val = p[key];
-          if (typeof val === 'number') return val;
-          // ใช้ parser เพราะคอลัมน์นี้มักเป็น "1 Box", "2 Boxes"
-          const parsed = parseBoxQuantityFromString(val);
-          if (parsed > 0) return parsed;
-        }
-      }
-
-      return 0;
-    }
-
-    const apiUrl = "https://script.google.com/macros/s/AKfycbzjBOVrpzhWSG2PhqttAyIX9jHA1seaNrtiXD-2Zkyk1iAFxfTySAhHrQ2ElRS2aXeenQ/exec?type=json";
-    const memberDashboardApi = "https://script.google.com/macros/s/AKfycbxtjsDwHI6nJU4OIHExUxMaZwUn3qwakvdkzwbQO7C8Trzz5Gh84SX6F1gqb4BOFQcn/exec?func=getMemberDashboardData";
-
-    // โหลดข้อมูลผู้ลงทะเบียนเมื่อหน้าเว็บโหลดเสร็จ
-    window.addEventListener('load', function () {
-      loadRegisteredUsers();
+    
+    const response = UrlFetchApp.fetch(`${TELEGRAM_API_URL}/sendMessage`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      payload: JSON.stringify(payload)
     });
-
-    function loadRegisteredUsers() {
-      const container = document.getElementById('usersContainer');
-      container.innerHTML = '<div class="spinner"></div><div class="loading">กำลังโหลดข้อมูล...</div>';
-
-      console.log('=== MA3 PRE-ORDER DEBUG: Starting loadRegisteredUsers ===');
-      console.log('API URL:', apiUrl);
-      console.log('Member Dashboard API URL:', memberDashboardApi);
-      console.log('Timestamp:', new Date().toISOString());
-
-      // ใช้วิธีเดียวกับ midnight-party.html - fetch() ธรรมดา
-      Promise.all([
-        fetch(apiUrl).then(res => {
-          if (!res.ok) {
-            throw new Error(`HTTP error! status: ${res.status}`);
-          }
-          return res.json();
-        }).catch(err => {
-          console.error('❌ Error fetching API:', err);
-          return { participants: [], error: err.toString() };
-        }),
-        fetch(memberDashboardApi).then(res => {
-          if (!res.ok) {
-            console.warn('⚠️ Member dashboard API error:', res.status);
-            return [];
-          }
-          return res.json();
-        }).catch(err => {
-          console.warn('⚠️ Error fetching member dashboard:', err);
-          return [];
-        }),
-        db.collection('public_payments').get().then(snapshot => snapshot.docs.map(doc => doc.data())).catch(err => [])
-      ]).then(([data, members, payments]) => {
-        // สร้าง map phone -> payment
-        const paymentMap = {};
-        payments.forEach(p => {
-          if (p.phoneNumber) {
-            const cleanPhone = String(p.phoneNumber).replace(/[^\d]/g, "");
-            paymentMap[cleanPhone] = p;
-          }
-        });
-        window.paymentMap = paymentMap;
-        // ตรวจสอบว่า data ถูกต้องหรือไม่
-        if (!data) {
-          console.error('❌ No data received');
-          showFallbackData(container);
-          return;
-        }
-
-        if (data.error) {
-          console.error('❌ API returned error:', data.error);
-          showFallbackData(container);
-          return;
-        }
-
-        if (!data.participants || !Array.isArray(data.participants)) {
-          console.error('❌ No participants array in data:', data);
-          showFallbackData(container);
-          return;
-        }
-
-        // สร้าง map เบอร์โทร -> {codename, rank}
-        console.log('=== Creating phone map from members ===');
-        const phoneMap = {};
-        if (members && Array.isArray(members)) {
-          console.log('👥 Processing', members.length, 'members');
-          members.forEach((m, idx) => {
-            const phone = String(m.phone || '').replace(/[^\d]/g, "");
-            if (phone) {
-              phoneMap[phone] = {
-                codename: m.codename || '',
-                rank: m.rank || ''
-              };
-            }
-            if (idx < 3) {
-              console.log(`👤 Member ${idx}:`, {
-                phone: m.phone,
-                cleaned: phone,
-                codename: m.codename,
-                rank: m.rank
-              });
-            }
-          });
-        } else {
-          console.warn('⚠️ Members is not an array:', members);
-        }
-
-        console.log('📱 Phone map created with', Object.keys(phoneMap).length, 'entries');
-        console.log('📱 Sample phone keys:', Object.keys(phoneMap).slice(0, 5));
-
-        // อัปเดต codename ในข้อมูลผู้ลงทะเบียน
-        if (data.participants && Array.isArray(data.participants)) {
-          console.log('=== Processing', data.participants.length, 'participants ===');
-          if (data.participants.length > 0) {
-            console.log('📝 First participant all columns:', Object.keys(data.participants[0]));
-            console.log('📝 First participant sample:', JSON.stringify(data.participants[0], null, 2).substring(0, 500));
-          }
-
-          data.participants.forEach((participant, index) => {
-            // ใช้เบอร์โทรจาก column D (เบอร์ติดต่อ)
-            const originalPhone = participant['เบอร์ติดต่อ (0xx-xxx-xxxx)'] ||
-              participant['เบอร์ติดต่อ'] ||
-              participant['เบอร์โทร'] ||
-              participant['Phone'] ||
-              participant['phone'] ||
-              participant.phone ||
-              '';
-            const phone = String(originalPhone).replace(/[^\d]/g, "");
-
-            if (index < 3) {
-              console.log(`👤 Participant ${index}:`, {
-                originalPhone: originalPhone,
-                cleanedPhone: phone,
-                foundInMap: !!phoneMap[phone],
-                codename: phoneMap[phone]?.codename || 'ไม่พบ',
-                rank: phoneMap[phone]?.rank || 'ไม่พบ',
-                allColumns: Object.keys(participant)
-              });
-            }
-
-            if (phoneMap[phone]) {
-              participant.codename = phoneMap[phone].codename;
-              participant.rank = phoneMap[phone].rank;
-            }
-          });
-
-          // แปลงข้อมูลให้ตรงกับที่ displayUsers คาดหวัง
-          console.log('=== Converting participants data ===');
-          const convertedData = {
-            users: data.participants.map((p, idx) => {
-              // ใช้ชื่อเล่นจาก column C
-              const nickname = p['ชื่อเล่น'] || p['ชื่อ - นามสกุล'] || 'ไม่ระบุชื่อ';
-
-              // ใช้เบอร์โทรจาก column D
-              const phone = p['เบอร์ติดต่อ (0xx-xxx-xxxx)'] || p['เบอร์ติดต่อ'] || p['เบอร์โทร'] || p['Phone'] || p['phone'] || p.phone || '';
-
-              // ใช้ฟังก์ชัน extractBoxCount เพื่อดึงจำนวน Box อย่างถูกต้อง
-              let boxes = extractBoxCount(p);
-              let boxData = String(boxes);
-
-              // ใช้ข้อมูล Spot - อาจจะต้องคำนวณจากจำนวนที่ต้องการ
-              // ตัด Spot ออกแล้ว
-              let spots = 0;
-
-              // ดึงข้อมูล promo cards จาก participant
-              let promoCards = [];
-              if (p.promoCards && Array.isArray(p.promoCards)) {
-                promoCards = p.promoCards;
-              } else if (p.promoPacks && p.promoPacks > 0) {
-                // ถ้ายังไม่มี promoCards แต่มี promoPacks ให้คำนวณใหม่
-                const promoPacks = Math.floor(boxes / 2);
-                if (promoPacks > 0) {
-                  // สุ่มการ์ดโปรโม (ใช้ phone + index เป็น seed)
-                  for (let pIdx = 0; pIdx < promoPacks; pIdx++) {
-                    const cardIndex = (phone.length + pIdx) % 4;
-                    promoCards.push({
-                      number: ['047', '048', '049', '050'][cardIndex],
-                      imageUrl: `https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_MPromo_${['047', '048', '049', '050'][cardIndex]}.png`
-                    });
-                  }
-                }
-              }
-
-              // Debug logging สำหรับ 3 รายการแรก
-              if (idx < 3) {
-                console.log(`👤 Converting User ${idx} (${nickname}):`, {
-                  boxData: boxData,
-                  boxes: boxes,
-                  spots: spots,
-                  promoCards: promoCards.length,
-                  codename: p.codename || 'ไม่ระบุ',
-                  rank: p.rank || '',
-                  availableColumns: Object.keys(p).slice(0, 10)
-                });
-              }
-
-              return {
-                nickname: nickname,
-                phone: phone,
-                boxes: boxes,
-                spots: spots,
-                promoCards: promoCards,
-                codename: p.codename || 'ไม่ระบุ',
-                rank: p.rank || '',
-                // Column G: ถ้าเขียนว่า "มาร่วมงาน" = มาได้, ถ้าไม่ใช่ = ไม่มา
-                attendingParty: p['มาร่วมงานไหม'] || p['มาร่วมงาน Midnight Party'] || p['มาร่วมงาน Midnight Party หรือไม่'] || p['เข้าร่วมงาน'] || ''
-              };
-            }),
-            total: data.participants.length,
-            totalBoxes: data.participants.reduce((sum, p) => sum + extractBoxCount(p), 0),
-            totalSpots: 0 // จะเพิ่มเมื่อมีข้อมูล Spot
-          };
-
-          console.log('=== Conversion Summary ===');
-          console.log('📊 Total users after conversion:', convertedData.users.length);
-          console.log('📊 Total boxes:', convertedData.totalBoxes);
-          console.log('📊 Total spots:', convertedData.totalSpots);
-          console.log('📊 Sample converted users (first 3):', convertedData.users.slice(0, 3));
-
-          displayUsers(convertedData);
-        }
-      }).catch(error => {
-        console.error('❌ Fetch error:', error);
-        console.error('❌ Error details:', error.stack || error.toString());
-        showFallbackData(container);
-      });
+    
+    // ตรวจสอบ response
+    if (response.getResponseCode() === 200) {
+      console.log("✅ ส่งการแจ้งเตือน MA3 Pre-order ไปยัง Telegram สำเร็จ");
+    } else {
+      console.warn("⚠️ Telegram API response:", response.getResponseCode(), response.getContentText());
     }
+    
+    // ล้าง Cache เพื่อให้ข้อมูลอัปเดตทันที
+    invalidateCache();
+    
+  } catch (error) {
+    console.error("❌ เกิดข้อผิดพลาดในการส่งแจ้งเตือน Telegram:", error);
+    console.error("❌ Error details:", error.toString());
+    // ไม่ throw error เพื่อไม่ให้กระทบกับการบันทึกข้อมูลใน Google Sheet
+  }
+}
 
-    function showFallbackData(container) {
-      console.log('⚠️ ========== showFallbackData called ==========');
-      console.log('⚠️ Container element:', container);
-      console.log('⚠️ This means data could not be loaded');
+/**
+ * ฟังก์ชันทดสอบการส่งไปยัง Telegram
+ */
+function testTelegramNotification() {
+  const testData = {
+    values: [
+      new Date().toLocaleString('th-TH'),
+      "ผู้ทดสอบ MA3",
+      "ทดสอบ",
+      "0812345678",
+      "2 BOX",
+      "",
+      "ใช่"
+    ]
+  };
+  
+  onFormSubmit(testData);
+  console.log("🧪 ส่งการทดสอบ MA3 Pre-order ไปยัง Telegram แล้ว");
+}
 
-      // อัปเดตสถิติเป็น 0
-      const totalUsersEl = document.getElementById('totalUsers');
-      const totalBoxesEl = document.getElementById('totalBoxes');
-      // const totalSpotsEl = document.getElementById('totalSpots'); // เอา Spot ออก
-
-      console.log('📊 Updating stats to 0');
-      console.log('📊 totalUsers element:', totalUsersEl);
-      console.log('📊 totalBoxes element:', totalBoxesEl);
-      // console.log('📊 totalSpots element:', totalSpotsEl);
-
-      if (totalUsersEl) totalUsersEl.textContent = '0';
-      if (totalBoxesEl) totalBoxesEl.textContent = '0';
-      // if (totalSpotsEl) totalSpotsEl.textContent = '0';
-
-      // แสดงข้อความแจ้งเตือน
-      let errorMessage = '<div class="error-message">';
-      errorMessage += '⚠️ <strong>ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้</strong><br><br>';
-      errorMessage += '📌 <strong>สาเหตุ:</strong> Google Apps Script ยังไม่ได้ Deploy เป็น Web App หรือตั้งค่าไม่ถูกต้อง<br><br>';
-      errorMessage += '✅ <strong>วิธีแก้ไข (สำหรับ Admin):</strong><br>';
-      errorMessage += '   1. ไปที่ <a href="https://script.google.com" target="_blank" style="color: #ffd700;">Google Apps Script Editor</a><br>';
-      errorMessage += '   2. เปิด script "MA3 Preorder"<br>';
-      errorMessage += '   3. คลิก <strong>Deploy</strong> → <strong>Manage deployments</strong><br>';
-      errorMessage += '   4. คลิก <strong>Edit</strong> หรือ <strong>New deployment</strong><br>';
-      errorMessage += '   5. ตั้งค่า:<br>';
-      errorMessage += '      • Type: <strong>Web app</strong><br>';
-      errorMessage += '      • Execute as: <strong>Me</strong><br>';
-      errorMessage += '      • Who has access: <strong>Anyone</strong> (สำคัญมาก!)<br>';
-      errorMessage += '   6. คลิก <strong>Deploy</strong><br>';
-      errorMessage += '   7. Copy URL ใหม่และอัปเดตในโค้ด HTML (บรรทัดที่กำหนด apiUrl)<br><br>';
-      errorMessage += '💡 <strong>หมายเหตุ:</strong> หลังจาก Deploy แล้ว รอสักครู่แล้วรีเฟรชหน้านี้<br><br>';
-      errorMessage += '🔄 <button onclick="loadRegisteredUsers()" style="background:#6bcf7f;color:#fff;border:none;padding:0.5rem 1rem;border-radius:5px;cursor:pointer;font-weight:bold;">รีเฟรชข้อมูล</button>';
-      errorMessage += '</div>';
-      container.innerHTML = errorMessage;
-      console.log('⚠️ Fallback message displayed');
-    }
-
-    function displayUsers(data) {
-      console.log('=== displayUsers called ===');
-      console.log('📊 Input data:', data);
-      console.log('📊 data.users exists?', !!data.users);
-      console.log('📊 data.users length:', data.users ? data.users.length : 'N/A');
-
-      const container = document.getElementById('usersContainer');
-      console.log('📦 Container element:', container);
-
-      if (!data.users || data.users.length === 0) {
-        console.log('⚠️ No users to display');
-        // อัปเดตสถิติเป็น 0
-        document.getElementById('totalUsers').textContent = '0';
-        document.getElementById('totalBoxes').textContent = '0';
-        // document.getElementById('totalSpots').textContent = '0';
-        container.innerHTML = '<div class="loading">📝 ยังไม่มีผู้สั่งซื้อ</div>';
-        console.log('✅ Displayed "no users" message');
-        return;
+function doGet(e) {
+  try {
+    // Debug logging
+    var isDebug = e && e.parameter && e.parameter.debug === 'true';
+    var isJson = e && e.parameter && e.parameter.type === 'json';
+    var refresh = e && e.parameter && e.parameter.refresh === 'true';
+    
+    // 1. ตรวจสอบ Cache ก่อน (ถ้าไม่ได้ขอ refresh)
+    const cache = CacheService.getScriptCache();
+    const CACHE_KEY = 'ma3_preorder_data';
+    
+    if (!refresh && !isDebug) {
+      const cachedResult = cache.get(CACHE_KEY);
+      if (cachedResult) {
+        if (isJson) {
+          return ContentService.createTextOutput(cachedResult)
+            .setMimeType(ContentService.MimeType.JSON);
+        }
+        // ถ้าไม่ใช่ JSON request แต่มี cache (อาจจะต้อง parse กลับมาห่อใน createResponse ถ้าจำเป็น แต่ในที่นี้เราส่ง JSON string กลับไปเลยก็ได้ถ้า structure เหมือนกัน)
+        // เพื่อความชัวร์ ถ้าไม่ใช่ JSON request เราอาจจะข้าม cache ไปก่อน หรือ parse กลับมา
       }
+    }
 
-      console.log('📊 Processing', data.users.length, 'users');
+    if (isDebug) console.log('doGet function called');
+    
+    // ตรวจสอบว่า spreadsheet มีอยู่หรือไม่
+    var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+    
+    // ถ้าไม่พบ (กรณี Standalone Script) ให้ลองเปิดด้วย ID
+    if (!spreadsheet) {
+      try {
+        // ID จาก URL: https://docs.google.com/spreadsheets/d/1wi2OXnelj5D61E8Jv6wBN0RwCRbsQlgiWXnfGxrjlww/edit
+        spreadsheet = SpreadsheetApp.openById("1wi2OXnelj5D61E8Jv6wBN0RwCRbsQlgiWXnfGxrjlww");
+      } catch (e) {
+        console.error("Could not open spreadsheet by ID:", e);
+      }
+    }
 
-      // รวมข้อมูลของลูกค้าที่จองหลายครั้งเข้าด้วยกัน
-      // ใช้ชื่อเล่น/codename เป็น key เพื่อไม่นับซ้ำ (ถ้าซื้อเพิ่มทีหลังจะรวมกัน)
-      const userMap = {};
-      data.users.forEach(user => {
-        // ใช้ชื่อเล่นเป็น key หลัก แต่ถ้าไม่มีให้ใช้ codename
-        const nickname = (user.nickname || '').trim();
-        const codename = (user.codename || '').trim();
-        // ใช้ชื่อเล่นเป็น key แต่ถ้าไม่มีให้ใช้ codename หรือ phone
-        const key = nickname || codename || String(user.phone || '').replace(/[^\d]/g, "");
-
-        if (userMap[key]) {
-          // รวมข้อมูลการจอง (ถ้าซื้อเพิ่มทีหลัง)
-          userMap[key].boxes += user.boxes || 0;
-          userMap[key].spots += user.spots || 0;
-          // รวม promo cards
-          if (user.promoCards && Array.isArray(user.promoCards)) {
-            userMap[key].promoCards = (userMap[key].promoCards || []).concat(user.promoCards);
-          }
-          // อัปเดต codename ถ้ายังไม่มี
-          if (!userMap[key].codename && codename) {
-            userMap[key].codename = codename;
-            userMap[key].rank = user.rank;
-          }
-          // อัปเดต attendingParty ถ้ายังไม่มีหรือถ้าใหม่เป็น "มาร่วมงาน"
-          const newAttendingPartyText = (user.attendingParty || '').trim();
-          const newAttending = newAttendingPartyText === 'มาร่วมงาน' || newAttendingPartyText.toLowerCase().includes('มาร่วมงาน');
-          if (newAttending) {
-            userMap[key].attendingParty = user.attendingParty;
-          }
-          // เก็บเบอร์โทรไว้เช็ค payment (ใช้เบอร์แรกที่เจอ)
-          if (!userMap[key].phone && user.phone) {
-            userMap[key].phone = user.phone;
-          }
-        } else {
-          // สร้างข้อมูลใหม่
-          userMap[key] = {
-            nickname: nickname || 'ไม่ระบุชื่อ',
-            codename: codename || '',
-            rank: user.rank || '',
-            boxes: user.boxes || 0,
-            spots: user.spots || 0,
-            promoCards: user.promoCards || [],
-            phone: user.phone || '',
-            attendingParty: user.attendingParty || ''
-          };
-        }
+    if (!spreadsheet) {
+      if (isDebug) console.log('No active spreadsheet found');
+      const errorResult = JSON.stringify({ 
+        participants: [],
+        error: "No active spreadsheet found"
       });
-
-      // แปลงเป็น array และเรียงลำดับตามชื่อ
-      const uniqueUsers = Object.values(userMap).sort((a, b) => a.nickname.localeCompare(b.nickname));
-
-      // อัปเดตสถิติด้วยข้อมูลที่รวมแล้ว
-      const totalUniqueUsers = uniqueUsers.length;
-      const totalBoxes = uniqueUsers.reduce((sum, user) => sum + user.boxes, 0);
-      const totalSpots = uniqueUsers.reduce((sum, user) => sum + user.spots, 0);
-
-      console.log('📊 Stats to display:');
-      console.log('📊 Unique users:', totalUniqueUsers);
-      console.log('📊 Total boxes:', totalBoxes);
-      console.log('📊 Total spots:', totalSpots);
-
-      document.getElementById('totalUsers').textContent = totalUniqueUsers;
-      document.getElementById('totalBoxes').textContent = totalBoxes;
-      // document.getElementById('totalSpots').textContent = totalSpots;
-
-      console.log('✅ Stats updated in DOM');
-
-      // สร้างตารางแสดงข้อมูล
-      // แสดงเฉพาะ: ชื่อเล่น/codename และมาร่วมงาน Midnight Party หรือไม่
-      let html = '<table style="width:100%; border-collapse:collapse; margin:1rem auto; background:#fff; border-radius:12px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.1); max-width:900px;">';
-      html += '<thead><tr style="background: linear-gradient(45deg, #ffd700, #ffaa00); box-shadow: 0 2px 10px rgba(255, 215, 0, 0.3);">';
-      html += '<th style="padding:12px 8px; text-align:center; color:#1a0f00; font-weight:bold; font-size:1.05em; width:60px; text-shadow: 0 1px 2px rgba(255,255,255,0.3);">ลำดับ</th>';
-      html += '<th style="padding:12px 8px; text-align:center; color:#1a0f00; font-weight:bold; font-size:1.05em; text-shadow: 0 1px 2px rgba(255,255,255,0.3);">ชื่อเล่น / Codename</th>';
-      html += '<th style="padding:12px 8px; text-align:center; color:#1a0f00; font-weight:bold; font-size:1.05em; width:120px; text-shadow: 0 1px 2px rgba(255,255,255,0.3);">Midnight Party</th>';
-      html += '<th style="padding:12px 8px; text-align:center; color:#1a0f00; font-weight:bold; font-size:1.05em; width:100px; text-shadow: 0 1px 2px rgba(255,255,255,0.3);">การชำระเงิน</th>';
-      html += '</tr></thead><tbody>';
-
-      uniqueUsers.forEach((user, index) => {
-        html += `<tr style="border-bottom:1px solid #ddd;">`;
-        html += `<td style="padding:10px 8px; text-align:center; color:#2c3e50; font-weight:bold;">${index + 1}</td>`;
-
-        // แสดงชื่อเล่นและ codename ในคอลัมน์เดียวกัน
-        let displayName = user.nickname || 'ไม่ระบุชื่อ';
-        if (displayName.length > 15) {
-          displayName = displayName.substring(0, 15) + '...';
-        }
-
-        // แสดง codename ใต้ชื่อเล่น
-        let codenameDisplay = '';
-        if (user.codename && user.codename !== 'ไม่ระบุ') {
-          const rank = user.rank || '';
-          const rankEmoji = getRankEmoji(rank);
-          let displayCodename = user.codename;
-          if (displayCodename.length > 8) {
-            displayCodename = displayCodename.substring(0, 8) + '...';
-          }
-
-          // ใช้ renderCodenameEffect เหมือน midnight-party.html
-          const codenameHtml = renderCodenameEffect(displayCodename, rank);
-          codenameDisplay = `<br><span class="codename-rank" data-rank="${rank}" style="font-size:0.85em;"><span>${rankEmoji}</span> ${codenameHtml} <span>${rankEmoji}</span></span>`;
-        }
-
-        html += `<td style="padding:12px 8px; text-align:center; color:#2c3e50; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:300px;">${displayName}${codenameDisplay}</td>`;
-
-        // Column G: ถ้าเขียนว่า "มาร่วมงาน" = มาได้, ถ้าไม่ใช่ = ไม่มา
-        const attendingPartyText = (user.attendingParty || '').trim();
-        const attending = attendingPartyText === 'มาร่วมงาน' || attendingPartyText.toLowerCase().includes('มาร่วมงาน');
-        html += `<td style="padding:12px 8px; text-align:center; color:#2c3e50; font-size:0.9em; font-weight:600;">${attending ? '✅' : '❌'}</td>`;
-
-        // ตรวจสอบ Payment
-        let paymentStatus = '';
-        const cleanPhone = String(user.phone || '').replace(/[^\d]/g, "");
-        if (cleanPhone && window.paymentMap && window.paymentMap[cleanPhone]) {
-          paymentStatus = '✅ โอนแล้ว';
-        } else if (user.paid) { // เผื่อมี column paid ในชีท
-          paymentStatus = '✅ โอนแล้ว';
-        }
-        html += `<td style="padding:12px 8px; text-align:center; color:#4caf50; font-size:0.9em; font-weight:bold;">${paymentStatus}</td>`;
-
-        html += '</tr>';
+      if (isJson) {
+        return ContentService.createTextOutput(errorResult).setMimeType(ContentService.MimeType.JSON);
+      }
+      return createResponse(JSON.parse(errorResult));
+    }
+    
+    // ลองหา sheet ที่มีข้อมูล - อ่านจาก Sheet1 ก่อน
+    var targetSheet = null;
+    var sheetNames = ['Sheet1', 'Form Responses 1', 'Form Responses', 'Responses'];
+    
+    for (var i = 0; i < sheetNames.length; i++) {
+      var sheet = spreadsheet.getSheetByName(sheetNames[i]);
+      if (sheet) {
+        targetSheet = sheet;
+        if (isDebug) console.log('Found sheet:', sheetNames[i]);
+        break;
+      }
+    }
+    
+    if (!targetSheet) {
+      const errorResult = JSON.stringify({ 
+        participants: [],
+        error: "No suitable sheet found. Available sheets: " + spreadsheet.getSheets().map(s => s.getName()).join(', ')
       });
-
-      html += '</tbody></table>';
-      container.innerHTML = html;
-      console.log('✅ Table HTML generated and inserted');
-      console.log('✅ displayUsers completed');
+      if (isJson) {
+        return ContentService.createTextOutput(errorResult).setMimeType(ContentService.MimeType.JSON);
+      }
+      return createResponse(JSON.parse(errorResult));
     }
-
-    // Rank emoji map
-    const rankEmojis = {
-      "Rookie": "🐣", "Rookie II": "🐣", "Rookie III": "🐣", "Rookie IV": "🐣", "Rookie V": "🐣",
-      "Bronze": "🛡️", "Bronze II": "🛡️", "Bronze III": "🛡️", "Bronze IV": "🛡️", "Bronze V": "🛡️",
-      "Silver": "⚔️", "Silver II": "⚔️", "Silver III": "⚔️", "Silver IV": "⚔️", "Silver V": "⚔️",
-      "Gold": "🥇", "Gold II": "🥇", "Gold III": "🥇", "Gold IV": "🥇", "Gold V": "🥇",
-      "Platinum": "✨", "Platinum II": "✨", "Platinum III": "✨", "Platinum IV": "✨", "Platinum V": "✨",
-      "Diamond": "💎", "Diamond II": "💎", "Diamond III": "💎", "Diamond IV": "💎", "Diamond V": "💎",
-      "Grandmaster": "👑", "Grandmaster II": "👑", "Grandmaster III": "👑", "Grandmaster IV": "👑", "Grandmaster V": "👑",
-      "Legend": "🐉", "Legend II": "🐉", "Legend III": "🐉", "Legend IV": "🐉", "Legend V": "🐉"
-    };
-
-    function getBaseRank(rank) {
-      if (!rank) return "Rookie";
-      const baseRank = rank.replace(/\s+(II|III|IV|V|VI|VII|VIII|IX|X|\d+)$/, '');
-      return baseRank || "Rookie";
+    
+    var data = targetSheet.getDataRange().getValues();
+    
+    if (data.length <= 1) {
+      const errorResult = JSON.stringify({ 
+        participants: [],
+        error: "No data rows found in sheet: " + targetSheet.getName()
+      });
+      if (isJson) {
+        return ContentService.createTextOutput(errorResult).setMimeType(ContentService.MimeType.JSON);
+      }
+      return createResponse(JSON.parse(errorResult));
     }
-
-    function getRankEmoji(rank) {
-      if (!rank) return rankEmojis["Rookie"] || "🐣";
-      if (rankEmojis[rank]) return rankEmojis[rank];
-      const baseRank = getBaseRank(rank);
-      return rankEmojis[baseRank] || rankEmojis["Rookie"] || "🐣";
-    }
-
-    // ฟังก์ชัน renderCodenameEffect เหมือน midnight-party.html
-    function renderCodenameEffect(codename, rank) {
-      const chars = ['[', ...codename.split(''), ']'];
-      const waveRanks = ['Gold', 'Platinum', 'Diamond', 'Grandmaster', 'Legend'];
-      const baseRank = getBaseRank(rank);
-      if (waveRanks.includes(baseRank)) {
-        // wave + class ตาม rank, ใส่วงเล็บเหลี่ยมขยับด้วย
-        return `<span class="codename wave ${baseRank.toLowerCase()}">${chars.map((ch, i) => `<span>${ch}</span>`).join('')}</span>`;
+    
+    var headers = data[0];
+    var participants = [];
+    
+    // สร้างข้อมูลผู้ใช้ในรูปแบบเดียวกับ midnight-party script
+    for (var i = 1; i < data.length; i++) {
+      var row = data[i];
+      var participant = {};
+      
+      // สร้าง object โดยใช้ชื่อ column เป็น key
+      for (var j = 0; j < headers.length; j++) {
+        var header = headers[j];
+        var value = row[j];
+        participant[header] = (value === null || value === undefined) ? '' : value;
+      }
+      
+      // ดึงข้อมูล Slip URL จาก Column I (Index 8)
+      var slipUrl = '';
+      if (row.length > 8) {
+        var rawSlip = row[8];
+        // เช็คว่าเป็น URL หรือไม่ (Google Forms มักจะเป็น https://drive.google.com/...)
+        if (rawSlip && typeof rawSlip === 'string' && rawSlip.includes('http')) {
+           slipUrl = rawSlip;
+        }
+      }
+      participant.slipUrl = slipUrl;
+      
+      // ใช้ Column J (จำนวน box) โดยตรง - แปลงเป็นตัวเลขเรียบร้อยแล้ว
+      var boxes = 0;
+      var boxColumnJ = null;
+      
+      // ลองหา Column J โดยใช้ index ก่อน (Column J = index 9)
+      if (row.length > 9) {
+        boxColumnJ = row[9];
+      }
+      
+      // ถ้าไม่มีให้ลองหาโดยชื่อ column จาก header
+      if (boxColumnJ === null || boxColumnJ === undefined || boxColumnJ === '') {
+        boxColumnJ = participant['จำนวน box'] || participant['จำนวน Box'] || participant['จำนวน box '] || '';
+      }
+      
+      // ถ้า Column J เป็นตัวเลขให้ใช้เลย
+      if (typeof boxColumnJ === 'number') {
+        boxes = boxColumnJ;
+      } else if (boxColumnJ !== null && boxColumnJ !== undefined && boxColumnJ !== '') {
+        // ลองแปลงเป็นตัวเลข
+        if (typeof boxColumnJ === 'string') {
+          var numValue = parseFloat(boxColumnJ.toString().trim());
+          if (!isNaN(numValue) && isFinite(numValue)) {
+            boxes = numValue;
+          } else {
+            // ถ้าแปลงไม่ได้ให้ลอง parse จาก Column E (backup)
+            var boxData = participant['จำนวน'] || 
+                         participant['จำนวนที่ต้องการสั่งซื้อ (1 BOX = 1,550 บาท, 1 C/)'] || 
+                         participant['จำนวนที่ต้องการสั่งซื้อ'] || '';
+            boxes = parseBoxQuantity(boxData);
+          }
+        }
       } else {
-        // ใส่วงเล็บเหลี่ยมธรรมดา
-        return `<span class="codename">[${codename}]</span>`;
+        // ถ้า Column J ว่างให้ลอง parse จาก Column E (backup)
+        var boxData = participant['จำนวน'] || 
+                     participant['จำนวนที่ต้องการสั่งซื้อ (1 BOX = 1,550 บาท, 1 C/)'] || 
+                     participant['จำนวนที่ต้องการสั่งซื้อ'] || '';
+        boxes = parseBoxQuantity(boxData);
       }
-    }
-
-
-    // ฟังก์ชันเปิด Modal การ์ดโปรโม
-    function openPromoCardModal(imageUrl) {
-      const modal = document.getElementById('promoCardModal');
-      const modalImage = document.getElementById('promoCardModalImage');
-      if (modal && modalImage) {
-        modalImage.src = imageUrl;
-        modal.style.display = 'block';
-        document.body.style.overflow = 'hidden'; // ป้องกัน scroll เมื่อเปิด modal
-      }
-    }
-
-    // ฟังก์ชันปิด Modal การ์ดโปรโม
-    function closePromoCardModal() {
-      const modal = document.getElementById('promoCardModal');
-      if (modal) {
-        modal.style.display = 'none';
-        document.body.style.overflow = 'auto'; // เปิด scroll กลับมา
-      }
-    }
-
-    // ปิด Modal เมื่อคลิกนอกภาพ
-    document.addEventListener('DOMContentLoaded', function () {
-      const modal = document.getElementById('promoCardModal');
-      if (modal) {
-        modal.addEventListener('click', function (event) {
-          if (event.target === modal) {
-            closePromoCardModal();
-          }
-        });
-      }
-
-      // ปิด Modal ด้วยปุ่ม Escape
-      document.addEventListener('keydown', function (event) {
-        if (event.key === 'Escape') {
-          closePromoCardModal();
+      
+      var promoPacks = calculatePromoPacks(boxes);
+      
+      // สุ่มการ์ดโปรโมสำหรับแต่ละ pack
+      participant.boxes = boxes;
+      participant.promoPacks = promoPacks;
+      participant.promoCards = [];
+      
+      if (promoPacks > 0) {
+        var phone = participant['เบอร์ติดต่อ (0xx-xxx-xxxx)'] || 
+                   participant['เบอร์ติดต่อ'] || 
+                   participant['เบอร์โทร'] || '';
+        var timestamp = participant['Timestamp'] || participant['Timestamp'] || row[0] || '';
+        
+        // สุ่มการ์ดสำหรับแต่ละ pack (ใช้ phone + pack index เป็น seed)
+        for (var p = 0; p < promoPacks; p++) {
+          var card = getRandomPromoCard(phone + '_' + p, timestamp);
+          participant.promoCards.push(card);
         }
-      });
+      }
+      
+      participants.push(participant);
+    }
+    
+    var result = {
+      participants: participants,
+      debug: isDebug ? {
+        sheetName: targetSheet.getName(),
+        headers: headers,
+        message: "Data loaded successfully from sheet",
+        totalRows: data.length,
+        totalParticipants: participants.length
+      } : undefined
+    };
+    
+    // 2. บันทึกลง Cache (เก็บเป็น JSON String) - นาน 10 นาที (600 วินาที)
+    if (!isDebug) {
+      cache.put(CACHE_KEY, JSON.stringify(result), 600);
+    }
+    
+    // ถ้ามี type=json ให้ใช้ ContentService ตรงๆ
+    if (isJson) {
+      return ContentService.createTextOutput(JSON.stringify(result))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    return createResponse(result);
+    
+  } catch (error) {
+    console.error('Error in doGet:', error);
+    var isJson = e && e.parameter && e.parameter.type === 'json';
+    const errorResponse = JSON.stringify({
+      participants: [],
+      error: error.toString(),
+      stack: error.stack || '',
+      debug: {
+        message: "Error occurred while processing data",
+        timestamp: new Date().toISOString()
+      }
     });
-  </script>
-</body>
+    
+    if (isJson) {
+      return ContentService.createTextOutput(errorResponse).setMimeType(ContentService.MimeType.JSON);
+    }
+    return createResponse(JSON.parse(errorResponse));
+  }
+}
 
-</html>
+/**
+ * ล้าง Cache เมื่อมีการอัปเดตข้อมูล
+ */
+function invalidateCache() {
+  try {
+    const cache = CacheService.getScriptCache();
+    cache.remove('ma3_preorder_data');
+    console.log("🧹 Cache invalidated successfully");
+  } catch (e) {
+    console.error("❌ Failed to invalidate cache:", e);
+  }
+}
+
+function createResponse(data) {
+  var response = ContentService.createTextOutput(JSON.stringify(data));
+  response.setMimeType(ContentService.MimeType.JSON);
+  
+  // เพิ่ม CORS headers เพื่อแก้ปัญหา CORS error
+  // Google Apps Script ไม่รองรับการตั้งค่า headers โดยตรง
+  // แต่สามารถใช้วิธีนี้ได้ในบางกรณี
+  return response;
+}
+
+function doPost(e) {
+  // POST request ควรจะทำงานเหมือน GET สำหรับ API นี้
+  // แต่สามารถใช้ e.postData เพื่อรับข้อมูลจาก POST body ได้
+  return doGet(e);
+}
+
+// ฟังก์ชันทดสอบ
+function testFunction() {
+  console.log('Test function called');
+  return 'Test successful';
+}
