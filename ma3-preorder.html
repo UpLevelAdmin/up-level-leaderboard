@@ -1763,8 +1763,9 @@
               // ใช้เบอร์โทรจาก column D
               const phone = p['เบอร์ติดต่อ (0xx-xxx-xxxx)'] || p['เบอร์ติดต่อ'] || p['เบอร์โทร'] || p['Phone'] || p['phone'] || p.phone || '';
 
-              // ใช้ฟังก์ชัน extractBoxCount เพื่อดึงจำนวน Box อย่างถูกต้อง
-              let boxes = extractBoxCount(p);
+              // ใช้จำนวน Box ที่คำนวณจาก Server (Column J) เป็นหลัก
+              // ถ้าไม่มีค่อยใช้ extractBoxCount เป็น fallback
+              let boxes = (typeof p.boxes === 'number') ? p.boxes : extractBoxCount(p);
               let boxData = String(boxes);
 
               // ใช้ข้อมูล Spot - อาจจะต้องคำนวณจากจำนวนที่ต้องการ
