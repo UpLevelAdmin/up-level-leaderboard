@@ -1,61 +1,36 @@
 <!DOCTYPE html>
 <html lang="th">
-  <head>
-    <meta charset="UTF-8">
-    <title>รายชื่อผู้สมัคร Up Level Great Ball League</title>
-    <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Prompt:wght@300;400;500;600;700&family=Chonburi&display=swap" rel="stylesheet">
+
+<head>
+  <meta charset="UTF-8">
+  <title>รายชื่อผู้สมัคร Up Level Great Ball League</title>
+  <link rel="stylesheet" href="style.css">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Prompt:wght@300;400;500;600;700&family=Chonburi&display=swap"
+    rel="stylesheet">
   <style>
     body {
-      background: linear-gradient(180deg, #e0f2fe 0%, #bae6fd 50%, #93c5fd 100%);
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
       min-height: 100vh;
       position: relative;
       overflow-x: hidden;
       font-family: 'Kanit', 'Prompt', sans-serif;
     }
-    
-    /* Snowflakes Animation */
-    .snowflake {
-      position: fixed;
-      top: -10px;
-      color: #ffffff;
-      font-size: 1em;
-      font-family: Arial;
-      text-shadow: 0 0 8px rgba(255,255,255,0.9), 0 0 15px rgba(200,220,255,0.6);
-      animation: fall linear infinite, sway 3s ease-in-out infinite;
-      pointer-events: none;
-      z-index: 1000;
-      user-select: none;
-    }
-    
-    @keyframes fall {
-      to {
-        transform: translateY(100vh) rotate(360deg);
-      }
-    }
-    
-    @keyframes sway {
-      0%, 100% {
-        transform: translateX(0);
-      }
-      50% {
-        transform: translateX(20px);
-      }
-    }
-    
+
     .gbl-container {
       max-width: 900px;
       margin: 32px auto;
       padding: 0 8px 32px 8px;
-      background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 30%, #81d4fa 60%, #4fc3f7 100%);
+      background: rgba(255, 255, 255, 0.9);
       border-radius: 20px;
-      box-shadow: 0 10px 40px rgba(79, 195, 247, 0.4), 0 0 20px rgba(255, 255, 255, 0.5);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1), 0 0 20px rgba(255, 255, 255, 0.5);
       color: #0d47a1;
       font-family: 'Kanit', sans-serif;
       position: relative;
-      border: 2px solid rgba(255, 255, 255, 0.6);
+      border: 1px solid rgba(255, 255, 255, 1);
       backdrop-filter: blur(10px);
     }
+
     .logo {
       display: flex;
       justify-content: center;
@@ -63,19 +38,22 @@
       margin-bottom: 16px;
       width: 100%;
     }
+
     .logo img {
       max-width: 120px;
       display: block;
       margin: 0 auto;
     }
+
     h2 {
       color: #0d47a1;
       text-align: center;
-      text-shadow: 2px 2px 8px rgba(255,255,255,0.8), 0 0 10px rgba(255,255,255,0.5);
+      text-shadow: 2px 2px 8px rgba(255, 255, 255, 0.8), 0 0 10px rgba(255, 255, 255, 0.5);
       font-weight: 700;
       font-size: 1.8em;
       font-family: 'Prompt', 'Kanit', sans-serif;
     }
+
     .register-btn {
       display: block;
       width: 100%;
@@ -95,6 +73,7 @@
       box-shadow: 0 6px 20px rgba(2, 119, 189, 0.4), 0 0 15px rgba(255, 255, 255, 0.3);
       font-family: 'Prompt', 'Kanit', sans-serif;
     }
+
     .register-btn:hover {
       background: linear-gradient(135deg, #039be5 0%, #0288d1 50%, #0277bd 100%);
       color: #fff;
@@ -102,9 +81,10 @@
       box-shadow: 0 8px 25px rgba(3, 155, 229, 0.5), 0 0 25px rgba(255, 255, 255, 0.5);
       border-color: rgba(255, 255, 255, 0.8);
     }
+
     .spinner {
       margin: 24px auto 8px auto;
-      border: 6px solid rgba(255,255,255,0.4);
+      border: 6px solid rgba(255, 255, 255, 0.4);
       border-top: 6px solid #0288d1;
       border-radius: 50%;
       width: 48px;
@@ -112,57 +92,242 @@
       animation: spin 1s linear infinite;
       box-shadow: 0 0 10px rgba(2, 136, 209, 0.3);
     }
+
     @keyframes spin {
-      0% { transform: rotate(0deg);}
-      100% { transform: rotate(360deg);}
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
     }
+
+    /* Card pack animation */
+    .floating-card-pack {
+      position: absolute;
+      width: 80px;
+      height: auto;
+      z-index: 20;
+      pointer-events: none;
+      opacity: 0.9;
+      animation: cuteShake 2s ease-in-out infinite;
+    }
+
+    .floating-card-pack:nth-of-type(1) {
+      top: 20px;
+      right: 20px;
+      animation-delay: 0s;
+    }
+
+    .floating-card-pack:nth-of-type(2) {
+      top: 20px;
+      left: 20px;
+      animation-delay: 0.3s;
+    }
+
+    @keyframes cuteShake {
+
+      0%,
+      100% {
+        transform: translate(0, 0) rotate(0deg) scale(1);
+      }
+
+      10% {
+        transform: translate(-3px, -2px) rotate(-3deg) scale(1.05);
+      }
+
+      20% {
+        transform: translate(3px, 2px) rotate(3deg) scale(1.02);
+      }
+
+      30% {
+        transform: translate(-2px, 3px) rotate(-2deg) scale(1.03);
+      }
+
+      40% {
+        transform: translate(2px, -3px) rotate(2deg) scale(1.04);
+      }
+
+      50% {
+        transform: translate(-1px, -1px) rotate(-1deg) scale(1.05);
+      }
+
+      60% {
+        transform: translate(1px, 2px) rotate(1deg) scale(1.03);
+      }
+
+      70% {
+        transform: translate(-2px, 1px) rotate(-2deg) scale(1.04);
+      }
+
+      80% {
+        transform: translate(2px, -2px) rotate(2deg) scale(1.02);
+      }
+
+      90% {
+        transform: translate(-1px, 1px) rotate(-1deg) scale(1.03);
+      }
+    }
+
     /* Codename rank styles with winter theme */
-    .codename-rank[data-rank="Rookie"]      .codename { color: #0277bd; font-size: 1.05em; font-weight: 500; }
-    .codename-rank[data-rank="Bronze"]      .codename { color: #0288d1; font-size: 1.08em; font-weight: 500; }
-    .codename-rank[data-rank="Silver"]      .codename { color: #039be5; font-size: 1.12em; font-weight: 500; }
-    .codename-rank[data-rank="Gold"]        .codename { color: #f57c00; font-size: 1.18em; font-weight: 600; }
-    .codename-rank[data-rank="Platinum"]    .codename { color: #0277bd; font-size: 1.22em; font-weight: 600; }
-    .codename-rank[data-rank="Diamond"]     .codename { color: #01579b; font-size: 1.28em; font-weight: 600; }
-    .codename-rank[data-rank="Grandmaster"] .codename { color: #014377; font-size: 1.35em; font-weight: 600; }
-    .codename-rank[data-rank="Legend"]      .codename { color: #002447; font-size: 1.45em; font-weight: 600; }
-    .codename-rank[data-rank="Gold"]        .codename,
-    .codename-rank[data-rank="Platinum"]    .codename,
-    .codename-rank[data-rank="Diamond"]     .codename,
+    .codename-rank[data-rank="Rookie"] .codename {
+      color: #0277bd;
+      font-size: 1.05em;
+      font-weight: 500;
+    }
+
+    .codename-rank[data-rank="Bronze"] .codename {
+      color: #0288d1;
+      font-size: 1.08em;
+      font-weight: 500;
+    }
+
+    .codename-rank[data-rank="Silver"] .codename {
+      color: #039be5;
+      font-size: 1.12em;
+      font-weight: 500;
+    }
+
+    .codename-rank[data-rank="Gold"] .codename {
+      color: #f57c00;
+      font-size: 1.18em;
+      font-weight: 600;
+    }
+
+    .codename-rank[data-rank="Platinum"] .codename {
+      color: #0277bd;
+      font-size: 1.22em;
+      font-weight: 600;
+    }
+
+    .codename-rank[data-rank="Diamond"] .codename {
+      color: #01579b;
+      font-size: 1.28em;
+      font-weight: 600;
+    }
+
+    .codename-rank[data-rank="Grandmaster"] .codename {
+      color: #014377;
+      font-size: 1.35em;
+      font-weight: 600;
+    }
+
+    .codename-rank[data-rank="Legend"] .codename {
+      color: #002447;
+      font-size: 1.45em;
+      font-weight: 600;
+    }
+
+    .codename-rank[data-rank="Gold"] .codename,
+    .codename-rank[data-rank="Platinum"] .codename,
+    .codename-rank[data-rank="Diamond"] .codename,
     .codename-rank[data-rank="Grandmaster"] .codename,
-    .codename-rank[data-rank="Legend"]      .codename {
+    .codename-rank[data-rank="Legend"] .codename {
       animation: blink 1s step-end infinite alternate;
     }
+
     @keyframes blink {
-      0%   { opacity: 1;   text-shadow: 0 0 8px #fff, 0 0 16px currentColor; }
-      100% { opacity: 0.6; text-shadow: 0 0 2px #fff, 0 0 4px currentColor; }
+      0% {
+        opacity: 1;
+        text-shadow: 0 0 8px #fff, 0 0 16px currentColor;
+      }
+
+      100% {
+        opacity: 0.6;
+        text-shadow: 0 0 2px #fff, 0 0 4px currentColor;
+      }
     }
+
     @keyframes wave {
-      0%, 100% { transform: translateY(0);}
-      20%      { transform: translateY(-5px);}
-      40%      { transform: translateY(-10px);}
-      60%      { transform: translateY(-5px);}
-      80%      { transform: translateY(0);}
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      20% {
+        transform: translateY(-5px);
+      }
+
+      40% {
+        transform: translateY(-10px);
+      }
+
+      60% {
+        transform: translateY(-5px);
+      }
+
+      80% {
+        transform: translateY(0);
+      }
     }
+
     .codename.wave span {
       display: inline-block;
-      animation: wave 1.2s cubic-bezier(0.4,0,0.2,1) infinite;
+      animation: wave 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
     }
-    .codename.wave.gold span { animation-duration: 1.2s; }
-    .codename.wave.platinum span { animation-duration: 1s; }
-    .codename.wave.diamond span { animation-duration: 0.85s; }
-    .codename.wave.grandmaster span { animation-duration: 0.7s; }
-    .codename.wave.legend span { animation-duration: 0.6s; }
-    .codename.wave span:nth-child(1) { animation-delay: 0s; }
-    .codename.wave span:nth-child(2) { animation-delay: 0.08s; }
-    .codename.wave span:nth-child(3) { animation-delay: 0.16s; }
-    .codename.wave span:nth-child(4) { animation-delay: 0.24s; }
-    .codename.wave span:nth-child(5) { animation-delay: 0.32s; }
-    .codename.wave span:nth-child(6) { animation-delay: 0.40s; }
-    .codename.wave span:nth-child(7) { animation-delay: 0.48s; }
-    .codename.wave span:nth-child(8) { animation-delay: 0.56s; }
-    .codename.wave span:nth-child(9) { animation-delay: 0.64s; }
-    .codename.wave span:nth-child(10){ animation-delay: 0.72s; }
-    
+
+    .codename.wave.gold span {
+      animation-duration: 1.2s;
+    }
+
+    .codename.wave.platinum span {
+      animation-duration: 1s;
+    }
+
+    .codename.wave.diamond span {
+      animation-duration: 0.85s;
+    }
+
+    .codename.wave.grandmaster span {
+      animation-duration: 0.7s;
+    }
+
+    .codename.wave.legend span {
+      animation-duration: 0.6s;
+    }
+
+    .codename.wave span:nth-child(1) {
+      animation-delay: 0s;
+    }
+
+    .codename.wave span:nth-child(2) {
+      animation-delay: 0.08s;
+    }
+
+    .codename.wave span:nth-child(3) {
+      animation-delay: 0.16s;
+    }
+
+    .codename.wave span:nth-child(4) {
+      animation-delay: 0.24s;
+    }
+
+    .codename.wave span:nth-child(5) {
+      animation-delay: 0.32s;
+    }
+
+    .codename.wave span:nth-child(6) {
+      animation-delay: 0.40s;
+    }
+
+    .codename.wave span:nth-child(7) {
+      animation-delay: 0.48s;
+    }
+
+    .codename.wave span:nth-child(8) {
+      animation-delay: 0.56s;
+    }
+
+    .codename.wave span:nth-child(9) {
+      animation-delay: 0.64s;
+    }
+
+    .codename.wave span:nth-child(10) {
+      animation-delay: 0.72s;
+    }
+
     .logo-section {
       display: flex;
       justify-content: center;
@@ -171,12 +336,12 @@
       margin-bottom: 20px;
       flex-wrap: wrap;
     }
-    
+
     .logo-section img {
       max-width: 120px;
       height: auto;
     }
-    
+
     .prizes-section {
       margin-top: 32px;
       padding: 24px;
@@ -185,26 +350,26 @@
       border: 2px solid rgba(255, 255, 255, 0.8);
       box-shadow: 0 8px 25px rgba(2, 136, 209, 0.2), inset 0 0 20px rgba(255, 255, 255, 0.5);
     }
-    
+
     .prizes-title {
       color: #01579b;
       text-align: center;
       font-size: 1.8em;
       font-weight: 700;
       margin-bottom: 30px;
-      text-shadow: 
-        2px 2px 4px rgba(255,255,255,0.8),
+      text-shadow:
+        2px 2px 4px rgba(255, 255, 255, 0.8),
         0 0 10px rgba(2, 136, 209, 0.3);
       font-family: 'Prompt', 'Kanit', sans-serif;
     }
-    
+
     .prizes-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 15px;
       margin-top: 20px;
     }
-    
+
     /* Modal for image zoom */
     .modal {
       display: none;
@@ -216,13 +381,13 @@
       height: 100%;
       background: rgba(0, 0, 0, 0.9);
     }
-    
+
     .modal.show {
       display: flex;
       align-items: center;
       justify-content: center;
     }
-    
+
     .modal-content {
       max-width: 90vw;
       max-height: 90vh;
@@ -232,11 +397,11 @@
       cursor: pointer;
       user-select: none;
     }
-    
+
     .modal-content:active {
       cursor: grabbing;
     }
-    
+
     .close {
       position: absolute;
       top: 20px;
@@ -246,8 +411,8 @@
       font-weight: bold;
       cursor: pointer;
       z-index: 1001;
-      text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
-      background: rgba(255,255,255,0.2);
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+      background: rgba(255, 255, 255, 0.2);
       border-radius: 50%;
       width: 60px;
       height: 60px;
@@ -257,14 +422,14 @@
       transition: all 0.3s ease;
       backdrop-filter: blur(5px);
     }
-    
+
     .close:hover,
     .close:focus {
       color: #ffffff;
-      background: rgba(255,255,255,0.3);
+      background: rgba(255, 255, 255, 0.3);
       transform: scale(1.1);
     }
-    
+
     .prize-item {
       text-align: center;
       padding: 0;
@@ -277,7 +442,7 @@
       flex-direction: column;
       align-items: center;
     }
-    
+
     .prize-item .card-wrapper {
       width: 200px;
       height: 280px;
@@ -291,7 +456,7 @@
       flex-shrink: 0;
       padding: 0;
     }
-    
+
     .prize-item img {
       width: 200px !important;
       height: 280px !important;
@@ -309,16 +474,16 @@
       margin: 0;
       padding: 0;
     }
-    
+
     .prize-item h4 {
       color: #0277bd;
       margin: 8px 0 4px 0;
       font-size: 1.4em;
       font-weight: 700;
-      text-shadow: 1px 1px 3px rgba(255,255,255,0.8);
+      text-shadow: 1px 1px 3px rgba(255, 255, 255, 0.8);
       font-family: 'Prompt', 'Kanit', sans-serif;
     }
-    
+
     .prize-item p {
       color: #01579b;
       font-size: 1em;
@@ -326,7 +491,7 @@
       line-height: 1.4;
       font-weight: 500;
     }
-    
+
     table {
       background: rgba(255, 255, 255, 0.4);
       border-radius: 12px;
@@ -335,47 +500,131 @@
       border: 2px solid rgba(255, 255, 255, 0.6);
       box-shadow: 0 4px 15px rgba(2, 136, 209, 0.2);
     }
-    
+
     th {
       background: linear-gradient(135deg, rgba(2, 136, 209, 0.3) 0%, rgba(1, 87, 155, 0.4) 100%);
       color: #01579b;
       font-weight: 700;
       font-size: 1.1em;
       padding: 12px 8px;
-      text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
+      text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
       font-family: 'Prompt', 'Kanit', sans-serif;
     }
-    
+
     td {
       color: #0277bd;
       border-bottom: 1px solid rgba(255, 255, 255, 0.3);
       padding: 10px 8px;
       font-weight: 500;
     }
-    
+
     tr:nth-child(even) td {
       color: #0288d1;
       background: rgba(255, 255, 255, 0.2);
     }
-    
+
     tr:nth-child(odd) td {
       color: #01579b;
       background: rgba(255, 255, 255, 0.3);
     }
+
+    /* Duo Wrapper for Door Gift */
+    .prize-item .duo-wrapper {
+      position: relative;
+      width: 200px;
+      height: 280px;
+      margin: 0 auto 15px auto;
+    }
+
+    .prize-item .duo-wrapper img {
+      position: absolute !important;
+      width: 150px !important;
+      height: auto !important;
+      min-width: 0 !important;
+      min-height: 0 !important;
+      max-width: none !important;
+      max-height: none !important;
+      border-radius: 8px;
+      box-shadow: 2px 4px 8px rgba(0, 0, 0, 0.2);
+      transition: all 0.3s ease;
+      top: auto;
+      bottom: auto;
+      left: auto;
+      right: auto;
+    }
+
+    .prize-item .duo-wrapper img.prize-card {
+      left: 10px;
+      top: 30px;
+      transform: rotate(-10deg);
+      z-index: 1;
+      width: 150px !important;
+      /* Override layout */
+    }
+
+    .prize-item .duo-wrapper img.prize-pack {
+      right: 5px;
+      bottom: 40px;
+      transform: rotate(10deg);
+      z-index: 2;
+      width: 110px !important;
+      /* Pack is usually narrower */
+    }
+
+    .prize-item .duo-wrapper:hover img.prize-card {
+      transform: rotate(-15deg) translateX(-15px) scale(1.05);
+      z-index: 3;
+    }
+
+    .prize-item .duo-wrapper:hover img.prize-pack {
+      transform: rotate(15deg) translateX(15px) scale(1.05);
+      z-index: 3;
+    }
   </style>
 </head>
+
 <body>
-  <div id="snowflakes"></div>
+  <a href="index.html" class="home-button" title="กลับหน้าหลัก"></a>
   <a href="index.html" class="home-button" title="กลับหน้าหลัก"></a>
   <div class="gbl-container">
+    <!-- Floating Card Packs -->
+    <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_ma3_pkg.png" alt="Card Pack"
+      class="floating-card-pack">
+    <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_ma3_pkg.png" alt="Card Pack"
+      class="floating-card-pack">
+
     <div class="logo-section">
       <img src="https://i.postimg.cc/wjzpnxjB/Up-Level-01-1.png" alt="Up Level Logo">
       <img src="https://i.postimg.cc/50nywLQq/GBL.png" alt="Great Ball League Logo">
     </div>
     <h2 style="text-align:center; margin-bottom: 24px;">รายชื่อผู้สมัคร Up Level Great Ball League</h2>
-    <div style="text-align:center; margin-bottom: 16px; font-size: 1.2em; color: #01579b; font-weight: 700; text-shadow: 2px 2px 6px rgba(255,255,255,0.8), 0 0 10px rgba(255,255,255,0.5); font-family: 'Prompt', 'Kanit', sans-serif;">❄️ แข่งขันวันที่ 14 ธันวาคม 2025 ❄️</div>
+    <div
+      style="text-align:center; margin-bottom: 16px; font-size: 1.2em; color: #01579b; font-weight: 700; text-shadow: 2px 2px 6px rgba(255,255,255,0.8), 0 0 10px rgba(255,255,255,0.5); font-family: 'Prompt', 'Kanit', sans-serif;">
+      🔥 แข่งขันวันที่ 22 กุมภาพันธ์ 2569 🔥</div>
     <div style="display: flex; justify-content: center; margin-bottom: 24px;">
-      <a class="register-btn" href="https://forms.gle/j8D3xVbrF5Hwnz5u9" target="_blank" style="text-align: center;">สมัครแข่งขัน Great Ball League</a>
+      <a class="register-btn" href="https://forms.gle/rdysGksjzPerCaqo8" target="_blank"
+        style="text-align: center;">สมัครแข่งขัน Great Ball League</a>
+    </div>
+
+    <!-- Details Section -->
+    <div class="event-details"
+      style="background: rgba(255,255,255,0.8); padding: 24px; border-radius: 16px; margin: 0 auto 24px auto; text-align: left; color: #01579b; border: 2px solid rgba(255,255,255,0.9); box-shadow: 0 4px 15px rgba(2, 136, 209, 0.15); max-width: 600px;">
+      <h3 style="text-align: center; margin-top: 0; margin-bottom: 16px; font-size: 1.4em;">📋 รายละเอียดการแข่งขัน</h3>
+      <div style="display: grid; grid-template-columns: auto 1fr; gap: 8px 16px; align-items: baseline;">
+        <strong style="text-align: right;">⏰ เวลา:</strong> <span>10:00–17:30 น.</span>
+        <strong style="text-align: right;">📍 สถานที่:</strong> <span>ร้าน Up Level Academy (ใกล้ MRT บางแค)</span>
+        <strong style="text-align: right;">💸 ค่าสมัคร:</strong> <span>200 บาท</span>
+        <strong style="text-align: right;">👥 รับ:</strong> <span>สูงสุด 64 คน (สมัครก่อนมีสิทธิ์ก่อน)</span>
+      </div>
+      <hr style="border: 0; border-top: 1px dashed #81d4fa; margin: 16px 0;">
+      <div style="font-weight: 600; margin-bottom: 8px;">🃏 รูปแบบการแข่งขัน (Standard Format)</div>
+      <ul style="padding-left: 20px; margin: 0; line-height: 1.6;">
+        <li>รอบคัดเลือก (Swiss): 6 รอบ (BO1, 25 นาที)</li>
+        <li>รอบตัดเชือก (Top Cut): Top 8 (BO1, 35 นาที)</li>
+      </ul>
+      <div style="margin-top: 16px; font-size: 0.9em; text-align: center; color: #0277bd;">
+        ⚠️ ต้องเตรียม Decklist ที่ถูกต้องมายื่นในวันงาน
+      </div>
     </div>
     <div id="gbl-list" style="text-align:center;">
       <div class="spinner"></div>
@@ -383,7 +632,7 @@
     </div>
   </div>
   <script>
-    const apiUrl = "https://script.google.com/macros/s/AKfycbxRtbq4D3AN2eU-AsoX4A79xHKqVjIvWXeuBp2ePceSqmEq0zNwFZVMOy4FJpXxxIfYog/exec";
+    const apiUrl = "https://script.google.com/macros/s/AKfycbzl0HcETbnPKfxnfiqZisd3woonnO2jRJHINCmSspsS4SneQxbaCiAn1PtqelWlTSs/exec";
     const memberDashboardApi = "https://script.google.com/macros/s/AKfycbxtjsDwHI6nJU4OIHExUxMaZwUn3qwakvdkzwbQO7C8Trzz5Gh84SX6F1gqb4BOFQcn/exec?func=getMemberDashboardData";
     // Rank emoji map (copy from gymbattle.html)
     const rankEmojis = {
@@ -407,7 +656,7 @@
       const waveRanks = ['Gold', 'Platinum', 'Diamond', 'Grandmaster', 'Legend'];
       const baseRank = getBaseRank(rank);
       if (waveRanks.includes(baseRank)) {
-        return `<span class="codename wave ${baseRank.toLowerCase()}">${chars.map((ch,i)=>`<span>${ch}</span>`).join('')}</span>`;
+        return `<span class="codename wave ${baseRank.toLowerCase()}">${chars.map((ch, i) => `<span>${ch}</span>`).join('')}</span>`;
       } else {
         return `<span class="codename" style="color: #0277bd;">[${codename}]</span>`;
       }
@@ -445,7 +694,7 @@
             rank = phoneMap[phone].rank || '';
           }
           let codenameHtml = codename ? `<span class="codename-rank" data-rank="${rank}">${getRankEmoji(rank)} ${renderCodenameEffect(codename, rank)} ${getRankEmoji(rank)}</span>` : '-';
-          html += `<tr><td>${idx+1}</td><td>${fullname}<br>${codenameHtml}</td><td>${level || '-'}</td></tr>`;
+          html += `<tr><td>${idx + 1}</td><td>${fullname}<br>${codenameHtml}</td><td>${level || '-'}</td></tr>`;
         });
         html += `</tbody></table>`;
       } else {
@@ -456,7 +705,7 @@
       console.error('Fetch error:', err);
       document.getElementById('gbl-list').innerHTML = '<div>เกิดข้อผิดพลาดในการโหลดข้อมูล</div>';
     });
-    
+
     // Simple modal function
     function openModal(imgSrc) {
       const modal = document.getElementById('imageModal');
@@ -464,86 +713,64 @@
       modal.classList.add('show');
       modalImg.src = imgSrc;
     }
-    
+
     function closeModal() {
       const modal = document.getElementById('imageModal');
       modal.classList.remove('show');
     }
-    
+
     // Close modal when clicking outside the image
-    document.getElementById('imageModal').addEventListener('click', function(e) {
+    document.getElementById('imageModal').addEventListener('click', function (e) {
       if (e.target === this) {
         closeModal();
       }
     });
-    
+
     // Close modal with Escape key
-    document.addEventListener('keydown', function(e) {
+    document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape') {
         closeModal();
       }
     });
-    
-    // Create snowflakes with better animation
-    const snowflakeSymbols = ['❄', '❅', '❆', '✻', '✼', '✽'];
-    
-    function createSnowflake() {
-      const snowflake = document.createElement('div');
-      snowflake.className = 'snowflake';
-      snowflake.innerHTML = snowflakeSymbols[Math.floor(Math.random() * snowflakeSymbols.length)];
-      snowflake.style.left = Math.random() * 100 + '%';
-      snowflake.style.opacity = Math.random() * 0.6 + 0.4;
-      snowflake.style.fontSize = Math.random() * 15 + 12 + 'px';
-      
-      const fallDuration = Math.random() * 4 + 3; // 3-7 seconds
-      const swayDuration = Math.random() * 2 + 2; // 2-4 seconds
-      
-      snowflake.style.animation = `fall ${fallDuration}s linear infinite, sway ${swayDuration}s ease-in-out infinite`;
-      snowflake.style.animationDelay = Math.random() * 2 + 's';
-      
-      document.getElementById('snowflakes').appendChild(snowflake);
-      
-      setTimeout(() => {
-        if (snowflake.parentNode) {
-          snowflake.remove();
-        }
-      }, (fallDuration + 2) * 1000);
-    }
-    
-    // Create snowflakes more frequently for better effect
-    setInterval(createSnowflake, 200);
-    
-    // Create initial snowflakes
-    for (let i = 0; i < 30; i++) {
-      setTimeout(() => createSnowflake(), i * 100);
-    }
+
   </script>
-  
+
   <!-- รางวัล Section -->
   <div class="prizes-section">
     <div class="prizes-title">🏆 รางวัลการแข่งขัน 🏆</div>
     <div class="prizes-grid">
       <div class="prize-item">
-        <div class="card-wrapper">
-          <img src="images/gbl/door-gift.png" alt="Door Gift" onclick="openModal(this.src)">
+        <div class="duo-wrapper">
+          <img class="prize-card" src="https://sg.portal-pokemon.com/images/0af7ca896753942d8154c9430afc6418.png"
+            alt="Door Gift Card" onclick="openModal(this.src)">
+          <img class="prize-pack"
+            src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_ma3_pkg.png"
+            alt="MA3 Booster Pack" onclick="openModal(this.src)">
         </div>
         <h4>🎁 Door Gift</h4>
-        <p>การ์ดโปรโม เมก้าซิกแนล - รางวัลสำหรับทุกคนที่ร่วมแข่งขัน</p>
+        <p>การ์ดโปรโม “ทูลสแครปเปอร์” 1 ใบ/คน</p>
+        <p style="font-size: 0.9em;">+ 1 Booster Pack (MA3)</p>
       </div>
       <div class="prize-item">
         <div class="card-wrapper">
-          <img src="images/gbl/finalist.png" alt="Finalist Prize" onclick="openModal(this.src)">
+          <img src="https://pacs.portal-pokemon.com/2025-26/img/gbl/gbl_1_top_placement_prize_th.png"
+            alt="Finalist Prize" onclick="openModal(this.src)">
         </div>
-        <h4>🥈 รางวัล Finalist</h4>
-        <p>รางวัลสำหรับผู้เข้ารอบสุดท้าย</p>
+        <h4>🏆 รางวัล & Top Cut</h4>
+        <p><strong>Top 4:</strong> Finalist Promo "เรชรัม ex"</p>
+        <div style="font-size: 0.9em; margin-top: 8px; line-height: 1.4;">
+          <p style="margin: 4px 0;">🥇 <strong>1st:</strong> Round 1 Bye (Ultra Ball) + 1 Box MA3</p>
+          <p style="margin: 4px 0;">🥈 <strong>2nd:</strong> Round 1 Bye (Ultra Ball)</p>
+        </div>
       </div>
     </div>
   </div>
-  
+
   <!-- Modal for image zoom -->
   <div id="imageModal" class="modal">
     <span class="close" onclick="closeModal()">&times;</span>
     <img class="modal-content" id="modalImage">
   </div>
 </body>
+
 </html>
