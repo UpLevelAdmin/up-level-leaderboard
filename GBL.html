@@ -531,7 +531,8 @@
     /* Duo Wrapper for Door Gift */
     .prize-item .duo-wrapper {
       position: relative;
-      width: 200px;
+      width: 260px;
+      /* Widen to minimize overlap */
       height: 280px;
       margin: 0 auto 15px auto;
     }
@@ -554,31 +555,35 @@
     }
 
     .prize-item .duo-wrapper img.prize-card {
-      left: 10px;
+      left: 15px;
       top: 30px;
-      transform: rotate(-10deg);
-      z-index: 1;
-      width: 150px !important;
-      /* Override layout */
+      transform: rotate(-3deg);
+      z-index: 10;
+      /* Front */
+      width: 140px !important;
+      height: 196px !important;
+      object-fit: cover;
+      object-position: center;
     }
 
     .prize-item .duo-wrapper img.prize-pack {
-      right: 5px;
+      right: 15px;
       bottom: 40px;
-      transform: rotate(10deg);
-      z-index: 2;
-      width: 110px !important;
-      /* Pack is usually narrower */
+      transform: rotate(3deg);
+      z-index: 1;
+      /* Back */
+      width: 135px !important;
     }
 
     .prize-item .duo-wrapper:hover img.prize-card {
-      transform: rotate(-15deg) translateX(-15px) scale(1.05);
-      z-index: 3;
+      transform: rotate(-5deg) translateX(-5px) scale(1.05);
+      /* Gentle move */
+      z-index: 10;
     }
 
     .prize-item .duo-wrapper:hover img.prize-pack {
-      transform: rotate(15deg) translateX(15px) scale(1.05);
-      z-index: 3;
+      transform: rotate(5deg) translateX(5px) scale(1.05);
+      z-index: 1;
     }
   </style>
 </head>
