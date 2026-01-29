@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🎉 พรีออเดอร์ Starter Deck ex Mega Venusaur & Mega Lucario - Up Level Academy</title>
+
+    <!-- Add Google Font 'Kanit' -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Kanit', 'Segoe UI', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
+            /* Mega Evolution Theme: Dark with gradients of DNA colors (Red/Blue/Green/Purple) or just sleek dark */
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            margin: 0;
+            padding: 1rem;
+            text-align: center;
+            min-height: 100vh;
+            color: #fff;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        @keyframes gradientShift {
+
+            0%,
+            100% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+        }
+
+        /* Floating particles for dynamic effect */
+        .particle {
+            position: absolute;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: float 10s infinite linear;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) translateX(0);
+                opacity: 0;
+            }
+
+            50% {
+                opacity: 0.8;
+            }
+
+            100% {
+                transform: translateY(-100px) translateX(20px);
+                opacity: 0;
+            }
+        }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.85) 0%, rgba(30, 41, 59, 0.85) 100%);
+            border-radius: 25px;
+            padding: 2rem;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4), 0 0 100px rgba(99, 102, 241, 0.1);
+            backdrop-filter: blur(20px);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            z-index: 10;
+        }
+
+        .home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%);
+            /* Green to Blue (Venusaur to Lucario) */
+            border: none;
+            border-radius: 50%;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+        }
+
+        .home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .home-button::before {
+            content: "🏠";
+            font-size: 24px;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .logo {
+            width: 120px;
+            margin-bottom: 1rem;
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+        }
+
+        .event-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            /* Mega Evolution Gradient */
+            background: linear-gradient(45deg, #4ade80, #60a5fa, #f472b6, #4ade80);
+            background-size: 300% 300%;
+            animation: gradientFlow 3s ease infinite;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            margin-bottom: 0.5rem;
+            line-height: 1.2;
+        }
+
+        @keyframes gradientFlow {
+
+            0%,
+            100% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+        }
+
+        .event-subtitle {
+            font-size: 1.3rem;
+            color: #cbd5e1;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            animation: subtitlePulse 2s ease-in-out infinite;
+        }
+
+        @keyframes subtitlePulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.8;
+            }
+        }
+
+        .event-date {
+            font-size: 1.2rem;
+            color: #94a3b8;
+            margin-bottom: 2rem;
+            font-weight: 500;
+        }
+
+        .product-showcase {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+            border-radius: 20px;
+            padding: 2rem;
+            margin: 2rem 0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .product-title {
+            font-size: 1.8rem;
+            color: #fff;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .product-description {
+            font-size: 1.1rem;
+            color: #e2e8f0;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .pricing-card {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
+            border-radius: 15px;
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .pricing-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border-color: rgba(96, 165, 250, 0.5);
+        }
+
+        .price {
+            font-size: 3rem;
+            background: linear-gradient(to right, #4ade80, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+            font-weight: 800;
+        }
+
+        .price-unit {
+            font-size: 1.2rem;
+            color: #94a3b8;
+            font-weight: 400;
+        }
+
+        .features-list {
+            list-style: none;
+            padding: 0;
+            margin: 1.5rem 0;
+            text-align: left;
+        }
+
+        .features-list li {
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            color: #e2e8f0;
+        }
+
+        .features-list li::before {
+            content: "⚡";
+            margin-right: 10px;
+            color: #fbbf24;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(45deg, #10b981, #3b82f6, #8b5cf6);
+            background-size: 200% 200%;
+            animation: buttonGradient 3s ease infinite;
+            color: #fff;
+            padding: 1.2rem 3rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-size: 1.3rem;
+            font-weight: 700;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        @keyframes buttonGradient {
+
+            0%,
+            100% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+        }
+
+        .cta-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 15px 30px rgba(59, 130, 246, 0.3);
+        }
+
+        .deadline-box {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 12px;
+            padding: 1rem;
+            margin: 2rem 0;
+            color: #fca5a5;
+            font-weight: 600;
+        }
+
+        .pickup-info {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+            text-align: left;
+        }
+
+        .pickup-info h3 {
+            color: #60a5fa;
+            margin-top: 0;
+        }
+
+        .contact-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .contact-link {
+            display: block;
+            color: #94a3b8;
+            text-decoration: none;
+            margin: 0.5rem 0;
+            transition: color 0.3s ease;
+        }
+
+        .contact-link:hover {
+            color: #fff;
+        }
+
+        /* User List Styling - List View */
+        .registered-users-section {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-top: 3rem;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .user-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            margin-top: 1.5rem;
+        }
+
+        .user-row {
+            display: grid;
+            grid-template-columns: 1.5fr 1.5fr 1fr;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 1rem 1.5rem;
+            border-radius: 50px;
+            /* Pillow shape */
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.2s ease;
+            text-align: center;
+            /* Center text in mobile */
+        }
+
+        .user-row:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateX(5px);
+            border-color: rgba(96, 165, 250, 0.4);
+        }
+
+        .user-col-name {
+            font-weight: 700;
+            color: #f1f5f9;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .user-col-name::before {
+            content: '👤';
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+
+        .user-col-phone {
+            color: #94a3b8;
+            font-family: monospace;
+            font-size: 1.1rem;
+            letter-spacing: 1px;
+        }
+
+        .user-col-qty {
+            text-align: right;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+
+        .deck-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .pixel-icon {
+            width: 32px;
+            height: 32px;
+            image-rendering: pixelated;
+            /* Ensure sharp pixel art */
+            margin-right: -4px;
+            /* Adjust spacing nicely */
+        }
+
+        .deck-badge.venusaur {
+            color: #4ade80;
+            border-color: rgba(74, 222, 128, 0.3);
+        }
+
+        .deck-badge.lucario {
+            color: #60a5fa;
+            border-color: rgba(96, 165, 250, 0.3);
+        }
+
+        @media (max-width: 600px) {
+            .user-row {
+                grid-template-columns: 1fr;
+                gap: 0.5rem;
+                padding: 1rem;
+                border-radius: 15px;
+                text-align: center;
+            }
+
+            .user-col-name {
+                justify-content: center;
+                text-align: center;
+            }
+
+            .user-col-qty {
+                justify-content: center;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+        }
+
+        /* Product Grid Styles */
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .official-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            padding: 0.6rem 1.2rem;
+            background: rgba(59, 130, 246, 0.15);
+            border-radius: 50px;
+            color: #60a5fa;
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        .official-link:hover {
+            background: rgba(59, 130, 246, 0.25);
+            color: #93c5fd;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+        }
+
+        .product-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+        }
+
+        .product-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .product-image {
+            width: 100%;
+            max-width: 250px;
+            height: auto;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.3));
+            transition: transform 0.3s ease;
+        }
+
+        .product-item:hover .product-image {
+            transform: scale(1.05);
+        }
+
+        .product-label {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-top: 0.5rem;
+            margin-bottom: 0;
+            color: #e2e8f0;
+            line-height: 1.4;
+        }
+
+        .highlight-section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 3rem 0 1.5rem;
+            color: #fbbf24;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            position: relative;
+            display: inline-block;
+        }
+
+        .highlight-section-title::after {
+            content: '';
+            display: block;
+            width: 60%;
+            height: 3px;
+            background: #fbbf24;
+            margin: 5px auto 0;
+            border-radius: 2px;
+        }
+
+        .highlight-tag {
+            background: linear-gradient(45deg, #f59e0b, #fbbf24);
+            color: #1a0f00;
+            padding: 0.3rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            display: inline-block;
+            box-shadow: 0 4px 10px rgba(251, 191, 36, 0.3);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Home Button -->
+    <a href="index.html" class="home-button"></a>
+
+    <!-- Animated Background Particles -->
+    <div id="particles"></div>
+
+    <div class="container">
+
+        <!-- Header -->
+        <header class="header">
+            <!-- Add Logo if exists, otherwise text -->
+            <img src="https://uplevelguild.netlify.app/assets/logo.png" alt="Up Level Logo" class="logo"
+                onerror="this.style.display='none'">
+            <h1 class="event-title">Pokemon Starter Deck ex<br>Mega Venusaur & Mega Lucario</h1>
+            <div class="event-subtitle">เปิดพรีออเดอร์แล้ว! วิวัฒนาการเมก้า (ภาษาไทย)</div>
+        </header>
+
+        <!-- Product Showcase -->
+        <section class="product-showcase">
+            <h2 class="product-title">✨ ข้อมูลสินค้า</h2>
+            <p class="product-description">
+                Starter Deck แรก ของซีรี่ย์วิวัฒนาการเมก้า ที่มีโปเกม่อนร่างเมก้าหลักๆ อย่าง
+                <strong style="color: #4ade80;">เมก้าฟุชิกิบานะ</strong> และ
+                <strong style="color: #60a5fa;">เมก้าลูคาริโอ</strong><br>
+                ซื้อเพียง 1 กล่อง มีการ์ด 60 ใบ พร้อมเริ่มเล่นได้เลยทันที‼️
+            </p>
+
+            <a href="https://asia.pokemon-card.com/th/archives/6919/" target="_blank" class="official-link">
+                🌐 ดูข้อมูลสินค้าเพิ่มเติมจาก Official Website
+            </a>
+
+            <!-- Main Decks -->
+            <div class="product-grid">
+                <div class="product-item">
+                    <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2026/01/th_news_maal_pkg.png"
+                        alt="Mega Lucario Deck" class="product-image">
+                    <h4 class="product-label" style="color: #60a5fa;">Starter Deck ex<br>เมก้าลูคาริโอ</h4>
+                </div>
+                <div class="product-item">
+                    <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2026/01/th_news_maaf_pkg.png"
+                        alt="Mega Venusaur Deck" class="product-image">
+                    <h4 class="product-label" style="color: #4ade80;">Starter Deck ex<br>เมก้าฟุชิกิบานะ</h4>
+                </div>
+            </div>
+
+            <h3 class="highlight-section-title">✨ ไฮไลท์การ์ดในชุด</h3>
+            <!-- Highlights -->
+            <div class="product-grid">
+                <div class="product-item">
+                    <span class="highlight-tag">ของดีประจำกล่อง</span>
+                    <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2026/01/th_news_maaf_card_015.png"
+                        alt="Pokemon Tablet" class="product-image">
+                    <h4 class="product-label">โปเกมอนแท็บเล็ต</h4>
+                </div>
+                <div class="product-item">
+                    <span class="highlight-tag">Supporter สุดแกร่ง</span>
+                    <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2026/01/th_news_maaf_card_023.png"
+                        alt="Lillie's Determination" class="product-image">
+                    <h4 class="product-label">ปณิธานของลิเลีย</h4>
+                </div>
+            </div>
+
+            <!-- Pricing -->
+            <div class="pricing-card">
+                <div class="price">180 <span class="price-unit">บาท/กล่อง</span></div>
+                <ul class="features-list">
+                    <li>การ์ด 60 ใบพร้อมเล่น</li>
+                    <li>โปเกม่อนร่างเมก้าสุดแกร่ง</li>
+                    <li>เหมาะสำหรับผู้เริ่มต้นและนักแข่ง</li>
+                </ul>
+                <a href="https://forms.gle/nnkAArZXVSZRtqEz7" target="_blank" class="cta-button">🛒
+                    สั่งพรีออเดอร์ทันที</a>
+            </div>
+
+            <!-- Deadline -->
+            <div class="deadline-box">
+                ⏰ พรีออเดอร์ถึง 20.00 น. ของวันนี้ (12 ก.พ. 2569)
+            </div>
+        </section>
+
+        <!-- Pickup Info -->
+        <section class="pickup-info">
+            <h3>📍 สถานที่รับสินค้า</h3>
+            <p>
+                <strong>รับสินค้าวันที่:</strong> 13 ก.พ. 2569<br>
+                <strong>สถานที่:</strong> หน้าร้าน Up Level Academy (ติด MRT บางแค ทางออก 2)
+            </p>
+        </section>
+
+        <!-- Registered Users Section -->
+        <section class="registered-users-section">
+            <h2 style="color: #fff; margin-bottom: 1rem;">📋 รายชื่อผู้สั่งจอง</h2>
+            <div id="loading-indicator" style="color: #94a3b8;">กำลังโหลดข้อมูล...</div>
+            <div id="user-list" class="user-list"></div>
+            <div style="margin-top: 2rem; font-size: 0.9rem; color: #64748b;">
+                *ข้อมูลอัปเดตอัตโนมัติจากระบบ
+            </div>
+        </section>
+
+        <!-- Contact Info -->
+        <footer class="contact-section">
+            <h4 style="color: #fff; margin-bottom: 1rem;">หากมีคำถามเพิ่มเติม</h4>
+            <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 1.5rem;">
+                <a href="tel:0971156555" class="contact-link">📞 097-115-6555</a>
+                <a href="https://line.me/ti/p/@uplevelacademy" class="contact-link" target="_blank">📱 Line:
+                    @uplevelacademy</a>
+                <a href="https://www.facebook.com/UpLevelAcademy" class="contact-link" target="_blank">💬 FB: Up Level
+                    Academy</a>
+                <a href="https://instagram.com/uplevel.acad" class="contact-link" target="_blank">📸 IG:
+                    uplevel.acad</a>
+            </div>
+            <div style="margin-top: 1rem;">
+                <a href="https://shorturl.at/8r2Aw" class="contact-link" target="_blank">🌐 Line Open Chat Pokemon</a>
+                <a href="https://uplevelguild.netlify.app/" class="contact-link" target="_blank">🌐 Up Level Guild
+                    Website</a>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Create background particles
+        const particlesContainer = document.getElementById('particles');
+        for (let i = 0; i < 20; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = Math.random() * 100 + 'vw';
+            particle.style.animationDelay = Math.random() * 5 + 's';
+            particle.style.opacity = Math.random() * 0.5 + 0.2;
+            particlesContainer.appendChild(particle);
+        }
+
+        // Load Data
+        document.addEventListener('DOMContentLoaded', () => {
+            // TODO: Update this URL with the new Apps Script Deployment URL
+            // Currently pointing to a placeholder or the MA3 one if compatible, 
+            // but better to leave it empty or point to the new one once deployed.
+            // For now, I will use a placeholder variable.
+            const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz6h1OEpFuMrMCZE2WvSzf8iwrYcLpx14xpNKmD_itVW3BG_0DqRZrWjsK7V7KQbKdhZw/exec';
+
+            const loading = document.getElementById('loading-indicator');
+            const list = document.getElementById('user-list');
+
+            if (APPS_SCRIPT_URL === 'YOUR_NEW_DEPLOYMENT_URL_HERE') {
+                loading.innerHTML = "⚠️ กรุณาอัปเดต URL ของ Apps Script ในไฟล์ HTML";
+                return;
+            }
+
+            fetch(APPS_SCRIPT_URL + '?type=json')
+                .then(response => response.json())
+                .then(data => {
+                    loading.style.display = 'none';
+                    if (data.error) {
+                        list.innerHTML = `<div style="color: #ef4444;">Error: ${data.error}</div>`;
+                        return;
+                    }
+
+                    if (data.participants && data.participants.length > 0) {
+                        data.participants.forEach(p => {
+                            const row = document.createElement('div');
+                            row.className = 'user-row';
+
+                            // Find phone key dynamically (robust against header changes)
+                            let phone = '';
+                            const phoneKeys = Object.keys(p).filter(k =>
+                                k.includes('เบอร์') || k.includes('โทร') || k.toLowerCase().includes('phone') || k.toLowerCase().includes('tel')
+                            );
+
+                            if (phoneKeys.length > 0) {
+                                // Prefer specific known keys if present, else take the first match
+                                if (p['เบอร์โทร']) phone = p['เบอร์โทร'];
+                                else if (p['เบอร์ติดต่อ']) phone = p['เบอร์ติดต่อ'];
+                                else phone = p[phoneKeys[0]];
+                            }
+
+                            // Format Phone: 081-234-xxxx
+                            let maskedPhone = '-';
+                            if (phone) {
+                                let cleanPhone = phone.toString().replace(/\D/g, '');
+                                if (cleanPhone.length >= 9) {
+                                    // Handle leading 0 being dropped (happens in Sheets sometimes)
+                                    // If 9 digits and starts with 6/8/9, it might be missing 0. Add it for display.
+                                    if (cleanPhone.length === 9) {
+                                        cleanPhone = '0' + cleanPhone;
+                                    }
+
+                                    const p1 = cleanPhone.substring(0, 3);
+                                    const p2 = cleanPhone.substring(3, 6);
+                                    maskedPhone = `${p1}-${p2}-xxxx`;
+                                } else if (cleanPhone.length > 3) {
+                                    maskedPhone = cleanPhone;
+                                }
+                            }
+
+                            const name = p['ชื่อเล่น'] || p['ชื่อ - นามสกุล'] || 'Trainer';
+                            // const quantity = p.boxes || 0; // Legacy total
+                            const vQty = p.boxesVenusaur || 0;
+                            const lQty = p.boxesLucario || 0;
+
+                            // If user has old data structure with just total, fallback
+                            // Or if both are 0 but total > 0 (fallback case)
+                            let quantityHtml = '';
+
+                            const venusaurIcon = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-viii/icons/10033.png';
+
+                            if (vQty > 0) {
+                                quantityHtml += `<span class="deck-badge venusaur"><img src="${venusaurIcon}" class="pixel-icon" alt="V"> ${vQty}</span>`;
+                            }
+                            const lucarioIcon = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-viii/icons/10035.png';
+
+                            if (lQty > 0) {
+                                quantityHtml += `<span class="deck-badge lucario"><img src="${lucarioIcon}" class="pixel-icon" alt="L"> ${lQty}</span>`;
+                            }
+
+                            // Fallback if no specific data but total exists
+                            if (vQty === 0 && lQty === 0 && p.boxes > 0) {
+                                quantityHtml = `<span class="deck-badge" style="color: #fbbf24; border-color: #fbbf24;">📦 ${p.boxes}</span>`;
+                            } else if (vQty === 0 && lQty === 0 && p.boxes === 0) {
+                                // Show something if empty? or just nothing.
+                                quantityHtml = `<span style="color: #64748b;">-</span>`;
+                            }
+
+                            row.innerHTML = `
+                                <div class="user-col-name">${name}</div>
+                                <div class="user-col-phone">${maskedPhone}</div>
+                                <div class="user-col-qty">${quantityHtml}</div>
+                            `;
+                            list.appendChild(row);
+                        });
+                    } else {
+                        list.innerHTML = '<div style="color: #94a3b8;">ยังไม่มีรายการสั่งซื้อ</div>';
+                    }
+                })
+                .catch(err => {
+                    loading.innerText = 'ไม่สามารถโหลดข้อมูลได้';
+                    console.error(err);
+                });
+        });
+    </script>
+</body>
+
+</html>
