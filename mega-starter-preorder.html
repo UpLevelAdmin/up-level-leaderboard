@@ -427,22 +427,46 @@
 
         @media (max-width: 600px) {
             .user-row {
-                grid-template-columns: 1fr;
-                gap: 0.5rem;
-                padding: 1rem;
-                border-radius: 15px;
-                text-align: center;
+                grid-template-columns: 1fr auto;
+                grid-template-areas:
+                    "name qty"
+                    "phone qty";
+                gap: 0.2rem 1rem;
+                padding: 1.2rem;
+                border-radius: 20px;
+                text-align: left;
+                align-items: center;
             }
 
             .user-col-name {
-                justify-content: center;
-                text-align: center;
+                grid-area: name;
+                justify-content: flex-start;
+                text-align: left;
+                font-size: 1rem;
+            }
+
+            .user-col-phone {
+                grid-area: phone;
+                text-align: left;
+                font-size: 0.85rem;
+                opacity: 0.8;
             }
 
             .user-col-qty {
-                justify-content: center;
+                grid-area: qty;
+                justify-content: flex-end;
                 flex-wrap: wrap;
                 gap: 0.5rem;
+            }
+
+            .deck-badge {
+                padding: 0.2rem 0.6rem;
+                font-size: 0.8rem;
+            }
+
+            .pixel-icon {
+                width: 24px;
+                height: 24px;
             }
         }
 
