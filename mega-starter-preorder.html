@@ -539,6 +539,8 @@
         .product-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            grid-auto-rows: 1fr;
+            /* Force equal height for all cards in a row */
             gap: 2rem;
             margin: 2rem 0;
         }
@@ -603,18 +605,17 @@
             font-size: 1.1rem;
             font-weight: 700;
             margin-top: auto;
-            /* Push to bottom to align with neighbors */
-            padding-top: 0.8rem;
+            padding-top: 0.5rem;
             margin-bottom: 0;
             color: #e2e8f0;
-            line-height: 1.4;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            line-clamp: 2;
-            -webkit-box-orient: vertical;
-            white-space: normal;
+            line-height: 1.3;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             text-align: center;
             width: 100%;
+            min-height: 3rem;
+            /* Fixed height for 2 lines to ensure perfect alignment */
         }
 
         .highlight-section-title {
@@ -660,18 +661,24 @@
         @media (max-width: 600px) {
             .product-label {
                 font-size: 0.8rem !important;
-                -webkit-line-clamp: 2;
-                line-clamp: 2;
+                min-height: 2.2rem !important;
+                line-height: 1.2 !important;
             }
 
             .highlight-tag {
                 font-size: 0.7rem !important;
                 padding: 0.2rem 0.4rem !important;
                 letter-spacing: -0.2px;
+                min-height: 1.6rem !important;
             }
 
             .product-item {
-                padding: 0.8rem 0.3rem !important;
+                padding: 0.8rem 0.4rem !important;
+                gap: 0.2rem;
+            }
+
+            .product-image {
+                margin-bottom: 0.3rem !important;
             }
         }
     </style>
