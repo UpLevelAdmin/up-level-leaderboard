@@ -587,12 +587,23 @@
             border-color: rgba(255, 255, 255, 0.3);
         }
 
-        .product-image {
+        .product-image-container {
             width: 100%;
-            max-width: 250px;
-            height: auto;
-            border-radius: 10px;
+            height: 180px;
+            /* Fixed height for image area */
+            display: flex;
+            align-items: center;
+            justify-content: center;
             margin-bottom: 1rem;
+        }
+
+        .product-image {
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            border-radius: 8px;
             filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.3));
             transition: transform 0.3s ease;
         }
@@ -659,22 +670,34 @@
         }
 
         @media (max-width: 600px) {
+            .product-image-container {
+                height: 120px;
+                /* Shorter for mobile */
+                margin-bottom: 0.5rem;
+            }
+
             .product-label {
                 font-size: 0.8rem !important;
-                min-height: 2.2rem !important;
+                min-height: 2.5rem !important;
+                /* Fixed height for 2 lines */
                 line-height: 1.2 !important;
+                padding-top: 0.3rem !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
             }
 
             .highlight-tag {
                 font-size: 0.7rem !important;
                 padding: 0.2rem 0.4rem !important;
-                letter-spacing: -0.2px;
                 min-height: 1.6rem !important;
+                margin-bottom: 0.5rem !important;
             }
 
             .product-item {
                 padding: 0.8rem 0.4rem !important;
-                gap: 0.2rem;
+                display: flex !important;
+                flex-direction: column !important;
             }
 
             .product-image {
@@ -720,13 +743,17 @@
             <!-- Main Decks -->
             <div class="product-grid main-decks">
                 <div class="product-item">
-                    <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2026/01/th_news_maal_pkg.png"
-                        alt="Mega Lucario Deck" class="product-image">
+                    <div class="product-image-container">
+                        <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2026/01/th_news_maal_pkg.png"
+                            alt="Mega Lucario Deck" class="product-image">
+                    </div>
                     <h4 class="product-label" style="color: #60a5fa;">Starter Deck ex<br>เมก้าลูคาริโอ</h4>
                 </div>
                 <div class="product-item">
-                    <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2026/01/th_news_maaf_pkg.png"
-                        alt="Mega Venusaur Deck" class="product-image">
+                    <div class="product-image-container">
+                        <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2026/01/th_news_maaf_pkg.png"
+                            alt="Mega Venusaur Deck" class="product-image">
+                    </div>
                     <h4 class="product-label" style="color: #4ade80;">Starter Deck ex<br>เมก้าฟุชิกิบานะ</h4>
                 </div>
             </div>
@@ -736,14 +763,18 @@
             <div class="product-grid">
                 <div class="product-item">
                     <span class="highlight-tag">ของดีประจำกล่อง</span>
-                    <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2026/01/th_news_maaf_card_015.png"
-                        alt="Pokemon Tablet" class="product-image">
+                    <div class="product-image-container">
+                        <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2026/01/th_news_maaf_card_015.png"
+                            alt="Pokemon Tablet" class="product-image">
+                    </div>
                     <h4 class="product-label">โปเกมอนแท็บเล็ต</h4>
                 </div>
                 <div class="product-item">
                     <span class="highlight-tag">Supporter สุดแกร่ง</span>
-                    <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2026/01/th_news_maaf_card_023.png"
-                        alt="Lillie's Determination" class="product-image">
+                    <div class="product-image-container">
+                        <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2026/01/th_news_maaf_card_023.png"
+                            alt="Lillie's Determination" class="product-image">
+                    </div>
                     <h4 class="product-label">ปณิธานของลิเลีย</h4>
                 </div>
             </div>
