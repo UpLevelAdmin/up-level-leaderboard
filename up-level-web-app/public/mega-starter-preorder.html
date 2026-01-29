@@ -470,6 +470,25 @@
                 width: 24px;
                 height: 24px;
             }
+
+            /* Show products side-by-side on mobile */
+            .product-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.8rem;
+            }
+
+            .product-item {
+                padding: 0.8rem;
+                border-radius: 10px;
+            }
+
+            .product-label {
+                font-size: 0.85rem;
+            }
+
+            .product-image {
+                max-width: 100%;
+            }
         }
 
         /* Product Grid Styles */
