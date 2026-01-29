@@ -473,17 +473,19 @@
 
             /* Show products side-by-side on mobile */
             .product-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 0.8rem;
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 0.5rem !important;
+                margin: 1rem 0 !important;
             }
 
             .product-item {
-                padding: 0.8rem;
-                border-radius: 10px;
+                padding: 0.6rem !important;
+                border-radius: 12px !important;
             }
 
             .product-label {
-                font-size: 0.85rem;
+                font-size: 0.8rem !important;
+                margin-top: 0.4rem !important;
             }
 
             .product-image {
@@ -630,7 +632,7 @@
             </a>
 
             <!-- Main Decks -->
-            <div class="product-grid">
+            <div class="product-grid main-decks">
                 <div class="product-item">
                     <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2026/01/th_news_maal_pkg.png"
                         alt="Mega Lucario Deck" class="product-image">
