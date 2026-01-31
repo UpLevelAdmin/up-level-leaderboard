@@ -886,7 +886,8 @@
                 return;
             }
 
-            fetch(APPS_SCRIPT_URL + '?type=json')
+            const cacheBuster = new Date().getTime();
+            fetch(APPS_SCRIPT_URL + '?type=json&refresh=1&t=' + cacheBuster)
                 .then(response => response.json())
                 .then(data => {
                     loading.style.display = 'none';
