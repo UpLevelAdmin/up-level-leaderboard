@@ -795,37 +795,35 @@
       const CACHE_KEY = 'leaderboard_data_v1';
       const CACHE_TIME_KEY = 'leaderboard_time_v1';
 
-      // 1. ลองแสดงข้อมูลจาก Cache ก่อน
+      // 1. แสดงข้อมูลจาก Cache ทันทีเพื่อให้โหลดเร็ว (Stale-While-Revalidate)
       const cachedData = localStorage.getItem(CACHE_KEY);
-      const cachedTime = localStorage.getItem(CACHE_TIME_KEY);
-
       if (cachedData) {
         try {
           const parsedData = JSON.parse(cachedData);
-          // ถ้า Cache ไม่เก่าเกิน 1 ชั่วโมง ให้แสดงผลเลย
-          if (cachedTime && (Date.now() - parseInt(cachedTime)) < 3600000) {
-            console.log("📦 ใช้ข้อมูลจาก Cache");
-            renderLeaderboard(parsedData);
-          }
+          console.log("📦 แสดงข้อมูลจาก Cache ระหว่างรอข้อมูลใหม่...");
+          renderLeaderboard(parsedData);
         } catch (e) {
           console.error("Cache error:", e);
         }
       }
 
       try {
-        // 2. โหลดข้อมูลจริงจาก API (Background Update)
-        console.log("🔄 กำลังโหลดข้อมูลล่าสุด...");
-        const response = await fetch("https://script.google.com/macros/s/AKfycbxtjsDwHI6nJU4OIHExUxMaZwUn3qwakvdkzwbQO7C8Trzz5Gh84SX6F1gqb4BOFQcn/exec?func=getLeaderboard");
+        // 2. โหลดข้อมูลจริงจาก API (เพิ่ม cache-buster ด้วย timestamp)
+        console.log("🔄 กำลังดึงข้อมูลล่าสุดจาก Server...");
+        const cacheBuster = new Date().getTime();
+        const apiUrl = `https://script.google.com/macros/s/AKfycbxtjsDwHI6nJU4OIHExUxMaZwUn3qwakvdkzwbQO7C8Trzz5Gh84SX6F1gqb4BOFQcn/exec?func=getLeaderboard&t=${cacheBuster}`;
+
+        const response = await fetch(apiUrl);
         const data = await response.json();
 
         if (Array.isArray(data) && data.length > 0) {
-          // บันทึกลง Cache
+          // บันทึกลง Cache ใหม่
           localStorage.setItem(CACHE_KEY, JSON.stringify(data));
           localStorage.setItem(CACHE_TIME_KEY, Date.now().toString());
 
-          // แสดงผลข้อมูลใหม่
+          // แสดงผลข้อมูลล่าสุด
           renderLeaderboard(data);
-          console.log("✅ อัปเดตข้อมูลล่าสุดเรียบร้อย");
+          console.log("✅ อัปเดตข้อมูลล่าสุดจาก Google Sheet เรียบร้อย");
         }
       } catch (error) {
         console.error("Fetch error:", error);
