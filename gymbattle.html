@@ -13,7 +13,7 @@
     }
 
     body {
-      background: linear-gradient(to bottom, #020024 0%, #090979 35%, #00d4ff 100%);
+      background: linear-gradient(to bottom, #240015 0%, #790943 35%, #ff007f 100%);
       background-attachment: fixed;
       margin: 0;
       overflow-x: hidden;
@@ -38,8 +38,8 @@
       background: rgba(255, 255, 255, 0.92);
       backdrop-filter: blur(5px);
       border-radius: 16px;
-      box-shadow: 0 0 30px rgba(255, 215, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.5);
-      border: 2px solid rgba(255, 215, 0, 0.5);
+      box-shadow: 0 0 30px rgba(255, 105, 180, 0.3), 0 8px 24px rgba(0, 0, 0, 0.5);
+      border: 2px solid rgba(255, 105, 180, 0.5);
       position: relative;
       z-index: 10;
     }
@@ -127,10 +127,10 @@
     }
 
     h2 {
-      color: #1e3a5f;
+      color: #880e4f;
       text-align: center;
       font-weight: 700;
-      text-shadow: 0 2px 4px rgba(70, 130, 180, 0.3);
+      text-shadow: 0 2px 4px rgba(233, 30, 99, 0.3);
     }
 
     .date-header {
@@ -139,8 +139,8 @@
       font-size: 1.1em;
       font-weight: 600;
       border-radius: 8px 8px 0 0;
-      border-left: 6px solid #FFD700;
-      background: linear-gradient(90deg, #fff 0%, #fff9c4 100%);
+      border-left: 6px solid #FF4081;
+      background: linear-gradient(90deg, #fff 0%, #ffebee 100%);
       text-align: left;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
@@ -159,7 +159,7 @@
     td {
       padding: 10px 8px;
       text-align: center;
-      border-bottom: 1px solid #d0e8f0;
+      border-bottom: 1px solid #f8bbd0;
     }
 
     th {
@@ -168,7 +168,7 @@
     }
 
     tr:hover td {
-      background: #e6f3ff;
+      background: #fce4ec;
     }
 
     .register-btn {
@@ -176,7 +176,7 @@
       width: 100%;
       margin: 24px auto 0 auto;
       padding: 14px 0;
-      background: linear-gradient(135deg, #4682b4 0%, #5a9bd4 100%);
+      background: linear-gradient(135deg, #d81b60 0%, #ec407a 100%);
       color: #fff;
       font-size: 1.1em;
       font-weight: 600;
@@ -191,7 +191,7 @@
     }
 
     .register-btn:hover {
-      background: linear-gradient(135deg, #5a9bd4 0%, #6ba8e0 100%);
+      background: linear-gradient(135deg, #ec407a 0%, #f06292 100%);
       color: #fff;
       transform: translateY(-2px);
       box-shadow: 0 6px 20px rgba(70, 130, 180, 0.6);
@@ -200,8 +200,8 @@
     /* Spinner */
     .spinner {
       margin: 24px auto 8px auto;
-      border: 6px solid #d0e8f0;
-      border-top: 6px solid #4682b4;
+      border: 6px solid #f8bbd0;
+      border-top: 6px solid #d81b60;
       border-radius: 50%;
       width: 48px;
       height: 48px;
@@ -584,25 +584,25 @@
     .promo-cards-section {
       margin-top: 40px;
       padding: 24px;
-      background: linear-gradient(135deg, #f0f8ff 0%, #e6f3ff 100%);
+      background: linear-gradient(135deg, #fff0f5 0%, #fce4ec 100%);
       border-radius: 16px;
-      box-shadow: 0 4px 12px rgba(70, 130, 180, 0.2);
-      border: 1px solid rgba(176, 224, 230, 0.5);
+      box-shadow: 0 4px 12px rgba(216, 27, 96, 0.2);
+      border: 1px solid rgba(248, 187, 208, 0.5);
     }
 
     .promo-cards-title {
       text-align: center;
-      color: #1e3a5f;
+      color: #880e4f;
       font-size: 1.8em;
       font-weight: 600;
       margin-bottom: 8px;
       font-family: 'Chonburi', cursive;
-      text-shadow: 0 2px 4px rgba(70, 130, 180, 0.2);
+      text-shadow: 0 2px 4px rgba(233, 30, 99, 0.2);
     }
 
     .promo-cards-subtitle {
       text-align: center;
-      color: #4682b4;
+      color: #c2185b;
       font-size: 1.1em;
       margin-bottom: 32px;
       font-weight: 400;
@@ -822,7 +822,7 @@
       <img src="https://i.postimg.cc/fyMXPbrX/gym-thiy-ch-d.png" alt="Gym Battle Logo"
         style="max-height: 100px; width: auto;">
     </div>
-    <h2 style="text-align:center; margin-bottom: 24px;">รายชื่อผู้สมัคร Gym Battle เดือนมกราคม 2569</h2>
+    <h2 style="text-align:center; margin-bottom: 24px;">รายชื่อผู้สมัคร Gym Battle เดือนกุมภาพันธ์ 2569</h2>
 
     <!-- Details Section -->
     <div class="details-section"
@@ -931,40 +931,34 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    const apiUrl = "https://script.google.com/macros/s/AKfycbxUSBsZARIhvnyIB345NxLkM2NjHaKjRd5eeKY4Q762i3BZsV72SUXQE8Y9H1hVbKJD/exec?type=json";
+    const apiUrl = "https://script.google.com/macros/s/AKfycbzII_Ub-a0bhY08jLeoxEBG4LYtQPoBxE3ZtcEBaHW1A4pt8vVZeM2-4rmLCK8j1XM/exec?type=json";
     // สีธีม Winter (แตกต่างกันมากขึ้นเพื่อให้แยกแยะได้ง่าย)
+    // สีธีม Valentine (ชมพู ม่วง แดง)
     const pastelColors = [
-      { bg: "#E3F2FD", border: "#2196F3", th: "#1976D2" },      // ฟ้าสดใส
-      { bg: "#E1F5FE", border: "#00BCD4", th: "#0097A7" },     // ฟ้าอ่อน-เขียว
-      { bg: "#E8EAF6", border: "#5C6BC0", th: "#3F51B5" },     // ม่วง-น้ำเงิน
-      { bg: "#F3E5F5", border: "#9C27B0", th: "#7B1FA2" },    // ม่วง
-      { bg: "#E0F2F1", border: "#009688", th: "#00796B" },     // เขียว-น้ำเงิน
-      { bg: "#E8F5E9", border: "#4CAF50", th: "#388E3C" },     // เขียว
-      { bg: "#FFF3E0", border: "#FF9800", th: "#F57C00" },      // ส้ม
-      { bg: "#FCE4EC", border: "#E91E63", th: "#C2185B" },     // ชมพู
-      { bg: "#E0F7FA", border: "#00ACC1", th: "#00838F" },     // ฟ้า-เขียว
-      { bg: "#EDE7F6", border: "#673AB7", th: "#512DA8" },     // ม่วงเข้ม
-      { bg: "#E1BEE7", border: "#BA68C8", th: "#9C27B0" },     // ม่วงอ่อน
-      { bg: "#BBDEFB", border: "#42A5F5", th: "#1E88E5" },     // ฟ้าอ่อน
-      { bg: "#C5CAE9", border: "#7986CB", th: "#5C6BC0" }      // ม่วง-น้ำเงินอ่อน
+      { bg: "#FCE4EC", border: "#E91E63", th: "#D81B60" }, // ชมพูแคนดี้
+      { bg: "#F3E5F5", border: "#9C27B0", th: "#8E24AA" }, // ม่วงสว่าง
+      { bg: "#FFEBEE", border: "#E53935", th: "#C62828" }, // แดงอ่อน
+      { bg: "#F8BBD0", border: "#C2185B", th: "#880E4F" }, // ชมพูเข้ม
+      { bg: "#E1BEE7", border: "#7B1FA2", th: "#4A148C" }, // ม่วงเข้ม
+      { bg: "#FFCDD2", border: "#D32F2F", th: "#B71C1C" }, // แดง
+      { bg: "#FFF9C4", border: "#FBC02D", th: "#F9A825" }, // เหลืองทอง (ตัดเล่นๆ)
+      { bg: "#E0F2F1", border: "#009688", th: "#00796B" }  // เขียวอมฟ้า (แซมๆ)
     ];
 
-    // วันที่แข่งขันเดือนมกราคม 2569
-    const januaryDates = [
-      "วันศุกร์ที่ 2 มกราคม 2569",
-      "วันเสาร์ที่ 3 มกราคม 2569",
-      "วันอังคารที่ 6 มกราคม 2569",
-      "วันศุกร์ที่ 9 มกราคม 2569",
-      "วันเสาร์ที่ 10 มกราคม 2569",
-      "วันอังคารที่ 13 มกราคม 2569",
-      "วันศุกร์ที่ 16 มกราคม 2569",
-      "วันเสาร์ที่ 17 มกราคม 2569",
-      "วันอังคารที่ 20 มกราคม 2569",
-      "วันศุกร์ที่ 23 มกราคม 2569",
-      "วันเสาร์ที่ 24 มกราคม 2569",
-      "วันอังคารที่ 27 มกราคม 2569",
-      "วันศุกร์ที่ 30 มกราคม 2569",
-      "วันเสาร์ที่ 31 มกราคม 2569"
+    // วันที่แข่งขันเดือนกุมภาพันธ์ 2569
+    const februaryDates = [
+      "วันอังคารที่ 3 กุมภาพันธ์ 2569",
+      "วันศุกร์ที่ 6 กุมภาพันธ์ 2569",
+      "วันเสาร์ที่ 7 กุมภาพันธ์ 2569",
+      "วันอังคารที่ 10 กุมภาพันธ์ 2569",
+      "วันศุกร์ที่ 13 กุมภาพันธ์ 2569",
+      "วันเสาร์ที่ 14 กุมภาพันธ์ 2569",
+      "วันอังคารที่ 17 กุมภาพันธ์ 2569",
+      "วันศุกร์ที่ 20 กุมภาพันธ์ 2569",
+      "วันเสาร์ที่ 21 กุมภาพันธ์ 2569",
+      "วันอังคารที่ 24 กุมภาพันธ์ 2569",
+      "วันศุกร์ที่ 27 กุมภาพันธ์ 2569",
+      "วันเสาร์ที่ 28 กุมภาพันธ์ 2569"
     ];
 
     // ดึงข้อมูลสมาชิกจาก Member Dashboard (API ใหม่)
@@ -1076,8 +1070,8 @@
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
-      // ใช้ข้อมูลวันที่จาก januaryDates เท่านั้น เพื่อป้องกันชื่อวันซ้ำซ้อน
-      const datesToUse = januaryDates;
+      // ใช้ข้อมูลวันที่จาก februaryDates เท่านั้น เพื่อป้องกันชื่อวันซ้ำซ้อน
+      const datesToUse = februaryDates;
 
       // หา index ของวันที่ใกล้ถึงที่สุด (หรือวันนี้)
       let upcomingIndex = -1;
@@ -1094,17 +1088,9 @@
         let players = [];
         if (data && data.groupedData) {
           // ตรวจสอบทั้งวันที่ปัจจุบันและวันที่ธันวาคม/พฤศจิกายน (กรณีข้อมูลเก่า)
+          // ตรวจสอบทั้งวันที่ปัจจุบันและวันที่ก่อนหน้า
           if (data.groupedData[date]) {
             players = data.groupedData[date];
-          } else {
-            // ลองหาจากวันที่ธันวาคมหรือพฤศจิกายนที่ตรงกัน
-            const prevMonthDate = date.replace('มกราคม', 'ธันวาคม');
-            const prevPrevMonthDate = date.replace('มกราคม', 'พฤศจิกายน');
-            if (data.groupedData[prevMonthDate]) {
-              players = data.groupedData[prevMonthDate];
-            } else if (data.groupedData[prevPrevMonthDate]) {
-              players = data.groupedData[prevPrevMonthDate];
-            }
           }
         }
 
@@ -1181,7 +1167,7 @@
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
-      januaryDates.forEach((date, idx) => {
+      februaryDates.forEach((date, idx) => {
         const color = pastelColors[idx % pastelColors.length];
         const dateObj = parseThaiDate(date);
         let isPast = false;
@@ -1347,7 +1333,7 @@
       this.angle = Math.atan2(this.targetY - this.y, Math.random() * w - this.x);
       this.vx = Math.cos(this.angle) * 0.5; // slight drift
       this.vy = -this.speed;
-      this.hue = Math.random() * 360;
+      this.hue = Math.random() * 60 + 300; // Pink/Purple hues (300-360)
       this.trail = [];
       this.exploded = false;
     }
@@ -1369,7 +1355,7 @@
 
     draw() {
       ctx.beginPath();
-      ctx.strokeStyle = `hsl(${this.hue}, 100%, 50%)`;
+      ctx.strokeStyle = `hsl(${this.hue}, 100%, 70%)`;
       ctx.lineWidth = 2;
       if (this.trail.length > 1) {
         ctx.moveTo(this.trail[0].x, this.trail[0].y);
@@ -1411,7 +1397,7 @@
     }
 
     draw() {
-      ctx.fillStyle = `hsla(${this.hue}, 100%, 60%, ${this.alpha})`;
+      ctx.fillStyle = `hsla(${this.hue}, 100%, 70%, ${this.alpha})`;
       ctx.beginPath();
       ctx.arc(this.x, this.y, 2, 0, Math.PI * 2);
       ctx.fill();
