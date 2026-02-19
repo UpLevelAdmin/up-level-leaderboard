@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🎉 พรีออเดอร์ MA4 Void Blast - Up Level Academy</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Kanit', sans-serif;
+            background: linear-gradient(135deg, #2d1a00 0%, #4a2f00 25%, #5c3a00 50%, #4a2f00 75%, #2d1a00 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            margin: 0;
+            padding: 1rem;
+            text-align: center;
+            min-height: 100vh;
+            color: #fff;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        @keyframes gradientShift {
+
+            0%,
+            100% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+        }
+
+        /* Floating card pack animation */
+        .floating-card-pack {
+            position: absolute;
+            width: 80px;
+            height: auto;
+            z-index: 9999;
+            pointer-events: none;
+            opacity: 0.9;
+            animation: cuteShake 2s ease-in-out infinite;
+        }
+
+        .floating-card-pack:nth-child(1) {
+            top: 20px;
+            right: 20px;
+            animation-delay: 0s;
+        }
+
+        .floating-card-pack:nth-child(2) {
+            top: 20px;
+            left: 20px;
+            animation-delay: 0.3s;
+        }
+
+        @keyframes cuteShake {
+
+            0%,
+            100% {
+                transform: translate(0, 0) rotate(0deg) scale(1);
+            }
+
+            10% {
+                transform: translate(-3px, -2px) rotate(-3deg) scale(1.05);
+            }
+
+            20% {
+                transform: translate(3px, 2px) rotate(3deg) scale(1.02);
+            }
+
+            30% {
+                transform: translate(-2px, 3px) rotate(-2deg) scale(1.03);
+            }
+
+            40% {
+                transform: translate(2px, -3px) rotate(2deg) scale(1.04);
+            }
+
+            50% {
+                transform: translate(-1px, -1px) rotate(-1deg) scale(1.05);
+            }
+
+            60% {
+                transform: translate(1px, 2px) rotate(1deg) scale(1.03);
+            }
+
+            70% {
+                transform: translate(-2px, 1px) rotate(-2deg) scale(1.04);
+            }
+
+            80% {
+                transform: translate(2px, -2px) rotate(2deg) scale(1.02);
+            }
+
+            90% {
+                transform: translate(-1px, 1px) rotate(-1deg) scale(1.03);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .floating-card-pack {
+                width: 60px;
+                opacity: 0.85;
+            }
+
+            .floating-card-pack:nth-child(1) {
+                top: 10px;
+                right: 10px;
+            }
+
+            .floating-card-pack:nth-child(2) {
+                top: 10px;
+                left: 10px;
+            }
+        }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+            padding: 1rem;
+            position: relative;
+            z-index: 10;
+        }
+
+        .logo {
+            width: 120px;
+            margin-bottom: 1rem;
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+        }
+
+        .event-title {
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(45deg, #d4a574, #e6c8a0, #c89666, #d4a574);
+            background-size: 300% 300%;
+            animation: gradientFlow 3s ease infinite;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+            filter: drop-shadow(0 0 15px rgba(212, 165, 116, 0.8));
+        }
+
+        @keyframes gradientFlow {
+
+            0%,
+            100% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+        }
+
+        .event-subtitle {
+            font-size: 1.3rem;
+            color: #e6c8a0;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            text-shadow: 0 0 10px rgba(230, 200, 160, 0.6);
+        }
+
+        .event-date {
+            font-size: 1.5rem;
+            color: #d4a574;
+            margin-bottom: 2rem;
+            font-weight: 700;
+            text-shadow: 0 0 15px rgba(212, 165, 116, 0.8);
+        }
+
+        .product-description {
+            font-size: 1.1rem;
+            color: #e0e0e0;
+            margin: 1.5rem 0;
+            line-height: 1.6;
+        }
+
+        .highlight-section {
+            padding: 0.5rem 0;
+            margin: 1rem 0;
+        }
+
+        .highlight-title {
+            font-size: 1.8rem;
+            color: #e6c8a0;
+            margin-bottom: 1rem;
+            font-weight: 700;
+            text-shadow: 0 0 15px rgba(230, 200, 160, 0.6);
+        }
+
+        .highlight-text {
+            font-size: 1.1rem;
+            color: #e0e0e0;
+            line-height: 1.8;
+            margin-bottom: 1rem;
+        }
+
+        .promo-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-top: 1.5rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            justify-items: center;
+        }
+
+        .promo-card-item {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 0.5rem;
+            border: 2px solid rgba(212, 165, 116, 0.3);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .promo-card-item:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 10px 25px rgba(212, 165, 116, 0.4);
+            border-color: rgba(212, 165, 116, 0.6);
+        }
+
+        .promo-card-item img {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-name {
+            font-size: 0.8rem;
+            color: #e6c8a0;
+            font-weight: 600;
+            text-align: center;
+            margin-top: 0.3rem;
+        }
+
+        /* Codename styling */
+        .codename-rank {
+            display: inline-block;
+            margin-top: 0.3rem;
+        }
+
+        .codename {
+            font-weight: 600;
+        }
+
+        .codename.wave span {
+            display: inline-block;
+            animation: wave 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        }
+
+        @keyframes wave {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-5px);
+            }
+        }
+
+        .codename.wave span:nth-child(1) {
+            animation-delay: 0s;
+        }
+
+        .codename.wave span:nth-child(2) {
+            animation-delay: 0.08s;
+        }
+
+        .codename.wave span:nth-child(3) {
+            animation-delay: 0.16s;
+        }
+
+        .codename.wave span:nth-child(4) {
+            animation-delay: 0.24s;
+        }
+
+        .codename.wave span:nth-child(5) {
+            animation-delay: 0.32s;
+        }
+
+        .codename.wave span:nth-child(6) {
+            animation-delay: 0.40s;
+        }
+
+        .codename.wave span:nth-child(7) {
+            animation-delay: 0.48s;
+        }
+
+        .codename.wave span:nth-child(8) {
+            animation-delay: 0.56s;
+        }
+
+        .codename.wave span:nth-child(9) {
+            animation-delay: 0.64s;
+        }
+
+        .codename.wave span:nth-child(10) {
+            animation-delay: 0.72s;
+        }
+
+        .codename-rank[data-rank="Gold"] .codename,
+        .codename-rank[data-rank="Platinum"] .codename,
+        .codename-rank[data-rank="Diamond"] .codename,
+        .codename-rank[data-rank="Grandmaster"] .codename,
+        .codename-rank[data-rank="Legend"] .codename {
+            animation: blink 1s step-end infinite alternate;
+        }
+
+        @keyframes blink {
+            0% {
+                opacity: 1;
+                text-shadow: 0 0 8px #fff, 0 0 16px currentColor;
+            }
+
+            100% {
+                opacity: 0.6;
+                text-shadow: 0 0 2px #fff, 0 0 4px currentColor;
+            }
+        }
+
+        .pricing-card {
+            padding: 1.5rem 0;
+            margin: 1.5rem 0;
+        }
+
+        .price {
+            font-size: 2rem;
+            color: #6bcf7f;
+            margin: 1rem 0;
+            font-weight: 700;
+        }
+
+        .benefits {
+            list-style: none;
+            padding: 0;
+            margin: 1rem 0;
+            text-align: left;
+        }
+
+        .benefits li {
+            background: rgba(255, 255, 255, 0.05);
+            margin-bottom: 0.5rem;
+            padding: 0.8rem;
+            border-radius: 8px;
+            color: #e0e0e0;
+            border-left: 4px solid #d4a574;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(45deg, #d4a574, #e6c8a0, #c89666);
+            background-size: 200% 200%;
+            animation: buttonGradient 3s ease infinite;
+            color: #2d1a00;
+            padding: 1.5rem 3rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-size: 1.3rem;
+            font-weight: 700;
+            box-shadow: 0 10px 30px rgba(212, 165, 116, 0.6);
+            transition: all 0.3s ease;
+            border: 2px solid rgba(212, 165, 116, 0.6);
+            cursor: pointer;
+            margin: 1rem 0.5rem;
+        }
+
+        @keyframes buttonGradient {
+
+            0%,
+            100% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+        }
+
+        .cta-button:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 15px 40px rgba(212, 165, 116, 0.8);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.8rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 0.8rem;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            color: #d4a574;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 0 10px rgba(212, 165, 116, 0.8);
+        }
+
+        .stat-label {
+            color: #e0e0e0;
+            font-size: 0.9rem;
+        }
+
+        .loading {
+            text-align: center;
+            color: #d4a574;
+            font-size: 1.1rem;
+            padding: 2rem;
+        }
+
+        .spinner {
+            margin: 24px auto 8px auto;
+            border: 6px solid #e0e0e0;
+            border-top: 6px solid #d4a574;
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Desktop - larger fonts */
+        @media (min-width: 769px) {
+            .event-title {
+                font-size: 3.5rem !important;
+            }
+
+            .event-subtitle {
+                font-size: 1.5rem !important;
+            }
+
+            .product-description {
+                font-size: 1.2rem !important;
+            }
+
+            .highlight-title {
+                font-size: 2rem !important;
+            }
+
+            .highlight-text {
+                font-size: 1.2rem !important;
+            }
+
+            .card-name {
+                font-size: 1rem !important;
+            }
+
+            .price {
+                font-size: 2.5rem !important;
+            }
+
+            .benefits li {
+                font-size: 1.1rem !important;
+            }
+
+            .stat-number {
+                font-size: 2.5rem !important;
+            }
+
+            .stat-label {
+                font-size: 1.1rem !important;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .event-title {
+                font-size: 2rem;
+            }
+
+            .promo-cards-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.8rem;
+            }
+
+            .container {
+                padding: 1rem;
+            }
+
+            .card-name {
+                font-size: 0.75rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Floating card packs -->
+    <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2026/02/th_ma4_pkg.png" alt="MA4 Booster Pack"
+        class="floating-card-pack">
+    <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2026/02/th_ma4_pkg.png" alt="MA4 Booster Pack"
+        class="floating-card-pack">
+
+    <div class="container">
+        <div class="header">
+            <img src="https://i.postimg.cc/wjzpnxjB/Up-Level-01-1.png" alt="Up Level Academy Logo" class="logo">
+            <h1 class="event-title" style="font-size: 2.2rem;">🎉 พรีออเดอร์ MA4 Void Blast 🎉</h1>
+            <div class="event-subtitle" style="font-size: 1rem;">วอยด์บลาสต์ - วางจำหน่าย 20 มีนาคม 2026</div>
+
+            <div class="product-description" style="font-size: 0.95rem; line-height: 1.4;">
+                <strong>พลังอันเหนือชั้น! เมก้าซีการ์ด ex และ ลิซาร์ดอน Y ex ออกปฏิบัติการ!</strong>
+                "โปเกมอนวิวัฒนาการเมก้า" ที่ถูกค้นพบใหม่ ออกปรากฏกายในรูปแบบของโปเกมอนวิวัฒนาการเมก้า ex!
+            </div>
+
+            <!-- ปุ่มสั่งซื้อด้านบน -->
+            <div style="text-align: center; margin: 1.5rem 0;">
+                <a href="https://forms.gle/tZKPPySWGW4SvN9L8" target="_blank" class="cta-button"
+                    style="padding: 1rem 2.5rem; font-size: 1.1rem;">🎯 คลิกเพื่อสั่งซื้อ</a>
+            </div>
+        </div>
+
+        <!-- ไฮไลท์สินค้า -->
+        <div class="highlight-section">
+            <h3 class="highlight-title" style="font-size: 1.5rem;">✨ ไฮไลท์การ์ดพิเศษในชุด MA4</h3>
+            <div class="highlight-text" style="font-size: 0.95rem; line-height: 1.6;">
+                🔥 <strong>เมก้าซีการ์ดex</strong> - ทอยเหรียญให้โปเกมอนฝ่ายตรงข้ามทุกตัว ปล่อยแดเมจ 150
+                ไปที่ตัวที่เหรียญออกหัว!<br>
+                ⭐ <strong>เมก้าสตาร์มีex</strong> - ไล่ต้อนฝ่ายตรงข้ามด้วยท่า [เจ็ตโบลว์] และ [เนบิวลาบีม]<br>
+                🦎 <strong>เมก้าลิซาร์ดอน Y ex</strong> - ท่า [โพลชัน Y] ทำแดเมจ 280 พร้อมโจมตีโปเกมอนบนเบนช์!<br>
+                🌸 <strong>รัฟเฟรเซียex ของเอริกะ</strong> - ฟื้นฟู HP ของโปเกมอนฝ่ายตัวเองทุกตัว ตัวละ 30<br>
+                ⚡ <strong>พิคาชูex</strong> - โปเกมอนไฟฟ้าสุดคลาสสิคกลับมาในรูปแบบ ex!<br>
+                🐦 <strong>มุคูฮอว์กของอาโอกิ</strong> - การ์ดพิเศษจากทีมของอาโอกิ
+            </div>
+        </div>
+
+        <!-- การ์ดที่น่าสนใจ -->
+        <div class="highlight-section">
+            <h3 class="highlight-title" style="font-size: 1.4rem; margin-bottom: 0.8rem;">🌟 การ์ดที่น่าสนใจจากชุด MA4
+            </h3>
+            <div class="promo-cards-grid">
+                <div class="promo-card-item">
+                    <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2026/02/th_ma4_card_174.png"
+                        alt="ปิปปี SAR" loading="lazy">
+                    <div class="card-name">ปิปปี ex ของลิเลีย (SAR)</div>
+                </div>
+                <div class="promo-card-item">
+                    <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2026/02/th_ma4_card_173.png"
+                        alt="พิคาชู ex" loading="lazy">
+                    <div class="card-name">พิคาชู ex</div>
+                </div>
+                <div class="promo-card-item">
+                    <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2026/02/th_ma4_card_147.png"
+                        alt="มุคูฮอว์ก" loading="lazy">
+                    <div class="card-name">มุคูฮอว์กของอาโอกิ</div>
+                </div>
+                <div class="promo-card-item">
+                    <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2026/02/th_ma4_card_025.png"
+                        alt="เมก้าลิซาร์ดอน Y ex" loading="lazy">
+                    <div class="card-name">เมก้าลิซาร์ดอน Y ex</div>
+                </div>
+                <div class="promo-card-item">
+                    <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2026/02/th_ma4_card_037.png"
+                        alt="เมก้าสตาร์มี ex" loading="lazy">
+                    <div class="card-name">เมก้าสตาร์มี ex</div>
+                </div>
+                <div class="promo-card-item">
+                    <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2026/02/th_ma4_card_073.png"
+                        alt="เมก้าซีการ์ด ex" loading="lazy">
+                    <div class="card-name">เมก้าซีการ์ด ex</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ข้อมูลสินค้า -->
+        <div class="pricing-card">
+            <h3 style="color: #d4a574; font-size: 1.5rem; margin-bottom: 1rem;">📦 ข้อมูลสินค้า</h3>
+            <div class="price">💸 Booster Box 1,350 บาท / Box</div>
+            <ul class="benefits">
+                <li>📦 การ์ด 5 ใบ คละแบบ</li>
+                <li>🎴 ทั้งหมด 123 แบบ + การ์ดพิเศษ</li>
+                <li>✅ รับ 5 EXP ต่อ 1 Box</li>
+                <li>📅 รับสินค้าตั้งแต่ 20 มีนาคม 2026 เป็นต้นไป</li>
+            </ul>
+        </div>
+
+        <!-- สถิติ -->
+        <div class="highlight-section">
+            <h3 class="highlight-title">📊 รายชื่อผู้สั่งซื้อและลงทะเบียน</h3>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalUsers">-</div>
+                    <div class="stat-label">ผู้สั่งซื้อทั้งหมด</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalBoxes">-</div>
+                    <div class="stat-label">จำนวนบ็อครวม</div>
+                </div>
+            </div>
+            <div id="usersContainer">
+                <div class="spinner"></div>
+                <div class="loading">กำลังโหลดข้อมูล...</div>
+            </div>
+        </div>
+
+        <!-- ปุ่มสั่งซื้อ -->
+        <div style="text-align: center; margin: 2rem 0;">
+            <a href="https://forms.gle/tZKPPySWGW4SvN9L8" target="_blank" class="cta-button">🎯 คลิกเพื่อสั่งซื้อ</a>
+            <a href="https://forms.gle/5ctkLmT3FwLW9oRi6" target="_blank" class="cta-button">🏰 สมัครสมาชิกกิลด์</a>
+        </div>
+
+        <!-- ข้อมูลติดต่อ -->
+        <div style="margin-top: 3rem; padding: 2rem; background: rgba(255, 255, 255, 0.05); border-radius: 20px;">
+            <h3 style="color: #d4a574; margin-bottom: 1rem;">📍 สถานที่รับสินค้า</h3>
+            <p style="color: #e0e0e0;">ร้าน Up Level Academy<br>(ติด MRT บางแค ทางออก 2)</p>
+            <p style="color: #e0e0e0; margin-top: 1rem;">
+                📞 097-115-6555 | 💬 @uplevelacademy
+            </p>
+        </div>
+    </div>
+
+    <script>
+        const apiUrl = "https://script.google.com/macros/s/AKfycbyj9uOI5GxrutCJEbSZ3w8oy5lb8OoqVfklvTfBCQBAce1iXlQ-aXQv2BcArG6t6qek_g/exec?type=json";
+        const memberDashboardApi = "https://script.google.com/macros/s/AKfycbxtjsDwHI6nJU4OIHExUxMaZwUn3qwakvdkzwbQO7C8Trzz5Gh84SX6F1gqb4BOFQcn/exec?func=getMemberDashboardData";
+
+        window.addEventListener('load', function () {
+            loadRegisteredUsers();
+        });
+
+        function extractBoxCount(p) {
+            const keys = Object.keys(p);
+
+            // Try to find box-related keys
+            const boxKeys = keys.filter(k =>
+                k.includes('box') || k.includes('Box') || k.includes('BOX') ||
+                k.includes('บ็อค') || k.includes('บอก') || k.includes('กล่อง')
+            );
+
+            if (boxKeys.length > 0) {
+                const val = p[boxKeys[0]];
+                if (typeof val === 'number') return val;
+                if (typeof val === 'string') {
+                    const parsed = parseBoxQuantityFromString(val);
+                    if (parsed > 0) return parsed;
+                }
+            }
+
+            // Try quantity keys
+            const quantityKeys = ['จำนวน', 'จำนวนที่ต้องการสั่งซื้อ (1 BOX = 1,550 บาท, 1 C/)', 'จำนวนที่ต้องการสั่งซื้อ', 'quantity', 'Quantity'];
+            for (const qk of quantityKeys) {
+                if (p[qk]) {
+                    const parsed = parseBoxQuantityFromString(String(p[qk]));
+                    if (parsed > 0) return parsed;
+                }
+            }
+
+            return p.boxes || 0;
+        }
+
+        function getRankEmoji(rank) {
+            const baseRank = rank ? rank.split(' ')[0] : '';
+            const rankEmojis = {
+                'Rookie': '🎖️',
+                'Bronze': '🥉',
+                'Silver': '🥈',
+                'Gold': '🥇',
+                'Platinum': '💎',
+                'Diamond': '💎',
+                'Grandmaster': '👑',
+                'Legend': '⭐'
+            };
+            return rankEmojis[baseRank] || '';
+        }
+
+        function getBaseRank(rank) {
+            return rank ? rank.split(' ')[0] : '';
+        }
+
+        function renderCodenameEffect(codename, rank) {
+            const chars = ['[', ...codename.split(''), ']'];
+            const waveRanks = ['Gold', 'Platinum', 'Diamond', 'Grandmaster', 'Legend'];
+            const baseRank = getBaseRank(rank);
+
+            if (waveRanks.includes(baseRank)) {
+                return `<span class="codename wave ${baseRank.toLowerCase()}">${chars.map(ch => `<span>${ch}</span>`).join('')}</span>`;
+            } else {
+                return `<span class="codename">[${codename}]</span>`;
+            }
+        }
+
+        function parseBoxQuantityFromString(boxData) {
+            if (!boxData) return 0;
+            const str = String(boxData).toLowerCase();
+            let totalBoxes = 0;
+
+            if (str.includes('carton') || str.includes('c/t') || str.includes('คาร์ตัน')) {
+                const cartonMatch = str.match(/(\d+)\s*(carton|c\/t|คาร์ตัน)/i);
+                if (cartonMatch) totalBoxes += parseInt(cartonMatch[1]) * 6;
+            }
+
+            if (str.includes('box') || str.includes('บ็อค') || str.includes('กล่อง')) {
+                const boxMatch = str.match(/(\d+)\s*(box|บ็อค|กล่อง)/i);
+                if (boxMatch) totalBoxes += parseInt(boxMatch[1]);
+            }
+
+            if (totalBoxes === 0) {
+                const numMatch = str.match(/\d+/);
+                if (numMatch) totalBoxes = parseInt(numMatch[0]);
+            }
+
+            return totalBoxes;
+        }
+
+        function loadRegisteredUsers() {
+            const container = document.getElementById('usersContainer');
+            container.innerHTML = '<div class="spinner"></div><div class="loading">กำลังโหลดข้อมูล...</div>';
+
+            Promise.all([
+                fetch(apiUrl).then(res => res.json()),
+                fetch(memberDashboardApi).then(res => res.json()).catch(err => [])
+            ]).then(([data, members]) => {
+                if (!data || !data.participants || data.participants.length === 0) {
+                    document.getElementById('totalUsers').textContent = '0';
+                    document.getElementById('totalBoxes').textContent = '0';
+                    container.innerHTML = '<div class="loading">📝 ยังไม่มีผู้สั่งซื้อ</div>';
+                    return;
+                }
+
+                // สร้าง map เบอร์โทร -> { codename, rank }
+                const phoneMap = {};
+                if (members && Array.isArray(members)) {
+                    members.forEach(m => {
+                        const phone = String(m.phone || '').replace(/[^\d]/g, "");
+                        if (phone) {
+                            phoneMap[phone] = { codename: m.codename, rank: m.rank };
+                        }
+                    });
+                }
+
+                const participants = data.participants;
+                const totalUsers = participants.length;
+                const totalBoxes = participants.reduce((sum, p) => sum + extractBoxCount(p), 0);
+
+                document.getElementById('totalUsers').textContent = totalUsers;
+                document.getElementById('totalBoxes').textContent = totalBoxes;
+
+                let html = '<table style="width:100%; border-collapse:collapse; margin:1rem auto; background:#fff; border-radius:12px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.1);">';
+                html += '<thead><tr style="background: linear-gradient(45deg, #d4a574, #c89666);">';
+                html += '<th style="padding:12px; text-align:center; color:#2d1a00; font-weight:bold;">ลำดับ</th>';
+                html += '<th style="padding:12px; text-align:center; color:#2d1a00; font-weight:bold;">Codename/ชื่อเล่น</th>';
+                html += '<th style="padding:12px; text-align:center; color:#2d1a00; font-weight:bold;">จำนวน Box</th>';
+                html += '</tr></thead><tbody>';
+
+                participants.forEach((user, index) => {
+                    let displayName = user['ชื่อเล่น'] || user['ชื่อ - นามสกุล'] || 'ไม่ระบุชื่อ';
+
+                    // ดึงเบอร์โทรและทำความสะอาด
+                    let phone = '';
+                    const phoneFields = ['เบอร์ติดต่อ (0xx-xxx-xxxx)', 'เบอร์โทรศัพท์', 'phone', 'เบอร์โทร', 'Phone', 'phoneNumber'];
+                    for (const field of phoneFields) {
+                        if (user[field]) {
+                            phone = String(user[field]).replace(/[^\d]/g, "");
+                            break;
+                        }
+                    }
+
+                    console.log('User:', displayName, 'Phone:', phone, 'All keys:', Object.keys(user)); // Debug
+
+                    const boxes = extractBoxCount(user);
+
+                    // ตรวจสอบว่าเป็นสมาชิกหรือไม่
+                    const profile = phone ? phoneMap[phone] : null;
+                    if (profile && profile.codename && profile.codename !== 'ไม่ระบุ') {
+                        const rank = profile.rank || '';
+                        const emoji = getRankEmoji(rank);
+                        const codenameHtml = renderCodenameEffect(profile.codename, rank);
+                        displayName = `<span class="codename-rank" data-rank="${rank}"><span>${emoji}</span> ${codenameHtml} <span>${emoji}</span></span>`;
+                    }
+
+                    html += `<tr style="border-bottom:1px solid #ddd;">`;
+                    html += `<td style="padding:10px; text-align:center; color:#2c3e50; font-weight:bold;">${index + 1}</td>`;
+                    html += `<td style="padding:10px; text-align:center; color:#2c3e50;">${displayName}</td>`;
+                    html += `<td style="padding:10px; text-align:center; color:#2c3e50; font-weight:600;">${boxes}</td>`;
+                    html += '</tr>';
+                });
+
+                html += '</tbody></table>';
+                container.innerHTML = html;
+            })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('totalUsers').textContent = '0';
+                    document.getElementById('totalBoxes').textContent = '0';
+                    container.innerHTML = '<div class="loading" style="color: #ff6b6b;">⚠️ ไม่สามารถโหลดข้อมูลได้</div>';
+                });
+        }
+    </script>
+</body>
+
+</html>
