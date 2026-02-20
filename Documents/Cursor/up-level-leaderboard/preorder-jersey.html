@@ -518,8 +518,10 @@
                         const emoji = getRankEmoji(rank);
                         const codenameHtml = renderCodenameEffect(profile.codename, rank);
                         displayName = `<span class="codename-rank" style="font-size: 0.9rem;"><span>${emoji}</span> ${codenameHtml} <span>${emoji}</span></span>`;
-                    } else if (user[keyNickname] && user[keyFullname]) {
-                        displayName = `<span style="font-size: 0.9rem;">${user[keyFullname]}</span> <span style="color:var(--text-muted); font-size:0.8rem;">(${user[keyNickname]})</span>`;
+                    } else if (user[keyNickname]) {
+                        displayName = `<span style="font-size: 0.9rem; font-weight: 500;">${user[keyNickname]}</span>`;
+                    } else if (user[keyFullname]) {
+                        displayName = `<span style="font-size: 0.9rem;">${user[keyFullname]}</span>`;
                     }
 
                     html += `<tr style="border-bottom:1px solid rgba(255,255,255,0.05); transition: background 0.2s;">`;
