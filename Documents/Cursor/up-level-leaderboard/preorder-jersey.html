@@ -460,16 +460,28 @@
                 html += '<thead><tr style="background: rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.1);">';
                 html += '<th style="padding:15px 10px; text-align:center; color:var(--text-light); font-weight:600;">ลำดับ</th>';
                 html += '<th style="padding:15px 10px; text-align:center; color:var(--text-light); font-weight:600;">ชื่อ/Codename</th>';
+                html += '<th style="padding:15px 10px; text-align:center; color:var(--text-light); font-weight:600;">สถานะ</th>';
                 html += '</tr></thead><tbody>';
 
                 participants.forEach((user, index) => {
                     let keyFullname = Object.keys(user).find(k => k.includes('ชื่อ - นามสกุล') || k.toLowerCase().includes('name') && !k.toLowerCase().includes('screen') && !k.toLowerCase().includes('nick'));
                     let keyNickname = Object.keys(user).find(k => k.includes('ชื่อเล่น') || k.toLowerCase().includes('nick'));
                     let keyPhone = Object.keys(user).find(k => k.includes('เบอร์โทรศัพท์') || k.toLowerCase().includes('phone'));
+                    let keyStatus = Object.keys(user).find(k => k.includes('สถานะ') || k.toLowerCase().includes('status'));
 
                     let displayName = user[keyNickname] || user[keyFullname] || 'ไม่ระบุชื่อ';
                     let rawPhone = user[keyPhone] || '';
                     let phone = String(rawPhone).replace(/\D/g, "");
+
+                    let statusText = user[keyStatus] || 'รอการชำระเงิน';
+                    let statusBadge = '';
+                    if (statusText.includes('ชำระแล้ว')) {
+                        statusBadge = `<span style="background: rgba(16, 185, 129, 0.2); color: #10b981; padding: 4px 8px; border-radius: 6px; font-size: 0.85rem; font-weight: 600;">✅ ชำระแล้ว</span>`;
+                    } else if (statusText.includes('รอตรวจสอบ')) {
+                        statusBadge = `<span style="background: rgba(245, 158, 11, 0.2); color: #f59e0b; padding: 4px 8px; border-radius: 6px; font-size: 0.85rem; font-weight: 600;">⏳ รอตรวจสอบ</span>`;
+                    } else {
+                        statusBadge = `<span style="background: rgba(239, 68, 68, 0.2); color: #ef4444; padding: 4px 8px; border-radius: 6px; font-size: 0.85rem; font-weight: 600;">❌ รอชำระ</span>`;
+                    }
 
                     const profile = phone ? phoneMap[phone] : null;
                     if (profile && profile.codename && profile.codename !== 'ไม่ระบุ') {
@@ -484,6 +496,7 @@
                     html += `<tr style="border-bottom:1px solid rgba(255,255,255,0.05); transition: background 0.2s;">`;
                     html += `<td style="padding:12px 10px; text-align:center; color:var(--text-muted);">${index + 1}</td>`;
                     html += `<td style="padding:12px 10px; text-align:center; color:var(--text-light);">${displayName}</td>`;
+                    html += `<td style="padding:12px 10px; text-align:center;">${statusBadge}</td>`;
                     html += '</tr>';
                 });
 

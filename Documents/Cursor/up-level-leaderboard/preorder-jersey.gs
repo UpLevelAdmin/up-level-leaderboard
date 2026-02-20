@@ -35,6 +35,46 @@ function onFormSubmit(e) {
     const responses = e.namedValues;
     sendTelegramNotification(responses);
 
+    // 1. ตรวจสอบ SlipOK และอัปเดตสถานะใน Sheet
+    if (e.range) {
+      const sheet = e.range.getSheet();
+      const row = e.range.getRow();
+      
+      // หาคอลัมน์ "สถานะการชำระเงิน"
+      const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+      let statusCol = headers.indexOf("สถานะการชำระเงิน") + 1;
+      
+      // ถ้ายังไม่มีคอลัมน์นี้ ให้สร้างใหม่
+      if (statusCol === 0) {
+        statusCol = sheet.getLastColumn() + 1;
+        sheet.getRange(1, statusCol).setValue("สถานะการชำระเงิน");
+      }
+
+      // หาค่าสลิปจาก responses
+      let slipUrl = "";
+      for (const key in responses) {
+        if (key.includes('บัญชี') || key.includes('QR') || key.includes('สลิป') || key.includes('หลักฐาน') || key.includes('ชำระเงิน')) {
+           const val = responses[key][0];
+           if (val && val.includes('drive.google.com')) {
+              slipUrl = val;
+              break;
+           }
+        }
+      }
+
+      if (slipUrl) {
+        setFilePublic(slipUrl);
+        const result = verifySlipDirectly(slipUrl);
+        if (result && result.success) {
+           sheet.getRange(row, statusCol).setValue("✅ ชำระแล้ว");
+        } else {
+           sheet.getRange(row, statusCol).setValue("⏳ รอตรวจสอบ");
+        }
+      } else {
+        sheet.getRange(row, statusCol).setValue("❌ รอชำระ");
+      }
+    }
+
     // ล้าง Cache เพื่อให้หน้าเว็บโหลดรายชื่อตอนดึงข้อมูลได้ตัวใหม่เสมอ
     invalidateCache();
 
@@ -178,5 +218,72 @@ function invalidateCache() {
     console.log("🧹 Cache invalidated successfully");
   } catch (e) {
     console.error("❌ Failed to invalidate cache:", e);
+  }
+}
+
+// ===== ระบบตรวจสอบสลิปอัตโนมัติ (SlipOK) =====
+const SLIPOK_API_KEY = "SLIPOKE2TSLQJ"; 
+const BRANCH_ID = "58927";
+
+function getFileIdFromUrl(url) {
+  var id = "";
+  if (url.indexOf('?id=') > 0) {
+    id = url.split('?id=')[1].split('&')[0];
+  } else {
+    var parts = url.match(/[-\w]{25,}/);
+    if (parts && parts.length > 0) {
+      id = parts[0];
+    }
+  }
+  return id;
+}
+
+function setFilePublic(fileUrl) {
+  if (!fileUrl) return;
+  try {
+    const fileId = getFileIdFromUrl(fileUrl);
+    if (fileId) {
+      const file = DriveApp.getFileById(fileId);
+      file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    }
+  } catch (e) {
+    console.warn("⚠️ Failed to set public access: " + e.toString());
+  }
+}
+
+function verifySlipDirectly(fileUrl) {
+  if (!fileUrl) return null;
+  try {
+    const fileId = getFileIdFromUrl(fileUrl);
+    if (!fileId) return null;
+
+    const file = DriveApp.getFileById(fileId);
+    const blob = file.getBlob();
+    
+    const options = {
+      method: "post",
+      headers: {
+        "x-authorization": SLIPOK_API_KEY,
+        "Content-Type": "application/json"
+      },
+      payload: JSON.stringify({
+        files: Utilities.base64Encode(blob.getBytes()),
+        log: true
+      }),
+      muteHttpExceptions: true
+    };
+    
+    const response = UrlFetchApp.fetch(`https://api.slipok.com/api/line/apikey/${BRANCH_ID}`, options);
+    const result = JSON.parse(response.getContentText());
+    
+    if (result.success) return { success: true, data: result.data };
+    
+    if (result.data && (result.code === 1004 || result.code === 1012 || result.message?.includes('ใช้ไปแล้ว') || result.message?.includes('used') || result.message?.includes('สลิปซ้ำ'))) {
+      return { success: true, data: result.data };
+    }
+    
+    return null;
+  } catch (e) {
+    return null;
   }
 }
