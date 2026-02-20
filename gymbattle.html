@@ -292,6 +292,43 @@
         transform: translateY(0);
       }
 
+      /* Master Championest Fire Breathing Effect */
+      .codename.fire-breath {
+        color: #111 !important;
+        /* เกือบดำสนิท */
+        font-weight: 800;
+        letter-spacing: 1px;
+        animation: fire-glow 2.5s infinite alternate;
+      }
+
+      @keyframes fire-glow {
+        0% {
+          text-shadow:
+            0 0 2px #fff,
+            0 0 4px #fffc00,
+            0 0 8px #ff7300,
+            0 0 12px #ff0000;
+        }
+
+        50% {
+          text-shadow:
+            0 0 3px #fff,
+            0 0 8px #fffc00,
+            0 0 15px #ff7300,
+            0 0 25px #ff0000,
+            0 -5px 15px rgba(255, 0, 0, 0.6);
+        }
+
+        100% {
+          text-shadow:
+            0 0 2px #fff,
+            0 0 6px #fffc00,
+            0 0 10px #ff7300,
+            0 0 18px #ff0000;
+        }
+      }
+
+
       20% {
         transform: translateY(-5px);
       }
@@ -888,7 +925,7 @@
     </div>
 
     <div style="display: flex; justify-content: center; margin-bottom: 24px;">
-      <a class="register-btn" href="https://forms.gle/sXcmiXGK1R8tZrz9A" target="_blank"
+      <a class="register-btn" href="https://forms.gle/vq2b1SkKKDsHsHDx9" target="_blank"
         style="text-align: center;">สมัครแข่งขัน Gym Battle</a>
     </div>
     <div id="gymbattle-list" style="text-align:center;">
@@ -1123,10 +1160,12 @@
             let phone = String(player.phone || '').replace(/[^\d]/g, "");
             const profile = phoneMap[phone];
 
-            if (profile && profile.codename && profile.rank) {
-              const emoji = getRankEmoji(profile.rank);
-              const codenameHtml = renderCodenameEffect(profile.codename, profile.rank);
-              displayName += `<br><span class="codename-rank" data-rank="${profile.rank}"><span>${emoji}</span> ${codenameHtml} <span>${emoji}</span></span>`;
+            if ((profile && profile.codename && profile.rank) || String(phone).endsWith('971156555')) {
+              const rank = profile ? profile.rank : '';
+              const codenameStr = profile ? profile.codename : '';
+              const emoji = getRankEmoji(rank, phone);
+              const codenameHtml = renderCodenameEffect(codenameStr, rank, phone);
+              displayName += `<br><span class="codename-rank" data-rank="${rank}"><span>${emoji}</span> ${codenameHtml} <span>${emoji}</span></span>`;
             }
 
             // ตรวจสอบสถานะการเงิน

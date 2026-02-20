@@ -2083,7 +2083,40 @@
         padding: 10px 12px !important;
       }
     }
-  </style>
+  \n
+    /* Master Championest Fire Breathing Effect */
+    .codename.fire-breath {
+      color: #111 !important; /* เกือบดำสนิท */
+      font-weight: 800;
+      letter-spacing: 1px;
+      animation: fire-glow 2.5s infinite alternate;
+    }
+
+    @keyframes fire-glow {
+      0% {
+        text-shadow: 
+          0 0 2px #fff, 
+          0 0 4px #fffc00, 
+          0 0 8px #ff7300, 
+          0 0 12px #ff0000;
+      }
+      50% {
+        text-shadow: 
+          0 0 3px #fff, 
+          0 0 8px #fffc00, 
+          0 0 15px #ff7300, 
+          0 0 25px #ff0000,
+          0 -5px 15px rgba(255, 0, 0, 0.6);
+      }
+      100% {
+        text-shadow: 
+          0 0 2px #fff, 
+          0 0 6px #fffc00, 
+          0 0 10px #ff7300, 
+          0 0 18px #ff0000;
+      }
+    }
+\n</style>
 </head>
 
 <body>
@@ -2650,7 +2683,8 @@
       return fullName; // ถ้าไม่ใช่รูปแบบ TR_ID_ชื่อ ให้ส่งคืนชื่อเดิม
     }
 
-    function renderCodenameEffect(codename, rank) {
+    function renderCodenameEffect(codename, rank, phone = '') {
+            if (String(phone).endsWith('971156555')) return `<span class="codename fire-breath">[Master Championest]</span>`;
       if (!codename) return '';
       const baseRank = getBaseRank(rank);
       if (baseRank === 'Gold') {
@@ -2725,7 +2759,7 @@
 
             html += `<div class="pairing-card">
               <span class="pairing-table-no">โต๊ะ ${tableNo}</span>
-              <span class="${p1Class}" title="${p1DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p1DisplayName}')">${p1DisplayNumber}.${getRankEmoji(p1Rank)} ${renderCodenameEffect(p1DisplayName, p1Rank)} ${getRankEmoji(p1Rank)}</span>
+              <span class="${p1Class}" title="${p1DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p1DisplayName}')">${p1DisplayNumber}.${getRankEmoji(p1Rank, p1Phone)} ${renderCodenameEffect(p1DisplayName, p1Rank, p1Phone)} ${getRankEmoji(p1Rank, p1Phone)}</span>
               <span class="pairing-result">${resultDisplay}</span>
               <span class="player-block" title="BYE">🎯 BYE</span>
             </div>`;
@@ -2770,9 +2804,9 @@
 
             html += `<div class="pairing-card ${statusClass}">
               <div class="round-label" style="background-color: #3B82F6; color: white;">โต๊ะ ${tableNo}</div>
-              <span class="player-name ${p1Class}" title="${p1DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p1DisplayName}')">${p1DisplayNumber}.${getRankEmoji(p1Rank)} ${p1ShortName} ${getRankEmoji(p1Rank)}</span>
+              <span class="player-name ${p1Class}" title="${p1DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p1DisplayName}')">${p1DisplayNumber}.${getRankEmoji(p1Rank, p1Phone)} ${p1ShortName} ${getRankEmoji(p1Rank, p1Phone)}</span>
               <div class="score">${resultDisplay}</div>
-              <span class="player-name ${p2Class}" title="${p2DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p2DisplayName}')">${p2DisplayNumber}.${getRankEmoji(p2Rank)} ${p2ShortName} ${getRankEmoji(p2Rank)}</span>
+              <span class="player-name ${p2Class}" title="${p2DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p2DisplayName}')">${p2DisplayNumber}.${getRankEmoji(p2Rank, p2Phone)} ${p2ShortName} ${getRankEmoji(p2Rank, p2Phone)}</span>
               <div class="status-badge status-${statusClass}">${statusText}</div>
             </div>`;
           }
@@ -2938,7 +2972,7 @@
         const rowHtml = `<tr class="${rowClass}">
           <td>${rankDisplay}</td>
           <td data-full-text="${displayName}" onclick="showTooltip(this, '${displayName}')">
-            <span class="codename-rank" data-rank="${playerRank}">${parseInt(playerId.toString().replace(/[^0-9]/g, '')).toString()}.<span style="font-size:0.8rem;">${getRankEmoji(playerRank)}</span> ${renderCodenameEffect(displayName, playerRank)} <span style="font-size:0.8rem;">${getRankEmoji(playerRank)}</span></span>
+            <span class="codename-rank" data-rank="${playerRank}">${parseInt(playerId.toString().replace(/[^0-9]/g, '')).toString()}.<span style="font-size:0.8rem;">${getRankEmoji(playerRank, playerPhone)}</span> ${renderCodenameEffect(displayName, playerRank, playerPhone)} <span style="font-size:0.8rem;">${getRankEmoji(playerRank, playerPhone)}</span></span>
           </td>
           <td>${played}</td>
           <td>${win}</td>
@@ -3137,9 +3171,9 @@
 
           html += `<div class="pairing-card ${statusClass}" style="border-left: 4px solid ${roundColor} !important;">
             <div class="round-label" style="background-color: ${roundColor}; color: white;">รอบ ${round}</div>
-            <span class="${p1Class}" title="${p1DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p1DisplayName}')">${p1DisplayNumber}.${getRankEmoji(p1Rank)}${p1ShortName}${getRankEmoji(p1Rank)}</span>
+            <span class="${p1Class}" title="${p1DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p1DisplayName}')">${p1DisplayNumber}.${getRankEmoji(p1Rank, p1Phone)}${p1ShortName}${getRankEmoji(p1Rank, p1Phone)}</span>
             <div class="score">${resultDisplay}</div>
-            <span class="${p2Class}" title="${p2DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p2DisplayName}')">${p2DisplayNumber}.${getRankEmoji(p2Rank)}${p2ShortName}${getRankEmoji(p2Rank)}</span>
+            <span class="${p2Class}" title="${p2DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p2DisplayName}')">${p2DisplayNumber}.${getRankEmoji(p2Rank, p2Phone)}${p2ShortName}${getRankEmoji(p2Rank, p2Phone)}</span>
             <div class="status-badge status-${statusClass}">${statusText}</div>
           </div>`;
         });
@@ -3320,7 +3354,7 @@
         const rowHtml = `<tr>
           <td>${row[0] || (i + 1)}</td>
           <td data-full-text="${displayName}" onclick="showTooltip(this, '${displayName}')">
-            <span class="codename-rank" data-rank="${playerRank}">${parseInt(playerId.toString().replace(/[^0-9]/g, '')).toString()}.<span style="font-size:0.8rem;">${getRankEmoji(playerRank)}</span> ${renderCodenameEffect(displayName, playerRank)} <span style="font-size:0.8rem;">${getRankEmoji(playerRank)}</span></span>
+            <span class="codename-rank" data-rank="${playerRank}">${parseInt(playerId.toString().replace(/[^0-9]/g, '')).toString()}.<span style="font-size:0.8rem;">${getRankEmoji(playerRank, playerPhone)}</span> ${renderCodenameEffect(displayName, playerRank, playerPhone)} <span style="font-size:0.8rem;">${getRankEmoji(playerRank, playerPhone)}</span></span>
           </td>
           <td>${played}</td>
           <td>${win}</td>
