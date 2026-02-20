@@ -414,11 +414,6 @@
         function loadRegisteredUsers() {
             const container = document.getElementById('usersContainer');
 
-            if (apiUrl === "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE") {
-                container.innerHTML = '<div class="loading" style="color: #facc15;">⚠️ รอการเชื่อมต่อข้อมูล API จาก Google Sheet</div>';
-                return;
-            }
-
             container.innerHTML = '<div class="spinner"></div><div class="loading">กำลังโหลดข้อมูล...</div>';
 
             Promise.all([
