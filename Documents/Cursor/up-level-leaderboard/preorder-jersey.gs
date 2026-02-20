@@ -243,6 +243,8 @@ function setFilePublic(fileUrl) {
   try {
     const fileId = getFileIdFromUrl(fileUrl);
     if (fileId) {
+      // Dummy call so Apps Script prompts for Drive app authorization
+      // DriveApp.getFiles(); 
       const file = DriveApp.getFileById(fileId);
       file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
     }
