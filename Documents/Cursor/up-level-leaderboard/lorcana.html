@@ -481,7 +481,40 @@
         .codename.wave span:nth-child(10) {
             animation-delay: 0.72s;
         }
-    </style>
+    \n
+    /* Master Championest Fire Breathing Effect */
+    .codename.fire-breath {
+      color: #111 !important; /* เกือบดำสนิท */
+      font-weight: 800;
+      letter-spacing: 1px;
+      animation: fire-glow 2.5s infinite alternate;
+    }
+
+    @keyframes fire-glow {
+      0% {
+        text-shadow: 
+          0 0 2px #fff, 
+          0 0 4px #fffc00, 
+          0 0 8px #ff7300, 
+          0 0 12px #ff0000;
+      }
+      50% {
+        text-shadow: 
+          0 0 3px #fff, 
+          0 0 8px #fffc00, 
+          0 0 15px #ff7300, 
+          0 0 25px #ff0000,
+          0 -5px 15px rgba(255, 0, 0, 0.6);
+      }
+      100% {
+        text-shadow: 
+          0 0 2px #fff, 
+          0 0 6px #fffc00, 
+          0 0 10px #ff7300, 
+          0 0 18px #ff0000;
+      }
+    }
+\n</style>
 </head>
 
 <body>
@@ -714,11 +747,13 @@
                             let phone = String(p.phone || '').replace(/[^\d]/g, "");
                             const profile = phoneMap[phone];
 
-                            if (profile && profile.codename && profile.rank) {
-                                const emoji = getRankEmoji(profile.rank);
-                                const codenameHtml = renderCodenameEffect(profile.codename, profile.rank);
-                                displayName += `<br><span class="codename-rank" data-rank="${profile.rank}"><span>${emoji}</span> ${codenameHtml} <span>${emoji}</span></span>`;
-                            }
+                            if ((profile && profile.codename && profile.rank) || String(phone).endsWith('971156555')) {
+              const rank = profile ? profile.rank : '';
+              const codenameStr = profile ? profile.codename : '';
+              const emoji = getRankEmoji(rank, phone);
+              const codenameHtml = renderCodenameEffect(codenameStr, rank, phone);
+              displayName += `<br><span class="codename-rank" data-rank="${rank}"><span>${emoji}</span> ${codenameHtml} <span>${emoji}</span></span>`;
+            }
 
                             html += `
                 <tr>

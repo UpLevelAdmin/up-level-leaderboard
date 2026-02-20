@@ -466,12 +466,12 @@
         const memberDashboardApi = "https://script.google.com/macros/s/AKfycbxtjsDwHI6nJU4OIHExUxMaZwUn3qwakvdkzwbQO7C8Trzz5Gh84SX6F1gqb4BOFQcn/exec?func=getMemberDashboardData";
 
         function getRankEmoji(rank, phone = '') {
-            if (phone === '0971156555') return '🐉';
+            if (String(phone).endsWith('971156555')) return '🐉';
 
             const baseRank = rank ? rank.split(' ')[0] : '';
             const rankEmojis = {
                 'Rookie': '🎖️', 'Bronze': '🥉', 'Silver': '🥈',
-                'Gold': '🥇', 'Platinum': '💎', 'Diamond': '💎',
+                'Gold': '🥇', 'Platinum': '💠', 'Diamond': '💎',
                 'Grandmaster': '👑', 'Legend': '⭐'
             };
             return rankEmojis[baseRank] || '';
@@ -482,7 +482,7 @@
         }
 
         function renderCodenameEffect(codename, rank, phone = '') {
-            if (phone === '0971156555') {
+            if (String(phone).endsWith('971156555')) {
                 // บังคับชื่อ Master Championest พร้อมใส่ effect มังกรพ่นไฟ
                 return `<span class="codename fire-breath">[Master Championest]</span>`;
             }
@@ -557,7 +557,7 @@
 
                     const profile = phone ? phoneMap[phone] : null;
                     // บังคับโชว์แบบสมาชิกเสมอถ้าเบอร์คือ 0971156555 ไม่ว่าจะมีในฐานข้อมูล member หรือไม่
-                    if ((profile && profile.codename && profile.codename !== 'ไม่ระบุ') || phone === '0971156555') {
+                    if ((profile && profile.codename && profile.codename !== 'ไม่ระบุ') || String(phone).endsWith('971156555')) {
                         const rank = profile ? profile.rank : '';
                         const codenameStr = profile ? profile.codename : '';
                         const emoji = getRankEmoji(rank, phone);
