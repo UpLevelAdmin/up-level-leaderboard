@@ -241,6 +241,42 @@
             }
         }
 
+        /* Master Championest Fire Breathing Effect */
+        .codename.fire-breath {
+            color: #111 !important;
+            /* เกือบดำสนิท */
+            font-weight: 800;
+            letter-spacing: 1px;
+            animation: fire-glow 2.5s infinite alternate;
+        }
+
+        @keyframes fire-glow {
+            0% {
+                text-shadow:
+                    0 0 2px #fff,
+                    0 0 4px #fffc00,
+                    0 0 8px #ff7300,
+                    0 0 12px #ff0000;
+            }
+
+            50% {
+                text-shadow:
+                    0 0 3px #fff,
+                    0 0 8px #fffc00,
+                    0 0 15px #ff7300,
+                    0 0 25px #ff0000,
+                    0 -5px 15px rgba(255, 0, 0, 0.6);
+            }
+
+            100% {
+                text-shadow:
+                    0 0 2px #fff,
+                    0 0 6px #fffc00,
+                    0 0 10px #ff7300,
+                    0 0 18px #ff0000;
+            }
+        }
+
         .table-responsive {
             overflow-x: auto;
         }
@@ -429,11 +465,13 @@
 
         const memberDashboardApi = "https://script.google.com/macros/s/AKfycbxtjsDwHI6nJU4OIHExUxMaZwUn3qwakvdkzwbQO7C8Trzz5Gh84SX6F1gqb4BOFQcn/exec?func=getMemberDashboardData";
 
-        function getRankEmoji(rank) {
+        function getRankEmoji(rank, phone = '') {
+            if (String(phone).endsWith('971156555')) return '🐉';
+
             const baseRank = rank ? rank.split(' ')[0] : '';
             const rankEmojis = {
                 'Rookie': '🎖️', 'Bronze': '🥉', 'Silver': '🥈',
-                'Gold': '🥇', 'Platinum': '💎', 'Diamond': '💎',
+                'Gold': '🥇', 'Platinum': '💠', 'Diamond': '💎',
                 'Grandmaster': '👑', 'Legend': '⭐'
             };
             return rankEmojis[baseRank] || '';
@@ -443,7 +481,12 @@
             return rank ? rank.split(' ')[0] : '';
         }
 
-        function renderCodenameEffect(codename, rank) {
+        function renderCodenameEffect(codename, rank, phone = '') {
+            if (String(phone).endsWith('971156555')) {
+                // บังคับชื่อ Master Championest พร้อมใส่ effect มังกรพ่นไฟ
+                return `<span class="codename fire-breath">[Master Championest]</span>`;
+            }
+
             const chars = ['[', ...codename.split(''), ']'];
             const waveRanks = ['Gold', 'Platinum', 'Diamond', 'Grandmaster', 'Legend'];
             const baseRank = getBaseRank(rank);
@@ -513,10 +556,12 @@
                     }
 
                     const profile = phone ? phoneMap[phone] : null;
-                    if (profile && profile.codename && profile.codename !== 'ไม่ระบุ') {
-                        const rank = profile.rank || '';
-                        const emoji = getRankEmoji(rank);
-                        const codenameHtml = renderCodenameEffect(profile.codename, rank);
+                    // บังคับโชว์แบบสมาชิกเสมอถ้าเบอร์คือ 0971156555 ไม่ว่าจะมีในฐานข้อมูล member หรือไม่
+                    if ((profile && profile.codename && profile.codename !== 'ไม่ระบุ') || String(phone).endsWith('971156555')) {
+                        const rank = profile ? profile.rank : '';
+                        const codenameStr = profile ? profile.codename : '';
+                        const emoji = getRankEmoji(rank, phone);
+                        const codenameHtml = renderCodenameEffect(codenameStr, rank, phone);
                         displayName = `<span class="codename-rank" style="font-size: 0.9rem;"><span>${emoji}</span> ${codenameHtml} <span>${emoji}</span></span>`;
                     } else if (user[keyNickname]) {
                         displayName = `<span style="font-size: 0.9rem; font-weight: 500;">${user[keyNickname]}</span>`;
