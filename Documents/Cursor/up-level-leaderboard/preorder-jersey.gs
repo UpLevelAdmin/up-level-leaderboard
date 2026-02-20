@@ -287,3 +287,89 @@ function verifySlipDirectly(fileUrl) {
     return null;
   }
 }
+
+// ===== เพิ่มเมนูใน Google Sheet สำหรับกดตรวจสลิปเอง (Manual) =====
+function onOpen() {
+  var ui = SpreadsheetApp.getUi();
+  ui.createMenu('Up Level (Jersey)')
+    .addItem('🔍 ตรวจสอบสลิปแถวปัจจุบัน', 'checkSlipManual')
+    .addToUi();
+}
+
+/**
+ * ฟังก์ชันสำหรับกดตรวจสลิปด้วยตัวเอง (Manual) จาก Google Sheet
+ * - เลือก (คลิก) ไปที่แถวของลูกค้าที่ต้องการตรวจ
+ * - กดเมนู Up Level (Jersey) > ตรวจสอบสลิปแถวปัจจุบัน
+ */
+function checkSlipManual() {
+  const ui = SpreadsheetApp.getUi();
+  const sheet = SpreadsheetApp.getActiveSheet();
+  const activeCell = sheet.getActiveCell();
+  
+  if (!activeCell) {
+    ui.alert("⚠️ กรุณาคลิกเลือกเซลล์ในแถวที่ต้องการตรวจสอบก่อน");
+    return;
+  }
+
+  const row = activeCell.getRow();
+  
+  // ป้องกันการกดตรวจที่แถวหัวตาราง
+  if (row <= 1) {
+    ui.alert("⚠️ โปรดเลือกแถวที่มีข้อมูล (บรรทัดที่ 2 เป็นต้นไป)");
+    return;
+  }
+
+  // หาคอลัมน์ทั้งหมดเพื่อหาว่าอันไหนดึงลิงก์และสถานะ
+  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  let slipColIndex = -1;
+  let statusColIndex = headers.indexOf("สถานะการชำระเงิน");
+
+  // ถ้ายังไม่มีคอลัมน์สถานะ ให้สร้างใหม่แทรกท้ายให้
+  if (statusColIndex === -1) {
+    statusColIndex = sheet.getLastColumn();
+    sheet.getRange(1, statusColIndex + 1).setValue("สถานะการชำระเงิน");
+  }
+
+  for (let i = 0; i < headers.length; i++) {
+    const headerStr = String(headers[i]);
+    if (headerStr.includes('บัญชี') || headerStr.includes('QR') || headerStr.includes('สลิป') || headerStr.includes('หลักฐาน') || headerStr.includes('ชำระเงิน') && !headerStr.includes('สถานะ')) {
+      slipColIndex = i;
+      break;
+    }
+  }
+
+  if (slipColIndex === -1) {
+    ui.alert("❌ ไม่พบคอลัมน์หลักฐานการโอนเงิน/สลิป ในตาราง");
+    return;
+  }
+
+  const slipUrl = sheet.getRange(row, slipColIndex + 1).getValue();
+
+  if (!slipUrl || !String(slipUrl).includes('drive.google.com')) {
+    ui.alert("❌ ไม่พบลิงก์ Google Drive ในแถวที่เลือก\n(หรือลูกค้าไม่ได้อัพโหลดรูปมา)");
+    sheet.getRange(row, statusColIndex + 1).setValue("❌ รอชำระ");
+    invalidateCache(); // ล้างแคชเพื่อให้เว็บอัพเดท
+    return;
+  }
+
+  // แจ้งเตือนกำลังทำงาน
+  let resultStatus = "";
+  try {
+    setFilePublic(slipUrl);
+    const slipResult = verifySlipDirectly(slipUrl);
+    
+    if (slipResult && slipResult.success) {
+      resultStatus = "✅ ชำระแล้ว";
+      ui.alert(`🎉 สลิปถูกต้อง! อัปเดตสถานะเป็น "ชำระแล้ว"\nยอด: ${slipResult.data.amount} บ.\nผู้โอน: ${slipResult.data.sender?.name}`);
+    } else {
+      resultStatus = "⏳ รอตรวจสอบ";
+      ui.alert("⚠️ สลิปมีปัญหา หรือถูกใช้งานไปแล้ว\nระบบจะขึ้นว่า รอตรวจสอบ แทน");
+    }
+  } catch (error) {
+    resultStatus = "⏳ รอตรวจสอบ";
+    ui.alert("❌ ระบบการตรวจขัดข้อง: " + error.toString());
+  }
+
+  sheet.getRange(row, statusColIndex + 1).setValue(resultStatus);
+  invalidateCache(); // ล้างแคชให้หน้าเว็บดึงข้อมูลใหม่
+}
