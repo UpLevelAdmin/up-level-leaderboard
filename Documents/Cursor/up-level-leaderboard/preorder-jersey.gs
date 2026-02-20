@@ -257,8 +257,12 @@ function verifySlipDirectly(fileUrl) {
     const fileId = getFileIdFromUrl(fileUrl);
     if (!fileId) return { success: false, message: "Could not extract file ID from URL" };
     
-    // แทนที่จะแกะไฟล์ ให้ส่ง Link ตรงให้ SlipOK เลย เพราะบาง Account ติด Permission
-    const drivePicUrl = `https://drive.google.com/uc?id=${fileId}`;
+    // **ต้องใช้ Base64** เพื่อไม่ให้ SlipOK โหลดรูปจาก URL แล้วติดหน้า HTML ของ Google Drive
+    const file = DriveApp.getFileById(fileId);
+    if (!file) {
+      return { success: false, message: "Google Drive File not found or no permission" };
+    }
+    const blob = file.getBlob();
 
     const options = {
       method: "post",
@@ -267,7 +271,7 @@ function verifySlipDirectly(fileUrl) {
         "Content-Type": "application/json"
       },
       payload: JSON.stringify({
-        url: drivePicUrl,
+        files: Utilities.base64Encode(blob.getBytes()),
         log: true
       }),
       muteHttpExceptions: true
