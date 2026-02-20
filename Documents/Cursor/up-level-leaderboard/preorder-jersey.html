@@ -460,26 +460,16 @@
                 html += '<thead><tr style="background: rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.1);">';
                 html += '<th style="padding:15px 10px; text-align:center; color:var(--text-light); font-weight:600;">ลำดับ</th>';
                 html += '<th style="padding:15px 10px; text-align:center; color:var(--text-light); font-weight:600;">ชื่อ/Codename</th>';
-                html += '<th style="padding:15px 10px; text-align:center; color:var(--text-light); font-weight:600;">ชื่อสกรีน</th>';
-                html += '<th style="padding:15px 10px; text-align:center; color:var(--text-light); font-weight:600;">ไซส์</th>';
                 html += '</tr></thead><tbody>';
 
                 participants.forEach((user, index) => {
                     let keyFullname = Object.keys(user).find(k => k.includes('ชื่อ - นามสกุล') || k.toLowerCase().includes('name') && !k.toLowerCase().includes('screen') && !k.toLowerCase().includes('nick'));
                     let keyNickname = Object.keys(user).find(k => k.includes('ชื่อเล่น') || k.toLowerCase().includes('nick'));
                     let keyPhone = Object.keys(user).find(k => k.includes('เบอร์โทรศัพท์') || k.toLowerCase().includes('phone'));
-                    let keySize = Object.keys(user).find(k => k.includes('ไซส์') || k.toLowerCase().includes('size'));
-                    let keyScreen = Object.keys(user).find(k => k.includes('สกรีน') || k.toLowerCase().includes('screen'));
 
                     let displayName = user[keyNickname] || user[keyFullname] || 'ไม่ระบุชื่อ';
                     let rawPhone = user[keyPhone] || '';
                     let phone = String(rawPhone).replace(/\D/g, "");
-
-                    let screenNameText = user[keyScreen] || '-';
-                    let sizeStr = user[keySize] || '';
-                    if (sizeStr) {
-                        sizeStr = String(sizeStr).split(' ')[0]; // แยกเฉพาะไซส์ด้านหน้า เช่น "XL (รอบอก 42) - 299"
-                    }
 
                     const profile = phone ? phoneMap[phone] : null;
                     if (profile && profile.codename && profile.codename !== 'ไม่ระบุ') {
@@ -487,15 +477,13 @@
                         const emoji = getRankEmoji(rank);
                         const codenameHtml = renderCodenameEffect(profile.codename, rank);
                         displayName = `<span class="codename-rank"><span>${emoji}</span> ${codenameHtml} <span>${emoji}</span></span>`;
-                    } else if (user['ชื่อเล่น'] && user['ชื่อ - นามสกุล']) {
-                        displayName = `${user['ชื่อ - นามสกุล']} (${user['ชื่อเล่น']})`;
+                    } else if (user[keyNickname] && user[keyFullname]) {
+                        displayName = `${user[keyFullname]} (${user[keyNickname]})`;
                     }
 
                     html += `<tr style="border-bottom:1px solid rgba(255,255,255,0.05); transition: background 0.2s;">`;
                     html += `<td style="padding:12px 10px; text-align:center; color:var(--text-muted);">${index + 1}</td>`;
                     html += `<td style="padding:12px 10px; text-align:center; color:var(--text-light);">${displayName}</td>`;
-                    html += `<td style="padding:12px 10px; text-align:center; color:#facc15; font-weight:600;">${screenNameText}</td>`;
-                    html += `<td style="padding:12px 10px; text-align:center; color:var(--text-light); font-weight:600;"><span style="background: rgba(255,255,255,0.1); padding: 4px 8px; border-radius: 6px;">${sizeStr || '-'}</span></td>`;
                     html += '</tr>';
                 });
 
