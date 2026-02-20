@@ -252,12 +252,15 @@ function setFilePublic(fileUrl) {
 }
 
 function verifySlipDirectly(fileUrl) {
-  if (!fileUrl) return null;
+  if (!fileUrl) return { success: false, message: "No file URL provided" };
   try {
     const fileId = getFileIdFromUrl(fileUrl);
-    if (!fileId) return null;
+    if (!fileId) return { success: false, message: "Could not extract file ID from URL" };
 
     const file = DriveApp.getFileById(fileId);
+    if (!file) {
+      return { success: false, message: "Google Drive File not found or no permission" };
+    }
     const blob = file.getBlob();
     
     const options = {
@@ -278,13 +281,14 @@ function verifySlipDirectly(fileUrl) {
     
     if (result.success) return { success: true, data: result.data };
     
-    if (result.data && (result.code === 1004 || result.code === 1012 || result.message?.includes('ใช้ไปแล้ว') || result.message?.includes('used') || result.message?.includes('สลิปซ้ำ'))) {
-      return { success: true, data: result.data };
+    // Check for used slip
+    if (result.code === 1004 || result.code === 1012 || String(result.message).includes('ใช้ไปแล้ว') || String(result.message).includes('used') || String(result.message).includes('สลิปซ้ำ')) {
+      return { success: true, data: result.data, warning: "สลิปนี้เคยถูกส่งตรวจไปแล้ว" };
     }
     
-    return null;
+    return { success: false, message: result.message || `API Error Code: ${result.code}` };
   } catch (e) {
-    return null;
+    return { success: false, message: e.toString() };
   }
 }
 
@@ -357,13 +361,17 @@ function checkSlipManual() {
   try {
     setFilePublic(slipUrl);
     const slipResult = verifySlipDirectly(slipUrl);
-    
     if (slipResult && slipResult.success) {
       resultStatus = "✅ ชำระแล้ว";
-      ui.alert(`🎉 สลิปถูกต้อง! อัปเดตสถานะเป็น "ชำระแล้ว"\nยอด: ${slipResult.data.amount} บ.\nผู้โอน: ${slipResult.data.sender?.name}`);
+      let alertMsg = `🎉 สลิปถูกต้อง! อัปเดตสถานะเป็น "ชำระแล้ว"\nยอด: ${slipResult.data.amount} บ.\nผู้โอน: ${slipResult.data.sender?.name}`;
+      if (slipResult.warning) {
+        alertMsg += `\n\n⚠️ หมายเหตุ: ${slipResult.warning}`;
+      }
+      ui.alert(alertMsg);
     } else {
       resultStatus = "⏳ รอตรวจสอบ";
-      ui.alert("⚠️ สลิปมีปัญหา หรือถูกใช้งานไปแล้ว\nระบบจะขึ้นว่า รอตรวจสอบ แทน");
+      let errorMsg = slipResult && slipResult.message ? slipResult.message : "ไม่ทราบสาเหตุ";
+      ui.alert(`⚠️ สลิปมีปัญหา หรือตรวจไม่ผ่าน\nสาเหตุ: ${errorMsg}\n\nระบบจะขึ้นว่า "รอตรวจสอบ" แทนครับ`);
     }
   } catch (error) {
     resultStatus = "⏳ รอตรวจสอบ";
