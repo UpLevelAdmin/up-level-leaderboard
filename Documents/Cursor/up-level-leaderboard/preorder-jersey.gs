@@ -256,13 +256,10 @@ function verifySlipDirectly(fileUrl) {
   try {
     const fileId = getFileIdFromUrl(fileUrl);
     if (!fileId) return { success: false, message: "Could not extract file ID from URL" };
-
-    const file = DriveApp.getFileById(fileId);
-    if (!file) {
-      return { success: false, message: "Google Drive File not found or no permission" };
-    }
-    const blob = file.getBlob();
     
+    // แทนที่จะแกะไฟล์ ให้ส่ง Link ตรงให้ SlipOK เลย เพราะบาง Account ติด Permission
+    const drivePicUrl = `https://drive.google.com/uc?id=${fileId}`;
+
     const options = {
       method: "post",
       headers: {
@@ -270,7 +267,7 @@ function verifySlipDirectly(fileUrl) {
         "Content-Type": "application/json"
       },
       payload: JSON.stringify({
-        files: Utilities.base64Encode(blob.getBytes()),
+        url: drivePicUrl,
         log: true
       }),
       muteHttpExceptions: true
