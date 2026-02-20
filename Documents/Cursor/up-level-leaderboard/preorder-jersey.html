@@ -485,11 +485,11 @@
                 document.getElementById('totalUsers').textContent = participants.length;
                 document.getElementById('totalShirts').textContent = participants.length;
 
-                let html = '<table style="width:100%; border-collapse:collapse; margin:1rem auto; background:rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.1); border-radius:12px; overflow:hidden;">';
+                let html = '<div class="table-responsive"><table class="participant-table" style="width:100%; border-collapse:collapse; margin:1rem auto; background:rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.1); border-radius:12px; overflow:hidden;">';
                 html += '<thead><tr style="background: rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.1);">';
-                html += '<th style="padding:15px 10px; text-align:center; color:var(--text-light); font-weight:600;">ลำดับ</th>';
-                html += '<th style="padding:15px 10px; text-align:center; color:var(--text-light); font-weight:600;">ชื่อ/Codename</th>';
-                html += '<th style="padding:15px 10px; text-align:center; color:var(--text-light); font-weight:600;">สถานะ</th>';
+                html += '<th style="padding:12px 6px; text-align:center; color:var(--text-light); font-weight:600; width:50px;">ลำดับ</th>';
+                html += '<th style="padding:12px 6px; text-align:left; color:var(--text-light); font-weight:600;">ชื่อ/Codename</th>';
+                html += '<th style="padding:12px 6px; text-align:center; color:var(--text-light); font-weight:600; white-space:nowrap; width:100px;">สถานะ</th>';
                 html += '</tr></thead><tbody>';
 
                 participants.forEach((user, index) => {
@@ -505,11 +505,11 @@
                     let statusText = keyStatus ? user[keyStatus] : 'รอชำระ';
                     let statusBadge = '';
                     if (statusText.includes('ชำระแล้ว')) {
-                        statusBadge = `<span style="background: rgba(16, 185, 129, 0.2); color: #10b981; padding: 4px 8px; border-radius: 6px; font-size: 0.85rem; font-weight: 600;">✅ ชำระแล้ว</span>`;
+                        statusBadge = `<span style="background: rgba(16, 185, 129, 0.2); color: #10b981; padding: 4px 6px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; white-space: nowrap;">✅ ชำระแล้ว</span>`;
                     } else if (statusText.includes('รอตรวจสอบ')) {
-                        statusBadge = `<span style="background: rgba(245, 158, 11, 0.2); color: #f59e0b; padding: 4px 8px; border-radius: 6px; font-size: 0.85rem; font-weight: 600;">⏳ รอตรวจสอบ</span>`;
+                        statusBadge = `<span style="background: rgba(245, 158, 11, 0.2); color: #f59e0b; padding: 4px 6px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; white-space: nowrap;">⏳ รอตรวจสอบ</span>`;
                     } else {
-                        statusBadge = `<span style="background: rgba(239, 68, 68, 0.2); color: #ef4444; padding: 4px 8px; border-radius: 6px; font-size: 0.85rem; font-weight: 600;">❌ รอชำระ</span>`;
+                        statusBadge = `<span style="background: rgba(239, 68, 68, 0.2); color: #ef4444; padding: 4px 6px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; white-space: nowrap;">❌ รอชำระ</span>`;
                     }
 
                     const profile = phone ? phoneMap[phone] : null;
@@ -519,17 +519,17 @@
                         const codenameHtml = renderCodenameEffect(profile.codename, rank);
                         displayName = `<span class="codename-rank"><span>${emoji}</span> ${codenameHtml} <span>${emoji}</span></span>`;
                     } else if (user[keyNickname] && user[keyFullname]) {
-                        displayName = `${user[keyFullname]} (${user[keyNickname]})`;
+                        displayName = `${user[keyFullname]} <span style="color:var(--text-muted); font-size:0.9em;">(${user[keyNickname]})</span>`;
                     }
 
                     html += `<tr style="border-bottom:1px solid rgba(255,255,255,0.05); transition: background 0.2s;">`;
-                    html += `<td style="padding:12px 10px; text-align:center; color:var(--text-muted);">${index + 1}</td>`;
-                    html += `<td style="padding:12px 10px; text-align:center; color:var(--text-light);">${displayName}</td>`;
-                    html += `<td style="padding:12px 10px; text-align:center;">${statusBadge}</td>`;
+                    html += `<td style="padding:10px 6px; text-align:center; color:var(--text-muted); font-size: 0.95rem;">${index + 1}</td>`;
+                    html += `<td style="padding:10px 6px; text-align:left; color:var(--text-light); font-size: 0.95rem; line-height: 1.4;">${displayName}</td>`;
+                    html += `<td style="padding:10px 6px; text-align:center;">${statusBadge}</td>`;
                     html += '</tr>';
                 });
 
-                html += '</tbody></table>';
+                html += '</tbody></table></div>';
                 container.innerHTML = html;
             })
                 .catch(error => {
