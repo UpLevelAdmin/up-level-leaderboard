@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>👕 พรีออเดอร์ Up Level Academy Team Jersey 2026</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-color: #38bdf8;
+            --secondary-color: #818cf8;
+            --accent-color: #c084fc;
+            --bg-color-1: #0f172a;
+            --bg-color-2: #1e3a8a;
+            --bg-color-3: #312e81;
+            --text-light: #f8fafc;
+            --text-muted: #cbd5e1;
+        }
+
+        body {
+            font-family: 'Kanit', sans-serif;
+            background: linear-gradient(135deg, var(--bg-color-1) 0%, var(--bg-color-2) 25%, var(--bg-color-3) 50%, var(--bg-color-2) 75%, var(--bg-color-1) 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            margin: 0;
+            padding: 1rem;
+            text-align: center;
+            min-height: 100vh;
+            color: var(--text-light);
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        @keyframes gradientShift {
+
+            0%,
+            100% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+        }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+            padding: 1rem;
+            position: relative;
+            z-index: 10;
+        }
+
+        .logo {
+            width: 120px;
+            margin-bottom: 0.5rem;
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
+        }
+
+        .event-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            background: linear-gradient(45deg, var(--primary-color), var(--text-light), var(--accent-color), var(--primary-color));
+            background-size: 300% 300%;
+            animation: gradientFlow 4s ease infinite;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+            filter: drop-shadow(0 0 15px rgba(56, 189, 248, 0.6));
+        }
+
+        @keyframes gradientFlow {
+
+            0%,
+            100% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+        }
+
+        .event-subtitle {
+            font-size: 1.1rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            font-weight: 600;
+            text-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+        }
+
+        .product-description {
+            font-size: 1rem;
+            color: var(--text-muted);
+            margin: 1.5rem 0;
+            line-height: 1.6;
+        }
+
+        .highlight-section {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2rem;
+            margin: 2rem 0;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .highlight-title {
+            font-size: 1.6rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            font-weight: 700;
+            text-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+        }
+
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color), var(--accent-color));
+            background-size: 200% 200%;
+            animation: buttonGradient 3s ease infinite;
+            color: #fff;
+            padding: 1rem 3rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-size: 1.2rem;
+            font-weight: 700;
+            font-family: 'Kanit', sans-serif;
+            box-shadow: 0 10px 30px rgba(56, 189, 248, 0.4);
+            transition: all 0.3s ease;
+            border: 2px solid rgba(56, 189, 248, 0.6);
+            cursor: pointer;
+            width: 100%;
+            max-width: 400px;
+            box-sizing: border-box;
+            margin: 1rem auto;
+        }
+
+        @keyframes buttonGradient {
+
+            0%,
+            100% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+        }
+
+        .cta-button:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 15px 40px rgba(56, 189, 248, 0.6);
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 1rem;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stat-number {
+            font-size: 2.2rem;
+            color: var(--primary-color);
+            font-weight: 700;
+            margin-bottom: 0.2rem;
+            text-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
+        }
+
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .loading {
+            text-align: center;
+            color: var(--primary-color);
+            font-size: 1.1rem;
+            padding: 2rem;
+        }
+
+        .spinner {
+            margin: 24px auto 8px auto;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Codename / Rank Effects */
+        .codename-rank {
+            display: inline-block;
+        }
+
+        .codename {
+            font-weight: 600;
+        }
+
+        .codename.wave span {
+            display: inline-block;
+            animation: wave 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        }
+
+        @keyframes wave {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-3px);
+            }
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        @media (min-width: 769px) {
+            .event-title {
+                font-size: 3.5rem;
+            }
+
+            .event-subtitle {
+                font-size: 1.5rem;
+            }
+
+            .highlight-title {
+                font-size: 2rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 0.8rem;
+            }
+
+            .highlight-section {
+                padding: 1.5rem;
+                margin: 1.5rem 0;
+            }
+
+            .cta-button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <!-- ปุ่มกลับหน้าหลัก -->
+        <div style="text-align: left; margin-bottom: 1rem;">
+            <a href="index.html"
+                style="color: var(--primary-color); text-decoration: none; font-weight: 600; font-size: 1.1rem; display: inline-flex; align-items: center; gap: 0.5rem; transition: color 0.3s;"
+                onmouseover="this.style.color='var(--text-light)'" onmouseout="this.style.color='var(--primary-color)'">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 12H5M12 19l-7-7 7-7" />
+                </svg>
+                กลับหน้าหลัก
+            </a>
+        </div>
+
+        <!-- ส่วนหัว (Banner) -->
+        <div class="header">
+            <!-- ใส่แบนเนอร์ที่คุณอัปโหลดแทนที่ src ด้านล่าง -->
+            <img src="https://i.postimg.cc/FzY9WQCX/Untitled-design-(9).png" alt="Team Jersey Banner"
+                style="width: 100%; border-radius: 16px; margin-bottom: 1.5rem; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); border: 1px solid rgba(255,255,255,0.1);">
+            <h1 class="event-title">👕 Team Jersey 2026</h1>
+            <div class="event-subtitle">Up Level Academy เปิดพรีออเดอร์เสื้อทีมปี 2026!</div>
+
+            <div class="product-description">
+                <strong>เนื้อผ้าไมโครโพลีเอสเตอร์ สวมใส่สบาย ระบายอากาศได้ดี พิมพ์ลายระบบซับลิเมชั่น สีสด
+                    คมชัด!</strong><br>
+                สินค้าทุกตัวเป็นแบบ Pre-Order จะทำการผลิตหลังจากปิดรับยอดสั่งซื้อ<br>
+                มาพร้อมบริการสกรีนชื่อด้านหลังเสื้อแบบ Exclusive!
+            </div>
+
+            <div style="text-align: center; margin: 2rem 0;">
+                <a href="https://forms.gle/FxdrpjSqqJM39tWr9" target="_blank" class="cta-button">🎯
+                    คลิกเพื่อสั่งซื้อ</a>
+            </div>
+        </div>
+
+        <!-- รายละเอียดสินค้า -->
+        <div class="highlight-section" style="text-align: left;">
+            <h3 class="highlight-title" style="text-align: center;">📏 รายละเอียดไซส์ และ ราคา</h3>
+
+            <div
+                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-top: 1.5rem;">
+                <!-- ไซส์เด็ก / ผู้ใหญ่ -->
+                <div
+                    style="background: rgba(255,255,255,0.05); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+                    <h4 style="color: var(--primary-color); margin-bottom: 1rem; font-size: 1.2rem;">🧑 ไซส์เด็ก &
+                        ผู้ใหญ่ (299 บาท)</h4>
+                    <ul style="color: var(--text-muted); line-height: 1.8; list-style-type: none; padding: 0;">
+                        <li>KXS (รออบก 24") / KS (รออบก 26")</li>
+                        <li>KM (รออบก 28") / KL (รออบก 30") / KXL(32")</li>
+                        <li>
+                            <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 0.5rem 0;">
+                        </li>
+                        <li>XS (รอบอก 34") / S (รอบอก 36")</li>
+                        <li>M (รอบอก 38") / L (รอบอก 40")</li>
+                        <li>XL (รอบอก 42") / 2XL (รอบอก 44")</li>
+                    </ul>
+                </div>
+
+                <div
+                    style="background: rgba(255,255,255,0.05); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+                    <h4 style="color: #fca5a5; margin-bottom: 1rem; font-size: 1.2rem;">💪 ไซส์พิเศษ (Plus Size)</h4>
+                    <ul style="color: var(--text-muted); line-height: 1.8; list-style-type: none; padding: 0;">
+                        <li><strong>ราคา 319 บาท</strong></li>
+                        <li>3XL (รอบอก 46") / 4XL (รอบอก 48")</li>
+                        <li>5XL (รอบอก 50")</li>
+                        <li>
+                            <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 0.5rem 0;">
+                        </li>
+                        <li><strong>ราคา 349 บาท</strong></li>
+                        <li>6XL (รอบอก 52") / 7XL (รอบอก 54")</li>
+                        <li>8XL (รอบอก 56") / 9XL (รอบอก 58")</li>
+                        <li>10XL (รอบอก 60")</li>
+                    </ul>
+                </div>
+            </div>
+            <div style="margin-top: 1.5rem; font-size: 0.95rem; color: #facc15; text-align: center;">
+                * ค่าจัดส่ง 50 บาท (หากรับเองที่หน้าร้านไม่มีค่าใช้จ่ายเพิ่มเติม)
+            </div>
+        </div>
+
+        <!-- สถิติแบบ MA4 -->
+        <div class="highlight-section">
+            <h3 class="highlight-title">📊 รายชื่อผู้สั่งซื้อ</h3>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalUsers">-</div>
+                    <div class="stat-label">ผู้สั่งซื้อทั้งหมด</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalShirts">-</div>
+                    <div class="stat-label">จำนวนเสื้อทั้งหมด</div>
+                </div>
+            </div>
+            <div id="usersContainer" class="table-responsive">
+                <div class="spinner"></div>
+                <div class="loading">กำลังโหลดข้อมูล...</div>
+            </div>
+        </div>
+
+        <!-- ปุ่มสั่งซื้อด้านล่างอีกจุด -->
+        <div style="text-align: center; margin: 2rem 0;">
+            <a href="https://forms.gle/FxdrpjSqqJM39tWr9" target="_blank" class="cta-button">🎯 คลิกเพื่อสั่งซื้อ</a>
+        </div>
+
+        <!-- ข้อมูลติดต่อ -->
+        <div style="margin-top: 3rem; padding: 2rem; background: rgba(255, 255, 255, 0.05); border-radius: 20px;">
+            <h3 style="color: var(--primary-color); margin-bottom: 1rem; font-size: 1.4rem;">📍 สถานที่รับสินค้า</h3>
+            <p style="color: var(--text-light);">ร้าน Up Level Academy<br>(ติด MRT บางแค ทางออก 2)</p>
+            <p style="color: var(--text-light); margin-top: 1rem;">
+                📞 097-115-6555 | 💬 Line OA: @uplevelacademy
+            </p>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // URL สำหรับดึงข้อมูลรายชื่อผู้สั่งซื้อจาก Google Sheet (เหมือน MA4)
+        // ** ต้องเปลี่ยนเป็น API ของฟอร์มสั่งเสื้อจริงๆ **
+        const apiUrl = "https://script.google.com/macros/s/AKfycbzTdH2i6KqH1vWStWEmI7iwPbCN1z_3WtpSRPQRpUFt1XgmZUbRm1ncIgRfMOXt7ImAvQ/exec";
+
+        const memberDashboardApi = "https://script.google.com/macros/s/AKfycbxtjsDwHI6nJU4OIHExUxMaZwUn3qwakvdkzwbQO7C8Trzz5Gh84SX6F1gqb4BOFQcn/exec?func=getMemberDashboardData";
+
+        function getRankEmoji(rank) {
+            const baseRank = rank ? rank.split(' ')[0] : '';
+            const rankEmojis = {
+                'Rookie': '🎖️', 'Bronze': '🥉', 'Silver': '🥈',
+                'Gold': '🥇', 'Platinum': '💎', 'Diamond': '💎',
+                'Grandmaster': '👑', 'Legend': '⭐'
+            };
+            return rankEmojis[baseRank] || '';
+        }
+
+        function getBaseRank(rank) {
+            return rank ? rank.split(' ')[0] : '';
+        }
+
+        function renderCodenameEffect(codename, rank) {
+            const chars = ['[', ...codename.split(''), ']'];
+            const waveRanks = ['Gold', 'Platinum', 'Diamond', 'Grandmaster', 'Legend'];
+            const baseRank = getBaseRank(rank);
+
+            if (waveRanks.includes(baseRank)) {
+                return `<span class="codename wave ${baseRank.toLowerCase()}" style="color: var(--primary-color);">${chars.map((ch, i) => `<span style="animation-delay: ${i * 0.08}s">${ch}</span>`).join('')}</span>`;
+            } else {
+                return `<span class="codename" style="color: var(--primary-color);">[${codename}]</span>`;
+            }
+        }
+
+        function loadRegisteredUsers() {
+            const container = document.getElementById('usersContainer');
+
+            container.innerHTML = '<div class="spinner"></div><div class="loading">กำลังโหลดข้อมูล...</div>';
+
+            Promise.all([
+                fetch(apiUrl).then(res => res.json()).catch(() => ({ participants: [] })),
+                fetch(memberDashboardApi).then(res => res.json()).catch(() => [])
+            ]).then(([data, members]) => {
+                const participants = data.participants || [];
+
+                if (participants.length === 0) {
+                    document.getElementById('totalUsers').textContent = '0';
+                    document.getElementById('totalShirts').textContent = '0';
+                    container.innerHTML = '<div class="loading">📝 ยังไม่มีผู้สั่งซื้อ</div>';
+                    return;
+                }
+
+                // Create Map for Member ranks via phone
+                const phoneMap = {};
+                if (members && Array.isArray(members)) {
+                    members.forEach(m => {
+                        const phone = String(m.phone || '').replace(/\D/g, "");
+                        if (phone) phoneMap[phone] = { codename: m.codename, rank: m.rank };
+                    });
+                }
+
+                document.getElementById('totalUsers').textContent = participants.length;
+                document.getElementById('totalShirts').textContent = participants.length;
+
+                let html = '<table style="width:100%; border-collapse:collapse; margin:1rem auto; background:rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.1); border-radius:12px; overflow:hidden;">';
+                html += '<thead><tr style="background: rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.1);">';
+                html += '<th style="padding:15px 10px; text-align:center; color:var(--text-light); font-weight:600;">ลำดับ</th>';
+                html += '<th style="padding:15px 10px; text-align:center; color:var(--text-light); font-weight:600;">ชื่อ/Codename</th>';
+                html += '<th style="padding:15px 10px; text-align:center; color:var(--text-light); font-weight:600;">สถานะ</th>';
+                html += '</tr></thead><tbody>';
+
+                participants.forEach((user, index) => {
+                    let keyFullname = Object.keys(user).find(k => k.includes('ชื่อ - นามสกุล') || k.toLowerCase().includes('name') && !k.toLowerCase().includes('screen') && !k.toLowerCase().includes('nick'));
+                    let keyNickname = Object.keys(user).find(k => k.includes('ชื่อเล่น') || k.toLowerCase().includes('nick'));
+                    let keyPhone = Object.keys(user).find(k => k.includes('เบอร์โทรศัพท์') || k.toLowerCase().includes('phone'));
+                    let keyStatus = Object.keys(user).find(k => k.includes('สถานะ') || k.toLowerCase().includes('status'));
+
+                    let displayName = user[keyNickname] || user[keyFullname] || 'ไม่ระบุชื่อ';
+                    let rawPhone = user[keyPhone] || '';
+                    let phone = String(rawPhone).replace(/\D/g, "");
+
+                    let statusText = user[keyStatus] || 'รอการชำระเงิน';
+                    let statusBadge = '';
+                    if (statusText.includes('ชำระแล้ว')) {
+                        statusBadge = `<span style="background: rgba(16, 185, 129, 0.2); color: #10b981; padding: 4px 8px; border-radius: 6px; font-size: 0.85rem; font-weight: 600;">✅ ชำระแล้ว</span>`;
+                    } else if (statusText.includes('รอตรวจสอบ')) {
+                        statusBadge = `<span style="background: rgba(245, 158, 11, 0.2); color: #f59e0b; padding: 4px 8px; border-radius: 6px; font-size: 0.85rem; font-weight: 600;">⏳ รอตรวจสอบ</span>`;
+                    } else {
+                        statusBadge = `<span style="background: rgba(239, 68, 68, 0.2); color: #ef4444; padding: 4px 8px; border-radius: 6px; font-size: 0.85rem; font-weight: 600;">❌ รอชำระ</span>`;
+                    }
+
+                    const profile = phone ? phoneMap[phone] : null;
+                    if (profile && profile.codename && profile.codename !== 'ไม่ระบุ') {
+                        const rank = profile.rank || '';
+                        const emoji = getRankEmoji(rank);
+                        const codenameHtml = renderCodenameEffect(profile.codename, rank);
+                        displayName = `<span class="codename-rank"><span>${emoji}</span> ${codenameHtml} <span>${emoji}</span></span>`;
+                    } else if (user[keyNickname] && user[keyFullname]) {
+                        displayName = `${user[keyFullname]} (${user[keyNickname]})`;
+                    }
+
+                    html += `<tr style="border-bottom:1px solid rgba(255,255,255,0.05); transition: background 0.2s;">`;
+                    html += `<td style="padding:12px 10px; text-align:center; color:var(--text-muted);">${index + 1}</td>`;
+                    html += `<td style="padding:12px 10px; text-align:center; color:var(--text-light);">${displayName}</td>`;
+                    html += `<td style="padding:12px 10px; text-align:center;">${statusBadge}</td>`;
+                    html += '</tr>';
+                });
+
+                html += '</tbody></table>';
+                container.innerHTML = html;
+            })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('totalUsers').textContent = '0';
+                    document.getElementById('totalShirts').textContent = '0';
+                    container.innerHTML = '<div class="loading" style="color: #ef4444;">⚠️ ไม่สามารถโหลดข้อมูลได้</div>';
+                });
+        }
+
+        // Initial Load Attempt
+        window.addEventListener('load', loadRegisteredUsers);
+
+    </script>
+</body>
+
+</html>
