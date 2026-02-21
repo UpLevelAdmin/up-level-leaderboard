@@ -350,6 +350,12 @@ function batchVerifyExistingSlips() {
   console.log(`🚀 เริ่มการตรวจสอบและ Sync ข้อมูลเก่าทั้งหมด ${data.length - 1} รายการ...`);
 
   for (let i = 1; i < data.length; i++) {
+    // เช็คสถานะใน Column J (index 9) ถ้าเป็น "ชำระแล้ว" ให้ข้ามเลย ลบการทำงานซ้ำ
+    const currentStatus = data[i][9] ? String(data[i][9]) : "";
+    if (currentStatus.includes("ชำระแล้ว")) {
+      continue;
+    }
+
     const nickname = data[i][3];
     const phone = data[i][5];
     const slipUrl = data[i][8];
