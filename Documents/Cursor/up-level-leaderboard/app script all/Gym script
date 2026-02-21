@@ -364,6 +364,7 @@ function batchVerifyExistingSlips() {
         source: 'legacy_batch',
         slipUrl: ""
       });
+      sheet.getRange(i + 1, 10).setValue("❌ รอชำระเงิน");
       continue;
     }
 
@@ -394,11 +395,14 @@ function batchVerifyExistingSlips() {
 
       syncToFirebasePayment(payload);
       
+      // อัปเดตชีทว่าตรวจผ่าน
+      sheet.getRange(i + 1, 10).setValue("✅ ชำระแล้ว (Auto)");
       console.log(`✅ [${i}/${data.length-1}] Sync เรียบร้อย: ${nickname} (฿${slip.amount})`);
     } else {
       console.warn(`⚠️ [${i}/${data.length-1}] ไม่ผ่าน: ${nickname}`);
-      // กรณีไม่ผ่าน SlipOK แต่อยากส่งไปให้ Admin ดูรูปเฉยๆ
-      /*
+      // กรณีไม่ผ่านรอมือตรวจ
+      sheet.getRange(i + 1, 10).setValue("⏳ รอตรวจสอบ (ภาพมีปัญหา)");
+      
       syncToFirebasePayment({
         phoneNumber: phone,
         customerName: nickname,
@@ -409,7 +413,6 @@ function batchVerifyExistingSlips() {
         source: 'legacy_batch',
         slipUrl: slipUrl
       });
-      */
     }
     
     // ป้องกันการยิง API ถี่เกินไป
