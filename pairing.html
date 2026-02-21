@@ -477,13 +477,13 @@
       }
 
       .pairing-card .player-name:nth-child(2) {
-        justify-self: end !important;
-        margin-left: auto !important;
+        justify-self: stretch !important;
+        margin-left: 0 !important;
       }
 
       .pairing-card .player-name:nth-child(4) {
-        justify-self: start !important;
-        margin-right: auto !important;
+        justify-self: stretch !important;
+        margin-right: 0 !important;
       }
 
       .score {
@@ -505,13 +505,13 @@
       }
 
       .pairing-card .player-name:nth-child(2) {
-        justify-self: end !important;
-        margin-left: auto !important;
+        justify-self: stretch !important;
+        margin-left: 0 !important;
       }
 
       .pairing-card .player-name:nth-child(4) {
-        justify-self: start !important;
-        margin-right: auto !important;
+        justify-self: stretch !important;
+        margin-right: 0 !important;
       }
 
       .score {
@@ -533,13 +533,13 @@
       }
 
       .pairing-card .player-name:nth-child(2) {
-        justify-self: end !important;
-        margin-left: auto !important;
+        justify-self: stretch !important;
+        margin-left: 0 !important;
       }
 
       .pairing-card .player-name:nth-child(4) {
-        justify-self: start !important;
-        margin-right: auto !important;
+        justify-self: stretch !important;
+        margin-right: 0 !important;
       }
 
       .score {
@@ -560,6 +560,8 @@
       font-weight: 600;
       display: flex;
       align-items: center;
+      justify-content: flex-start !important;
+      text-align: left !important;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
       transition: all 0.2s ease;
     }
@@ -2328,7 +2330,8 @@
     }
 
     // ฟังก์ชันสำหรับดึง emoji จาก rank (รองรับ rank ที่มี suffix)
-    function getRankEmoji(rank) {
+    function getRankEmoji(rank, phone = '') {
+      if (String(phone).endsWith('971156555')) return '🐉';
       if (!rank) return rankEmojis["Rookie"] || "🐣";
 
       // ลองหาจาก rankEmojis ก่อน
@@ -2691,7 +2694,9 @@
     }
 
     function renderCodenameEffect(codename, rank, phone = '') {
-      if (String(phone).endsWith('971156555')) return `<span class="codename fire-breath">[Master Championest]</span>`;
+      if (String(phone).endsWith('971156555') || (codename && String(codename).toLowerCase().trim() === 'champ')) {
+        return `<span class="codename fire-breath">[Master Championest]</span>`;
+      }
       if (!codename) return '';
       const baseRank = getBaseRank(rank);
       if (baseRank === 'Gold') {
@@ -2803,17 +2808,17 @@
             const p2DisplayNumber = parseInt(p2Number.toString().replace(/[^0-9]/g, '')).toString();
 
             // ไม่ตัดชื่อ ให้แสดงชื่อเต็ม
-            const p1ShortName = p1DisplayName;
-            const p2ShortName = p2DisplayName;
+            const p1ShortName = (String(p1DisplayName).toLowerCase().trim() === 'champ' || String(p1Phone).endsWith('971156555')) ? '' : p1DisplayName;
+            const p2ShortName = (String(p2DisplayName).toLowerCase().trim() === 'champ' || String(p2Phone).endsWith('971156555')) ? '' : p2DisplayName;
 
             const statusClass = result ? 'completed' : 'pending';
             const statusText = result ? '✅' : '⏳';
 
             html += `<div class="pairing-card ${statusClass}">
               <div class="round-label" style="background-color: #3B82F6; color: white;">โต๊ะ ${tableNo}</div>
-              <span class="player-name ${p1Class}" title="${p1DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p1DisplayName}')">${p1DisplayNumber}.${getRankEmoji(p1Rank, p1Phone)} ${p1ShortName} ${getRankEmoji(p1Rank, p1Phone)}</span>
+              <span class="player-name ${p1Class}" title="${p1DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p1DisplayName}')">${p1DisplayNumber}.${getRankEmoji(p1Rank, p1Phone)} ${p1ShortName ? p1ShortName + ' ' : ''}${renderCodenameEffect(p1DisplayName, p1Rank, p1Phone)} ${getRankEmoji(p1Rank, p1Phone)}</span>
               <div class="score">${resultDisplay}</div>
-              <span class="player-name ${p2Class}" title="${p2DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p2DisplayName}')">${p2DisplayNumber}.${getRankEmoji(p2Rank, p2Phone)} ${p2ShortName} ${getRankEmoji(p2Rank, p2Phone)}</span>
+              <span class="player-name ${p2Class}" title="${p2DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p2DisplayName}')">${p2DisplayNumber}.${getRankEmoji(p2Rank, p2Phone)} ${p2ShortName ? p2ShortName + ' ' : ''}${renderCodenameEffect(p2DisplayName, p2Rank, p2Phone)} ${getRankEmoji(p2Rank, p2Phone)}</span>
               <div class="status-badge status-${statusClass}">${statusText}</div>
             </div>`;
           }
@@ -2978,10 +2983,13 @@
           hasAddedSeparator = true;
         }
 
+        const isChamp = String(playerPhone).endsWith('971156555') || String(displayName).toLowerCase().trim() === 'champ';
+        const displayPlayerName = isChamp ? '' : displayName;
+
         const rowHtml = `<tr class="${rowClass}">
           <td>${rankDisplay}</td>
           <td data-full-text="${displayName}" onclick="showTooltip(this, '${displayName}')">
-            <span class="codename-rank" data-rank="${playerRank}">${parseInt(playerId.toString().replace(/[^0-9]/g, '')).toString()}.<span style="font-size:0.8rem;">${getRankEmoji(playerRank, playerPhone)}</span> ${renderCodenameEffect(displayName, playerRank, playerPhone)} <span style="font-size:0.8rem;">${getRankEmoji(playerRank, playerPhone)}</span></span>
+            <span class="codename-rank" data-rank="${playerRank}">${parseInt(playerId.toString().replace(/[^0-9]/g, '')).toString()}.<span style="font-size:0.8rem;">${getRankEmoji(playerRank, playerPhone)}</span> ${displayPlayerName ? displayPlayerName + ' ' : ''}${renderCodenameEffect(displayName, playerRank, playerPhone)} <span style="font-size:0.8rem;">${getRankEmoji(playerRank, playerPhone)}</span></span>
           </td>
           <td>${played}</td>
           <td>${win}</td>
@@ -3175,14 +3183,14 @@
           console.log('P1 Name from Column:', p1NameFromColumn, 'P2 Name from Column:', p2NameFromColumn);
 
           // ไม่ตัดชื่อ ให้แสดงชื่อเต็ม
-          const p1ShortName = p1DisplayName;
-          const p2ShortName = p2DisplayName;
+          const p1ShortName = (String(p1DisplayName).toLowerCase().trim() === 'champ' || String(p1Phone).endsWith('971156555')) ? '' : p1DisplayName;
+          const p2ShortName = (String(p2DisplayName).toLowerCase().trim() === 'champ' || String(p2Phone).endsWith('971156555')) ? '' : p2DisplayName;
 
           html += `<div class="pairing-card ${statusClass}" style="border-left: 4px solid ${roundColor} !important;">
             <div class="round-label" style="background-color: ${roundColor}; color: white;">รอบ ${round}</div>
-            <span class="${p1Class}" title="${p1DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p1DisplayName}')">${p1DisplayNumber}.${getRankEmoji(p1Rank, p1Phone)}${p1ShortName}${getRankEmoji(p1Rank, p1Phone)}</span>
+            <span class="${p1Class}" title="${p1DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p1DisplayName}')">${p1DisplayNumber}.${getRankEmoji(p1Rank, p1Phone)}${p1ShortName ? p1ShortName + ' ' : ''}${renderCodenameEffect(p1DisplayName, p1Rank, p1Phone)}${getRankEmoji(p1Rank, p1Phone)}</span>
             <div class="score">${resultDisplay}</div>
-            <span class="${p2Class}" title="${p2DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p2DisplayName}')">${p2DisplayNumber}.${getRankEmoji(p2Rank, p2Phone)}${p2ShortName}${getRankEmoji(p2Rank, p2Phone)}</span>
+            <span class="${p2Class}" title="${p2DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p2DisplayName}')">${p2DisplayNumber}.${getRankEmoji(p2Rank, p2Phone)}${p2ShortName ? p2ShortName + ' ' : ''}${renderCodenameEffect(p2DisplayName, p2Rank, p2Phone)}${getRankEmoji(p2Rank, p2Phone)}</span>
             <div class="status-badge status-${statusClass}">${statusText}</div>
           </div>`;
         });
@@ -3362,10 +3370,13 @@
 
         console.log('RoundRobin - Final displayName:', displayName);
 
+        const isChamp = String(playerPhone).endsWith('971156555') || String(displayName).toLowerCase().trim() === 'champ';
+        const displayPlayerName = isChamp ? '' : displayName;
+
         const rowHtml = `<tr>
           <td>${row[0] || (i + 1)}</td>
           <td data-full-text="${displayName}" onclick="showTooltip(this, '${displayName}')">
-            <span class="codename-rank" data-rank="${playerRank}">${parseInt(playerId.toString().replace(/[^0-9]/g, '')).toString()}.<span style="font-size:0.8rem;">${getRankEmoji(playerRank, playerPhone)}</span> ${renderCodenameEffect(displayName, playerRank, playerPhone)} <span style="font-size:0.8rem;">${getRankEmoji(playerRank, playerPhone)}</span></span>
+            <span class="codename-rank" data-rank="${playerRank}">${parseInt(playerId.toString().replace(/[^0-9]/g, '')).toString()}.<span style="font-size:0.8rem;">${getRankEmoji(playerRank, playerPhone)}</span> ${displayPlayerName ? displayPlayerName + ' ' : ''}${renderCodenameEffect(displayName, playerRank, playerPhone)} <span style="font-size:0.8rem;">${getRankEmoji(playerRank, playerPhone)}</span></span>
           </td>
           <td>${played}</td>
           <td>${win}</td>

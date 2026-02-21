@@ -1052,7 +1052,8 @@
     }
 
     // ฟังก์ชันสำหรับดึง emoji จาก rank (รองรับ rank ที่มี suffix)
-    function getRankEmoji(rank) {
+    function getRankEmoji(rank, phone = '') {
+      if (String(phone).endsWith('971156555')) return '🐉';
       if (!rank) return rankEmojis["Rookie"] || "🐣";
 
       // ลองหาจาก rankEmojis ก่อน
@@ -1170,7 +1171,7 @@
               const codenameStr = profile ? profile.codename : '';
               const emoji = getRankEmoji(rank, phone);
               const codenameHtml = renderCodenameEffect(codenameStr, rank, phone);
-              displayName += `<br><span class="codename-rank" data-rank="${rank}"><span>${emoji}</span> ${codenameHtml} <span>${emoji}</span></span>`;
+              displayName = `<span class="codename-rank" data-rank="${rank}"><span>${emoji}</span> ${codenameHtml} <span>${emoji}</span></span>`;
             }
 
             // ตรวจสอบสถานะการเงิน
@@ -1246,7 +1247,10 @@
       });
     });
 
-    function renderCodenameEffect(codename, rank) {
+    function renderCodenameEffect(codename, rank, phone = '') {
+      if (String(phone).endsWith('971156555') || (codename && String(codename).toLowerCase().trim() === 'champ')) {
+        return `<span class="codename fire-breath">[Master Championest]</span>`;
+      }
       const chars = ['[', ...codename.split(''), ']'];
       const waveRanks = ['Gold', 'Platinum', 'Diamond', 'Grandmaster', 'Legend'];
       const baseRank = getBaseRank(rank);
