@@ -352,7 +352,18 @@ function batchVerifyExistingSlips() {
     const slipUrl = data[i][8];
     
     if (!slipUrl || !String(slipUrl).includes("http")) {
-      // console.log(`⏩ [${i}/${data.length-1}] ข้ามคุณ ${nickname}: ไม่มีลิงก์สลิป`);
+      // ไม่มีลิงก์สลิป ส่งสถานะรอชำระไป
+      syncToFirebasePayment({
+        phoneNumber: phone,
+        customerName: nickname,
+        amount: 0,
+        transRef: "NO_SLIP",
+        senderName: "",
+        transferDate: "",
+        status: 'awaiting_payment',
+        source: 'legacy_batch',
+        slipUrl: ""
+      });
       continue;
     }
 
@@ -1132,6 +1143,20 @@ function processSheet(sheet) {
         count++;
         // พักหายใจหน่อย เดี๋ยว SlipOK/Firestore ด่า
         if (count % 3 === 0) Utilities.sleep(800); 
+    } else {
+       // สแปมเพิ่มคนที่ไม่มีสลิป ให้ขึ้นรอชำระ
+       syncToFirebasePayment({
+          phoneNumber: phone,
+          customerName: nickname,
+          amount: 0, 
+          transRef: `NO_SLIP_${i+1}`, 
+          senderName: "",
+          transferDate: "",
+          status: 'awaiting_payment',
+          source: 'sync_history_all',
+          slipUrl: ""
+        });
+        count++;
     }
   }
   
