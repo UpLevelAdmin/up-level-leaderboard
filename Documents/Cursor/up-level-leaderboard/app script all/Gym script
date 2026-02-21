@@ -486,6 +486,17 @@ function onFormSubmit(e) {
           source: 'legacy_sheet',
           slipUrl: ""
         });
+        
+        // เขียนสถานะ "❌ รอชำระเงิน" ลงในชีท (Column J = คอลัมน์ที่ 10)
+        try {
+          if (e && e.range) {
+             const row = e.range.getRow();
+             const sheet = e.range.getSheet();
+             sheet.getRange(row, 10).setValue("❌ รอชำระเงิน");
+          }
+        } catch(err) {
+           console.log("ไม่สามารถอัปเดตลงชีทได้:", err);
+        }
     }
     // ----------------------------
 
