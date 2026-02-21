@@ -2304,37 +2304,177 @@
     }
 
     function captureScreen() {
-      // ค้นหาบริเวณของ tab ที่แสดงผลอยู่ปัจจุบัน
-      const activeTab = document.querySelector('.tab-content.active');
-      if (!activeTab) return;
-
+      if (!window.pairingDataStore || !window.pairingDataStore.players) return;
       const btn = document.getElementById('captureBtn');
       const originalText = btn.innerHTML;
       btn.innerHTML = '⏳ กำลังแคป...';
       btn.style.opacity = '0.7';
 
-      html2canvas(activeTab, {
-        scale: 2, // ความคมชัด x2
-        useCORS: true,
-        backgroundColor: '#ffffff'
-      }).then(canvas => {
-        // สร้างปุ่มดาวน์โหลดเมื่อได้ภาพแล้ว
-        const imgURL = canvas.toDataURL("image/png");
-        const link = document.createElement('a');
-        link.href = imgURL;
-        link.download = 'Pairing-Capture-' + new Date().getTime() + '.png';
-        link.click();
+      const isSwiss = document.querySelector('.swiss-tab').classList.contains('active');
+      const tabType = isSwiss ? 'swiss' : 'roundrobin';
 
+      const captureContainer = createCaptureTable(tabType);
+      if (!captureContainer) {
+        alert('ไม่พบข้อมูลการจับคู่สำหรับรอบล่าสุด');
         btn.innerHTML = originalText;
         btn.style.opacity = '1';
-      }).catch(err => {
-        console.error('Error capturing screen:', err);
-        btn.innerHTML = '❌ ผิดพลาด';
-        setTimeout(() => {
+        return;
+      }
+
+      document.body.appendChild(captureContainer);
+
+      // ให้เวลา browser วาด DOM ก่อน 100ms
+      setTimeout(() => {
+        html2canvas(captureContainer, {
+          scale: 2, // ความคมชัด x2
+          useCORS: true,
+          backgroundColor: '#ffffff'
+        }).then(canvas => {
+          document.body.removeChild(captureContainer); // ลบออกหลังแคปเสร็จ
+          const imgURL = canvas.toDataURL("image/png");
+          const link = document.createElement('a');
+          link.href = imgURL;
+          const dateStr = new Date().toISOString().slice(0, 10);
+          link.download = `Pairing-LatestRound-${isSwiss ? 'Swiss' : 'RR'}-${dateStr}.png`;
+          link.click();
+
           btn.innerHTML = originalText;
           btn.style.opacity = '1';
-        }, 2000);
+        }).catch(err => {
+          if (document.body.contains(captureContainer)) document.body.removeChild(captureContainer);
+          console.error('Error capturing screen:', err);
+          btn.innerHTML = '❌ ผิดพลาด';
+          setTimeout(() => {
+            btn.innerHTML = originalText;
+            btn.style.opacity = '1';
+          }, 2000);
+        });
+      }, 100);
+    }
+
+    function createCaptureTable(tabType) {
+      const d = window.pairingDataStore;
+      const players = d.players;
+      let data = [];
+      let tournamentName = '';
+
+      if (tabType === 'swiss') {
+        data = d.pairing ? d.pairing.slice(1) : [];
+        tournamentName = 'Swiss Tournament';
+      } else {
+        data = d.roundRobin ? d.roundRobin.slice(1) : [];
+        tournamentName = 'Round Robin Tournament';
+      }
+
+      if (data.length === 0) return null;
+
+      const rounds = {};
+      data.forEach(row => {
+        if (!row[0] || !row[1] || row[0] === '') return;
+        const r = parseInt(row[0]);
+        if (!rounds[r]) rounds[r] = [];
+        rounds[r].push(row);
       });
+
+      const roundKeys = Object.keys(rounds).map(Number).sort((a, b) => b - a);
+      if (roundKeys.length === 0) return null;
+
+      const latestRound = roundKeys[0]; // รอบล่าสุด (ตัวเลขมากสุด)
+      const latestMatches = rounds[latestRound].sort((a, b) => parseInt(a[1]) - parseInt(b[1]));
+
+      const container = document.createElement('div');
+      container.style.position = 'absolute';
+      container.style.left = '-9999px';
+      container.style.top = '0';
+      container.style.width = '1200px'; // กว้างชัดเจน
+      container.style.backgroundColor = '#ffffff';
+      container.style.padding = '50px';
+      container.style.fontFamily = "'Mitr', 'Inter', sans-serif";
+      container.style.color = '#333';
+      container.style.boxSizing = 'border-box';
+
+      // สร้างตัวตาราง
+      let html = `
+        <div style="text-align: center; margin-bottom: 40px;">
+          <h1 style="font-size: 54px; margin: 0; color: #1E3A8A; font-weight: 700;">${tournamentName}</h1>
+          <h2 style="font-size: 42px; margin: 15px 0 0 0; color: #3B82F6; font-weight: 600;">รอบที่ ${latestRound}</h2>
+        </div>
+        <table style="width: 100%; border-collapse: collapse; font-size: 28px; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
+          <thead>
+            <tr style="background: linear-gradient(90deg, #1E40AF 0%, #3B82F6 100%); color: white;">
+              <th style="padding: 24px; text-align: center; width: 12%; font-weight: 600;">โต๊ะ</th>
+              <th style="padding: 24px; text-align: left; width: 38%; font-weight: 600;">ผู้เล่นที่ 1</th>
+              <th style="padding: 24px; text-align: center; width: 12%; font-weight: 600;">ผลการแข่ง</th>
+              <th style="padding: 24px; text-align: left; width: 38%; font-weight: 600;">ผู้เล่นที่ 2</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      latestMatches.forEach((row, index) => {
+        const tableNo = row[1];
+        let p1Raw, p2Raw, result;
+
+        if (tabType === 'swiss') {
+          p1Raw = getPlayerNameById(players, row[2]) || row[3];
+          p2Raw = row[8] === 'BYE' ? 'BYE' : (getPlayerNameById(players, row[8]) || row[9]);
+          result = row[10] || '-';
+        } else {
+          p1Raw = getPlayerNameById(players, row[2]) || row[3];
+          p2Raw = getPlayerNameById(players, row[8]) || row[11];
+          result = row[14] || '-';
+        }
+
+        let p1Name = extractRealName(p1Raw) || row[2];
+        let p2Name = p2Raw === 'BYE' ? 'BYE' : (extractRealName(p2Raw) || row[8]);
+
+        const bgColor = index % 2 === 0 ? '#F9FAFB' : '#FFFFFF';
+
+        let resultFormatted = result;
+        if (result === '1:0' || result === '0:1' || result === '1:1' || result === '0:0') {
+          resultFormatted = result.replace(':', ' - ');
+        } else if (!result || result.trim() === '') {
+          resultFormatted = '- : -';
+        }
+
+        let p1Style = "font-weight: 500; color: #1F2937;";
+        let p2Style = "font-weight: 500; color: #1F2937;";
+
+        if (result === '1:0') {
+          p1Style = "font-weight: 700; color: #047857;"; // เขียว
+          p2Style = "font-weight: 400; color: #9CA3AF;";
+        } else if (result === '0:1') {
+          p1Style = "font-weight: 400; color: #9CA3AF;";
+          p2Style = "font-weight: 700; color: #047857;";
+        } else if (result === '0:0' || result === '1:1') {
+          p1Style = "font-weight: 600; color: #B45309;"; // ส้ม
+          p2Style = "font-weight: 600; color: #B45309;";
+        } else if (p2Name === 'BYE') {
+          p1Style = "font-weight: 700; color: #047857;";
+          p2Style = "font-weight: 500; color: #10B981; font-style: italic;";
+          resultFormatted = "BYE";
+        }
+
+        html += `
+          <tr style="background-color: ${bgColor}; border-bottom: 2px solid #E5E7EB;">
+            <td style="padding: 24px; text-align: center; font-weight: bold; color: #4B5563;">${tableNo}</td>
+            <td style="padding: 24px; ${p1Style}">${p1Name}</td>
+            <td style="padding: 24px; text-align: center; font-weight: 700; color: #374151;">${resultFormatted}</td>
+            <td style="padding: 24px; ${p2Style}">${p2Name}</td>
+          </tr>
+        `;
+      });
+
+      html += `
+          </tbody>
+        </table>
+        <div style="margin-top: 30px; text-align: center; color: #9CA3AF; font-size: 20px;">
+          Generated by Up Level Gym • ${new Date().toLocaleString('th-TH')}
+        </div>
+      `;
+
+      container.innerHTML = html;
+      return container;
     }
 
     const API_URL = 'https://script.google.com/macros/s/AKfycbwVoGEvUEmeIkC-e2aPSrF7T82HqOpMwByW-SSbv7EohQ_zG2EbA2uv5TyPnqhuy5rmrg/exec';
