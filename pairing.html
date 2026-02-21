@@ -10,6 +10,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Mitr:wght@200;300;400;500;600;700&display=swap"
     rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
     * {
       font-family: 'Mitr', 'Inter', sans-serif;
@@ -2144,9 +2145,23 @@
       <div class="subtitle">การแข่งขัน Pokemon TCG - Up Level Gym</div>
       <a href="index.html" class="home-button" title="กลับหน้าหลัก"></a>
 
+      <!-- Toggle Formal Mode Button -->
+      <button id="formalToggleBtn" onclick="toggleFormalMode()"
+        style="position:absolute;top:20px;right:70px;background:#4F46E5;color:white;border:none;padding:12px 16px;border-radius:20px;cursor:pointer;font-size:14px;box-shadow:0 4px 12px rgba(79,70,229,0.3);transition:all 0.3s ease;font-weight:bold;z-index:100;"
+        title="สลับการแสดงผลชื่อทางการ">
+        🎭 โค้ดเนม
+      </button>
+
+      <!-- Capture Screen Button -->
+      <button id="captureBtn" onclick="captureScreen()"
+        style="position:absolute;top:20px;right:195px;background:#F59E0B;color:white;border:none;padding:12px 16px;border-radius:20px;cursor:pointer;font-size:14px;box-shadow:0 4px 12px rgba(245,158,11,0.3);transition:all 0.3s ease;font-weight:bold;z-index:100;"
+        title="แคปเจอร์หน้าจอเป็นรูปภาพ">
+        📸 แคปรูป
+      </button>
+
       <!-- Refresh Button -->
       <button id="refreshBtn" onclick="loadData()"
-        style="position:absolute;top:20px;right:20px;background:#10B981;color:white;border:none;padding:12px 16px;border-radius:50%;cursor:pointer;font-size:18px;box-shadow:0 4px 12px rgba(16,185,129,0.3);transition:all 0.3s ease;"
+        style="position:absolute;top:20px;right:20px;background:#10B981;color:white;border:none;padding:12px 16px;border-radius:50%;cursor:pointer;font-size:18px;box-shadow:0 4px 12px rgba(16,185,129,0.3);transition:all 0.3s ease;z-index:100;"
         title="รีเฟรชข้อมูล">
         🔄
       </button>
@@ -2250,6 +2265,78 @@
   </div>
 
   <script>
+    window.isFormalMode = false;
+
+    function toggleFormalMode() {
+      window.isFormalMode = !window.isFormalMode;
+      const btn = document.getElementById('formalToggleBtn');
+      if (window.isFormalMode) {
+        btn.innerHTML = '📝 ทางการ';
+        btn.style.background = '#8B5CF6';
+        btn.style.boxShadow = '0 4px 12px rgba(139, 92, 246, 0.3)';
+      } else {
+        btn.innerHTML = '🎭 โค้ดเนม';
+        btn.style.background = '#4F46E5';
+        btn.style.boxShadow = '0 4px 12px rgba(79, 70, 229, 0.3)';
+      }
+      reRenderAll();
+    }
+
+    function reRenderAll() {
+      if (!window.pairingDataStore || !window.phoneMap) return;
+      const d = window.pairingDataStore;
+      const phoneMap = window.phoneMap;
+
+      if (d.pairing && d.players) {
+        document.getElementById('swiss-pairing').innerHTML = renderSwissPairing(d.pairing, d.players, phoneMap);
+      }
+      const shouldHideStanding = d.hideStanding && d.hideStanding.hideStanding === true;
+      if (!shouldHideStanding && d.standings) {
+        document.getElementById('swiss-standings').innerHTML = renderSwissStandings(d.standings);
+      }
+      if (d.roundRobin && d.players) {
+        document.getElementById('roundrobin-pairing').innerHTML = renderRoundRobinPairing(d.roundRobin, d.players, phoneMap);
+      }
+      if (!shouldHideStanding && d.roundRobinStandings) {
+        document.getElementById('roundrobin-standings').innerHTML = renderRoundRobinStandings(d.roundRobinStandings);
+      }
+      setupSearchAndFilters();
+    }
+
+    function captureScreen() {
+      // ค้นหาบริเวณของ tab ที่แสดงผลอยู่ปัจจุบัน
+      const activeTab = document.querySelector('.tab-content.active');
+      if (!activeTab) return;
+
+      const btn = document.getElementById('captureBtn');
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '⏳ กำลังแคป...';
+      btn.style.opacity = '0.7';
+
+      html2canvas(activeTab, {
+        scale: 2, // ความคมชัด x2
+        useCORS: true,
+        backgroundColor: '#ffffff'
+      }).then(canvas => {
+        // สร้างปุ่มดาวน์โหลดเมื่อได้ภาพแล้ว
+        const imgURL = canvas.toDataURL("image/png");
+        const link = document.createElement('a');
+        link.href = imgURL;
+        link.download = 'Pairing-Capture-' + new Date().getTime() + '.png';
+        link.click();
+
+        btn.innerHTML = originalText;
+        btn.style.opacity = '1';
+      }).catch(err => {
+        console.error('Error capturing screen:', err);
+        btn.innerHTML = '❌ ผิดพลาด';
+        setTimeout(() => {
+          btn.innerHTML = originalText;
+          btn.style.opacity = '1';
+        }, 2000);
+      });
+    }
+
     const API_URL = 'https://script.google.com/macros/s/AKfycbwVoGEvUEmeIkC-e2aPSrF7T82HqOpMwByW-SSbv7EohQ_zG2EbA2uv5TyPnqhuy5rmrg/exec';
     const MEMBER_API = "https://script.google.com/macros/s/AKfycbxtjsDwHI6nJU4OIHExUxMaZwUn3qwakvdkzwbQO7C8Trzz5Gh84SX6F1gqb4BOFQcn/exec?func=getMemberDashboardData";
 
@@ -2331,6 +2418,7 @@
 
     // ฟังก์ชันสำหรับดึง emoji จาก rank (รองรับ rank ที่มี suffix)
     function getRankEmoji(rank, phone = '') {
+      if (window.isFormalMode) return '';
       if (String(phone).endsWith('971156555')) return '🐉';
       if (!rank) return rankEmojis["Rookie"] || "🐣";
 
@@ -2684,16 +2772,14 @@
     function extractRealName(fullName) {
       if (!fullName || typeof fullName !== 'string') return fullName;
 
-      // ตรวจสอบรูปแบบ TR_ID_ชื่อ เช่น th53522397_Narupol P.
-      const match = fullName.match(/^th\d+_(.+)$/);
-      if (match) {
-        return match[1]; // ส่งคืนเฉพาะชื่อจริง
-      }
+      // ลบ TR_ID ออก (เอาที่ขึ้นต้นด้วย th หรือ TH และตามด้วยตัวเลข บางทีมี _ หรือช่องว่าง)
+      let namePart = fullName.replace(/^(?:th|TH|Th|tH)?\d+[_\s]*/, '').trim();
 
-      return fullName; // ถ้าไม่ใช่รูปแบบ TR_ID_ชื่อ ให้ส่งคืนชื่อเดิม
+      return namePart || fullName;
     }
 
     function renderCodenameEffect(codename, rank, phone = '') {
+      if (window.isFormalMode) return '';
       if (String(phone).endsWith('971156555') || (codename && String(codename).toLowerCase().trim() === 'champ')) {
         return `<span class="codename fire-breath">[Master Championest]</span>`;
       }
@@ -2765,13 +2851,16 @@
           if (row[8] === 'BYE') {
             p1Class += ' player-bg-win';
             resultDisplay = '<span style="color:#059669;font-weight:600;">BYE</span>';
-            const p1DisplayName = p1Codename || extractRealName(getPlayerNameById(players, row[2])) || extractRealName(row[3]) || `Player ${row[2]}`;
+            const p1RawName = getPlayerNameById(players, row[2]) || row[3] || `Player ${row[2]}`;
+            const p1FormalName = extractRealName(p1RawName);
             const p1Number = row[2]; // Player ID
             const p1DisplayNumber = parseInt(p1Number.toString().replace(/[^0-9]/g, '')).toString();
+            let p1NameHtml = window.isFormalMode ? p1FormalName : (p1Codename ? renderCodenameEffect(p1Codename, p1Rank, p1Phone) : p1FormalName);
+            if (!window.isFormalMode && String(p1Phone).endsWith('971156555')) p1NameHtml = renderCodenameEffect('champ', p1Rank, p1Phone);
 
             html += `<div class="pairing-card">
               <span class="pairing-table-no">โต๊ะ ${tableNo}</span>
-              <span class="${p1Class}" title="${p1DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p1DisplayName}')">${p1DisplayNumber}.${getRankEmoji(p1Rank, p1Phone)} ${renderCodenameEffect(p1DisplayName, p1Rank, p1Phone)} ${getRankEmoji(p1Rank, p1Phone)}</span>
+              <span class="${p1Class}" title="${p1FormalName}" style="cursor: pointer;" onclick="showTooltip(this, '${p1FormalName}')">${p1DisplayNumber}.${getRankEmoji(p1Rank, p1Phone)} ${p1NameHtml} ${getRankEmoji(p1Rank, p1Phone)}</span>
               <span class="pairing-result">${resultDisplay}</span>
               <span class="player-block" title="BYE">🎯 BYE</span>
             </div>`;
@@ -2796,29 +2885,27 @@
               resultDisplay = '- : -';
             }
 
-            const p1DisplayName = p1Codename || extractRealName(getPlayerNameById(players, row[2])) || extractRealName(row[3]) || `Player ${row[2]}`;
-            const p2DisplayName = p2Codename || extractRealName(getPlayerNameById(players, row[8])) || extractRealName(row[9]) || `Player ${row[8]}`;
-
-            // เพิ่มหมายเลขให้กับชื่อผู้เล่น
+            const p1RawName = getPlayerNameById(players, row[2]) || row[3] || `Player ${row[2]}`;
+            const p2RawName = getPlayerNameById(players, row[8]) || row[9] || `Player ${row[8]}`;
+            const p1FormalName = extractRealName(p1RawName);
+            const p2FormalName = extractRealName(p2RawName);
             const p1Number = row[2]; // Player ID
             const p2Number = row[8]; // Player ID
-
-            // แปลงหมายเลขให้เป็นรูปแบบที่ต้องการ (เอาเฉพาะตัวเลขและเอา 0 นำหน้าออก)
             const p1DisplayNumber = parseInt(p1Number.toString().replace(/[^0-9]/g, '')).toString();
             const p2DisplayNumber = parseInt(p2Number.toString().replace(/[^0-9]/g, '')).toString();
-
-            // ไม่ตัดชื่อ ให้แสดงชื่อเต็ม
-            const p1ShortName = (String(p1DisplayName).toLowerCase().trim() === 'champ' || String(p1Phone).endsWith('971156555')) ? '' : p1DisplayName;
-            const p2ShortName = (String(p2DisplayName).toLowerCase().trim() === 'champ' || String(p2Phone).endsWith('971156555')) ? '' : p2DisplayName;
+            let p1NameHtml = window.isFormalMode ? p1FormalName : (p1Codename ? renderCodenameEffect(p1Codename, p1Rank, p1Phone) : p1FormalName);
+            let p2NameHtml = window.isFormalMode ? p2FormalName : (p2Codename ? renderCodenameEffect(p2Codename, p2Rank, p2Phone) : p2FormalName);
+            if (!window.isFormalMode && String(p1Phone).endsWith('971156555')) p1NameHtml = renderCodenameEffect('champ', p1Rank, p1Phone);
+            if (!window.isFormalMode && String(p2Phone).endsWith('971156555')) p2NameHtml = renderCodenameEffect('champ', p2Rank, p2Phone);
 
             const statusClass = result ? 'completed' : 'pending';
             const statusText = result ? '✅' : '⏳';
 
             html += `<div class="pairing-card ${statusClass}">
               <div class="round-label" style="background-color: #3B82F6; color: white;">โต๊ะ ${tableNo}</div>
-              <span class="player-name ${p1Class}" title="${p1DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p1DisplayName}')">${p1DisplayNumber}.${getRankEmoji(p1Rank, p1Phone)} ${p1ShortName ? p1ShortName + ' ' : ''}${renderCodenameEffect(p1DisplayName, p1Rank, p1Phone)} ${getRankEmoji(p1Rank, p1Phone)}</span>
+              <span class="player-name ${p1Class}" title="${p1FormalName}" style="cursor: pointer;" onclick="showTooltip(this, '${p1FormalName}')">${p1DisplayNumber}.${getRankEmoji(p1Rank, p1Phone)} ${p1NameHtml} ${getRankEmoji(p1Rank, p1Phone)}</span>
               <div class="score">${resultDisplay}</div>
-              <span class="player-name ${p2Class}" title="${p2DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p2DisplayName}')">${p2DisplayNumber}.${getRankEmoji(p2Rank, p2Phone)} ${p2ShortName ? p2ShortName + ' ' : ''}${renderCodenameEffect(p2DisplayName, p2Rank, p2Phone)} ${getRankEmoji(p2Rank, p2Phone)}</span>
+              <span class="player-name ${p2Class}" title="${p2FormalName}" style="cursor: pointer;" onclick="showTooltip(this, '${p2FormalName}')">${p2DisplayNumber}.${getRankEmoji(p2Rank, p2Phone)} ${p2NameHtml} ${getRankEmoji(p2Rank, p2Phone)}</span>
               <div class="status-badge status-${statusClass}">${statusText}</div>
             </div>`;
           }
@@ -2948,7 +3035,8 @@
               console.log('Swiss - Found match! Phone:', phone, 'phoneMap:', window.phoneMap);
               console.log('Swiss - phoneMap[phone]:', window.phoneMap ? window.phoneMap[phone] : 'phoneMap is null');
               if (window.phoneMap && window.phoneMap[phone]) {
-                displayName = window.phoneMap[phone].codename || extractRealName(playerName);
+                const formalName = extractRealName(playerName);
+                displayName = window.isFormalMode ? formalName : (window.phoneMap[phone].codename || formalName);
                 playerRank = window.phoneMap[phone].rank || '';
                 console.log('Swiss - Using codename:', displayName, 'rank:', playerRank);
               } else {
@@ -2983,13 +3071,15 @@
           hasAddedSeparator = true;
         }
 
-        const isChamp = String(playerPhone).endsWith('971156555') || String(displayName).toLowerCase().trim() === 'champ';
-        const displayPlayerName = isChamp ? '' : displayName;
+        const codename = window.phoneMap && window.phoneMap[playerPhone] ? window.phoneMap[playerPhone].codename : null;
+        const formalName = extractRealName(playerName);
+        let finalDisplayNameHtml = window.isFormalMode ? formalName : (codename ? renderCodenameEffect(codename, playerRank, playerPhone) : formalName);
+        if (!window.isFormalMode && String(playerPhone).endsWith('971156555')) finalDisplayNameHtml = renderCodenameEffect('champ', playerRank, playerPhone);
 
         const rowHtml = `<tr class="${rowClass}">
           <td>${rankDisplay}</td>
           <td data-full-text="${displayName}" onclick="showTooltip(this, '${displayName}')">
-            <span class="codename-rank" data-rank="${playerRank}">${parseInt(playerId.toString().replace(/[^0-9]/g, '')).toString()}.<span style="font-size:0.8rem;">${getRankEmoji(playerRank, playerPhone)}</span> ${displayPlayerName ? displayPlayerName + ' ' : ''}${renderCodenameEffect(displayName, playerRank, playerPhone)} <span style="font-size:0.8rem;">${getRankEmoji(playerRank, playerPhone)}</span></span>
+            <span class="codename-rank" data-rank="${playerRank}">${parseInt(playerId.toString().replace(/[^0-9]/g, '')).toString()}.<span style="font-size:0.8rem;">${getRankEmoji(playerRank, playerPhone)}</span> ${finalDisplayNameHtml} <span style="font-size:0.8rem;">${getRankEmoji(playerRank, playerPhone)}</span></span>
           </td>
           <td>${played}</td>
           <td>${win}</td>
@@ -3167,30 +3257,22 @@
           const p2NameFromColumn = row[11]; // PLAYER 2 (คอลัมน์ L)
           console.log('P1 Name from Column:', p1NameFromColumn, 'P2 Name from Column:', p2NameFromColumn);
 
-          const p1DisplayName = p1Codename || extractRealName(p1NameFromPlayers) || extractRealName(p1NameFromColumn) || `Player ${p1Id}`;
-          const p2DisplayName = p2Codename || extractRealName(p2NameFromPlayers) || extractRealName(p2NameFromColumn) || `Player ${p2Id}`;
+          const p1FormalName = extractRealName(p1NameFromPlayers) || extractRealName(p1NameFromColumn) || `Player ${p1Id}`;
+          const p2FormalName = extractRealName(p2NameFromPlayers) || extractRealName(p2NameFromColumn) || `Player ${p2Id}`;
 
-          // เพิ่มหมายเลขให้กับชื่อผู้เล่น
-          const p1Number = p1Id; // Player ID
-          const p2Number = p2Id; // Player ID
+          const p1DisplayNumber = parseInt(p1Id.toString().replace(/[^0-9]/g, '')).toString();
+          const p2DisplayNumber = parseInt(p2Id.toString().replace(/[^0-9]/g, '')).toString();
 
-          // แปลงหมายเลขให้เป็นรูปแบบที่ต้องการ (เอาเฉพาะตัวเลขและเอา 0 นำหน้าออก)
-          const p1DisplayNumber = parseInt(p1Number.toString().replace(/[^0-9]/g, '')).toString();
-          const p2DisplayNumber = parseInt(p2Number.toString().replace(/[^0-9]/g, '')).toString();
-          console.log('Final P1 Display Name:', p1DisplayName, 'Final P2 Display Name:', p2DisplayName);
-          console.log('P1 Codename:', p1Codename, 'P2 Codename:', p2Codename);
-          console.log('P1 Name from Players:', p1NameFromPlayers, 'P2 Name from Players:', p2NameFromPlayers);
-          console.log('P1 Name from Column:', p1NameFromColumn, 'P2 Name from Column:', p2NameFromColumn);
-
-          // ไม่ตัดชื่อ ให้แสดงชื่อเต็ม
-          const p1ShortName = (String(p1DisplayName).toLowerCase().trim() === 'champ' || String(p1Phone).endsWith('971156555')) ? '' : p1DisplayName;
-          const p2ShortName = (String(p2DisplayName).toLowerCase().trim() === 'champ' || String(p2Phone).endsWith('971156555')) ? '' : p2DisplayName;
+          let p1NameHtml = window.isFormalMode ? p1FormalName : (p1Codename ? renderCodenameEffect(p1Codename, p1Rank, p1Phone) : p1FormalName);
+          let p2NameHtml = window.isFormalMode ? p2FormalName : (p2Codename ? renderCodenameEffect(p2Codename, p2Rank, p2Phone) : p2FormalName);
+          if (!window.isFormalMode && String(p1Phone).endsWith('971156555')) p1NameHtml = renderCodenameEffect('champ', p1Rank, p1Phone);
+          if (!window.isFormalMode && String(p2Phone).endsWith('971156555')) p2NameHtml = renderCodenameEffect('champ', p2Rank, p2Phone);
 
           html += `<div class="pairing-card ${statusClass}" style="border-left: 4px solid ${roundColor} !important;">
             <div class="round-label" style="background-color: ${roundColor}; color: white;">รอบ ${round}</div>
-            <span class="${p1Class}" title="${p1DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p1DisplayName}')">${p1DisplayNumber}.${getRankEmoji(p1Rank, p1Phone)}${p1ShortName ? p1ShortName + ' ' : ''}${renderCodenameEffect(p1DisplayName, p1Rank, p1Phone)}${getRankEmoji(p1Rank, p1Phone)}</span>
+            <span class="${p1Class}" title="${p1FormalName}" style="cursor: pointer;" onclick="showTooltip(this, '${p1FormalName}')">${p1DisplayNumber}.${getRankEmoji(p1Rank, p1Phone)} ${p1NameHtml} ${getRankEmoji(p1Rank, p1Phone)}</span>
             <div class="score">${resultDisplay}</div>
-            <span class="${p2Class}" title="${p2DisplayName}" style="cursor: pointer;" onclick="showTooltip(this, '${p2DisplayName}')">${p2DisplayNumber}.${getRankEmoji(p2Rank, p2Phone)}${p2ShortName ? p2ShortName + ' ' : ''}${renderCodenameEffect(p2DisplayName, p2Rank, p2Phone)}${getRankEmoji(p2Rank, p2Phone)}</span>
+            <span class="${p2Class}" title="${p2FormalName}" style="cursor: pointer;" onclick="showTooltip(this, '${p2FormalName}')">${p2DisplayNumber}.${getRankEmoji(p2Rank, p2Phone)} ${p2NameHtml} ${getRankEmoji(p2Rank, p2Phone)}</span>
             <div class="status-badge status-${statusClass}">${statusText}</div>
           </div>`;
         });
@@ -3356,7 +3438,8 @@
               console.log('RoundRobin - Found match! Phone:', phone, 'phoneMap:', window.phoneMap);
               console.log('RoundRobin - phoneMap[phone]:', window.phoneMap ? window.phoneMap[phone] : 'phoneMap is null');
               if (window.phoneMap && window.phoneMap[phone]) {
-                displayName = window.phoneMap[phone].codename || extractRealName(playerName);
+                const formalName = extractRealName(playerName);
+                displayName = window.isFormalMode ? formalName : (window.phoneMap[phone].codename || formalName);
                 playerRank = window.phoneMap[phone].rank || '';
                 console.log('RoundRobin - Using codename:', displayName, 'rank:', playerRank);
               } else {
@@ -3370,13 +3453,15 @@
 
         console.log('RoundRobin - Final displayName:', displayName);
 
-        const isChamp = String(playerPhone).endsWith('971156555') || String(displayName).toLowerCase().trim() === 'champ';
-        const displayPlayerName = isChamp ? '' : displayName;
+        const codename = window.phoneMap && window.phoneMap[playerPhone] ? window.phoneMap[playerPhone].codename : null;
+        const formalName = extractRealName(playerName);
+        let finalDisplayNameHtml = window.isFormalMode ? formalName : (codename ? renderCodenameEffect(codename, playerRank, playerPhone) : formalName);
+        if (!window.isFormalMode && String(playerPhone).endsWith('971156555')) finalDisplayNameHtml = renderCodenameEffect('champ', playerRank, playerPhone);
 
         const rowHtml = `<tr>
           <td>${row[0] || (i + 1)}</td>
           <td data-full-text="${displayName}" onclick="showTooltip(this, '${displayName}')">
-            <span class="codename-rank" data-rank="${playerRank}">${parseInt(playerId.toString().replace(/[^0-9]/g, '')).toString()}.<span style="font-size:0.8rem;">${getRankEmoji(playerRank, playerPhone)}</span> ${displayPlayerName ? displayPlayerName + ' ' : ''}${renderCodenameEffect(displayName, playerRank, playerPhone)} <span style="font-size:0.8rem;">${getRankEmoji(playerRank, playerPhone)}</span></span>
+            <span class="codename-rank" data-rank="${playerRank}">${parseInt(playerId.toString().replace(/[^0-9]/g, '')).toString()}.<span style="font-size:0.8rem;">${getRankEmoji(playerRank, playerPhone)}</span> ${finalDisplayNameHtml} <span style="font-size:0.8rem;">${getRankEmoji(playerRank, playerPhone)}</span></span>
           </td>
           <td>${played}</td>
           <td>${win}</td>
@@ -3475,6 +3560,7 @@
         const phoneMap = buildPhoneMap(members);
 
         // กำหนดค่า global variables
+        window.pairingDataStore = pairingData;
         window.playersData = pairingData.players;
         window.phoneMap = phoneMap;
         window.hideStandingStatus = pairingData.hideStanding;
