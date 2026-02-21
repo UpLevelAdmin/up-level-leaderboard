@@ -292,43 +292,6 @@
         transform: translateY(0);
       }
 
-      /* Master Championest Fire Breathing Effect */
-      .codename.fire-breath {
-        color: #111 !important;
-        /* เกือบดำสนิท */
-        font-weight: 800;
-        letter-spacing: 1px;
-        animation: fire-glow 2.5s infinite alternate;
-      }
-
-      @keyframes fire-glow {
-        0% {
-          text-shadow:
-            0 0 2px #fff,
-            0 0 4px #fffc00,
-            0 0 8px #ff7300,
-            0 0 12px #ff0000;
-        }
-
-        50% {
-          text-shadow:
-            0 0 3px #fff,
-            0 0 8px #fffc00,
-            0 0 15px #ff7300,
-            0 0 25px #ff0000,
-            0 -5px 15px rgba(255, 0, 0, 0.6);
-        }
-
-        100% {
-          text-shadow:
-            0 0 2px #fff,
-            0 0 6px #fffc00,
-            0 0 10px #ff7300,
-            0 0 18px #ff0000;
-        }
-      }
-
-
       20% {
         transform: translateY(-5px);
       }
@@ -343,6 +306,42 @@
 
       80% {
         transform: translateY(0);
+      }
+    }
+
+    /* Master Championest Fire Breathing Effect */
+    .codename.fire-breath {
+      color: #111 !important;
+      /* เกือบดำสนิท */
+      font-weight: 800;
+      letter-spacing: 1px;
+      animation: fire-glow 2.5s infinite alternate;
+    }
+
+    @keyframes fire-glow {
+      0% {
+        text-shadow:
+          0 0 2px #fff,
+          0 0 4px #fffc00,
+          0 0 8px #ff7300,
+          0 0 12px #ff0000;
+      }
+
+      50% {
+        text-shadow:
+          0 0 3px #fff,
+          0 0 8px #fffc00,
+          0 0 15px #ff7300,
+          0 0 25px #ff0000,
+          0 -5px 15px rgba(255, 0, 0, 0.6);
+      }
+
+      100% {
+        text-shadow:
+          0 0 2px #fff,
+          0 0 6px #fffc00,
+          0 0 10px #ff7300,
+          0 0 18px #ff0000;
       }
     }
 
@@ -1158,6 +1157,12 @@
           players.forEach((player, idx2) => {
             let displayName = player.nickname;
             let phone = String(player.phone || '').replace(/[^\d]/g, "");
+
+            // บังคับเอฟเฟกต์สำหรับ Champ
+            if (String(phone).endsWith('971156555') || (player.nickname && String(player.nickname).toLowerCase().trim() === 'champ')) {
+              phone = '0971156555';
+            }
+
             const profile = phoneMap[phone];
 
             if ((profile && profile.codename && profile.rank) || String(phone).endsWith('971156555')) {
@@ -1169,21 +1174,15 @@
             }
 
             // ตรวจสอบสถานะการเงิน
-            let paymentStatus = '';
+            let paymentStatus = '<span style="background: rgba(239, 68, 68, 0.2); color: #ef4444; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; white-space: nowrap;">❌ รอชำระ</span>';
             const payment = paymentMap[phone];
 
-            // Debug: Log payment info if exists
-            if (payment) console.log(`Payment info for ${player.nickname}:`, payment);
+            let rowStatus = player.status || player['สถานะการชำระเงิน'] || '';
 
-            if (payment && (payment.status === 'verified' || payment.status === 'Paid' || payment.status === 'Confirmed')) {
-              // จ่ายผ่านระบบใหม่และผ่าน SlipOK หรือ Admin Approve แล้ว
-              paymentStatus = '<span style="background: #4caf50; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.8em; font-weight: bold;">PAID</span>';
-            } else if (payment && payment.status === 'manual_check') {
-              // รอแอดมินตรวจสอบ
-              paymentStatus = '<span style="background: #fbbf24; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.8em; font-weight: bold; text-shadow:none; color:#333;">CHECKING</span>';
-            } else if (player.paid) {
-              // แนบสลิปมาในฟอร์ม แต่ยังไม่ได้ตรวจผ่านระบบใหม่
-              paymentStatus = '<span style="background: #ff9800; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.8em; font-weight: bold;">PENDING</span>';
+            if (rowStatus.includes('ชำระแล้ว') || (payment && (payment.status === 'verified' || payment.status === 'Paid' || payment.status === 'Confirmed'))) {
+              paymentStatus = '<span style="background: rgba(16, 185, 129, 0.2); color: #10b981; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; white-space: nowrap;">✅ ชำระแล้ว</span>';
+            } else if (rowStatus.includes('รอตรวจสอบ') || (payment && payment.status === 'manual_check') || player.paid) {
+              paymentStatus = '<span style="background: rgba(245, 158, 11, 0.2); color: #f59e0b; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; white-space: nowrap;">⏳ รอตรวจสอบ</span>';
             }
 
             html += `<tr><td>${idx2 + 1}</td><td>${displayName}</td><td>${player.level}</td><td>${paymentStatus}</td></tr>`;
