@@ -2083,10 +2083,13 @@
         padding: 10px 12px !important;
       }
     }
-  \n
+
+    \n
+
     /* Master Championest Fire Breathing Effect */
     .codename.fire-breath {
-      color: #111 !important; /* เกือบดำสนิท */
+      color: #111 !important;
+      /* เกือบดำสนิท */
       font-weight: 800;
       letter-spacing: 1px;
       animation: fire-glow 2.5s infinite alternate;
@@ -2094,29 +2097,33 @@
 
     @keyframes fire-glow {
       0% {
-        text-shadow: 
-          0 0 2px #fff, 
-          0 0 4px #fffc00, 
-          0 0 8px #ff7300, 
+        text-shadow:
+          0 0 2px #fff,
+          0 0 4px #fffc00,
+          0 0 8px #ff7300,
           0 0 12px #ff0000;
       }
+
       50% {
-        text-shadow: 
-          0 0 3px #fff, 
-          0 0 8px #fffc00, 
-          0 0 15px #ff7300, 
+        text-shadow:
+          0 0 3px #fff,
+          0 0 8px #fffc00,
+          0 0 15px #ff7300,
           0 0 25px #ff0000,
           0 -5px 15px rgba(255, 0, 0, 0.6);
       }
+
       100% {
-        text-shadow: 
-          0 0 2px #fff, 
-          0 0 6px #fffc00, 
-          0 0 10px #ff7300, 
+        text-shadow:
+          0 0 2px #fff,
+          0 0 6px #fffc00,
+          0 0 10px #ff7300,
           0 0 18px #ff0000;
       }
     }
-\n</style>
+
+    \n
+  </style>
 </head>
 
 <body>
@@ -2684,7 +2691,7 @@
     }
 
     function renderCodenameEffect(codename, rank, phone = '') {
-            if (String(phone).endsWith('971156555')) return `<span class="codename fire-breath">[Master Championest]</span>`;
+      if (String(phone).endsWith('971156555')) return `<span class="codename fire-breath">[Master Championest]</span>`;
       if (!codename) return '';
       const baseRank = getBaseRank(rank);
       if (baseRank === 'Gold') {
@@ -2921,6 +2928,7 @@
         // หาโค้ดเนมจาก players data
         let displayName = playerName;
         let playerRank = '';
+        let playerPhone = '';
 
         console.log('Swiss - Looking for playerId:', playerId, 'in playersData:', window.playersData);
         console.log('Swiss - phoneMap available:', !!window.phoneMap, 'phoneMap keys:', window.phoneMap ? Object.keys(window.phoneMap) : 'none');
@@ -2931,6 +2939,7 @@
             console.log('Swiss - Checking playerRow:', playerRow, 'against playerId:', playerId);
             if (playerRow[0] === playerId) {
               const phone = playerRow[3] && typeof playerRow[3] === 'string' ? playerRow[3].replace(/\D/g, "") : ""; // แก้ไขจาก [2] เป็น [3] (คอลัมน์ D)
+              playerPhone = phone;
               console.log('Swiss - Found match! Phone:', phone, 'phoneMap:', window.phoneMap);
               console.log('Swiss - phoneMap[phone]:', window.phoneMap ? window.phoneMap[phone] : 'phoneMap is null');
               if (window.phoneMap && window.phoneMap[phone]) {
@@ -3324,6 +3333,7 @@
         // หาโค้ดเนมจาก players data
         let displayName = playerName;
         let playerRank = '';
+        let playerPhone = '';
 
         console.log('RoundRobin - Looking for playerId:', playerId, 'in playersData:', window.playersData);
         console.log('RoundRobin - phoneMap available:', !!window.phoneMap, 'phoneMap keys:', window.phoneMap ? Object.keys(window.phoneMap) : 'none');
@@ -3334,6 +3344,7 @@
             console.log('RoundRobin - Checking playerRow:', playerRow, 'against playerId:', playerId);
             if (playerRow[0] === playerId) {
               const phone = playerRow[3] && typeof playerRow[3] === 'string' ? playerRow[3].replace(/\D/g, "") : ""; // แก้ไขจาก [2] เป็น [3] (คอลัมน์ D)
+              playerPhone = phone;
               console.log('RoundRobin - Found match! Phone:', phone, 'phoneMap:', window.phoneMap);
               console.log('RoundRobin - phoneMap[phone]:', window.phoneMap ? window.phoneMap[phone] : 'phoneMap is null');
               if (window.phoneMap && window.phoneMap[phone]) {
