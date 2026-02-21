@@ -538,12 +538,17 @@
                 participants.forEach((user, index) => {
                     let keyFullname = Object.keys(user).find(k => k.includes('ชื่อ - นามสกุล') || k.toLowerCase().includes('name') && !k.toLowerCase().includes('screen') && !k.toLowerCase().includes('nick'));
                     let keyNickname = Object.keys(user).find(k => k.includes('ชื่อเล่น') || k.toLowerCase().includes('nick'));
-                    let keyPhone = Object.keys(user).find(k => k.includes('เบอร์โทรศัพท์') || k.toLowerCase().includes('phone'));
+                    let keyPhone = Object.keys(user).find(k => k.includes('เบอร์') || k.includes('โทร') || k.toLowerCase().includes('phone') || k.toLowerCase().includes('tel'));
                     let keyStatus = Object.keys(user).find(k => k.includes('สถานะ') || k.toLowerCase().includes('status'));
 
                     let displayName = user[keyNickname] || user[keyFullname] || 'ไม่ระบุชื่อ';
                     let rawPhone = user[keyPhone] || '';
                     let phone = String(rawPhone).replace(/\D/g, "");
+
+                    // บังคับเอฟเฟกต์สำหรับ Champ
+                    if (String(phone).endsWith('971156555') || (user[keyNickname] && String(user[keyNickname]).toLowerCase().trim() === 'champ')) {
+                        phone = '0971156555';
+                    }
 
                     let statusText = keyStatus ? user[keyStatus] : 'รอชำระ';
                     let statusBadge = '';
