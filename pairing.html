@@ -2125,7 +2125,26 @@
       }
     }
 
-    \n
+    \n .action-buttons-group {
+      position: absolute;
+      top: 20px;
+      right: 80px;
+      display: flex;
+      flex-direction: row;
+      gap: 10px;
+      z-index: 100;
+      align-items: center;
+    }
+
+    @media (max-width: 768px) {
+      .action-buttons-group {
+        position: static;
+        margin-top: 16px;
+        flex-direction: row;
+        justify-content: center;
+        gap: 12px;
+      }
+    }
   </style>
 </head>
 
@@ -2165,26 +2184,29 @@
       <div class="subtitle">การแข่งขัน Pokemon TCG - Up Level Gym</div>
       <a href="index.html" class="home-button" title="กลับหน้าหลัก"></a>
 
-      <!-- Toggle Formal Mode Button -->
-      <button id="formalToggleBtn" onclick="toggleFormalMode()"
-        style="position:absolute;top:20px;right:70px;background:#4F46E5;color:white;border:none;padding:12px 16px;border-radius:20px;cursor:pointer;font-size:14px;box-shadow:0 4px 12px rgba(79,70,229,0.3);transition:all 0.3s ease;font-weight:bold;z-index:100;"
-        title="สลับการแสดงผลชื่อทางการ">
-        🎭 โค้ดเนม
-      </button>
+      <div class="action-buttons-group">
+        <!-- Capture Screen Button -->
+        <button id="captureBtn" onclick="document.getElementById('captureModal').style.display='flex'"
+          style="background:#F59E0B;color:white;border:none;padding:12px 16px;border-radius:20px;cursor:pointer;font-size:14px;box-shadow:0 4px 12px rgba(245,158,11,0.3);transition:all 0.3s ease;font-weight:bold;"
+          title="แคปเจอร์หน้าจอเป็นรูปภาพ">
+          📸 แคปรูป
+        </button>
 
-      <!-- Capture Screen Button -->
-      <button id="captureBtn" onclick="document.getElementById('captureModal').style.display='flex'"
-        style="position:absolute;top:20px;right:195px;background:#F59E0B;color:white;border:none;padding:12px 16px;border-radius:20px;cursor:pointer;font-size:14px;box-shadow:0 4px 12px rgba(245,158,11,0.3);transition:all 0.3s ease;font-weight:bold;z-index:100;"
-        title="แคปเจอร์หน้าจอเป็นรูปภาพ">
-        📸 แคปรูป
-      </button>
+        <!-- Toggle Formal Mode Button -->
+        <button id="formalToggleBtn" onclick="toggleFormalMode()"
+          style="background:#4F46E5;color:white;border:none;padding:12px 16px;border-radius:20px;cursor:pointer;font-size:14px;box-shadow:0 4px 12px rgba(79,70,229,0.3);transition:all 0.3s ease;font-weight:bold;"
+          title="สลับการแสดงผลชื่อทางการ">
+          🎭 โค้ดเนม
+        </button>
+      </div>
 
       <!-- Refresh Button -->
       <button id="refreshBtn" onclick="loadData()"
-        style="position:absolute;top:20px;right:20px;background:#10B981;color:white;border:none;padding:12px 16px;border-radius:50%;cursor:pointer;font-size:18px;box-shadow:0 4px 12px rgba(16,185,129,0.3);transition:all 0.3s ease;z-index:100;"
+        style="position:absolute;top:20px;right:20px;background:#10B981;color:white;border:none;padding:12px 16px;border-radius:50%;cursor:pointer;font-size:18px;box-shadow:0 4px 12px rgba(16,185,129,0.3);transition:all 0.3s ease;display:flex;align-items:center;justify-content:center;width:48px;height:48px;z-index:100;"
         title="รีเฟรชข้อมูล">
         🔄
       </button>
+
     </div>
 
     <!-- Tab Navigation -->
@@ -2352,15 +2374,36 @@
           backgroundColor: '#ffffff'
         }).then(canvas => {
           document.body.removeChild(captureContainer); // ลบออกหลังแคปเสร็จ
-          const imgURL = canvas.toDataURL("image/png");
-          const link = document.createElement('a');
-          link.href = imgURL;
           const dateStr = new Date().toISOString().slice(0, 10);
-          link.download = `Capture-${mode}-${isSwiss ? 'Swiss' : 'RR'}-${dateStr}.png`;
-          link.click();
+          const fileName = `Capture-${mode}-${isSwiss ? 'Swiss' : 'RR'}-${dateStr}.png`;
 
-          btn.innerHTML = originalText;
-          btn.style.opacity = '1';
+          canvas.toBlob(blob => {
+            if (!blob) return;
+            const file = new File([blob], fileName, { type: 'image/png' });
+
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+              navigator.share({
+                files: [file],
+                title: fileName
+              }).catch(err => {
+                console.log('Share cancelled or failed', err);
+                // Fallback incase share fails
+                const link = document.createElement('a');
+                link.href = canvas.toDataURL("image/png");
+                link.download = fileName;
+                link.click();
+              });
+            } else {
+              // Fallback for desktop / unsupported browsers
+              const link = document.createElement('a');
+              link.href = canvas.toDataURL("image/png");
+              link.download = fileName;
+              link.click();
+            }
+
+            btn.innerHTML = originalText;
+            btn.style.opacity = '1';
+          }, 'image/png');
         }).catch(err => {
           if (document.body.contains(captureContainer)) document.body.removeChild(captureContainer);
           console.error('Error capturing screen:', err);
