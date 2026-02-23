@@ -2137,6 +2137,26 @@
     <p style="margin-top:1rem; font-size:1.1em;">กำลังโหลดข้อมูล...</p>
   </div>
 
+  <!-- Capture Modal -->
+  <div id="captureModal"
+    style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:10000; justify-content:center; align-items:center; flex-direction:column;">
+    <div
+      style="background:white; padding:25px; border-radius:12px; width:340px; text-align:center; box-shadow:0 10px 25px rgba(0,0,0,0.2);">
+      <h3 style="margin-top:0; color:#1F2937; margin-bottom:20px;">📸 เลือกรูปแบบการแคปรูป</h3>
+      <button onclick="captureScreen('codename')"
+        style="width:100%; padding:12px; margin-bottom:12px; background:#4F46E5; color:white; border:none; border-radius:8px; cursor:pointer; font-size:16px; font-weight:600;">🎭
+        จับคู่ (โค้ดเนม)</button>
+      <button onclick="captureScreen('formal')"
+        style="width:100%; padding:12px; margin-bottom:12px; background:#8B5CF6; color:white; border:none; border-radius:8px; cursor:pointer; font-size:16px; font-weight:600;">📝
+        จับคู่ (ทางการ)</button>
+      <button onclick="captureScreen('standing')"
+        style="width:100%; padding:12px; margin-bottom:20px; background:#10B981; color:white; border:none; border-radius:8px; cursor:pointer; font-size:16px; font-weight:600;">📊
+        ตารางคะแนน (Standing)</button>
+      <button onclick="document.getElementById('captureModal').style.display='none'"
+        style="width:100%; padding:12px; background:#F3F4F6; color:#4B5563; border:none; border-radius:8px; cursor:pointer; font-size:16px; font-weight:600;">ยกเลิก</button>
+    </div>
+  </div>
+
   <div class="container">
     <!-- Header -->
     <div class="header">
@@ -2153,7 +2173,7 @@
       </button>
 
       <!-- Capture Screen Button -->
-      <button id="captureBtn" onclick="captureScreen()"
+      <button id="captureBtn" onclick="document.getElementById('captureModal').style.display='flex'"
         style="position:absolute;top:20px;right:195px;background:#F59E0B;color:white;border:none;padding:12px 16px;border-radius:20px;cursor:pointer;font-size:14px;box-shadow:0 4px 12px rgba(245,158,11,0.3);transition:all 0.3s ease;font-weight:bold;z-index:100;"
         title="แคปเจอร์หน้าจอเป็นรูปภาพ">
         📸 แคปรูป
@@ -2303,7 +2323,8 @@
       setupSearchAndFilters();
     }
 
-    function captureScreen() {
+    function captureScreen(mode) {
+      document.getElementById('captureModal').style.display = 'none';
       if (!window.pairingDataStore || !window.pairingDataStore.players) return;
       const btn = document.getElementById('captureBtn');
       const originalText = btn.innerHTML;
@@ -2313,9 +2334,9 @@
       const isSwiss = document.querySelector('.swiss-tab').classList.contains('active');
       const tabType = isSwiss ? 'swiss' : 'roundrobin';
 
-      const captureContainer = createCaptureTable(tabType);
+      const captureContainer = mode === 'standing' ? createCaptureStandingTable(tabType) : createCaptureTable(tabType, mode);
       if (!captureContainer) {
-        alert('ไม่พบข้อมูลการจับคู่สำหรับรอบล่าสุด');
+        alert('ไม่พบข้อมูลสำหรับสร้างรูปภาพในรอบปัจจุบัน');
         btn.innerHTML = originalText;
         btn.style.opacity = '1';
         return;
@@ -2335,7 +2356,7 @@
           const link = document.createElement('a');
           link.href = imgURL;
           const dateStr = new Date().toISOString().slice(0, 10);
-          link.download = `Pairing-LatestRound-${isSwiss ? 'Swiss' : 'RR'}-${dateStr}.png`;
+          link.download = `Capture-${mode}-${isSwiss ? 'Swiss' : 'RR'}-${dateStr}.png`;
           link.click();
 
           btn.innerHTML = originalText;
@@ -2352,7 +2373,7 @@
       }, 100);
     }
 
-    function createCaptureTable(tabType) {
+    function createCaptureTable(tabType, mode) {
       const d = window.pairingDataStore;
       const players = d.players;
       let data = [];
@@ -2396,7 +2417,7 @@
       // สร้างตัวตาราง
       let html = `
         <div style="text-align: center; margin-bottom: 40px;">
-          <img src="https://i.postimg.cc/wjzpnxjB/Up-Level-01-1.png" alt="Logo" style="height: 80px; margin-bottom: 15px;">
+          <img src="https://i.postimg.cc/wjzpnxjB/Up-Level-01-1.png" alt="Logo" style="height: 120px; margin-bottom: 20px;">
           <h1 style="font-size: 54px; margin: 0; color: #1E3A8A; font-weight: 700;">${tournamentName}</h1>
           <h2 style="font-size: 42px; margin: 15px 0 0 0; color: #3B82F6; font-weight: 600;">รอบที่ ${latestRound}</h2>
         </div>
@@ -2428,6 +2449,25 @@
 
         let p1Name = extractRealName(p1Raw) || row[2];
         let p2Name = p2Raw === 'BYE' ? 'BYE' : (extractRealName(p2Raw) || row[8]);
+
+        if (mode === 'codename') {
+          const p1Tel = getTelById(players, row[2]);
+          const p2Tel = row[8] === 'BYE' ? null : getTelById(players, row[8]);
+          const p1Phone = p1Tel && typeof p1Tel === 'string' ? p1Tel.replace(/\D/g, "") : "";
+          const p2Phone = p2Tel && typeof p2Tel === 'string' ? p2Tel.replace(/\D/g, "") : "";
+
+          if (window.phoneMap && window.phoneMap[p1Phone]) {
+            const m = window.phoneMap[p1Phone];
+            const effectHtml = renderCodenameEffect(m.codename, m.rank, p1Phone);
+            p1Name = `${getRankEmoji(m.rank, p1Phone)} ${effectHtml || (m.codename || p1Name)} ${getRankEmoji(m.rank, p1Phone)}`;
+          }
+
+          if (p2Raw !== 'BYE' && window.phoneMap && window.phoneMap[p2Phone]) {
+            const m = window.phoneMap[p2Phone];
+            const effectHtml = renderCodenameEffect(m.codename, m.rank, p2Phone);
+            p2Name = `${getRankEmoji(m.rank, p2Phone)} ${effectHtml || (m.codename || p2Name)} ${getRankEmoji(m.rank, p2Phone)}`;
+          }
+        }
 
         const bgColor = index % 2 === 0 ? '#F9FAFB' : '#FFFFFF';
 
@@ -2478,6 +2518,128 @@
       return container;
     }
 
+    function createCaptureStandingTable(tabType) {
+      const d = window.pairingDataStore;
+      let standings = [];
+      let tournamentName = '';
+
+      if (tabType === 'swiss') {
+        standings = d.standings || [];
+        tournamentName = 'Swiss Tournament - Standings';
+      } else {
+        standings = d.roundRobinStandings || [];
+        tournamentName = 'Round Robin Tournament - Standings';
+      }
+
+      if (!standings || standings.length <= 1) return null;
+
+      // Sort standing properly to put DROP at the bottom
+      const sortedStandings = standings.slice(1).sort((a, b) => {
+        const aIsDrop = a[0] === 'DROP';
+        const bIsDrop = b[0] === 'DROP';
+        if (aIsDrop && !bIsDrop) return 1;
+        if (!aIsDrop && bIsDrop) return -1;
+        return 0;
+      });
+
+      const container = document.createElement('div');
+      container.style.position = 'absolute';
+      container.style.left = '-9999px';
+      container.style.top = '0';
+      container.style.width = '1200px';
+      container.style.backgroundColor = '#ffffff';
+      container.style.padding = '50px';
+      container.style.fontFamily = "'Mitr', 'Inter', sans-serif";
+      container.style.color = '#333';
+      container.style.boxSizing = 'border-box';
+
+      let html = `
+        <div style="text-align: center; margin-bottom: 40px;">
+          <img src="https://i.postimg.cc/wjzpnxjB/Up-Level-01-1.png" alt="Logo" style="height: 120px; margin-bottom: 20px;">
+          <h1 style="font-size: 54px; margin: 0; color: #1E3A8A; font-weight: 700;">${tournamentName}</h1>
+        </div>
+        <table style="width: 100%; border-collapse: collapse; font-size: 24px; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
+          <thead>
+            <tr style="background: linear-gradient(90deg, #1E40AF 0%, #3B82F6 100%); color: white;">
+              <th style="padding: 20px; text-align: center; width: 8%; font-weight: 600;">อันดับ</th>
+              <th style="padding: 20px; text-align: left; width: 28%; font-weight: 600;">ชื่อ</th>
+              <th style="padding: 20px; text-align: center; width: 8%; font-weight: 600;">แข่ง</th>
+              <th style="padding: 20px; text-align: center; width: 8%; font-weight: 600;">W</th>
+              <th style="padding: 20px; text-align: center; width: 8%; font-weight: 600;">L</th>
+              <th style="padding: 20px; text-align: center; width: 10%; font-weight: 600;">คะแนน</th>
+              <th style="padding: 20px; text-align: center; width: 10%; font-weight: 600;">Win Rate</th>
+              <th style="padding: 20px; text-align: center; width: 10%; font-weight: 600;">OW%</th>
+              <th style="padding: 20px; text-align: center; width: 10%; font-weight: 600;">OOW%</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      sortedStandings.forEach((row, index) => {
+        const rank = row[0];
+        const playerNameRaw = row[2];
+        const played = row[4] || 0;
+        const win = row[5] || 0;
+        const loss = row[7] || 0;
+        const points = row[8] || 0;
+
+        // formats winRate
+        let winRate = row[9] || '0%';
+        if (typeof winRate === 'number') {
+          winRate = Math.round(winRate * 100) + '%';
+        } else if (typeof winRate === 'string' && !winRate.includes('%')) {
+          winRate = parseFloat(winRate) + '%';
+        }
+
+        let ow = row[10] || '0%';
+        if (typeof ow === 'number') {
+          ow = Math.round(ow * 100) + '%';
+        } else if (typeof ow === 'string' && !ow.includes('%')) {
+          ow = parseFloat(ow) + '%';
+        }
+
+        let oow = row[11] || '0%';
+        if (typeof oow === 'number') {
+          oow = Math.round(oow * 100) + '%';
+        } else if (typeof oow === 'string' && !oow.includes('%')) {
+          oow = parseFloat(oow) + '%';
+        }
+
+        const bgColor = index % 2 === 0 ? '#F9FAFB' : '#FFFFFF';
+        let pName = extractRealName(playerNameRaw) || row[2];
+        let pStyle = "font-weight: 500; color: #1F2937;";
+
+        if (rank === 'DROP') {
+          pStyle = "font-weight: 400; color: #9CA3AF;";
+        }
+
+        html += `
+          <tr style="background-color: ${bgColor}; border-bottom: 2px solid #E5E7EB;">
+            <td style="padding: 20px; text-align: center; font-weight: bold; color: #4B5563;">${rank}</td>
+            <td style="padding: 20px; ${pStyle}">${pName}</td>
+            <td style="padding: 20px; text-align: center; color: #4B5563;">${played}</td>
+            <td style="padding: 20px; text-align: center; color: #047857;">${win}</td>
+            <td style="padding: 20px; text-align: center; color: #DC2626;">${loss}</td>
+            <td style="padding: 20px; text-align: center; font-weight: bold; color: #3B82F6;">${points}</td>
+            <td style="padding: 20px; text-align: center; color: #4B5563;">${winRate}</td>
+            <td style="padding: 20px; text-align: center; color: #6B7280;">${ow}</td>
+            <td style="padding: 20px; text-align: center; color: #6B7280;">${oow}</td>
+          </tr>
+        `;
+      });
+
+      html += `
+          </tbody>
+        </table>
+        <div style="margin-top: 30px; text-align: center; color: #9CA3AF; font-size: 20px;">
+          Generated by Up Level Academy • ${new Date().toLocaleString('th-TH')}
+        </div>
+      `;
+
+      container.innerHTML = html;
+      return container;
+    }
+
     const API_URL = 'https://script.google.com/macros/s/AKfycbwVoGEvUEmeIkC-e2aPSrF7T82HqOpMwByW-SSbv7EohQ_zG2EbA2uv5TyPnqhuy5rmrg/exec';
     const MEMBER_API = "https://script.google.com/macros/s/AKfycbxtjsDwHI6nJU4OIHExUxMaZwUn3qwakvdkzwbQO7C8Trzz5Gh84SX6F1gqb4BOFQcn/exec?func=getMemberDashboardData";
 
@@ -2488,7 +2650,7 @@
           <div class="spinner"></div>
           <p style="margin-top:1rem;color:#6B7280;">กำลังโหลดข้อมูล...</p>
         </div>
-      `;
+        `;
 
       document.getElementById('swiss-pairing').innerHTML = skeletonHtml;
       document.getElementById('swiss-standings').innerHTML = skeletonHtml;
@@ -2686,50 +2848,50 @@
       // Create modal for full table
       const modal = document.createElement('div');
       modal.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0,0,0,0.8);
-        z-index: 10000;
-        display: flex;
-        justify-content: center;
-        align-items: center;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 10000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
       `;
 
       const modalContent = document.createElement('div');
       modalContent.style.cssText = `
-        background: white;
-        border-radius: 8px;
-        padding: 20px;
-        max-width: 90%;
-        max-height: 90%;
-        overflow: auto;
-        position: relative;
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      max-width: 90%;
+      max-height: 90%;
+      overflow: auto;
+      position: relative;
       `;
 
       // Close button
       const closeBtn = document.createElement('button');
       closeBtn.innerHTML = '✕';
       closeBtn.style.cssText = `
-        position: absolute;
-        top: 10px;
-        right: 15px;
-        background: none;
-        border: none;
-        font-size: 20px;
-        cursor: pointer;
-        color: #666;
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: #666;
       `;
       closeBtn.onclick = () => modal.remove();
 
       // Table with all columns
       const table = document.createElement('table');
       table.style.cssText = `
-        border-collapse: collapse;
-        width: 100%;
-        font-size: 14px;
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 14px;
       `;
 
       // Headers with all columns
@@ -2739,11 +2901,11 @@
         const th = document.createElement('th');
         th.textContent = header;
         th.style.cssText = `
-          border: 1px solid #ddd;
-          padding: 8px;
-          background: #f5f5f5;
-          text-align: center;
-        `;
+      border: 1px solid #ddd;
+      padding: 8px;
+      background: #f5f5f5;
+      text-align: center;
+      `;
         headerRow.appendChild(th);
       });
       table.appendChild(headerRow);
@@ -2755,10 +2917,10 @@
           const td = document.createElement('td');
           td.textContent = cell || '';
           td.style.cssText = `
-            border: 1px solid #ddd;
-            padding: 6px;
-            text-align: center;
-          `;
+      border: 1px solid #ddd;
+      padding: 6px;
+      text-align: center;
+      `;
           tr.appendChild(td);
         });
         table.appendChild(tr);
@@ -2788,50 +2950,50 @@
       // Create modal for full table
       const modal = document.createElement('div');
       modal.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0,0,0,0.8);
-        z-index: 10000;
-        display: flex;
-        justify-content: center;
-        align-items: center;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 10000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
       `;
 
       const modalContent = document.createElement('div');
       modalContent.style.cssText = `
-        background: white;
-        border-radius: 8px;
-        padding: 20px;
-        max-width: 90%;
-        max-height: 90%;
-        overflow: auto;
-        position: relative;
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      max-width: 90%;
+      max-height: 90%;
+      overflow: auto;
+      position: relative;
       `;
 
       // Close button
       const closeBtn = document.createElement('button');
       closeBtn.innerHTML = '✕';
       closeBtn.style.cssText = `
-        position: absolute;
-        top: 10px;
-        right: 15px;
-        background: none;
-        border: none;
-        font-size: 20px;
-        cursor: pointer;
-        color: #666;
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: #666;
       `;
       closeBtn.onclick = () => modal.remove();
 
       // Table with all columns
       const table = document.createElement('table');
       table.style.cssText = `
-        border-collapse: collapse;
-        width: 100%;
-        font-size: 14px;
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 14px;
       `;
 
       // Headers with all columns
@@ -2841,11 +3003,11 @@
         const th = document.createElement('th');
         th.textContent = header;
         th.style.cssText = `
-          border: 1px solid #ddd;
-          padding: 8px;
-          background: #f5f5f5;
-          text-align: center;
-        `;
+      border: 1px solid #ddd;
+      padding: 8px;
+      background: #f5f5f5;
+      text-align: center;
+      `;
         headerRow.appendChild(th);
       });
       table.appendChild(headerRow);
@@ -2857,10 +3019,10 @@
           const td = document.createElement('td');
           td.textContent = cell || '';
           td.style.cssText = `
-            border: 1px solid #ddd;
-            padding: 6px;
-            text-align: center;
-          `;
+      border: 1px solid #ddd;
+      padding: 6px;
+      text-align: center;
+      `;
           tr.appendChild(td);
         });
         table.appendChild(tr);
