@@ -425,15 +425,24 @@
 
         <!-- สถิติแบบ MA4 -->
         <div class="highlight-section">
-            <h3 class="highlight-title">📊 รายชื่อผู้สั่งซื้อ</h3>
+            <h3 class="highlight-title"
+                style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <span>📊 รายชื่อผู้สั่งซื้อ</span>
+                <button onclick="loadRegisteredUsers(true)"
+                    style="font-size: 0.9rem; padding: 6px 12px; background: rgba(56, 189, 248, 0.2); border: 1px solid var(--primary-color); border-radius: 8px; color: var(--text-light); cursor: pointer; transition: all 0.2s; font-family: 'Kanit', sans-serif;"
+                    onmouseover="this.style.background='var(--primary-color)'; this.style.color='#111';"
+                    onmouseout="this.style.background='rgba(56, 189, 248, 0.2)'; this.style.color='var(--text-light)';">🔄
+                    รีเฟรชข้อมูลล่าสุด</button>
+            </h3>
             <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-number" id="totalUsers">-</div>
-                    <div class="stat-label">ผู้สั่งซื้อทั้งหมด</div>
+                <div class="stat-card"
+                    style="border-color: rgba(56, 189, 248, 0.4); background: rgba(56, 189, 248, 0.05);">
+                    <div class="stat-number" id="currentLotUsers">-</div>
+                    <div class="stat-label" style="color: var(--primary-color); font-weight:600;">ยอดรอบปัจจุบัน</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-number" id="totalShirts">-</div>
-                    <div class="stat-label">จำนวนเสื้อทั้งหมด</div>
+                    <div class="stat-number" id="totalUsers">-</div>
+                    <div class="stat-label">ยอดสั่งซื้อสะสมรวม</div>
                 </div>
             </div>
             <div id="usersContainer" class="table-responsive">
@@ -498,20 +507,25 @@
             }
         }
 
-        function loadRegisteredUsers() {
+        function loadRegisteredUsers(force = false) {
             const container = document.getElementById('usersContainer');
 
             container.innerHTML = '<div class="spinner"></div><div class="loading">กำลังโหลดข้อมูล...</div>';
 
+            let fetchApiUrl = apiUrl;
+            if (force) {
+                fetchApiUrl += (fetchApiUrl.includes('?') ? '&' : '?') + 'refresh=true';
+            }
+
             Promise.all([
-                fetch(apiUrl).then(res => res.json()).catch(() => ({ participants: [] })),
+                fetch(fetchApiUrl).then(res => res.json()).catch(() => ({ participants: [] })),
                 fetch(memberDashboardApi).then(res => res.json()).catch(() => [])
             ]).then(([data, members]) => {
                 const participants = data.participants || [];
 
                 if (participants.length === 0) {
+                    if (document.getElementById('currentLotUsers')) document.getElementById('currentLotUsers').textContent = '0';
                     document.getElementById('totalUsers').textContent = '0';
-                    document.getElementById('totalShirts').textContent = '0';
                     container.innerHTML = '<div class="loading">📝 ยังไม่มีผู้สั่งซื้อ</div>';
                     return;
                 }
@@ -525,70 +539,140 @@
                     });
                 }
 
-                document.getElementById('totalUsers').textContent = participants.length;
-                document.getElementById('totalShirts').textContent = participants.length;
+                // Group by Lot
+                const currentLotKey = "รอบปัจจุบัน (กำลังเปิดรับ)";
+                const lotGroups = {
+                    [currentLotKey]: [] // บังคับให้มีกลุ่มนี้เป็นค่าว่างไว้ก่อนเสมอ เพื่อให้แสดงรอบปัจจุบัน (0 คน) ได้
+                };
 
-                let html = '<div class="table-responsive"><table class="participant-table" style="width:100%; border-collapse:collapse; margin:0.5rem auto; background:rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.1); border-radius:12px; overflow:hidden;">';
-                html += '<thead><tr style="background: rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.1);">';
-                html += '<th style="padding:10px 4px; text-align:center; color:var(--text-light); font-weight:600; width:40px; font-size: 0.9rem;">ลำดับ</th>';
-                html += '<th style="padding:10px 4px; text-align:left; color:var(--text-light); font-weight:600; font-size: 0.9rem;">ชื่อ/Codename</th>';
-                html += '<th style="padding:10px 4px; text-align:center; color:var(--text-light); font-weight:600; white-space:nowrap; width:80px; font-size: 0.9rem;">สถานะ</th>';
-                html += '</tr></thead><tbody>';
+                participants.forEach((user, i) => {
+                    user._originalIndex = i + 1; // Keep original index
+                    let keyLot = Object.keys(user).find(k => k.includes('รอบ') || k.toLowerCase().includes('lot') || k.includes('ล็อต'));
+                    let lotName = (keyLot && user[keyLot]) ? String(user[keyLot]).trim() : '';
 
-                participants.forEach((user, index) => {
-                    let keyFullname = Object.keys(user).find(k => k.includes('ชื่อ - นามสกุล') || k.toLowerCase().includes('name') && !k.toLowerCase().includes('screen') && !k.toLowerCase().includes('nick'));
-                    let keyNickname = Object.keys(user).find(k => k.includes('ชื่อเล่น') || k.toLowerCase().includes('nick'));
-                    let keyPhone = Object.keys(user).find(k => k.includes('เบอร์โทรศัพท์') || k.toLowerCase().includes('phone'));
-                    let keyStatus = Object.keys(user).find(k => k.includes('สถานะ') || k.toLowerCase().includes('status'));
-
-                    let displayName = user[keyNickname] || user[keyFullname] || 'ไม่ระบุชื่อ';
-                    let rawPhone = user[keyPhone] || '';
-                    let phone = String(rawPhone).replace(/\D/g, "");
-
-                    let statusText = keyStatus ? user[keyStatus] : 'รอชำระ';
-                    let statusBadge = '';
-                    if (statusText.includes('ชำระแล้ว')) {
-                        statusBadge = `<span style="background: rgba(16, 185, 129, 0.2); color: #10b981; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; white-space: nowrap;">✅ ชำระแล้ว</span>`;
-                    } else if (statusText.includes('รอตรวจสอบ')) {
-                        statusBadge = `<span style="background: rgba(245, 158, 11, 0.2); color: #f59e0b; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; white-space: nowrap;">⏳ รอตรวจสอบ</span>`;
-                    } else {
-                        statusBadge = `<span style="background: rgba(239, 68, 68, 0.2); color: #ef4444; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; white-space: nowrap;">❌ รอชำระ</span>`;
+                    // เพิ่มคำว่า "ล็อตที่ " ถ้าระบุมาเป็นตัวเลขเฉยๆ
+                    if (lotName && /^\d+$/.test(lotName)) {
+                        lotName = "ล็อตที่ " + lotName;
                     }
 
-                    const profile = phone ? phoneMap[phone] : null;
-                    // บังคับโชว์แบบสมาชิกเสมอถ้าเบอร์คือ 0971156555 ไม่ว่าจะมีในฐานข้อมูล member หรือไม่
-                    if ((profile && profile.codename && profile.codename !== 'ไม่ระบุ') || String(phone).endsWith('971156555')) {
-                        const rank = profile ? profile.rank : '';
-                        const codenameStr = profile ? profile.codename : '';
-                        const emoji = getRankEmoji(rank, phone);
-                        const codenameHtml = renderCodenameEffect(codenameStr, rank, phone);
-                        displayName = `<span class="codename-rank" style="font-size: 0.9rem;"><span>${emoji}</span> ${codenameHtml} <span>${emoji}</span></span>`;
-                    } else if (user[keyNickname]) {
-                        displayName = `<span style="font-size: 0.9rem; font-weight: 500;">${user[keyNickname]}</span>`;
-                    } else if (user[keyFullname]) {
-                        displayName = `<span style="font-size: 0.9rem;">${user[keyFullname]}</span>`;
+                    if (!lotName || lotName === '-' || lotName === '0') {
+                        lotName = currentLotKey;
                     }
 
-                    html += `<tr style="border-bottom:1px solid rgba(255,255,255,0.05); transition: background 0.2s;">`;
-                    html += `<td style="padding:8px 4px; text-align:center; color:var(--text-muted); font-size: 0.85rem;">${index + 1}</td>`;
-                    html += `<td style="padding:8px 4px; text-align:left; color:var(--text-light); line-height: 1.3;">${displayName}</td>`;
-                    html += `<td style="padding:8px 4px; text-align:center;">${statusBadge}</td>`;
-                    html += '</tr>';
+                    if (!lotGroups[lotName]) {
+                        lotGroups[lotName] = [];
+                    }
+                    lotGroups[lotName].push(user);
                 });
 
-                html += '</tbody></table></div>';
-                container.innerHTML = html;
+                document.getElementById('totalUsers').textContent = participants.length;
+                if (document.getElementById('currentLotUsers')) {
+                    document.getElementById('currentLotUsers').textContent = lotGroups[currentLotKey].length;
+                }
+
+                let html = '';
+
+                const renderTable = (usersGroup) => {
+                    if (!usersGroup || usersGroup.length === 0) {
+                        return '<div style="padding: 1rem; color: var(--text-muted); text-align: center; background: rgba(15,23,42,0.8); border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">📝 ยังไม่มีรายชื่อในรอบนี้</div>';
+                    }
+
+                    let tableHtml = '<div class="table-responsive"><table class="participant-table" style="width:100%; border-collapse:collapse; margin:0.5rem auto; background:rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.1); border-radius:12px; overflow:hidden;">';
+                    tableHtml += '<thead><tr style="background: rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.1);">';
+                    tableHtml += '<th style="padding:10px 4px; text-align:center; color:var(--text-light); font-weight:600; width:40px; font-size: 0.9rem;">ลำดับ</th>';
+                    tableHtml += '<th style="padding:10px 4px; text-align:left; color:var(--text-light); font-weight:600; font-size: 0.9rem;">ชื่อ/Codename</th>';
+                    tableHtml += '<th style="padding:10px 4px; text-align:center; color:var(--text-light); font-weight:600; white-space:nowrap; width:80px; font-size: 0.9rem;">สถานะ</th>';
+                    tableHtml += '</tr></thead><tbody>';
+
+                    usersGroup.forEach((user) => {
+                        let keyFullname = Object.keys(user).find(k => k.includes('ชื่อ - นามสกุล') || k.toLowerCase().includes('name') && !k.toLowerCase().includes('screen') && !k.toLowerCase().includes('nick'));
+                        let keyNickname = Object.keys(user).find(k => k.includes('ชื่อเล่น') || k.toLowerCase().includes('nick'));
+                        let keyPhone = Object.keys(user).find(k => k.includes('เบอร์') || k.includes('โทร') || k.toLowerCase().includes('phone') || k.toLowerCase().includes('tel'));
+                        let keyStatus = Object.keys(user).find(k => k.includes('สถานะ') || k.toLowerCase().includes('status'));
+
+                        let displayName = user[keyNickname] || user[keyFullname] || 'ไม่ระบุชื่อ';
+                        let rawPhone = user[keyPhone] || '';
+                        let phone = String(rawPhone).replace(/\D/g, "");
+
+                        if (String(phone).endsWith('971156555') || (user[keyNickname] && String(user[keyNickname]).toLowerCase().trim() === 'champ')) {
+                            phone = '0971156555';
+                        }
+
+                        let statusText = String(keyStatus && user[keyStatus] ? user[keyStatus] : 'รอชำระ');
+                        let statusBadge = '';
+                        if (statusText.includes('ชำระแล้ว')) {
+                            statusBadge = `<span style="background: rgba(16, 185, 129, 0.2); color: #10b981; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; white-space: nowrap;">✅ ชำระแล้ว</span>`;
+                        } else if (statusText.includes('รอตรวจสอบ')) {
+                            statusBadge = `<span style="background: rgba(245, 158, 11, 0.2); color: #f59e0b; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; white-space: nowrap;">⏳ รอตรวจสอบ</span>`;
+                        } else {
+                            statusBadge = `<span style="background: rgba(239, 68, 68, 0.2); color: #ef4444; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; white-space: nowrap;">❌ รอชำระ</span>`;
+                        }
+
+                        const profile = phone ? phoneMap[phone] : null;
+                        if ((profile && profile.codename && profile.codename !== 'ไม่ระบุ') || String(phone).endsWith('971156555')) {
+                            const rank = profile ? profile.rank : '';
+                            const codenameStr = profile ? profile.codename : '';
+                            const emoji = getRankEmoji(rank, phone);
+                            const codenameHtml = renderCodenameEffect(codenameStr, rank, phone);
+                            displayName = `<span class="codename-rank" style="font-size: 0.9rem;"><span>${emoji}</span> ${codenameHtml} <span>${emoji}</span></span>`;
+                        } else if (user[keyNickname]) {
+                            displayName = `<span style="font-size: 0.9rem; font-weight: 500;">${user[keyNickname]}</span>`;
+                        } else if (user[keyFullname]) {
+                            displayName = `<span style="font-size: 0.9rem;">${user[keyFullname]}</span>`;
+                        }
+
+                        tableHtml += `<tr style="border-bottom:1px solid rgba(255,255,255,0.05); transition: background 0.2s;">`;
+                        tableHtml += `<td style="padding:8px 4px; text-align:center; color:var(--text-muted); font-size: 0.85rem;">${user._originalIndex}</td>`;
+                        tableHtml += `<td style="padding:8px 4px; text-align:left; color:var(--text-light); line-height: 1.3;">${displayName}</td>`;
+                        tableHtml += `<td style="padding:8px 4px; text-align:center;">${statusBadge}</td>`;
+                        tableHtml += '</tr>';
+                    });
+
+                    tableHtml += '</tbody></table></div>';
+                    return tableHtml;
+                };
+
+                const lotKeys = Object.keys(lotGroups).sort((a, b) => {
+                    if (a === currentLotKey) return -1;
+                    if (b === currentLotKey) return 1;
+                    return b.localeCompare(a); // เรียงถอยหลัง ล็อต 2 มาก่อน ล็อต 1
+                });
+
+                lotKeys.forEach((lotName, idx) => {
+                    const groupUsers = lotGroups[lotName];
+                    const isCurrent = lotName === currentLotKey;
+
+                    if (isCurrent) {
+                        html += `<div style="margin-bottom: 2rem;">`;
+                        html += `<h4 style="color: var(--primary-color); text-align: left; margin-bottom: 0.5rem; font-size: 1.2rem;">🟢 ${lotName} <span style="font-size:0.9rem; color: var(--text-muted);">(${groupUsers.length} คน)</span></h4>`;
+                        html += renderTable(groupUsers);
+                        html += `</div>`;
+                    } else if (groupUsers && groupUsers.length > 0) { // ล็อตเก่าถ้าไม่มีคน ไม่ต้องโชว์
+                        const collapseId = `lot-collapse-${idx}`;
+                        html += `<div style="margin-bottom: 1rem; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; overflow: hidden;">`;
+                        html += `  <button onclick="document.getElementById('${collapseId}').style.display = document.getElementById('${collapseId}').style.display === 'none' ? 'block' : 'none'" style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: rgba(0,0,0,0.3); border: none; color: var(--text-light); cursor: pointer; text-align: left; font-size: 1.1rem; font-family: 'Kanit', sans-serif;">`;
+                        html += `    <span>📦 ${lotName} <span style="font-size:0.9rem; color: var(--text-muted);">(${groupUsers.length} คน)</span></span>`;
+                        html += `    <span style="font-size: 0.8rem;">▼ ดูรายชื่อย้อนหลัง</span>`;
+                        html += `  </button>`;
+                        html += `  <div id="${collapseId}" style="display: none; padding: 0.5rem; background: rgba(15,23,42,0.5);">`;
+                        html += renderTable(groupUsers);
+                        html += `  </div>`;
+                        html += `</div>`;
+                    }
+                });
+
+                container.innerHTML = html || '<div class="loading">📝 ยังไม่มีรายชื่อผู้สั่งซื้อ</div>';
             })
                 .catch(error => {
-                    console.error('Error:', error);
-                    document.getElementById('totalUsers').textContent = '0';
-                    document.getElementById('totalShirts').textContent = '0';
-                    container.innerHTML = '<div class="loading" style="color: #ef4444;">⚠️ ไม่สามารถโหลดข้อมูลได้</div>';
+                    console.error('Error fetching data:', error);
+                    if (document.getElementById('totalUsers')) document.getElementById('totalUsers').textContent = '0';
+                    if (document.getElementById('currentLotUsers')) document.getElementById('currentLotUsers').textContent = '0';
+                    container.innerHTML = `<div class="loading" style="color: #ef4444;">⚠️ ไม่สามารถโหลดข้อมูลได้ หรือ เกิดข้อผิดพลาดในระบบ<br><span style="font-size: 0.8rem; color: #fca5a5;">${error.message}</span></div>`;
                 });
         }
 
         // Initial Load Attempt
-        window.addEventListener('load', loadRegisteredUsers);
+        window.addEventListener('load', () => loadRegisteredUsers(false));
 
     </script>
 </body>
