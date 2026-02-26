@@ -481,6 +481,46 @@
         .codename.wave span:nth-child(10) {
             animation-delay: 0.72s;
         }
+
+        \n
+
+        /* Master Championest Fire Breathing Effect */
+        .codename.fire-breath {
+            color: #111 !important;
+            /* เกือบดำสนิท */
+            font-weight: 800;
+            letter-spacing: 1px;
+            animation: fire-glow 2.5s infinite alternate;
+        }
+
+        @keyframes fire-glow {
+            0% {
+                text-shadow:
+                    0 0 2px #fff,
+                    0 0 4px #fffc00,
+                    0 0 8px #ff7300,
+                    0 0 12px #ff0000;
+            }
+
+            50% {
+                text-shadow:
+                    0 0 3px #fff,
+                    0 0 8px #fffc00,
+                    0 0 15px #ff7300,
+                    0 0 25px #ff0000,
+                    0 -5px 15px rgba(255, 0, 0, 0.6);
+            }
+
+            100% {
+                text-shadow:
+                    0 0 2px #fff,
+                    0 0 6px #fffc00,
+                    0 0 10px #ff7300,
+                    0 0 18px #ff0000;
+            }
+        }
+
+        \n
     </style>
 </head>
 
@@ -499,7 +539,7 @@
         <h2>Lorcana Weekly Tournaments</h2>
 
         <!-- Single Register Button -->
-        <a href="https://forms.gle/HGUPsd9cSDRFvdZS9" target="_blank" class="register-btn">
+        <a href="https://forms.gle/o8xzsuBwP6vNsFTH8" target="_blank" class="register-btn">
             ✨ สมัครแข่งขัน ✨
         </a>
 
@@ -556,7 +596,7 @@
         // Configuration
         // TODO: ใส่ URL ของ Google Apps Script ที่ถูกต้องที่นี่
         // const apiUrl = "https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec?type=json";
-        const apiUrl = "https://script.google.com/macros/s/AKfycbyjzjobTlpCVH6t02ioAzPLoJlAAYBFJfD397ab5OoLvDjl7SEFG4u1O5nRjsoGlhko/exec"; // Updated URL
+        const apiUrl = "https://script.google.com/macros/s/AKfycbwm9YAcom9V_MmZWAqL1FZl4neXxH2uIEdsBUQawcu8D8qVQZLHKbKa_JQErRA-DYrrrA/exec"; // Updated URL
 
         // Member Dashboard API for Ranks
         const memberDashboardApi = "https://script.google.com/macros/s/AKfycbxtjsDwHI6nJU4OIHExUxMaZwUn3qwakvdkzwbQO7C8Trzz5Gh84SX6F1gqb4BOFQcn/exec?func=getMemberDashboardData";
@@ -598,14 +638,24 @@
 
         // Function to generate upcoming dates
         function getUpcomingDates() {
-            // Specific dates requested for end of Feb 2026
+            // Specific dates requested for March 2026
             const dates = [];
 
-            // Monday 23 Feb 2026
-            dates.push({ date: new Date(2026, 1, 23), type: 'Core Construct', dayName: 'วันจันทร์' });
+            // Mondays (Core Construct)
+            dates.push({ date: new Date(2026, 2, 2), type: 'Core Construct', dayName: 'วันจันทร์' });
+            dates.push({ date: new Date(2026, 2, 9), type: 'Core Construct', dayName: 'วันจันทร์' });
+            dates.push({ date: new Date(2026, 2, 16), type: 'Core Construct', dayName: 'วันจันทร์' });
+            dates.push({ date: new Date(2026, 2, 23), type: 'Core Construct', dayName: 'วันจันทร์' });
+            dates.push({ date: new Date(2026, 2, 30), type: 'Core Construct', dayName: 'วันจันทร์' });
 
-            // Wednesday 25 Feb 2026
-            dates.push({ date: new Date(2026, 1, 25), type: 'Pack Rush', dayName: 'วันพุธ' });
+            // Wednesdays (Pack Rush)
+            dates.push({ date: new Date(2026, 2, 4), type: 'Pack Rush', dayName: 'วันพุธ' });
+            dates.push({ date: new Date(2026, 2, 11), type: 'Pack Rush', dayName: 'วันพุธ' });
+            dates.push({ date: new Date(2026, 2, 18), type: 'Pack Rush', dayName: 'วันพุธ' });
+            dates.push({ date: new Date(2026, 2, 25), type: 'Pack Rush', dayName: 'วันพุธ' });
+
+            // Sort dates chronologically
+            dates.sort((a, b) => a.date - b.date);
 
             return dates;
         }
@@ -714,10 +764,12 @@
                             let phone = String(p.phone || '').replace(/[^\d]/g, "");
                             const profile = phoneMap[phone];
 
-                            if (profile && profile.codename && profile.rank) {
-                                const emoji = getRankEmoji(profile.rank);
-                                const codenameHtml = renderCodenameEffect(profile.codename, profile.rank);
-                                displayName += `<br><span class="codename-rank" data-rank="${profile.rank}"><span>${emoji}</span> ${codenameHtml} <span>${emoji}</span></span>`;
+                            if ((profile && profile.codename && profile.rank) || String(phone).endsWith('971156555')) {
+                                const rank = profile ? profile.rank : '';
+                                const codenameStr = profile ? profile.codename : '';
+                                const emoji = getRankEmoji(rank, phone);
+                                const codenameHtml = renderCodenameEffect(codenameStr, rank, phone);
+                                displayName += `<br><span class="codename-rank" data-rank="${rank}"><span>${emoji}</span> ${codenameHtml} <span>${emoji}</span></span>`;
                             }
 
                             html += `
