@@ -2406,15 +2406,9 @@
         const tableNo = row[1];
         let p1Raw, p2Raw, result;
 
-        if (tabType === 'swiss') {
-          p1Raw = getPlayerNameById(players, row[2]) || row[3];
-          p2Raw = row[8] === 'BYE' ? 'BYE' : (getPlayerNameById(players, row[8]) || row[9]);
-          result = row[10] || '-';
-        } else {
-          p1Raw = getPlayerNameById(players, row[2]) || row[3];
-          p2Raw = getPlayerNameById(players, row[8]) || row[11];
-          result = row[14] || '-';
-        }
+        p1Raw = getPlayerNameById(players, row[2]) || row[3];
+        p2Raw = row[8] === 'BYE' ? 'BYE' : (getPlayerNameById(players, row[8]) || row[9]);
+        result = row[10] || '-';
 
         let p1Name = extractRealName(p1Raw) || row[2];
         let p2Name = p2Raw === 'BYE' ? 'BYE' : (extractRealName(p2Raw) || row[8]);
