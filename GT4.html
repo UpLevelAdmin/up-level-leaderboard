@@ -139,24 +139,66 @@
 
     .prize-box {
       margin-top: 30px;
-      padding: 20px;
-      background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, transparent 100%);
-      border-radius: 16px;
-      border-left: 4px solid var(--accent);
+      padding: 24px;
+      background: linear-gradient(135deg, rgba(255, 215, 0, 0.08) 0%, rgba(255, 60, 0, 0.05) 100%);
+      border-radius: 20px;
+      border: 1px solid rgba(255, 215, 0, 0.2);
       text-align: left;
+      position: relative;
+      overflow: hidden;
     }
 
-    .prize-box ul {
+    .prize-img {
+      float: right;
+      width: 140px;
+      margin-left: 15px;
+      margin-bottom: 10px;
+      filter: drop-shadow(0 5px 15px rgba(0,0,0,0.5));
+      border-radius: 10px;
+    }
+
+    .prize-list {
       list-style: none;
       padding: 0;
-      margin: 10px 0 0 0;
+      margin: 15px 0 0 0;
     }
 
-    .prize-box li {
-      margin-bottom: 8px;
+    .prize-list li {
+      margin-bottom: 12px;
+      padding: 10px 15px;
+      background: rgba(255,255,255,0.03);
+      border-radius: 10px;
       display: flex;
+      justify-content: space-between;
       align-items: center;
-      gap: 10px;
+      border-left: 3px solid var(--accent);
+    }
+
+    .prize-rank { font-weight: 600; color: #fff; display: flex; align-items: center; gap: 8px; }
+    .prize-value { color: var(--accent); font-weight: 700; }
+
+    .special-condition {
+      margin-top: 20px;
+      padding: 15px;
+      background: rgba(255, 60, 0, 0.1);
+      border: 1px dashed var(--primary);
+      border-radius: 12px;
+      font-size: 0.9em;
+    }
+
+    @media (max-width: 600px) {
+      .prize-img {
+        float: none;
+        display: block;
+        margin: 0 auto 20px auto;
+        width: 180px;
+      }
+      .prize-list li {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+      }
+      .prize-value { align-self: flex-end; }
     }
 
     /* Table Styles */
@@ -328,13 +370,41 @@
       </div>
 
       <div class="prize-box">
-        <div style="font-weight: 700; color: var(--accent); font-size: 1.25em; border-bottom: 1px solid rgba(255,215,0,0.3); padding-bottom: 10px;">🎁 รางวัล (Booster Box : MA4)</div>
-        <ul>
-          <li>🏆 <b>อันดับ 1:</b> Booster Box 1 Box</li>
-          <li>🥈 <b>อันดับ 2:</b> 15 Packs</li>
-          <li>🥉 <b>อันดับ 3-4:</b> 10 Packs | <b>อันดับ 5-8:</b> 8 Packs</li>
-          <li>🎁 <b>อันดับที่เหลือ:</b> การันตี 3-4 Packs*</li>
+        <img src="https://i.postimg.cc/NF0rVrtT/Booster-Box-MA4-Open-(1).png" alt="MA4 Booster Box" class="prize-img">
+        <div style="font-weight: 700; color: var(--accent); font-size: 1.3em; margin-bottom: 15px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">
+          🎁 ของรางวัลผู้แข่งขัน (BOX : MA4)
+        </div>
+        
+        <ul class="prize-list">
+          <li>
+            <span class="prize-rank">🏆 อันดับ 1:</span>
+            <span class="prize-value">Booster Box 1 Box</span>
+          </li>
+          <li>
+            <span class="prize-rank">🥈 อันดับ 2:</span>
+            <span class="prize-value">15 Packs</span>
+          </li>
+          <li>
+            <span class="prize-rank">🥉 อันดับ 3-4:</span>
+            <span class="prize-value">10 Packs</span>
+          </li>
+          <li>
+            <span class="prize-rank">🏅 อันดับ 5-8:</span>
+            <span class="prize-value">8 Packs</span>
+          </li>
+          <li>
+            <span class="prize-rank">🎁 อันดับที่เหลือ:</span>
+            <span class="prize-value">การันตี 3 Packs</span>
+          </li>
         </ul>
+
+        <div class="special-condition">
+          <div style="color: var(--primary); font-weight: 700; margin-bottom: 5px;">📍 กรณีมีผู้สมัคร 49 คนขึ้นไป</div>
+          <div style="color: rgba(255,255,255,0.8);">
+            • <b>อันดับ 9-16:</b> รับรางวัลเพิ่มเป็น <span style="color:var(--accent);">4 Packs</span><br>
+            • <b>อันดับที่เหลือ:</b> การันตี <span style="color:var(--accent);">3 Packs</span>
+          </div>
+        </div>
       </div>
     </div>
 
