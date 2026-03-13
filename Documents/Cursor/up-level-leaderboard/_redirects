@@ -1,0 +1,14 @@
+# Allowed Pages (Listed on Index)
+/leaderboard.html   /leaderboard.html   200
+/quests.html        /quests.html        200
+/challenge.html     /challenge.html     200
+/profile.html       /profile.html       200
+/gymbattle.html      /gymbattle.html      200
+/gymstanding.html    /gymstanding.html    200
+/pairing.html       /pairing.html       200
+/cards.html         /cards.html         200
+/GT4.html           /GT4.html           200
+/preorder-jersey.html /preorder-jersey.html 200
+
+# Redirect all other HTML files to home
+/*.html             /                   301

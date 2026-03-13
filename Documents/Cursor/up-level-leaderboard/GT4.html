@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+  <meta charset="UTF-8">
+  <title>ตารางรายชื่อ Up Level Grand Tournament 4</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Prompt:wght@300;400;500;600;700&family=Chonburi&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --primary: #ff3c00;
+      --secondary: #1a237e;
+      --accent: #ffd700;
+      --dark-bg: #0a0e14;
+      --card-bg: rgba(255, 255, 255, 0.03);
+    }
+
+    body {
+      background: var(--dark-bg);
+      background-image: 
+        radial-gradient(circle at 20% 20%, rgba(255, 60, 0, 0.15) 0%, transparent 40%),
+        radial-gradient(circle at 80% 80%, rgba(26, 35, 126, 0.2) 0%, transparent 40%);
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+      font-family: 'Kanit', 'Prompt', sans-serif;
+      color: #fff;
+      margin: 0;
+    }
+
+    .gt4-container {
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 32px 16px;
+      background: rgba(15, 23, 42, 0.8);
+      border-radius: 24px;
+      box-shadow: 0 0 50px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(255, 255, 255, 0.05);
+      position: relative;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(20px);
+    }
+
+    .logo-section {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .logo-section img {
+      max-width: 140px;
+      filter: drop-shadow(0 0 15px rgba(255, 60, 0, 0.4));
+      margin-bottom: 10px;
+    }
+
+    h1 {
+      font-family: 'Chonburi', cursive;
+      color: #fff;
+      font-size: 3em;
+      margin: 0;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      text-shadow: 0 0 20px rgba(255, 60, 0, 0.6);
+      background: linear-gradient(to bottom, #fff 40%, #ff3c00 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    h2 {
+      color: var(--accent);
+      text-align: center;
+      font-weight: 700;
+      font-size: 1.6em;
+      margin: 20px 0;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .register-btn {
+      display: inline-block;
+      padding: 16px 48px;
+      background: linear-gradient(135deg, #ff3c00 0%, #ff1e00 100%);
+      color: #fff;
+      font-size: 1.3em;
+      font-weight: 800;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      text-decoration: none;
+      text-align: center;
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: 0 0 30px rgba(255, 60, 0, 0.4);
+      text-transform: uppercase;
+    }
+
+    .register-btn:hover {
+      transform: translateY(-5px) scale(1.05);
+      box-shadow: 0 0 50px rgba(255, 60, 0, 0.7);
+      filter: brightness(1.2);
+    }
+
+    .event-details {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 32px;
+      border-radius: 20px;
+      margin: 32px auto;
+      text-align: center;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      max-width: 700px;
+    }
+
+    .details-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 20px;
+      margin-top: 24px;
+    }
+
+    .detail-item {
+      padding: 15px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .detail-label {
+      font-size: 0.85em;
+      color: rgba(255, 255, 255, 0.5);
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .detail-value {
+      font-size: 1.1em;
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .prize-box {
+      margin-top: 30px;
+      padding: 24px;
+      background: linear-gradient(135deg, rgba(255, 215, 0, 0.08) 0%, rgba(255, 60, 0, 0.05) 100%);
+      border-radius: 20px;
+      border: 1px solid rgba(255, 215, 0, 0.2);
+      text-align: left;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .prize-img {
+      float: right;
+      width: 140px;
+      margin-left: 15px;
+      margin-bottom: 10px;
+      filter: drop-shadow(0 5px 15px rgba(0,0,0,0.5));
+      border-radius: 10px;
+    }
+
+    .prize-list {
+      list-style: none;
+      padding: 0;
+      margin: 15px 0 0 0;
+    }
+
+    .prize-list li {
+      margin-bottom: 12px;
+      padding: 10px 15px;
+      background: rgba(255,255,255,0.03);
+      border-radius: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-left: 3px solid var(--accent);
+    }
+
+    .prize-rank { font-weight: 600; color: #fff; display: flex; align-items: center; gap: 8px; }
+    .prize-value { color: var(--accent); font-weight: 700; }
+
+    .special-condition {
+      margin-top: 20px;
+      padding: 15px;
+      background: rgba(255, 60, 0, 0.1);
+      border: 1px dashed var(--primary);
+      border-radius: 12px;
+      font-size: 0.9em;
+    }
+
+    @media (max-width: 600px) {
+      .prize-img {
+        float: none;
+        display: block;
+        margin: 0 auto 20px auto;
+        width: 180px;
+      }
+      .prize-list li {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+      }
+      .prize-value { align-self: flex-end; }
+    }
+
+    /* Table Styles */
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0 8px;
+      margin-top: 20px;
+    }
+
+    th {
+      background: transparent;
+      color: rgba(255, 255, 255, 0.5);
+      padding: 12px 20px;
+      text-align: center;
+      font-weight: 500;
+      text-transform: uppercase;
+      font-size: 0.85em;
+      letter-spacing: 1px;
+    }
+
+    td {
+      padding: 16px 20px;
+      background: rgba(255, 255, 255, 0.03);
+      text-align: center;
+    }
+
+    td:first-child { border-radius: 12px 0 0 12px; }
+    td:last-child { border-radius: 0 12px 12px 0; }
+
+    tr:hover td {
+      background: rgba(255, 255, 255, 0.07);
+      color: var(--accent);
+    }
+
+    .floating-icon {
+      position: absolute;
+      width: 80px;
+      opacity: 0.4;
+      pointer-events: none;
+      z-index: 1;
+      filter: blur(1px);
+      animation: float 4s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0) rotate(0); }
+      50% { transform: translateY(-20px) rotate(10deg); }
+    }
+
+    .spinner {
+      margin: 40px auto;
+      width: 50px;
+      height: 50px;
+      border: 3px solid rgba(255, 255, 255, 0.1);
+      border-top: 3px solid var(--primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+
+    .home-button {
+      position: fixed;
+      top: 30px;
+      left: 30px;
+      z-index: 100;
+      background: rgba(255, 255, 255, 0.05);
+      width: 50px;
+      height: 50px;
+      border-radius: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      text-decoration: none;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      transition: 0.3s;
+    }
+
+    .home-button:hover {
+      background: var(--primary);
+      transform: scale(1.1);
+    }
+
+    /* Tournament Styling */
+    .codename-rank[data-rank="Rookie"] .codename { color: #888; font-size: 1em; }
+    .codename-rank[data-rank="Bronze"] .codename { color: #b87333; font-size: 1.05em; }
+    .codename-rank[data-rank="Silver"] .codename { color: #9e9e9e; font-size: 1.1em; }
+    .codename-rank[data-rank="Gold"] .codename { color: #ffd700; font-size: 1.15em; font-weight: bold; }
+    .codename-rank[data-rank="Platinum"] .codename { color: #00bcd4; font-size: 1.2em; font-weight: bold; }
+    .codename-rank[data-rank="Diamond"] .codename { color: #00bfff; font-size: 1.25em; font-weight: bold; }
+    .codename-rank[data-rank="Grandmaster"] .codename { color: #8e24aa; font-size: 1.3em; font-weight: bold; }
+    .codename-rank[data-rank="Legend"] .codename { color: #e53935; font-size: 1.4em; font-weight: bold; }
+
+    .codename-rank[data-rank="Gold"] .codename,
+    .codename-rank[data-rank="Platinum"] .codename,
+    .codename-rank[data-rank="Diamond"] .codename,
+    .codename-rank[data-rank="Grandmaster"] .codename,
+    .codename-rank[data-rank="Legend"] .codename {
+      animation: blink 1s step-end infinite alternate;
+    }
+
+    @keyframes blink {
+      0% { opacity: 1; text-shadow: 0 0 8px #fff, 0 0 16px currentColor; }
+      100% { opacity: 0.7; text-shadow: 0 0 2px #fff, 0 0 4px currentColor; }
+    }
+
+    .codename.wave span { display: inline-block; animation: wave 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+    @keyframes wave {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+
+    .codename.fire-breath {
+      color: #ff3c00 !important;
+      font-weight: 900;
+      animation: fire-glow 2s infinite alternate;
+    }
+
+    @keyframes fire-glow {
+      0% { text-shadow: 0 0 5px #fff, 0 0 10px #fffc00, 0 0 15px #ff7300; }
+      100% { text-shadow: 0 0 10px #fff, 0 0 20px #fffc00, 0 0 30px #ff7300, 0 0 40px #ff0000; }
+    }
+
+    @media (max-width: 600px) {
+      h1 { font-size: 2em; }
+      .event-details { padding: 20px; }
+      table { font-size: 0.8em; }
+      td, th { padding: 10px 5px; }
+    }
+  </style>
+</head>
+
+<body>
+  <a href="index.html" class="home-button">🏠</a>
+  <div class="gt4-container">
+    <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2026/02/th_ma4_pkg.png" class="floating-icon" style="top:50px; left:-40px;">
+    <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2026/02/th_ma4_pkg.png" class="floating-icon" style="bottom:50px; right:-40px; animation-delay: 2s;">
+
+    <div class="logo-section">
+      <img src="https://i.postimg.cc/wjzpnxjB/Up-Level-01-1.png" alt="Up Level Logo">
+      <h1>Grand Tournament 4</h1>
+    </div>
+
+    <h2 style="color: #ff3c00; font-size: 1.8em;">🔥 วันอาทิตย์ ที่ 29 มีนาคม 2569 🔥</h2>
+
+    <div style="text-align: center; margin: 30px 0;">
+      <a class="register-btn" href="https://forms.gle/V4JjbAnaA7hPRX8F8" target="_blank">สมัครเข้าร่วมการแข่งขัน</a>
+    </div>
+
+    <!-- Details Section -->
+    <div class="event-details">
+      <h3 style="text-transform: uppercase; letter-spacing: 2px; color: var(--accent); margin-bottom: 25px;">📋 ข้อมูลการแข่งขัน</h3>
+      <div class="details-grid">
+        <div class="detail-item">
+          <span class="detail-label">⏰ เวลา</span>
+          <span class="detail-value">10:00 – 17:00 น.</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">📍 สถานที่</span>
+          <span class="detail-value">Up Level Academy</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">💸 ค่าสมัคร</span>
+          <span class="detail-value">250 บาท (64 คน)</span>
+        </div>
+      </div>
+
+      <div class="prize-box">
+        <img src="https://i.postimg.cc/NF0rVrtT/Booster-Box-MA4-Open-(1).png" alt="MA4 Booster Box" class="prize-img">
+        <div style="font-weight: 700; color: var(--accent); font-size: 1.3em; margin-bottom: 15px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">
+          🎁 ของรางวัลผู้แข่งขัน (BOX : MA4)
+        </div>
+        
+        <ul class="prize-list">
+          <li>
+            <span class="prize-rank">🏆 อันดับ 1:</span>
+            <span class="prize-value">Booster Box 1 Box</span>
+          </li>
+          <li>
+            <span class="prize-rank">🥈 อันดับ 2:</span>
+            <span class="prize-value">15 Packs</span>
+          </li>
+          <li>
+            <span class="prize-rank">🥉 อันดับ 3-4:</span>
+            <span class="prize-value">10 Packs</span>
+          </li>
+          <li>
+            <span class="prize-rank">🏅 อันดับ 5-8:</span>
+            <span class="prize-value">8 Packs</span>
+          </li>
+          <li>
+            <span class="prize-rank">🎁 อันดับที่เหลือ:</span>
+            <span class="prize-value">การันตี 3 Packs</span>
+          </li>
+        </ul>
+
+        <div class="special-condition">
+          <div style="color: var(--primary); font-weight: 700; margin-bottom: 5px;">📍 กรณีมีผู้สมัคร 49 คนขึ้นไป</div>
+          <div style="color: rgba(255,255,255,0.8);">
+            • <b>อันดับ 9-16:</b> รับรางวัลเพิ่มเป็น <span style="color:var(--accent);">4 Packs</span><br>
+            • <b>อันดับที่เหลือ:</b> การันตี <span style="color:var(--accent);">3 Packs</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="text-align: center; margin-top: 50px;">
+      <h3 style="text-transform: uppercase; letter-spacing: 2px; color: #fff;">👥 รายชื่อผู้สมัคร (<span id="player-count-label">0</span>/64)</h3>
+      <div id="gt4-list">
+        <div class="spinner"></div>
+        <p style="color: rgba(255,255,255,0.5);">กำลังโหลดรายชื่อผู้ท้าชิง...</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const apiUrl = "https://script.google.com/macros/s/AKfycbyFiniuHi93XRQHk5YRNGeTw1E1HlLE9TkGcJyR_yp68RuNb9lTCSiYKuAeREXvUaDV/exec"; 
+    const memberDashboardApi = "https://script.google.com/macros/s/AKfycbxtjsDwHI6nJU4OIHExUxMaZwUn3qwakvdkzwbQO7C8Trzz5Gh84SX6F1gqb4BOFQcn/exec?func=getMemberDashboardData";
+
+    function getBaseRank(rank) {
+      if (!rank) return "Rookie";
+      return rank.replace(/\s+(II|III|IV|V|VI|VII|VIII|IX|X|\d+)$/, '') || "Rookie";
+    }
+
+    const rankEmojis = {
+      "Rookie": "🐣", "Bronze": "🛡️", "Silver": "⚔️", "Gold": "🥇", "Platinum": "✨", "Diamond": "💎", "Grandmaster": "👑", "Legend": "🐉"
+    };
+
+    function getRankEmoji(rank, phone = '') {
+      if (phone === '0971156555') return '🐉';
+      const base = getBaseRank(rank);
+      return rankEmojis[base] || "🐣";
+    }
+
+    function renderCodenameEffect(code, rank, phone) {
+      if (phone === '0971156555') return `<span class="codename fire-breath">[Master Championest]</span>`;
+      const base = getBaseRank(rank);
+      const waveRanks = ['Gold', 'Platinum', 'Diamond', 'Grandmaster', 'Legend'];
+      const safeCode = (code || 'Player').toString();
+      if (waveRanks.includes(base)) {
+        return `<span class="codename wave ${base.toLowerCase()}">${['[', ...safeCode.split(''), ']'].map(c => `<span>${c}</span>`).join('')}</span>`;
+      }
+      return `<span class="codename">[${safeCode}]</span>`;
+    }
+
+    async function loadData() {
+      try {
+        const [regResponse, memberResponse] = await Promise.all([
+          fetch(apiUrl).then(res => res.json()),
+          fetch(memberDashboardApi).then(res => res.json())
+        ]);
+
+        const participants = regResponse.participants || [];
+        const members = memberResponse || [];
+        
+        const memberMap = {};
+        members.forEach(m => {
+          const phone = String(m.phone).replace(/[^\d]/g, "");
+          memberMap[phone] = { codename: m.codename, rank: m.rank };
+        });
+
+        renderList(participants, memberMap);
+      } catch (error) {
+        console.error("Error Details:", error);
+        document.getElementById('gt4-list').innerHTML = `
+          <div style="text-align:center; color: #ff3c00; padding: 20px;">
+            <p>เกิดข้อผิดพลาดในการโหลดข้อมูล</p>
+            <small style="color:rgba(255,255,255,0.3); font-size:10px;">${error.message}</small>
+          </div>
+        `;
+      }
+    }
+
+    function renderList(participants, memberMap) {
+      const listDiv = document.getElementById('gt4-list');
+      document.getElementById('player-count-label').innerText = participants.length;
+
+      if (participants.length === 0) {
+        listDiv.innerHTML = `<p style="text-align:center; padding: 40px; color: rgba(255,255,255,0.3);">ยังไม่มีผู้สมัครในขณะนี้</p>`;
+        return;
+      }
+
+      let html = `<table><thead><tr><th>NO.</th><th>NAME / CODENAME</th><th>LEVEL</th><th>STATUS</th></tr></thead><tbody>`;
+
+      participants.forEach((p, index) => {
+        if (!p) return;
+        const keys = Object.keys(p);
+        const nameIdx = keys.findIndex(k => k.includes('ชื่อ')) !== -1 ? keys.findIndex(k => k.includes('ชื่อ')) : 1;
+        const phoneIdx = keys.findIndex(k => k.includes('เบอร์')) !== -1 ? keys.findIndex(k => k.includes('เบอร์')) : 4;
+        const levelIdx = keys.findIndex(k => k.includes('ระดับ')) !== -1 ? keys.findIndex(k => k.includes('ระดับ')) : 5;
+
+        const rawName = p[keys[nameIdx]];
+        const name = (rawName !== null && rawName !== undefined) ? String(rawName) : 'Unknown';
+        
+        let phone = String(p[keys[phoneIdx]] || '').replace(/[^\d]/g, "");
+        
+        const rawLevel = p[keys[levelIdx]];
+        const level = (rawLevel !== null && rawLevel !== undefined) ? String(rawLevel) : '-';
+        const rowStatus = String(p[keys[headers_status_index(keys)]] || p['สถานะ'] || p['สถานะการชำระเงิน'] || '');
+        
+        const member = memberMap[phone];
+        let nameDisplay = `<div style="font-weight:600;">${name}</div>`;
+        
+        if (member || phone === '0971156555') {
+          const rank = member ? member.rank : 'Legend';
+          const code = member ? member.codename : 'Champ';
+          const emoji = getRankEmoji(rank, phone);
+          nameDisplay = `
+            <div style="font-weight:600;">${name}</div>
+            <div class="codename-rank" data-rank="${getBaseRank(rank)}">
+              <span style="font-size:0.8em;">${emoji}</span>
+              ${renderCodenameEffect(code, rank, phone)}
+              <span style="font-size:0.8em;">${emoji}</span>
+            </div>
+          `;
+        }
+
+        let statusHtml = '<span style="color:#666; font-size:0.8em;">⌛ รอตรวจสอบ</span>';
+        if (rowStatus.includes('ชำระแล้ว')) {
+          statusHtml = '<span style="color:#10b981; font-weight:bold; font-size:0.8em;">✅ ชำระแล้ว</span>';
+        } else if (rowStatus.includes('รอตรวจสอบ')) {
+          statusHtml = '<span style="color:#f59e0b; font-size:0.8em;">⏳ รอตรวจสอบ</span>';
+        } else if (rowStatus.includes('รอชำระ')) {
+          statusHtml = '<span style="color:#ef4444; font-size:0.8em;">❌ รอชำระ</span>';
+        }
+        
+        html += `<tr>
+          <td><span style="color:rgba(255,255,255,0.3); font-family:serif;">#</span>${index + 1}</td>
+          <td>${nameDisplay}</td>
+          <td><span style="background:rgba(255,255,255,0.05); padding:4px 12px; border-radius:12px; font-size:0.85em;">${level}</span></td>
+          <td>${statusHtml}</td>
+        </tr>`;
+      });
+
+      function headers_status_index(keys) {
+        const idx = keys.findIndex(k => k.includes('สถานะ'));
+        return idx !== -1 ? idx : keys.length - 1;
+      }
+
+      html += `</tbody></table>`;
+      listDiv.innerHTML = html;
+    }
+
+    loadData();
+  </script>
+</body>
+</html>
