@@ -75,7 +75,7 @@ export default function HomePage() {
         <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-600/20 rounded-full blur-[120px]" />
       </div>
 
-      <main className="relative z-10 flex flex-col items-center justify-center min-h-screen p-6">
+      <main className="relative z-10 flex flex-col items-center justify-center min-h-screen p-6 pb-28">
 
         {/* Logo Section */}
         <div className="text-center mb-10">
