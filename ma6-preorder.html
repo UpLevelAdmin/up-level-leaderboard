@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>❤️ พรีออเดอร์ Booster Box MA6 - Up Level Academy</title>
+  <meta name="description" content="พรีออเดอร์ Booster Box MA6 ราคา 1,980 บาท ที่ Up Level Academy สั่งล่วงหน้าก่อนใคร! ปิดรับ 23/3/2569">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;700;900&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --primary: #00c2ff;
+      --primary-dark: #0077aa;
+      --accent: #00ffd5;
+      --chaos: #7e22ce;
+      --chaos-light: #a855f7;
+      --dark: #050d1a;
+      --card-bg: rgba(255, 255, 255, 0.05);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: 'Kanit', sans-serif;
+      background: var(--dark);
+      background-image:
+        radial-gradient(ellipse at 10% 10%, rgba(126, 34, 206, 0.35) 0%, transparent 50%),
+        radial-gradient(ellipse at 90% 90%, rgba(0, 194, 255, 0.25) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgba(0, 255, 213, 0.05) 0%, transparent 70%);
+      margin: 0;
+      padding: 1rem;
+      text-align: center;
+      min-height: 100vh;
+      color: #fff;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Animated Background Particles */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        radial-gradient(1px 1px at 20% 30%, rgba(0, 194, 255, 0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 60% 70%, rgba(168, 85, 247, 0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 80% 20%, rgba(0, 255, 213, 0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 40% 80%, rgba(0, 194, 255, 0.3) 0%, transparent 100%);
+      animation: sparkle 6s ease-in-out infinite alternate;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    @keyframes sparkle {
+      0% { opacity: 0.3; transform: scale(1); }
+      100% { opacity: 1; transform: scale(1.5); }
+    }
+
+    /* Floating pack */
+    .floating-pack {
+      position: fixed;
+      width: 70px;
+      z-index: 999;
+      pointer-events: none;
+      opacity: 0.85;
+      animation: packFloat 3s ease-in-out infinite;
+      filter: drop-shadow(0 0 12px rgba(168, 85, 247, 0.7));
+    }
+    .floating-pack:nth-child(1) { top: 20px; right: 20px; animation-delay: 0s; }
+    .floating-pack:nth-child(2) { top: 20px; left: 20px; animation-delay: 0.6s; }
+
+    @keyframes packFloat {
+      0%, 100% { transform: translateY(0) rotate(-3deg); }
+      50% { transform: translateY(-12px) rotate(3deg); }
+    }
+
+    @media (max-width: 768px) {
+      .floating-pack { width: 55px; }
+      .floating-pack:nth-child(1) { top: 10px; right: 10px; }
+      .floating-pack:nth-child(2) { top: 10px; left: 10px; }
+    }
+
+    /* Container */
+    .container {
+      max-width: 900px;
+      margin: auto;
+      padding: 1rem;
+      position: relative;
+      z-index: 10;
+    }
+
+    /* Logo */
+    .logo {
+      display: block;
+      width: 110px;
+      margin: 0 auto 1rem auto;
+      filter: drop-shadow(0 4px 12px rgba(0, 194, 255, 0.4));
+    }
+
+    /* Title */
+    .event-title {
+      font-size: 2.8rem;
+      font-weight: 900;
+      background: linear-gradient(135deg, #00ffd5 0%, #00c2ff 40%, #a855f7 80%, #ff6b9d 100%);
+      background-size: 300% 300%;
+      animation: titleFlow 4s ease infinite;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 0.3rem;
+      filter: drop-shadow(0 0 20px rgba(168, 85, 247, 0.5));
+    }
+
+    @keyframes titleFlow {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    .chaos-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, #be185d, #9333ea);
+      padding: 4px 18px;
+      border-radius: 50px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      border: 1px solid rgba(236, 72, 153, 0.5);
+      box-shadow: 0 0 15px rgba(190, 24, 93, 0.4);
+      animation: badgePulse 2s ease infinite;
+    }
+
+    @keyframes badgePulse {
+      0%, 100% { box-shadow: 0 0 10px rgba(190, 24, 93, 0.3); }
+      50% { box-shadow: 0 0 25px rgba(236, 72, 153, 0.7); }
+    }
+
+    .event-subtitle {
+      font-size: 1.1rem;
+      color: #94a3b8;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+    }
+
+    .release-date {
+      display: inline-block;
+      padding: 10px 24px;
+      background: linear-gradient(135deg, rgba(0, 194, 255, 0.15), rgba(168, 85, 247, 0.15));
+      border: 1px solid rgba(0, 194, 255, 0.3);
+      border-radius: 50px;
+      font-size: 1.1rem;
+      color: var(--accent);
+      font-weight: 700;
+      margin: 1rem 0;
+      box-shadow: 0 0 15px rgba(0, 194, 255, 0.2);
+    }
+
+    .product-desc {
+      font-size: 0.95rem;
+      color: #94a3b8;
+      line-height: 1.7;
+      margin: 1rem auto;
+      max-width: 640px;
+    }
+
+    /* CTA Button */
+    .cta-btn {
+      display: inline-block;
+      padding: 14px 36px;
+      background: linear-gradient(135deg, #7e22ce, #2563eb);
+      background-size: 200% 200%;
+      animation: btnPulse 3s ease infinite;
+      color: #fff;
+      font-size: 1.15rem;
+      font-weight: 700;
+      border-radius: 50px;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 8px 25px rgba(126, 34, 206, 0.5);
+      transition: all 0.3s ease;
+      margin: 0.5rem;
+    }
+
+    @keyframes btnPulse {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    .cta-btn:hover {
+      transform: translateY(-4px) scale(1.05);
+      box-shadow: 0 14px 35px rgba(126, 34, 206, 0.7);
+    }
+
+    /* Section Cards */
+    .section-card {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 20px;
+      padding: 1.8rem;
+      margin: 1.5rem 0;
+      text-align: left;
+      backdrop-filter: blur(10px);
+    }
+
+    .section-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 1.2rem;
+      text-align: center;
+      text-shadow: 0 0 15px rgba(0, 255, 213, 0.4);
+    }
+
+    /* Highlights */
+    .highlight-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px 16px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 12px;
+      border-left: 3px solid var(--chaos-light);
+      margin-bottom: 10px;
+    }
+
+    .highlight-item .emoji { font-size: 1.4rem; flex-shrink: 0; }
+    .highlight-item .text { font-size: 0.95rem; color: #cbd5e1; line-height: 1.5; }
+    .highlight-item .text strong { color: #fff; }
+
+    /* Cards Grid */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    @media (max-width: 500px) {
+      .cards-grid { grid-template-columns: repeat(2, 1fr); gap: 0.7rem; }
+    }
+
+    .card-item {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 14px;
+      padding: 10px;
+      border: 1px solid rgba(168, 85, 247, 0.2);
+      transition: all 0.3s ease;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .card-item:hover {
+      transform: translateY(-6px) scale(1.03);
+      box-shadow: 0 12px 28px rgba(126, 34, 206, 0.4);
+      border-color: rgba(168, 85, 247, 0.5);
+    }
+
+    .card-item img {
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+    }
+
+    .card-name {
+      font-size: 0.78rem;
+      color: #94a3b8;
+      margin-top: 6px;
+      font-weight: 600;
+    }
+
+    /* Pricing */
+    .price-tag {
+      font-size: 2.2rem;
+      font-weight: 900;
+      color: #4ade80;
+      text-shadow: 0 0 15px rgba(74, 222, 128, 0.5);
+      margin: 0.8rem 0;
+    }
+
+    /* Countdown */
+    .countdown-section {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin: 1.2rem 0;
+      max-width: 420px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .countdown-unit {
+      background: linear-gradient(135deg, rgba(190,24,93,0.2), rgba(147,51,234,0.2));
+      border: 1px solid rgba(236,72,153,0.3);
+      border-radius: 14px;
+      padding: 12px 6px;
+      text-align: center;
+    }
+
+    .countdown-num {
+      font-size: 1.8rem;
+      font-weight: 900;
+      color: #f9a8d4;
+      line-height: 1;
+    }
+
+    .countdown-label {
+      font-size: 0.65rem;
+      color: #94a3b8;
+      margin-top: 4px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* Deadline timeline */
+    .timeline {
+      position: relative;
+      padding-left: 24px;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 7px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: linear-gradient(to bottom, #ec4899, #8b5cf6);
+      border-radius: 2px;
+    }
+
+    .timeline-item {
+      position: relative;
+      margin-bottom: 16px;
+      padding: 12px 14px;
+      background: rgba(255,255,255,0.03);
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: -21px;
+      top: 16px;
+      width: 10px;
+      height: 10px;
+      background: #ec4899;
+      border-radius: 50%;
+      box-shadow: 0 0 8px rgba(236,72,153,0.7);
+    }
+
+    .timeline-date {
+      font-size: 0.8rem;
+      color: #ec4899;
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+
+    .timeline-text {
+      font-size: 0.92rem;
+      color: #cbd5e1;
+    }
+
+    /* Package cards */
+    .pkg-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 1rem;
+    }
+
+    @media (max-width: 500px) {
+      .pkg-grid { grid-template-columns: 1fr; }
+      .countdown-section { grid-template-columns: repeat(4, 1fr); }
+    }
+
+    .pkg-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(236,72,153,0.2);
+      border-radius: 16px;
+      padding: 16px;
+      text-align: center;
+    }
+
+    .pkg-icon { font-size: 2rem; margin-bottom: 6px; }
+    .pkg-name { font-size: 0.78rem; color: #94a3b8; font-weight: 600; }
+    .pkg-detail { font-size: 1rem; color: #fff; font-weight: 700; margin-top: 4px; }
+
+
+    .benefits-list li {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 10px;
+      color: #cbd5e1;
+      border-left: 3px solid var(--primary);
+      margin-bottom: 8px;
+      font-size: 0.95rem;
+    }
+
+    /* Stats */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .stat-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(0, 194, 255, 0.2);
+      border-radius: 16px;
+      padding: 1rem;
+      text-align: center;
+    }
+
+    .stat-number {
+      font-size: 2.2rem;
+      font-weight: 900;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .stat-label {
+      font-size: 0.85rem;
+      color: #64748b;
+      margin-top: 4px;
+    }
+
+    /* Coming Soon Banner */
+    .coming-soon {
+      display: inline-block;
+      background: linear-gradient(135deg, rgba(126, 34, 206, 0.3), rgba(37, 99, 235, 0.3));
+      border: 1px dashed rgba(168, 85, 247, 0.5);
+      border-radius: 12px;
+      padding: 10px 20px;
+      font-size: 0.85rem;
+      color: #a855f7;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      animation: blinkBorder 2s ease infinite;
+    }
+
+    @keyframes blinkBorder {
+      0%, 100% { border-color: rgba(168, 85, 247, 0.5); }
+      50% { border-color: rgba(168, 85, 247, 1); }
+    }
+
+    /* Spinner */
+    .spinner {
+      margin: 20px auto;
+      width: 44px;
+      height: 44px;
+      border: 4px solid rgba(168, 85, 247, 0.2);
+      border-top: 4px solid var(--chaos-light);
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+    }
+
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+
+    .loading-text {
+      color: #64748b;
+      font-size: 0.9rem;
+      padding: 1rem;
+    }
+
+    /* Orders Table */
+    .orders-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0 6px;
+      margin-top: 0.5rem;
+      font-size: 0.9rem;
+    }
+
+    .orders-table th {
+      color: #64748b;
+      font-weight: 600;
+      padding: 8px 14px;
+      text-align: center;
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      letter-spacing: 1px;
+    }
+
+    .orders-table td {
+      padding: 12px 14px;
+      background: rgba(255, 255, 255, 0.03);
+      border: none;
+      text-align: center;
+    }
+
+    .orders-table td:first-child { border-radius: 10px 0 0 10px; }
+    .orders-table td:last-child { border-radius: 0 10px 10px 0; }
+    .orders-table tr:hover td { background: rgba(168, 85, 247, 0.08); }
+
+    /* Home button */
+    .home-btn {
+      position: fixed;
+      top: 24px;
+      left: 24px;
+      z-index: 999;
+      background: rgba(255, 255, 255, 0.06);
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      text-decoration: none;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      font-size: 1.2rem;
+      transition: 0.3s;
+    }
+
+    .home-btn:hover {
+      background: var(--chaos);
+      border-color: var(--chaos-light);
+      transform: scale(1.1);
+    }
+
+    .contact-card {
+      background: rgba(0, 194, 255, 0.05);
+      border: 1px solid rgba(0, 194, 255, 0.15);
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-top: 1.5rem;
+    }
+
+    /* Codename effects */
+    .codename.wave span {
+      display: inline-block;
+      animation: wave 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    }
+
+    @keyframes wave {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+
+    .codename.fire-breath {
+      color: #ff6b00 !important;
+      font-weight: 900;
+      animation: fire 2s infinite alternate;
+    }
+
+    @keyframes fire {
+      0% { text-shadow: 0 0 5px #fff, 0 0 10px #fffc00, 0 0 15px #ff7300; }
+      100% { text-shadow: 0 0 10px #fff, 0 0 20px #fffc00, 0 0 30px #ff7300, 0 0 40px #ff0000; }
+    }
+
+    @media (max-width: 768px) {
+      .event-title { font-size: 2rem; }
+      .price-tag { font-size: 1.7rem; }
+    }
+  </style>
+</head>
+
+<body>
+  <a href="index.html" class="home-btn">🏠</a>
+
+
+
+  <div class="container">
+
+    <!-- Header -->
+    <header>
+      <img src="https://i.postimg.cc/wjzpnxjB/Up-Level-01-1.png" alt="Up Level Academy" class="logo">
+      <div class="chaos-badge">❤️ PRE-ORDER NOW ❤️</div>
+      <h1 class="event-title">พรีออเดอร์<br>Booster Box MA6 💝</h1>
+      <div class="event-subtitle">เมก้าวิวัฒนาการ ซีรีส์ใหม่มาแน่!</div>
+      <div class="release-date">📅 วางจำหน่าย ปลายไตรมาส 3 – ต้นไตรมาส 4</div>
+
+      <p class="product-desc">
+        ❤️ กดจองได้เลยวันนี้ — วางจำหน่าย <strong style="color:#f9a8d4;">ปลายไตรมาส 3 – ต้นไตรมาส 4</strong><br>
+        ❗ <strong style="color:#fbbf24;">พรีออเดอร์ = ต้องมัดจำทันที</strong> — First Come First Serve หมดแล้วหมดเลย 💕
+      </p>
+
+      <div style="text-align: center; margin: 1.5rem 0;">
+        <a href="https://forms.gle/LWkufWzHbhBUGyTH7" target="_blank" class="cta-btn" style="background: linear-gradient(135deg, #be185d, #9333ea); box-shadow: 0 8px 25px rgba(190,24,93,0.5);">❤️ จองเลยตอนนี้!</a>
+      </div>
+    </header>
+
+    <!-- ⚠️ สิ่งสำคัญที่ต้องอ่านก่อน -->
+    <div class="section-card" style="border-color: rgba(251, 191, 36, 0.3); background: rgba(251,191,36,0.05);">
+      <div class="section-title" style="color: #fbbf24;">⚠️ กรุณาอ่านและทำความเข้าใจก่อนพรีออเดอร์</div>
+      <div class="highlight-item" style="border-left-color: #fbbf24;">
+        <span class="emoji">✨</span>
+        <div class="text">ชุดนี้ <strong>พิเศษมากกว่าทุกชุด</strong> — เปิดจองล่วงหน้าหลายเดือนก่อนสินค้าออก และ<strong>ไม่มีสปอยใดๆ</strong> รูปการ์ดจริงรอดูได้เมื่อสินค้าวางจำหน่าย!</div>
+      </div>
+      <div class="highlight-item" style="border-left-color: #fbbf24;">
+        <span class="emoji">⚠️</span>
+        <div class="text"><strong>ยังไม่แน่ใจว่าสินค้าจะผลิตได้ตรงตามออเดอร์ทั้งหมดหรือไม่</strong> อาจมีการตัดออเดอร์บางส่วนได้</div>
+      </div>
+      <div class="highlight-item" style="border-left-color: #fbbf24;">
+        <span class="emoji">📌</span>
+        <div class="text">ชุด MA6 <strong>ไม่ใช่ชุดถัดไปหลังจาก MA4 (Void Blast)</strong> — จะมี <strong>MA5 (Ninja Spinner)</strong> คั่นกลาง 1 ชุดก่อน</div>
+      </div>
+      <div class="highlight-item" style="border-left-color: #fbbf24;">
+        <span class="emoji">📋</span>
+        <div class="text">สินค้าชุดนี้มีข้อมูลที่<strong>แตกต่างจากชุดอื่นๆ</strong> กรุณาอ่านทำความเข้าใจให้ครบถ้วน</div>
+      </div>
+    </div>
+
+
+
+    <!-- ไทม์ไลน์ -->
+    <div class="section-card">
+      <div class="section-title">🗓️ ขั้นตอนพรีออเดอร์</div>
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="timeline-date">❤️ ขั้นที่ 1 — กรอกฟอร์มและชำระมัดจำ</div>
+          <div class="timeline-text">💰 ชำระ <strong>1,000 บาท/กล่อง</strong> + ค่าส่ง 50 บาท ทันทีหลังกรอกฟอร์ม<br><span style="color:#fbbf24;">❗ ต้องชำระก่อนถึงจะได้สิทธิเพราะเป็น First Come First Serve</span></div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-date">📦 ขั้นที่ 2 — ชำระส่วนที่เหลือ</div>
+          <div class="timeline-text">💸 จ่ายส่วนที่เหลือ <strong>(1,980 − 1,000 = 980 บาท)</strong> ก่อนสินค้าออก 1 เดือน</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-date">🎉 ขั้นที่ 3 — รับสินค้า</div>
+          <div class="timeline-text">🚚 สินค้าวางจำหน่ายปลายไตรมาส 3 – ต้นไตรมาส 4<br><span style="color:#4ade80;">จัดส่งทางไปรษณีย์ไทย</span></div>
+        </div>
+      </div>
+    </div>
+
+
+
+    <!-- ข้อมูลสินค้า -->
+    <div class="section-card">
+      <div class="section-title">💎 ข้อมูลสินค้าและราคา</div>
+      <div class="price-tag" style="font-size:2.5rem;">🏷️ 1,980 บาท / Box</div>
+      <div style="color:#64748b; font-size:0.85rem; margin-bottom:1.2rem;">Retail 99 บาท/ซอง · ราคาพิเศษสำหรับผู้จองล่วงหน้า</div>
+
+      <div class="pkg-grid">
+        <div class="pkg-card">
+          <div class="pkg-icon">🃏</div>
+          <div class="pkg-name">1 ซอง</div>
+          <div class="pkg-detail">6 ใบ</div>
+        </div>
+        <div class="pkg-card">
+          <div class="pkg-icon">📦</div>
+          <div class="pkg-name">1 กล่อง (Box)</div>
+          <div class="pkg-detail">20 Packs</div>
+        </div>
+        <div class="pkg-card">
+          <div class="pkg-icon">🗃️</div>
+          <div class="pkg-name">1 คาร์ตั้น</div>
+          <div class="pkg-detail">TBA</div>
+        </div>
+      </div>
+
+      <ul class="benefits-list" style="margin-top:1.2rem;">
+        <li>💰 มัดจำ <strong style="color:#4ade80;">1,000 บาท/Box</strong> ภายใน 30/03/2569</li>
+        <li>🚚 ค่าส่งไปรษณีย์ไทย <strong>50 บาท</strong></li>
+        <li>💸 ยอดที่เหลือ <strong>980 บาท/Box</strong> ชำระก่อนสินค้าออก 1 เดือน</li>
+        <li>✅ รับ 5 EXP ต่อ 1 Box (สำหรับสมาชิก Up Level Guild)</li>
+        <li>🎯 ล็อกราคาได้เลย — <strong style="color:#fbbf24;">First Come First Serve</strong> ทันทีที่มัดจำสำเร็จ</li>
+      </ul>
+    </div>
+
+    <!-- สถิติออเดอร์ -->
+    <div class="section-card">
+      <div class="section-title">📊 รายชื่อผู้จองล่วงหน้า</div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-number" id="totalUsers">-</div>
+          <div class="stat-label">ผู้จองทั้งหมด</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="totalBoxes">-</div>
+          <div class="stat-label">จำนวน Box รวม</div>
+        </div>
+      </div>
+      <div id="usersContainer">
+        <div class="spinner"></div>
+        <div class="loading-text">กำลังโหลดข้อมูล...</div>
+      </div>
+    </div>
+
+    <!-- ปุ่มสั่งซื้อ -->
+    <div id="order-form" style="text-align: center; margin: 2rem 0;">
+      <a href="https://forms.gle/LWkufWzHbhBUGyTH7" target="_blank" class="cta-btn" style="background: linear-gradient(135deg, #be185d, #9333ea); box-shadow: 0 8px 25px rgba(190,24,93,0.5); font-size:1.2rem; padding:16px 40px;">❤️ จองซื้อ MA6 เลย!</a>
+      <br>
+      <a href="https://forms.gle/5ctkLmT3FwLW9oRi6" target="_blank" class="cta-btn" style="background: linear-gradient(135deg, #0f766e, #0e7490); margin-top:0.5rem;">🏰 สมัครสมาชิกกิลด์</a>
+      <p style="color:#fbbf24; font-size:0.85rem; margin-top:1rem;">⚡ First Come First Serve — ชำระมัดจำทันทีเพื่อยืนยันสิทธิ์</p>
+    </div>
+
+    <!-- ติดต่อ -->
+    <div class="contact-card">
+      <div style="font-size: 1.1rem; font-weight: 700; color: var(--accent); margin-bottom: 10px;">📍 รับสินค้าที่</div>
+      <p style="color: #94a3b8; margin: 0;">ร้าน Up Level Academy<br>(ติด MRT บางแค ทางออก 2)</p>
+      <p style="color: #94a3b8; margin-top: 10px; font-size: 0.95rem;">
+        📞 097-115-6555 &nbsp;|&nbsp; 💬 @uplevelacademy
+      </p>
+    </div>
+  </div>
+
+  <script>
+    // TODO: เปลี่ยน apiUrl เป็น Apps Script URL ของ MA6 เมื่อสร้างเสร็จ
+    const apiUrl = "https://script.google.com/macros/s/AKfycbz-81MoD6c4iTjfo3L0f1Cyes0nN5CnoEJtQdPHtg6bQKcRT_dIsn6f8lIPv8bz6ZTW/exec?type=json";
+    const memberDashboardApi = "https://script.google.com/macros/s/AKfycbxtjsDwHI6nJU4OIHExUxMaZwUn3qwakvdkzwbQO7C8Trzz5Gh84SX6F1gqb4BOFQcn/exec?func=getMemberDashboardData";
+
+    function getBaseRank(rank) {
+      if (!rank) return 'Rookie';
+      return rank.replace(/\s+(II|III|IV|V|VI|VII|VIII|IX|X|\d+)$/, '') || 'Rookie';
+    }
+
+    function getRankEmoji(rank, phone = '') {
+      if (String(phone).endsWith('971156555')) return '🐉';
+      const rankEmojis = { Rookie: '🎖️', Bronze: '🥉', Silver: '🥈', Gold: '🥇', Platinum: '💠', Diamond: '💎', Grandmaster: '👑', Legend: '⭐' };
+      return rankEmojis[getBaseRank(rank)] || '🎖️';
+    }
+
+    function renderCodenameEffect(codename, rank, phone) {
+      if (String(phone).endsWith('971156555')) return `<span class="codename fire-breath">[Master Championest]</span>`;
+      const safeCode = (codename || 'Player').toString();
+      const waveRanks = ['Gold', 'Platinum', 'Diamond', 'Grandmaster', 'Legend'];
+      const base = getBaseRank(rank);
+      if (waveRanks.includes(base)) {
+        return `<span class="codename wave ${base.toLowerCase()}">${['[', ...safeCode.split(''), ']'].map(c => `<span>${c}</span>`).join('')}</span>`;
+      }
+      return `<span class="codename">[${safeCode}]</span>`;
+    }
+
+    function extractBoxCount(p) {
+      for (const key of Object.keys(p)) {
+        const k = key.toLowerCase();
+        if (k.includes('box') || k.includes('บ็อค') || k.includes('กล่อง') || k.includes('จำนวน')) {
+          const val = p[key];
+          if (typeof val === 'number' && val > 0) return val;
+          if (typeof val === 'string') {
+            const n = parseInt(val.replace(/[^\d]/g, ''));
+            if (n > 0) return n;
+          }
+        }
+      }
+      return 1;
+    }
+
+    async function loadOrders() {
+      const container = document.getElementById('usersContainer');
+
+      // ถ้า API URL ยังไม่ได้ตั้งค่า ให้ขึ้นข้อความรอ
+      if (apiUrl.includes('REPLACE_MA6_SCRIPT_ID')) {
+        document.getElementById('totalUsers').textContent = '—';
+        document.getElementById('totalBoxes').textContent = '—';
+        container.innerHTML = `<div style="padding: 30px; color: #a855f7; font-size: 0.95rem;">🔔 เปิดรับพรีออเดอร์เร็วๆ นี้ รอติดตามได้เลย!</div>`;
+        return;
+      }
+
+      try {
+        const [data, members] = await Promise.all([
+          fetch(apiUrl).then(r => r.json()),
+          fetch(memberDashboardApi).then(r => r.json()).catch(() => [])
+        ]);
+
+        if (!data?.participants?.length) {
+          document.getElementById('totalUsers').textContent = '0';
+          document.getElementById('totalBoxes').textContent = '0';
+          container.innerHTML = `<div style="padding: 20px; color: #64748b;">📝 ยังไม่มีผู้จองในขณะนี้</div>`;
+          return;
+        }
+
+        const phoneMap = {};
+        (members || []).forEach(m => {
+          const phone = String(m.phone || '').replace(/[^\d]/g, '');
+          if (phone) phoneMap[phone] = { codename: m.codename, rank: m.rank };
+        });
+
+        const participants = data.participants;
+        const totalBoxes = participants.reduce((s, p) => s + extractBoxCount(p), 0);
+        document.getElementById('totalUsers').textContent = participants.length;
+        document.getElementById('totalBoxes').textContent = totalBoxes;
+
+        let html = `<table class="orders-table"><thead><tr>
+          <th>NO.</th><th>NAME / CODENAME</th><th>BOX</th><th>STATUS</th>
+        </tr></thead><tbody>`;
+
+        participants.forEach((p, i) => {
+          if (!p) return;
+          const keys = Object.keys(p);
+          const nameIdx = keys.findIndex(k => k.includes('ชื่อ')) !== -1 ? keys.findIndex(k => k.includes('ชื่อ')) : 1;
+          const phoneIdx = keys.findIndex(k => k.includes('เบอร์')) !== -1 ? keys.findIndex(k => k.includes('เบอร์')) : 4;
+          const statusIdx = keys.findIndex(k => k.includes('สถานะ'));
+
+          const name = String(p[keys[nameIdx]] || 'ไม่ระบุ');
+          const phone = String(p[keys[phoneIdx]] || '').replace(/[^\d]/g, '');
+          const status = statusIdx !== -1 ? String(p[keys[statusIdx]] || '') : '';
+          const boxes = extractBoxCount(p);
+
+          const member = phoneMap[phone];
+          let nameDisplay = `<div style="font-weight:600;">${name}</div>`;
+
+          if (member || phone.endsWith('971156555')) {
+            const rank = member ? member.rank : 'Legend';
+            const code = member ? member.codename : 'Champ';
+            const emoji = getRankEmoji(rank, phone);
+            nameDisplay = `
+              <div style="font-weight:600;">${name}</div>
+              <div style="font-size:0.8em; color:#6366f1;">
+                ${emoji} ${renderCodenameEffect(code, rank, phone)} ${emoji}
+              </div>`;
+          }
+
+          let statusHtml = '<span style="color:#475569;font-size:0.8em;">⌛ รอตรวจสอบ</span>';
+          if (status.includes('ชำระแล้ว')) statusHtml = '<span style="color:#4ade80;font-weight:700;font-size:0.8em;">✅ ชำระแล้ว</span>';
+          else if (status.includes('รอตรวจสอบ')) statusHtml = '<span style="color:#fbbf24;font-size:0.8em;">⏳ รอตรวจสอบ</span>';
+          else if (status.includes('รอชำระ')) statusHtml = '<span style="color:#f87171;font-size:0.8em;">❌ รอชำระ</span>';
+
+          html += `<tr>
+            <td style="color:#475569;">#${i + 1}</td>
+            <td style="text-align:left;">${nameDisplay}</td>
+            <td><span style="background:rgba(168,85,247,0.15);padding:3px 10px;border-radius:10px;">${boxes} Box</span></td>
+            <td>${statusHtml}</td>
+          </tr>`;
+        });
+
+        html += `</tbody></table>`;
+        container.innerHTML = html;
+
+      } catch (err) {
+        container.innerHTML = `<div style="color:#f87171;padding:20px;">เกิดข้อผิดพลาด: ${err.message}</div>`;
+      }
+    }
+
+    loadOrders();
+  </script>
+</body>
+
+</html>
