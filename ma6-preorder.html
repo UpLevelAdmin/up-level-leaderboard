@@ -793,33 +793,40 @@
         participants.forEach((p, i) => {
           if (!p) return;
           const keys = Object.keys(p);
-          const nameIdx = keys.findIndex(k => k.includes('ชื่อ')) !== -1 ? keys.findIndex(k => k.includes('ชื่อ')) : 1;
-          const phoneIdx = keys.findIndex(k => k.includes('เบอร์')) !== -1 ? keys.findIndex(k => k.includes('เบอร์')) : 4;
-          const statusIdx = keys.findIndex(k => k.includes('สถานะ'));
+          
+          // ดึง Index ของแต่ละฟิลด์ (อิงตามฟอร์มล่าสุด I=Nickname, J=Phone, M=Status)
+          // หรือใช้วิธีหาชื่อ Key ที่ใกล้เคียง
+          const nickIdx = keys.findIndex(k => k.toLowerCase().includes('ชื่อเล่น') || k.toLowerCase().includes('nickname'));
+          const phoneIdx = keys.findIndex(k => k.toLowerCase().includes('เบอร์') || k.toLowerCase().includes('โทร'));
+          const statusIdx = keys.findIndex(k => k.toLowerCase().includes('สถานะ'));
 
-          const name = String(p[keys[nameIdx]] || 'ไม่ระบุ');
-          const phone = String(p[keys[phoneIdx]] || '').replace(/[^\d]/g, '');
+          const nickname = String(nickIdx !== -1 ? (p[keys[nickIdx]] || 'ไม่ระบุ') : 'ไม่ระบุ');
+          const phone = String(phoneIdx !== -1 ? (p[keys[phoneIdx]] || '') : '').replace(/[^\d]/g, '');
           const status = statusIdx !== -1 ? String(p[keys[statusIdx]] || '') : '';
           const boxes = extractBoxCount(p);
 
           const member = phoneMap[phone];
-          let nameDisplay = `<div style="font-weight:600;">${name}</div>`;
+          let nameDisplay = "";
 
           if (member || phone.endsWith('971156555')) {
+            // ถ้าเป็นสมาชิก → โชว์แต่ Codename
             const rank = member ? member.rank : 'Legend';
             const code = member ? member.codename : 'Champ';
             const emoji = getRankEmoji(rank, phone);
             nameDisplay = `
-              <div style="font-weight:600;">${name}</div>
-              <div style="font-size:0.8em; color:#6366f1;">
+              <div style="font-weight:700; font-size:1.1em;">
                 ${emoji} ${renderCodenameEffect(code, rank, phone)} ${emoji}
               </div>`;
+          } else {
+            // ถ้าไม่ใช่สมาชิก → โชว์ชื่อเล่นที่กรอกในฟอร์ม
+            nameDisplay = `<div style="font-weight:600; color:#cbd5e1;">👤 ${nickname}</div>`;
           }
 
           let statusHtml = '<span style="color:#475569;font-size:0.8em;">⌛ รอตรวจสอบ</span>';
-          if (status.includes('ชำระแล้ว')) statusHtml = '<span style="color:#4ade80;font-weight:700;font-size:0.8em;">✅ ชำระแล้ว</span>';
+          if (status.includes('ชำระแล้ว')) statusHtml = '<span style="color:#4ade80;font-weight:700;font-size:0.8em;">✅ จองเรียบร้อย</span>';
           else if (status.includes('รอตรวจสอบ')) statusHtml = '<span style="color:#fbbf24;font-size:0.8em;">⏳ รอตรวจสอบ</span>';
-          else if (status.includes('รอชำระ')) statusHtml = '<span style="color:#f87171;font-size:0.8em;">❌ รอชำระ</span>';
+          else if (status.includes('รอชำระ') || status.includes('ยังไม่ชำระ')) statusHtml = '<span style="color:#f87171;font-size:0.8em;">❌ ยังไม่จ่ายมัดจำ</span>';
+          else if (status.includes('เกินโควต้า')) statusHtml = '<span style="color:#f87171;font-weight:700;font-size:0.8em;">🚫 เกินโควต้า</span>';
 
           html += `<tr>
             <td style="color:#475569;">#${i + 1}</td>
