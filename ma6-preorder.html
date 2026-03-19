@@ -453,91 +453,109 @@
     .orders-table {
       width: 100%;
       border-collapse: separate;
-      border-spacing: 0 6px;
+      border-spacing: 0 4px;
+      /* /arrange: Tighter vertical rhythm */
       margin-top: 0.5rem;
+      table-layout: fixed;
+      /* /arrange: Fixed layout for predictable alignment */
     }
 
     .orders-table th {
-      color: #64748b;
-      font-weight: 600;
-      padding: 8px 5px;
+      color: #94a3b8;
+      font-weight: 700;
+      padding: 6px 4px;
       text-align: center;
       text-transform: uppercase;
-      font-size: 0.7rem;
-      letter-spacing: 1px;
+      font-size: 0.65rem;
+      /* /typeset: Smaller header */
+      letter-spacing: 0.1em;
+      opacity: 0.8;
     }
 
     .orders-table td {
-      padding: 12px 6px;
+      padding: 10px 4px;
       background: rgba(255, 255, 255, 0.03);
       border: none;
       text-align: center;
       vertical-align: middle;
+      font-size: 0.85rem;
     }
 
     .orders-table td:first-child {
-      border-radius: 10px 0 0 10px;
+      border-radius: 12px 0 0 12px;
     }
 
     .orders-table td:last-child {
-      border-radius: 0 10px 10px 0;
+      border-radius: 0 12px 12px 0;
     }
 
-    /* จัดการชื่อ/Codename ให้อยู่บรรทัดเดียว */
+    /* /arrange: Name and Codename on one line with ellipsis */
     .name-cell {
       text-align: left !important;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      max-width: 150px;
-      /* คุมพื้นที่ชื่อ */
+      padding-left: 10px !important;
     }
 
     .status-text {
       white-space: nowrap;
       display: inline-flex;
       align-items: center;
-      gap: 4px;
-      font-size: 0.8rem !important;
+      justify-content: center;
+      gap: 3px;
+      font-size: 0.78rem !important;
+      font-weight: 600;
+    }
+
+    .status-label {
+      display: inline;
     }
 
     .box-badge {
-      background: rgba(168, 85, 247, 0.2);
-      padding: 4px 10px;
-      border-radius: 10px;
-      font-weight: 600;
-      font-size: 0.85rem;
-      color: #fff;
+      background: rgba(168, 85, 247, 0.15);
+      padding: 2px 8px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.8rem;
+      color: #e9d5ff;
       display: inline-block;
       white-space: nowrap;
     }
 
-    @media (max-width: 768px) {
+    @media (max-width: 480px) {
+      .container {
+        padding: 12px;
+      }
+
       .event-title {
-        font-size: 2rem;
+        font-size: 1.8rem;
       }
 
       .price-tag {
-        font-size: 1.7rem;
+        font-size: 1.5rem;
       }
 
-      .name-cell {
-        max-width: 120px;
-        font-size: 0.9rem !important;
-      }
-
-      .orders-table td {
-        padding: 10px 4px;
+      /* /arrange: Tighter table for small mobile */
+      .orders-table {
         font-size: 0.8rem;
       }
 
+      .name-cell {
+        font-size: 0.82rem !important;
+      }
+
       .status-text {
-        font-size: 0.75rem !important;
+        font-size: 0.85rem !important; /* Icon only should be slightly larger */
+      }
+
+      .status-label {
+        display: none;
       }
 
       .box-badge {
-        padding: 2px 8px;
-        font-size: 0.75rem;
+        font-size: 0.72rem;
+        padding: 2px 6px;
       }
     }
 
@@ -788,7 +806,10 @@
         document.getElementById('totalBoxes').textContent = participants.reduce((s, p) => s + extractBoxCount(p), 0);
 
         let html = `<table class="orders-table"><thead><tr>
-          <th style="width:35px;">NO.</th><th>NAME / CODENAME</th><th style="width:70px;">BOX</th><th style="width:95px;">STATUS</th>
+          <th style="width:30px;">#</th>
+          <th>👑 NAME / CODENAME</th>
+          <th style="width:60px;">QTY</th>
+          <th style="width:50px;">STATUS</th>
         </tr></thead><tbody>`;
 
         participants.forEach((p, i) => {
@@ -803,20 +824,21 @@
 
           if (member || phone.endsWith('971156555')) {
             const rank = member ? member.rank : 'Legend';
-            const code = member ? member.codename : 'Champ';
+            const code = member ? (member.codename || 'Player') : 'Champ';
             const emoji = getRankEmoji(rank, phone);
-            nameDisplay = `<div style="font-weight:700;">${emoji} ${renderCodenameEffect(code, rank, phone)}</div>`;
+            // /distill: Clean codename display
+            nameDisplay = `<span>${emoji} ${renderCodenameEffect(code, rank, phone)}</span>`;
           } else {
-            nameDisplay = `<div style="font-weight:600; color:#cbd5e1;">👤 ${nickname}</div>`;
+            nameDisplay = `<span style="color:#cbd5e1;">👤 ${nickname}</span>`;
           }
 
-          let statusHtml = '<span style="color:#64748b;">⌛ รอตรวจสอบ</span>';
+          let statusHtml = '<span style="color:#64748b;">⌛<span class="status-label"> รอตรวจสอบ</span></span>';
           if (status.includes('ชำระ') || status.includes('จ่าย') || status.includes('✅')) {
-            statusHtml = '<span style="color:#4ade80; font-weight:700;">✅ จองเรียบร้อย</span>';
+            statusHtml = '<span style="color:#4ade80; font-weight:700;">✅<span class="status-label"> จองเรียบร้อย</span></span>';
           } else if (status.includes('รอตรวจสอบ')) {
-            statusHtml = '<span style="color:#fbbf24;">⏳ รอตรวจสอบ</span>';
+            statusHtml = '<span style="color:#fbbf24;">⏳<span class="status-label"> รอตรวจสอบ</span></span>';
           } else if (status.includes('เกินโควต้า')) {
-            statusHtml = '<span style="color:#f87171; font-weight:700;">🚫 เกินโควต้า</span>';
+            statusHtml = '<span style="color:#f87171; font-weight:700;">🚫<span class="status-label"> เกินโควต้า</span></span>';
           }
 
           html += `<tr>
