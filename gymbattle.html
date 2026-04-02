@@ -3,21 +3,39 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>รายชื่อผู้สมัคร Gym Battle</title>
-  <link rel="stylesheet" href="style.css">
-  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Chonburi&display=swap"
-    rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🏆 Gym Battle Board | Up Level Guild</title>
+
+  <!-- Premium Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Mitr:wght@200;400;600;700&family=Inter:wght@400;600;800&family=Kanit:wght@400;600;700&family=Chonburi&display=swap" rel="stylesheet">
+
   <style>
+    :root {
+      --primary: #6366f1;
+      --primary-glow: rgba(99, 102, 241, 0.4);
+      --accent: #f59e0b;
+      --bg-dark: #0f172a;
+      --glass: rgba(30, 41, 59, 0.7);
+      --glass-border: rgba(255, 255, 255, 0.1);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
     * {
-      font-family: 'Kanit', sans-serif;
+      box-sizing: border-box;
+      -webkit-font-smoothing: antialiased;
     }
 
     body {
-      background: linear-gradient(to bottom, #001524 0%, #094379 35%, #00bfff 100%);
-      background-attachment: fixed;
+      font-family: 'Kanit', 'Inter', sans-serif;
+      background: radial-gradient(circle at top left, #1e1b4b, #0f172a);
+      color: var(--text-main);
       margin: 0;
+      padding: 0;
+      min-height: 100vh;
       overflow-x: hidden;
-      color: #333;
     }
 
     #fireworks-canvas {
@@ -31,643 +49,386 @@
       opacity: 0.3;
     }
 
-    .gymbattle-container {
+    .container {
       max-width: 900px;
-      margin: 32px auto;
-      padding: 0 8px 32px 8px;
-      background: rgba(255, 255, 255, 0.92);
-      backdrop-filter: blur(5px);
-      border-radius: 16px;
-      box-shadow: 0 0 30px rgba(255, 105, 180, 0.3), 0 8px 24px rgba(0, 0, 0, 0.5);
-      border: 2px solid rgba(255, 105, 180, 0.5);
+      margin: 0 auto;
+      padding: 3rem 1rem;
       position: relative;
       z-index: 10;
     }
 
-    /* Card pack animation */
-    .floating-card-pack {
+    /* /arrange: Hub-consistent Header */
+    header {
+      text-align: center;
+      margin-bottom: 3rem;
+      position: relative;
+    }
+
+    .back-home {
       position: absolute;
-      width: 80px;
-      height: auto;
-      z-index: 20;
-      pointer-events: none;
-      opacity: 0.9;
-      animation: cuteShake 2s ease-in-out infinite;
+      left: 0;
+      top: 0;
+      text-decoration: none;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: 0.3s;
     }
 
-    .floating-card-pack:nth-of-type(1) {
-      top: 20px;
-      right: 20px;
-      animation-delay: 0s;
-    }
+    .back-home:hover { color: var(--primary); transform: translateX(-5px); }
 
-    .floating-card-pack:nth-of-type(2) {
-      top: 20px;
-      left: 20px;
-      animation-delay: 0.3s;
-    }
-
-    @keyframes cuteShake {
-
-      0%,
-      100% {
-        transform: translate(0, 0) rotate(0deg) scale(1);
-      }
-
-      10% {
-        transform: translate(-3px, -2px) rotate(-3deg) scale(1.05);
-      }
-
-      20% {
-        transform: translate(3px, 2px) rotate(3deg) scale(1.02);
-      }
-
-      30% {
-        transform: translate(-2px, 3px) rotate(-2deg) scale(1.03);
-      }
-
-      40% {
-        transform: translate(2px, -3px) rotate(2deg) scale(1.04);
-      }
-
-      50% {
-        transform: translate(-1px, -1px) rotate(-1deg) scale(1.05);
-      }
-
-      60% {
-        transform: translate(1px, 2px) rotate(1deg) scale(1.03);
-      }
-
-      70% {
-        transform: translate(-2px, 1px) rotate(-2deg) scale(1.04);
-      }
-
-      80% {
-        transform: translate(2px, -2px) rotate(2deg) scale(1.02);
-      }
-
-      90% {
-        transform: translate(-1px, 1px) rotate(-1deg) scale(1.03);
-      }
-    }
-
-    .logo {
+    .logo-area {
       display: flex;
       justify-content: center;
       align-items: center;
-      margin-bottom: 16px;
-      width: 100%;
-      gap: 0px;
+      gap: 20px;
+      margin-bottom: 1.5rem;
     }
 
-    .logo img {
-      max-width: 120px;
-      display: block;
-      margin: 0;
+    .logo-main {
+      width: 100px;
+      filter: drop-shadow(0 0 15px rgba(0, 194, 255, 0.2));
     }
 
-    h2 {
-      color: #0d47a1;
-      text-align: center;
+    .logo-gym {
+      width: 120px;
+      filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.2));
+    }
+
+    h1 {
+      font-size: 2.2rem;
       font-weight: 700;
-      text-shadow: 0 2px 4px rgba(33, 150, 243, 0.3);
+      margin: 0;
+      background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      line-height: 1.2;
     }
 
-    .date-header {
-      padding: 12px 16px;
-      margin-top: 32px;
-      font-size: 1.1em;
+    /* Floating Item Animations */
+    .floating-card-pack {
+      position: absolute;
+      width: 70px;
+      height: auto;
+      z-index: 20;
+      pointer-events: none;
+      opacity: 0.8;
+      animation: cuteShake 3s ease-in-out infinite;
+    }
+
+    .pack-right { top: 120px; right: -20px; animation-delay: 0s; }
+    .pack-left { top: 160px; left: -20px; animation-delay: 0.5s; }
+
+    @keyframes cuteShake {
+      0%, 100% { transform: translateY(0) rotate(0); }
+      50% { transform: translateY(-15px) rotate(5deg); }
+    }
+
+    /* Banner */
+    .promo-banner {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(244, 114, 182, 0.2));
+      border: 1px dashed var(--primary);
+      color: #fff;
       font-weight: 600;
-      border-radius: 8px 8px 0 0;
-      border-left: 6px solid #2196F3;
-      background: linear-gradient(90deg, #fff 0%, #e3f2fd 100%);
-      text-align: left;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 0;
-      margin-bottom: 16px;
-      background: #fff;
-      border-radius: 0 0 12px 12px;
-      overflow: hidden;
-    }
-
-    th,
-    td {
-      padding: 10px 8px;
+      padding: 1rem;
+      border-radius: 12px;
       text-align: center;
-      border-bottom: 1px solid #bbdefb;
+      margin-bottom: 2rem;
+      animation: pulse 2s infinite;
+      box-shadow: 0 0 20px rgba(99, 102, 241, 0.2);
     }
 
+    @keyframes pulse {
+      0%, 100% { border-color: var(--primary); transform: scale(1); }
+      50% { border-color: #f472b6; transform: scale(1.02); }
+    }
+
+    /* Details Section */
+    .details-card {
+      background: var(--glass);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--glass-border);
+      border-radius: 1.5rem;
+      padding: 2rem;
+      margin-bottom: 2.5rem;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+
+    .details-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      cursor: pointer;
+    }
+
+    .info-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 2rem;
+    }
+
+    .info-box {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 1.25rem;
+      border-radius: 1rem;
+      text-align: center;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .info-box span { display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px; }
+    .info-box strong { font-size: 1.2rem; color: var(--accent); }
+
+    /* Tables */
+    .date-header {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 1.2rem 1.5rem;
+      border-radius: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 2rem;
+      cursor: pointer;
+      transition: 0.3s;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+    
+    .date-header:hover { transform: translateY(-2px); filter: brightness(1.1); }
+
+    .gym-table-wrap {
+      background: var(--glass);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--glass-border);
+      border-top: none;
+      border-radius: 0 0 1.5rem 1.5rem;
+      overflow: hidden;
+      margin-bottom: 2rem;
+    }
+
+    table { width: 100%; border-collapse: collapse; }
     th {
-      font-weight: 600;
-      font-size: 1.05em;
+      background: rgba(255, 255, 255, 0.03);
+      padding: 1rem;
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
 
-    tr:hover td {
-      background: #e3f2fd;
+    td {
+      padding: 1rem;
+      text-align: center;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
     }
 
     .register-btn {
       display: block;
       width: 100%;
-      margin: 24px auto 0 auto;
-      padding: 14px 0;
-      background: linear-gradient(135deg, #1976d2 0%, #42a5f5 100%);
+      max-width: 400px;
+      margin: 2rem auto;
+      padding: 1.25rem;
+      background: linear-gradient(135deg, var(--primary) 0%, #4338ca 100%);
       color: #fff;
-      font-size: 1.1em;
-      font-weight: 600;
-      border: none;
-      border-radius: 12px;
-      cursor: pointer;
       text-decoration: none;
       text-align: center;
-      transition: all 0.3s ease;
-      max-width: 350px;
-      box-shadow: 0 4px 12px rgba(70, 130, 180, 0.4);
+      border-radius: 1rem;
+      font-weight: 700;
+      font-size: 1.1rem;
+      transition: 0.3s;
+      box-shadow: 0 10px 20px var(--primary-glow);
     }
 
     .register-btn:hover {
-      background: linear-gradient(135deg, #1e88e5 0%, #64b5f6 100%);
-      color: #fff;
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(70, 130, 180, 0.6);
+      transform: translateY(-3px) scale(1.02);
+      filter: brightness(1.1);
     }
 
-    /* Spinner */
-    .spinner {
-      margin: 24px auto 8px auto;
-      border: 6px solid #bbdefb;
-      border-top: 6px solid #1976d2;
-      border-radius: 50%;
-      width: 48px;
-      height: 48px;
-      animation: spin 1s linear infinite;
+    /* Rank & Effects (Preserved from original) */
+    .codename-rank[data-rank="Gold"] .codename { color: #ffd700; text-shadow: 0 0 8px rgba(255, 215, 0, 0.6); }
+    .codename-rank[data-rank="Platinum"] .codename { color: #00bcd4; }
+    .codename-rank[data-rank="Diamond"] .codename { color: #00bfff; }
+    .codename-rank[data-rank="Grandmaster"] .codename { color: #8e24aa; }
+    .codename-rank[data-rank="Legend"] .codename { color: #e53935; }
+
+    /* Promo Section */
+    .promo-section {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: 2rem;
+      padding: 2.5rem;
+      margin-top: 4rem;
     }
 
-    @keyframes spin {
-      0% {
-        transform: rotate(0deg);
-      }
-
-      100% {
-        transform: rotate(360deg);
-      }
-    }
-
-    /* Codename สี/ขนาด/กระพริบตาม rank */
-    .codename-rank[data-rank="Rookie"] .codename {
-      color: #888888;
-      font-size: 1.05em;
-    }
-
-    .codename-rank[data-rank="Bronze"] .codename {
-      color: #b87333;
-      font-size: 1.08em;
-    }
-
-    .codename-rank[data-rank="Silver"] .codename {
-      color: #9e9e9e;
-      font-size: 1.12em;
-    }
-
-    .codename-rank[data-rank="Gold"] .codename {
-      color: #ffd700;
-      font-size: 1.18em;
-      font-weight: bold;
-    }
-
-    .codename-rank[data-rank="Platinum"] .codename {
-      color: #00bcd4;
-      font-size: 1.22em;
-      font-weight: bold;
-    }
-
-    .codename-rank[data-rank="Diamond"] .codename {
-      color: #00bfff;
-      font-size: 1.28em;
-      font-weight: bold;
-    }
-
-    .codename-rank[data-rank="Grandmaster"] .codename {
-      color: #8e24aa;
-      font-size: 1.35em;
-      font-weight: bold;
-    }
-
-    .codename-rank[data-rank="Legend"] .codename {
-      color: #e53935;
-      font-size: 1.45em;
-      font-weight: bold;
-    }
-
-    .codename-rank[data-rank="Gold"] .codename,
-    .codename-rank[data-rank="Platinum"] .codename,
-    .codename-rank[data-rank="Diamond"] .codename,
-    .codename-rank[data-rank="Grandmaster"] .codename,
-    .codename-rank[data-rank="Legend"] .codename {
-      animation: blink 1s step-end infinite alternate;
-    }
-
-    @keyframes blink {
-      0% {
-        opacity: 1;
-        text-shadow: 0 0 8px #fff, 0 0 16px currentColor;
-      }
-
-      100% {
-        opacity: 0.6;
-        text-shadow: 0 0 2px #fff, 0 0 4px currentColor;
-      }
-    }
-
-    /* Wave (Gold) */
-    @keyframes wave {
-
-      0%,
-      100% {
-        transform: translateY(0);
-      }
-
-      20% {
-        transform: translateY(-5px);
-      }
-
-      40% {
-        transform: translateY(-10px);
-      }
-
-      60% {
-        transform: translateY(-5px);
-      }
-
-      80% {
-        transform: translateY(0);
-      }
-    }
-
-    /* Master Championest Fire Breathing Effect */
-    .codename.fire-breath {
-      color: #111 !important;
-      font-weight: 800;
-      letter-spacing: 1px;
-      animation: fire-glow 2.5s infinite alternate;
-    }
-
-    @keyframes fire-glow {
-      0% {
-        text-shadow:
-          0 0 2px #fff,
-          0 0 4px #fffc00,
-          0 0 8px #ff7300,
-          0 0 12px #ff0000;
-      }
-
-      50% {
-        text-shadow:
-          0 0 3px #fff,
-          0 0 8px #fffc00,
-          0 0 15px #ff7300,
-          0 0 25px #ff0000,
-          0 -5px 15px rgba(255, 0, 0, 0.6);
-      }
-
-      100% {
-        text-shadow:
-          0 0 2px #fff,
-          0 0 6px #fffc00,
-          0 0 10px #ff7300,
-          0 0 18px #ff0000;
-      }
-    }
-
-    .codename.wave span {
-      display: inline-block;
-      animation: wave 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-    }
-
-    .codename.wave.gold span {
-      animation-duration: 1.2s;
-    }
-
-    .codename.wave.platinum span {
-      animation-duration: 1s;
-    }
-
-    .codename.wave.diamond span {
-      animation-duration: 0.85s;
-    }
-
-    .codename.wave.grandmaster span {
-      animation-duration: 0.7s;
-    }
-
-    .codename.wave.legend span {
-      animation-duration: 0.6s;
-    }
-
-    .codename.wave span:nth-child(1) {
-      animation-delay: 0s;
-    }
-
-    .codename.wave span:nth-child(2) {
-      animation-delay: 0.08s;
-    }
-
-    .codename.wave span:nth-child(3) {
-      animation-delay: 0.16s;
-    }
-
-    .codename.wave span:nth-child(4) {
-      animation-delay: 0.24s;
-    }
-
-    .codename.wave span:nth-child(5) {
-      animation-delay: 0.32s;
-    }
-
-    .codename.wave span:nth-child(6) {
-      animation-delay: 0.40s;
-    }
-
-    .codename.wave span:nth-child(7) {
-      animation-delay: 0.48s;
-    }
-
-    .codename.wave span:nth-child(8) {
-      animation-delay: 0.56s;
-    }
-
-    .codename.wave span:nth-child(9) {
-      animation-delay: 0.64s;
-    }
-
-    .codename.wave span:nth-child(10) {
-      animation-delay: 0.72s;
-    }
-
-    /* Pulse (Diamond) */
-    @keyframes pulse {
-      0% {
-        transform: scale(1);
-        opacity: 1;
-      }
-
-      50% {
-        transform: scale(1.05);
-        opacity: 0.8;
-      }
-
-      100% {
-        transform: scale(1);
-        opacity: 1;
-      }
-    }
-
-    /* Promo Cards Section */
-    .promo-cards-section {
-      margin-top: 40px;
-      padding: 24px;
-      background: linear-gradient(135deg, #f0f8ff 0%, #e3f2fd 100%);
-      border-radius: 16px;
-      box-shadow: 0 4px 12px rgba(33, 150, 243, 0.2);
-      border: 1px solid rgba(187, 222, 251, 0.5);
-    }
-
-    .promo-cards-title {
-      text-align: center;
-      color: #0d47a1;
-      font-size: 1.8em;
-      font-weight: 600;
-      margin-bottom: 8px;
+    .promo-title {
       font-family: 'Chonburi', cursive;
-      text-shadow: 0 2px 4px rgba(33, 150, 243, 0.2);
-    }
-
-    .promo-cards-subtitle {
       text-align: center;
-      color: #1565c0;
-      font-size: 1.1em;
-      margin-bottom: 32px;
-      font-weight: 400;
-    }
-
-    /* New Styling for Sets */
-    .promo-set-container {
-      margin-bottom: 40px;
-      padding: 20px;
-      background: white;
-      border-radius: 12px;
-      border: 1px solid #dee2e6;
-    }
-
-    .set-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      cursor: pointer;
-      padding: 10px;
-      border-bottom: 2px solid #e3f2fd;
-      margin-bottom: 20px;
-    }
-
-    .set-header h4 {
-      margin: 0;
-      color: #1565c0;
-      font-size: 1.2em;
+      font-size: 1.8rem;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
 
     .promo-cards-grid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 16px;
-      max-width: 100%;
-      margin: 0 auto;
-      justify-content: center;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 15px;
+      margin-top: 2rem;
     }
 
     .promo-card {
-      background: #fff;
-      border-radius: 8px;
-      padding: 6px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-      transition: all 0.3s ease;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 5px;
+      border: 1px solid var(--glass-border);
       cursor: pointer;
-      text-align: center;
-      width: 100%;
-      position: relative;
-      border: 1px solid #eee;
+      transition: 0.3s;
     }
 
-    .promo-card:hover {
-      transform: scale(1.05);
-      z-index: 5;
-      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-    }
+    .promo-card:hover { transform: scale(1.05) translateY(-5px); border-color: var(--primary); }
+    .promo-card img { width: 100%; border-radius: 8px; }
 
-    .promo-card img {
-      width: 100%;
-      height: auto;
-      border-radius: 4px;
-      aspect-ratio: 7/9;
-      object-fit: contain;
-      display: block;
-    }
-
-    /* Modal Styles */
+    /* Modal Styling */
     .modal {
       display: none;
       position: fixed;
       z-index: 2000;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.85);
-      backdrop-filter: blur(5px);
+      left: 0; top: 0; width: 100%; height: 100%;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(8px);
     }
 
     .modal-content {
       position: fixed;
-      top: 50%;
-      left: 50%;
+      top: 50%; left: 50%;
       transform: translate(-50%, -50%);
-      width: auto;
       max-width: 90vw;
-      text-align: center;
     }
 
     .modal-close {
-      position: fixed;
-      top: 20px;
-      right: 30px;
-      font-size: 40px;
-      color: #fff;
-      cursor: pointer;
-      z-index: 2001;
+      position: absolute;
+      top: -40px; right: 0;
+      color: white; font-size: 30px; cursor: pointer;
     }
 
-    .modal img {
-      max-height: 85vh;
-      max-width: 90vw;
-      border-radius: 15px;
-      box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
-    }
+    #loading { text-align: center; padding: 3rem; color: var(--text-muted); }
 
-    /* Mobile Responsive */
-    @media (max-width: 768px) {
-      .promo-cards-grid {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 10px;
-      }
+    /* /arrange: Hub-consistent Header Statuses */
+    .status-text {
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      font-size: 0.8rem !important;
+      font-weight: 600;
     }
+    .status-label { display: inline; }
 
-    @media (max-width: 480px) {
-      .promo-cards-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
+    @media (max-width: 600px) {
+      .info-stats { grid-template-columns: 1fr; }
+      h1 { font-size: 1.6rem; }
+      .mobile-hide { display: none; }
+      .date-header { font-size: 0.9rem; padding: 1rem; }
+      .status-label { display: none; }
+      
+      /* Mobile Floating Packs Adjustment */
+      .floating-card-pack { width: 50px; opacity: 0.6; }
+      .pack-right { top: 100px !important; right: 10px !important; }
+      .pack-left { top: 200px !important; left: 10px !important; }
     }
   </style>
 </head>
 
 <body>
   <canvas id="fireworks-canvas"></canvas>
-  <div class="gymbattle-container">
-    <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/11/th_news_ma3_pkg.png" alt="Card Pack"
-      class="floating-card-pack">
-    <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2026/03/th_news_gym_promo_3.png"
-      alt="New Card Pack" class="floating-card-pack">
 
-    <div class="logo">
-      <img src="https://i.postimg.cc/wjzpnxjB/Up-Level-01-1.png" alt="Up Level Logo">
-      <img src="https://i.postimg.cc/fyMXPbrX/gym-thiy-ch-d.png" alt="Gym Battle Logo"
-        style="max-height: 100px; width: auto;">
+  <div class="container">
+    <header>
+      <a href="index.html" class="back-home">🔙 หน้าหลัก</a>
+      <div class="logo-area">
+        <img src="https://i.postimg.cc/wjzpnxjB/Up-Level-01-1.png" alt="Guild Logo" class="logo-main">
+        <img src="https://i.postimg.cc/fyMXPbrX/gym-thiy-ch-d.png" alt="Gym Logo" class="logo-gym">
+      </div>
+      <h1>รายชื่อผู้สมัคร GYM BATTLE</h1>
+      <div style="color: var(--text-muted); margin-top: 0.5rem;">ประจำเดือนเมษายน 2569</div>
+    </header>
+
+    <!-- Floating Decorations -->
+    <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2026/02/th_ma4_pkg.png" class="floating-card-pack pack-right">
+    <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2026/03/th_news_gym_promo_3.png" class="floating-card-pack pack-left">
+
+    <div class="promo-banner">
+      📢 ตลอดเดือนเมษายน: รับซองชุดใหม่ล่าสุด MA4 ในทุกการแข่งขัน!
     </div>
-    <h2 style="text-align:center; margin-bottom: 24px;">รายชื่อผู้สมัคร Gym Battle เดือนมีนาคม 2569</h2>
 
-    <div
-      style="background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); color: #1565c0; font-weight: bold; padding: 12px; border-radius: 8px; text-align: center; margin: 0 auto 16px auto; border: 2px dashed #1e88e5; max-width: 800px; animation: pulse 2s infinite;">
-      📢 ตั้งแต่วันที่ 20 มีนาคม 2569 เป็นต้นไป รับซองยิมชุดใหม่ล่าสุด!
-    </div>
+    <div class="details-card">
+      <div class="details-title" onclick="toggleDetails()">
+        📋 รายละเอียดการแข่งขัน <span id="details-arrow">▼</span>
+      </div>
 
-    <div class="details-section"
-      style="max-width: 800px; margin: 0 auto 24px auto; padding: 24px; background: rgba(255, 255, 255, 0.9); border-radius: 16px; box-shadow: 0 4px 15px rgba(70, 130, 180, 0.15); border: 2px solid #e0f2f7;">
-      <h3 style="color: #1e3a5f; margin-top: 0; text-align: center; cursor: pointer; user-select: none;"
-        onclick="toggleDetails()">
-        📋 รายละเอียดการแข่งขัน
-        <span id="details-arrow" style="font-size: 0.8em; margin-left: 8px;">▼</span>
-      </h3>
-
-      <div style="text-align: center; margin: 10px 0 20px 0;">
-        <div style="font-size: 1.3em; color: #333; font-weight: bold;">
-          💸 ค่าสมัคร: <span style="color: #d32f2f;">220 บาท</span>
+      <div class="info-stats">
+        <div class="info-box">
+          <span>ค่าสมัคร</span>
+          <strong>220 บาท</strong>
         </div>
-        <div style="font-size: 1.2em; color: #f57f17; font-weight: bold; margin-top: 8px;">
-          🎁 Door Gift: Mega Dream ex (MA3) 1 ซอง
+        <div class="info-box">
+          <span>Door Gift</span>
+          <strong>MA4 ➔ 3 ซอง</strong>
+        </div>
+        <div class="info-box" style="grid-column: span 2;">
+          <span>เวลาแข่งขัน</span>
+          <strong>อังคาร, ศุกร์: 19:00 | เสาร์: 16:00</strong>
         </div>
       </div>
 
-      <div style="text-align: center; margin-bottom: 15px;">
-        <button class="toggle-btn-ui" onclick="toggleDetails()"
-          style="background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); color: white; border: none; padding: 8px 16px; border-radius: 20px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: transform 0.2s;">
-          ดูรายละเอียดของรางวัล
-        </button>
-      </div>
-
-      <div id="details-content" style="display: none;">
-        <h4 style="color: #33691E; text-align: center; margin-top: 0;">🎁 ของรางวัล: Booster Pack (MA3)</h4>
-        <div style="margin-bottom: 15px;">
-          <strong>❗️กรณีมีผู้สมัคร 1 - 7 คน</strong><br>
-          🥇 อันดับ 1: Booster Pack (MA3) 2 ซอง<br>
-          • อันดับอื่นๆ: Booster Pack (MA3) 1 ซอง
+      <div id="details-content" style="display: none; padding-top: 1rem; border-top: 1px solid var(--glass-border);">
+        <h4 style="color: var(--primary); margin-top: 0;">🎁 ของรางวัล: Booster Pack (MA4)</h4>
+        <div style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.6;">
+          <strong>ผู้สมัคร 1 - 7 คน:</strong><br>
+          🥇 ที่ 1: 6 ซอง | คนอื่นๆ: 3 ซอง (Door Gift)<br><br>
+          <strong>ผู้สมัคร 8 - 15 คน:</strong><br>
+          🥇 ที่ 1: 6 ซอง | 🥈 ที่ 2: 5 ซอง | 🥉 ที่ 3: 4 ซอง<br>
+          • คนอื่นๆ: 3 ซอง (Door Gift)<br><br>
+          <strong>ผู้สมัคร 16 คนขึ้นไป:</strong><br>
+          🥇 ที่ 1: 8 ซอง | 🥈 ที่ 2: 7 ซอง | 🥉 ที่ 3: 5 ซอง | 🎖️ที่ 4-6: 4 ซอง<br>
+          • คนอื่นๆ: 3 ซอง (Door Gift)
         </div>
-        <div style="margin-bottom: 15px;">
-          <strong>❗️ผู้สมัคร 8 - 15 คน</strong><br>
-          🥇 อันดับ 1: Booster Pack (MA3) 2 ซอง<br>
-          🥈 อันดับ 2: Booster Pack (MA3) 1 ซอง + Booster Pack (50บาท) 2 ซอง<br>
-          🥉 อันดับ 3: Booster Pack (MA3) 1 ซอง + Booster Pack (50บาท) 1 ซอง<br>
-          • อันดับอื่นๆ: Booster Pack (MA3) 1 ซอง
-        </div>
-        <div class="note"
-          style="margin-top: 20px; font-size: 0.9em; color: #666; background: #fffbe6; padding: 10px; border-radius: 8px; border: 1px solid #ffe58f;">
-          🎁 สำหรับการแข่ง <strong>"หลังวันที่ 20 มีนาคม"</strong> สามารถเลือกรับรางวัลเป็นซอง MA4 แทนได้ในอัตรา
-          <strong>1 ซอง MA3 ➔ 3 ซอง MA4!</strong>
+        <div style="margin-top: 1.5rem; background: rgba(251, 191, 36, 0.1); padding: 1rem; border-radius: 0.75rem; border: 1px solid rgba(251, 191, 36, 0.2); font-size: 0.85rem;">
+          ✨ <strong>Option พิเศษ:</strong> สามารถเลือกแลกรับ MA3 (1 ซอง) แทน MA4 (3 ซอง) ได้
         </div>
       </div>
     </div>
 
-    <div style="display: flex; justify-content: center; margin-bottom: 24px;">
-      <a class="register-btn" href="https://forms.gle/KgZgnRdhji8e4Xig9" target="_blank">สมัครแข่งขัน Gym Battle</a>
+    <div style="text-align: center;">
+      <a class="register-btn" href="https://forms.gle/WZxjmLs1x4wBWXRM8" target="_blank">🚀 สมัครแข่งขัน GYM BATTLE</a>
     </div>
 
-    <div id="gymbattle-list" style="text-align:center;">
-      <div class="spinner"></div>
-      <div>กำลังโหลดรายชื่อ...</div>
+    <div id="gymbattle-list">
+      <div id="loading">⚔️ กำลังเรียกดูประกาศรายชื่อ...</div>
     </div>
 
-    <div class="promo-cards-section">
-      <h3 class="promo-cards-title">การ์ดโปรโม Gym Battle</h3>
-      <p class="promo-cards-subtitle">การ์ดโปรโมที่ได้รับจากการแข่งขันประจำเดือนมีนาคม 2569</p>
+    <div class="promo-section">
+      <h3 class="promo-title">การ์ดโปรโม GYM BATTLE</h3>
+      <div style="text-align: center; color: var(--text-muted); font-size: 0.9rem;">🎁 ของรางวัลประจำเดือนเมษายน 2569</div>
 
-      <div class="promo-set-container">
-        <div class="set-header" onclick="toggleSet('set-new', 'arrow-new')">
-          <h4>🔥 ตั้งแต่ 20 มีนาคม 2569 (ชุดล่าสุด)</h4>
+      <div style="margin-top: 2rem;">
+        <div class="date-header" onclick="toggleSet('set-new', 'arrow-new')" style="cursor: pointer; border-radius: 1rem; border-bottom: 1px solid var(--glass-border);">
+          <span>🔥 ชุดใหม่ล่าสุด (เมษายน)</span>
           <span id="arrow-new">▲</span>
         </div>
-        <div id="set-new" class="promo-cards-grid">
-        </div>
-      </div>
+        <div id="set-new" class="promo-cards-grid" style="margin-bottom: 3rem;"></div>
 
-      <div class="promo-set-container">
-        <div class="set-header" onclick="toggleSet('set-old', 'arrow-old')">
-          <h4>📦 ก่อนวันที่ 20 มีนาคม 2569</h4>
-          <span id="arrow-old">▼</span>
-        </div>
-        <div id="set-old" class="promo-cards-grid" style="display: none;">
-        </div>
       </div>
     </div>
   </div>
@@ -675,7 +436,7 @@
   <div id="cardModal" class="modal">
     <span class="modal-close" onclick="closeCardModal()">&times;</span>
     <div class="modal-content">
-      <img id="modalCardImage" src="" alt="Card Image">
+      <img id="modalCardImage" src="" style="border-radius: 1rem; box-shadow: 0 0 30px rgba(99, 102, 241, 0.5);">
     </div>
   </div>
 
@@ -694,24 +455,20 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    const apiUrl = "https://script.google.com/macros/s/AKfycbxn0E69_tsu33UUDRqQvxYDqGka3vyk3TRPad9ymE60JB-3hUPviyhAJtRT-HnNYMjS/exec?type=json";
+    const apiUrl = "https://script.google.com/macros/s/AKfycbzzmfGwpuGE31ZJR6S3cYBRaAYh6F64gLOmlhZ6WEZ2cs-oRvn8L3xENE4gv6N4umdQ/exec?type=json";
     const memberDashboardApi = "https://script.google.com/macros/s/AKfycbxtjsDwHI6nJU4OIHExUxMaZwUn3qwakvdkzwbQO7C8Trzz5Gh84SX6F1gqb4BOFQcn/exec?func=getMemberDashboardData";
 
-    const marchDates = [
-      "วันอังคารที่ 3 มีนาคม 2569", "วันศุกร์ที่ 6 มีนาคม 2569", "วันเสาร์ที่ 7 มีนาคม 2569",
-      "วันอังคารที่ 10 มีนาคม 2569", "วันศุกร์ที่ 13 มีนาคม 2569", "วันเสาร์ที่ 14 มีนาคม 2569",
-      "วันอังคารที่ 17 มีนาคม 2569", "วันศุกร์ที่ 20 มีนาคม 2569", "วันเสาร์ที่ 21 มีนาคม 2569",
-      "วันอังคารที่ 24 มีนาคม 2569", "วันศุกร์ที่ 27 มีนาคม 2569", "วันเสาร์ที่ 28 มีนาคม 2569",
-      "วันอังคารที่ 31 มีนาคม 2569"
+    const aprilDates = [
+      "วันศุกร์ที่ 3 เมษายน 2569", "วันเสาร์ที่ 4 เมษายน 2569", "วันอังคารที่ 7 เมษายน 2569",
+      "วันศุกร์ที่ 10 เมษายน 2569", "วันเสาร์ที่ 11 เมษายน 2569", "วันอังคารที่ 14 เมษายน 2569",
+      "วันศุกร์ที่ 17 เมษายน 2569", "วันเสาร์ที่ 18 เมษายน 2569", "วันอังคารที่ 21 เมษายน 2569",
+      "วันศุกร์ที่ 24 เมษายน 2569", "วันเสาร์ที่ 25 เมษายน 2569", "วันอังคารที่ 28 เมษายน 2569"
     ];
 
-    const pastelColors = [
-      { bg: "#E3F2FD", border: "#1976D2" }, { bg: "#E1F5FE", border: "#0288D1" },
-      { bg: "#E0F7FA", border: "#0097A7" }, { bg: "#E8EAF6", border: "#3F51B5" },
-      { bg: "#E0F2F1", border: "#009688" }, { bg: "#FFF3E0", border: "#F57C00" }
-    ];
-
-    const rankEmojis = { "Rookie": "🐣", "Bronze": "🛡️", "Silver": "⚔️", "Gold": "🥇", "Platinum": "✨", "Diamond": "💎", "Grandmaster": "👑", "Legend": "🐉" };
+    const rankEmojis = {
+      "Rookie": "🐣", "Bronze": "🛡️", "Silver": "⚔️", "Gold": "🥇",
+      "Platinum": "✨", "Diamond": "💎", "Grandmaster": "👑", "Legend": "🐉"
+    };
 
     function getBaseRank(rank) {
       if (!rank) return "Rookie";
@@ -731,74 +488,116 @@
       return new Date(parseInt(m[3], 10) - 543, months.indexOf(m[2]) - 1, parseInt(m[1], 10));
     }
 
-    // Load Data
-    Promise.all([
-      fetch(apiUrl).then(res => res.json()).catch(() => ({ groupedData: {} })),
-      fetch(memberDashboardApi).then(res => res.json()).catch(() => [])
-    ]).then(([data, members]) => {
-      const phoneMap = {};
-      if (Array.isArray(members)) {
-        members.forEach(m => phoneMap[String(m.phone).replace(/[^\d]/g, "")] = { codename: m.codename, rank: m.rank });
-      }
+    // Main logic for fetching and rendering
+    async function initGymBattle() {
+      try {
+        const [apiRes, memberRes] = await Promise.all([
+          fetch(apiUrl).then(res => res.json()).catch(() => ({ groupedData: {} })),
+          fetch(memberDashboardApi).then(res => res.json()).catch(() => [])
+        ]);
 
-      let html = '';
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-
-      let upcomingIndex = marchDates.findIndex(date => parseThaiDate(date) >= today);
-      if (upcomingIndex === -1) upcomingIndex = marchDates.length - 1;
-
-      marchDates.forEach((date, idx) => {
-        const players = (data.groupedData && data.groupedData[date]) || [];
-        const color = pastelColors[idx % pastelColors.length];
-        const isUpcoming = (idx === upcomingIndex);
-        const groupId = `group-${idx}`;
-
-        html += `<div class="date-header" style="background:${color.bg};border-left:6px solid ${color.border};display:flex;justify-content:space-between;align-items:center;">
-          <span>วันที่: ${date} (จำนวน ${players.length} คน)</span>
-          <button class="toggle-btn" data-group="${groupId}" style="background:${color.border}; color:white; border:none; padding:4px 12px; border-radius:4px; cursor:pointer;">${isUpcoming ? "ซ่อน" : "แสดง"}</button>
-        </div>`;
-
-        html += `<table id="${groupId}" ${isUpcoming ? '' : 'style="display:none;"'}>
-          <thead><tr><th style="background:${color.border};color:#fff;">ลำดับ</th><th style="background:${color.border};color:#fff;">ชื่อเล่น</th><th style="background:${color.border};color:#fff;">ระดับ</th><th style="background:${color.border};color:#fff;">สถานะ</th></tr></thead>
-          <tbody>`;
-
-        if (players.length === 0) {
-          html += `<tr><td colspan="4">ยังไม่มีผู้สมัคร</td></tr>`;
-        } else {
-          players.forEach((p, i) => {
-            let phone = String(p.phone || '').replace(/[^\d]/g, "");
-            if (phone.endsWith('971156555') || (p.nickname && p.nickname.toLowerCase() === 'champ')) phone = '0971156555';
-
-            const prof = phoneMap[phone];
-            let nameDisplay = p.nickname;
-            if (prof || phone === '0971156555') {
-              const rank = prof ? prof.rank : 'Legend';
-              const code = prof ? prof.codename : 'Champ';
-              nameDisplay = `<span class="codename-rank" data-rank="${rank}"><span>${getRankEmoji(rank, phone)}</span> ${renderCodenameEffect(code, rank, phone)} <span>${getRankEmoji(rank, phone)}</span></span>`;
-            }
-
-            let statusHtml = '<span style="background:rgba(239,68,68,0.2);color:#ef4444;padding:2px 6px;border-radius:4px;font-size:0.75rem;">❌ รอชำระ</span>';
-            const rowStatus = p.status || p['สถานะการชำระเงิน'] || '';
-            if (rowStatus.includes('ชำระแล้ว')) statusHtml = '<span style="background:rgba(16,185,129,0.2);color:#10b981;padding:2px 6px;border-radius:4px;font-size:0.75rem;">✅ ชำระแล้ว</span>';
-            else if (rowStatus.includes('รอตรวจสอบ') || p.paid) statusHtml = '<span style="background:rgba(245,158,11,0.2);color:#f59e0b;padding:2px 6px;border-radius:4px;font-size:0.75rem;">⏳ รอตรวจสอบ</span>';
-
-            html += `<tr><td>${i + 1}</td><td>${nameDisplay}</td><td>${p.level}</td><td>${statusHtml}</td></tr>`;
+        const data = apiRes;
+        const phoneMap = {};
+        if (Array.isArray(memberRes)) {
+          memberRes.forEach(m => {
+            const p = String(m.phone || m.Phone || "").replace(/[^\d]/g, "");
+            if (p) phoneMap[p] = { codename: m.codename, rank: m.rank };
           });
         }
-        html += `</tbody></table>`;
-      });
-      document.getElementById('gymbattle-list').innerHTML = html;
 
-      document.querySelectorAll('.toggle-btn').forEach(btn => {
-        btn.onclick = function () {
-          const t = document.getElementById(this.dataset.group);
-          const isHidden = t.style.display === "none";
-          t.style.display = isHidden ? "" : "none";
-          this.textContent = isHidden ? "ซ่อน" : "แสดง";
-        };
-      });
-    });
+        let html = '';
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        let upcomingIndex = aprilDates.findIndex(date => parseThaiDate(date) >= today);
+        if (upcomingIndex === -1) upcomingIndex = aprilDates.length - 1;
+
+        aprilDates.forEach((date, idx) => {
+          const players = (data.groupedData && data.groupedData[date]) || [];
+          const isUpcoming = (idx === upcomingIndex);
+          const groupId = `group-${idx}`;
+
+          const colors = [
+            'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)',
+            'linear-gradient(135deg, #10b981 0%, #3b82f6 100%)',
+            'linear-gradient(135deg, #f59e0b 0%, #ef4444 100%)',
+            'linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%)',
+            'linear-gradient(135deg, #06b6d4 0%, #22c55e 100%)',
+            'linear-gradient(135deg, #f43f5e 0%, #fb923c 100%)'
+          ];
+          const headerBg = colors[idx % colors.length];
+
+          html += `
+            <div class="date-header" onclick="toggleGroup('${groupId}', 'btn-${idx}')" style="background: ${headerBg}; border-radius: 12px; margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center; padding: 1rem; color: white; cursor: pointer;">
+              <span>${date} <small style="opacity: 0.8; font-weight: 400; margin-left: 10px;">(${players.length} คน)</small></span>
+              <button id="btn-${idx}" class="btn-toggle" style="background:none; border:none; color:#fff; cursor:pointer; font-size:1.2rem;">${isUpcoming ? "▲" : "▼"}</button>
+            </div>
+            <div id="${groupId}" class="gym-table-wrap" style="${isUpcoming ? '' : 'display:none;'}">
+              <table>
+                <thead>
+                  <tr>
+                    <th style="width:50px;">#</th>
+                    <th style="text-align:left;">ผู้เล่น (Codename)</th>
+                    <th>ระดับ</th>
+                    <th>สถานะ</th>
+                  </tr>
+                </thead>
+                <tbody>
+          `;
+
+          if (players.length === 0) {
+            html += `<tr><td colspan="4" style="color:var(--text-muted); padding:3rem;">📭 ยังไม่มีผู้สมัคร</td></tr>`;
+          } else {
+            players.forEach((p, i) => {
+              let phone = String(p.phone || '').replace(/[^\d]/g, "");
+              if (phone.endsWith('971156555')) phone = '0971156555';
+
+              const prof = phoneMap[phone];
+              let nameDisplay = p.nickname;
+              if (prof || phone === '0971156555') {
+                const rank = prof ? prof.rank : 'Legend';
+                const code = prof ? prof.codename : 'Master Championest';
+                nameDisplay = `<div class="codename-rank" data-rank="${rank}"><div style="display:flex; align-items:center; gap:8px; justify-content:flex-start;">${getRankEmoji(rank, phone)} ${renderCodenameEffect(code, rank, phone)}</div></div>`;
+              }
+
+              let statusHtml = '<span style="color:#64748b;">⌛<span class="status-label"> รอชำระ</span></span>';
+              const rowStatus = p.status || p['สถานะการชำระเงิน'] || '';
+              if (rowStatus.includes('ชำระแล้ว') || rowStatus.includes('✅')) {
+                statusHtml = '<span style="color:#4ade80; font-weight:700;">✅<span class="status-label"> ชำระแล้ว</span></span>';
+              } else if (rowStatus.includes('รอตรวจสอบ') || p.paid) {
+                statusHtml = '<span style="color:#fbbf24;">⏳<span class="status-label"> รอตรวจสอบ</span></span>';
+              }
+
+              html += `
+                <tr>
+                  <td>${i + 1}</td>
+                  <td style="text-align:left;">
+                    <div style="font-weight:600;">${nameDisplay}</div>
+                    <div style="font-size:0.75rem; color:var(--text-muted); margin-left:32px;">${p.nickname}</div>
+                  </td>
+                  <td style="font-size:0.9rem;">${p.level}</td>
+                  <td><div class="status-text">${statusHtml}</div></td>
+                </tr>
+              `;
+            });
+          }
+          html += `</tbody></table></div>`;
+        });
+
+        document.getElementById('gymbattle-list').innerHTML = html;
+      } catch (e) {
+        console.error("Init error:", e);
+        document.getElementById('gymbattle-list').innerHTML = '<div style="padding:2rem; color:var(--text-muted);">❌ เกิดข้อผิดพลาดในการโหลดข้อมูล</div>';
+      }
+    }
+
+    function toggleGroup(id, btnId) {
+      const el = document.getElementById(id);
+      const btn = document.getElementById(btnId);
+      const isHidden = (el.style.display || "none") === "none";
+      el.style.display = isHidden ? "block" : "none";
+      btn.textContent = isHidden ? "▲" : "▼";
+    }
 
     function renderCodenameEffect(code, rank, phone) {
       if (phone === '0971156555') return `<span class="codename fire-breath">[Master Championest]</span>`;
@@ -810,7 +609,6 @@
       return `<span class="codename">[${code}]</span>`;
     }
 
-    // PROMO CARDS DATA
     const oldSet = ["025", "026", "027", "028", "029", "030", "031", "032", "033", "034", "035", "036"];
     const newSetUrls = [
       "https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2026/03/t_mpromo_061.png",
@@ -828,25 +626,16 @@
     ];
 
     function initPromoCards() {
-      const oldGrid = document.getElementById('set-old');
       const newGrid = document.getElementById('set-new');
-
-      // Render Old
-      oldGrid.innerHTML = oldSet.map(num => {
-        const url = `https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2025/10/th_news_MPromo_${num}.png`;
-        return `<div class="promo-card" onclick="openCardModal('${url}')"><img src="${url}" loading="lazy"></div>`;
-      }).join('');
-
-      // Render New
-      newGrid.innerHTML = newSetUrls.map(url => {
-        return `<div class="promo-card" onclick="openCardModal('${url}')"><img src="${url}" loading="lazy"></div>`;
-      }).join('');
+      if (newGrid) {
+        newGrid.innerHTML = newSetUrls.map(url => `<div class="promo-card" onclick="openCardModal('${url}')"><img src="${url}" loading="lazy"></div>`).join('');
+      }
     }
 
     function toggleSet(id, arrowId) {
       const el = document.getElementById(id);
       const arrow = document.getElementById(arrowId);
-      const isHidden = el.style.display === "none";
+      const isHidden = (el.style.display || "none") === "none";
       el.style.display = isHidden ? "grid" : "none";
       arrow.textContent = isHidden ? "▲" : "▼";
     }
@@ -854,7 +643,7 @@
     function toggleDetails() {
       const content = document.getElementById('details-content');
       const arrow = document.getElementById('details-arrow');
-      const isHidden = content.style.display === "none";
+      const isHidden = (content.style.display || "none") === "none";
       content.style.display = isHidden ? "block" : "none";
       arrow.textContent = isHidden ? "▲" : "▼";
     }
@@ -865,12 +654,14 @@
       m.style.display = "block";
     }
 
-    function closeCardModal() {
-      document.getElementById('cardModal').style.display = "none";
-    }
+    function closeCardModal() { document.getElementById('cardModal').style.display = "none"; }
 
     window.onclick = e => { if (e.target.className === 'modal') closeCardModal(); };
-    document.addEventListener('DOMContentLoaded', initPromoCards);
+    
+    document.addEventListener('DOMContentLoaded', () => {
+      initGymBattle();
+      initPromoCards();
+    });
   </script>
 
   <script>
