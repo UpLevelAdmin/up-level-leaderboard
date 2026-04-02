@@ -313,12 +313,28 @@
       top: 50%; left: 50%;
       transform: translate(-50%, -50%);
       max-width: 90vw;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
     }
 
-    .modal-close {
-      position: absolute;
-      top: -40px; right: 0;
-      color: white; font-size: 30px; cursor: pointer;
+    #modalCardImage {
+      max-width: 100%;
+      max-height: 80vh;
+      object-fit: contain;
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    }
+
+    .modal-close-hint {
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 0.9rem;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 5px 15px;
+      border-radius: 20px;
+      pointer-events: none;
     }
 
     #loading { text-align: center; padding: 3rem; color: var(--text-muted); }
@@ -433,10 +449,10 @@
     </div>
   </div>
 
-  <div id="cardModal" class="modal">
-    <span class="modal-close" onclick="closeCardModal()">&times;</span>
+  <div id="cardModal" class="modal" onclick="closeCardModal()">
     <div class="modal-content">
-      <img id="modalCardImage" src="" style="border-radius: 1rem; box-shadow: 0 0 30px rgba(99, 102, 241, 0.5);">
+      <img id="modalCardImage" src="">
+      <div class="modal-close-hint">แตะหน้าจอเพื่อปิด</div>
     </div>
   </div>
 
