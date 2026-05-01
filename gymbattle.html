@@ -13,14 +13,14 @@
 
   <style>
     :root {
-      --primary: #6366f1;
-      --primary-glow: rgba(99, 102, 241, 0.4);
+      --primary: #10b981;
+      --primary-glow: rgba(16, 185, 129, 0.4);
       --accent: #f59e0b;
-      --bg-dark: #0f172a;
-      --glass: rgba(30, 41, 59, 0.7);
-      --glass-border: rgba(255, 255, 255, 0.1);
-      --text-main: #f8fafc;
-      --text-muted: #94a3b8;
+      --bg-dark: #064e3b;
+      --glass: rgba(2, 44, 34, 0.7);
+      --glass-border: rgba(16, 185, 129, 0.2);
+      --text-main: #ecfdf5;
+      --text-muted: #a7f3d0;
     }
 
     * {
@@ -30,7 +30,7 @@
 
     body {
       font-family: 'Kanit', 'Inter', sans-serif;
-      background: radial-gradient(circle at top left, #1e1b4b, #0f172a);
+      background: radial-gradient(circle at top left, #064e3b, #022c22);
       color: var(--text-main);
       margin: 0;
       padding: 0;
@@ -129,7 +129,7 @@
 
     /* Banner */
     .promo-banner {
-      background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(244, 114, 182, 0.2));
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(52, 211, 153, 0.2));
       border: 1px dashed var(--primary);
       color: #fff;
       font-weight: 600;
@@ -138,7 +138,7 @@
       text-align: center;
       margin-bottom: 2rem;
       animation: pulse 2s infinite;
-      box-shadow: 0 0 20px rgba(99, 102, 241, 0.2);
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
     }
 
     @keyframes pulse {
@@ -236,7 +236,7 @@
       max-width: 400px;
       margin: 2rem auto;
       padding: 1.25rem;
-      background: linear-gradient(135deg, var(--primary) 0%, #4338ca 100%);
+      background: linear-gradient(135deg, var(--primary) 0%, #059669 100%);
       color: #fff;
       text-decoration: none;
       text-align: center;
@@ -377,7 +377,7 @@
         <img src="https://i.postimg.cc/fyMXPbrX/gym-thiy-ch-d.png" alt="Gym Logo" class="logo-gym">
       </div>
       <h1>รายชื่อผู้สมัคร GYM BATTLE</h1>
-      <div style="color: var(--text-muted); margin-top: 0.5rem;">ประจำเดือนเมษายน 2569</div>
+      <div style="color: var(--text-muted); margin-top: 0.5rem;">ประจำเดือนพฤษภาคม 2569</div>
     </header>
 
     <!-- Floating Decorations -->
@@ -385,7 +385,7 @@
     <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2026/03/th_news_gym_promo_3.png" class="floating-card-pack pack-left">
 
     <div class="promo-banner">
-      📢 ตลอดเดือนเมษายน: รับซองชุดใหม่ล่าสุด MA4 ในทุกการแข่งขัน!
+      📢 ตลอดเดือนพฤษภาคม: แข่งขัน Gym Battle เลือกรับของรางวัลชุดใหม่ล่าสุด (MA4, MA3)
     </div>
 
     <div class="details-card">
@@ -400,7 +400,7 @@
         </div>
         <div class="info-box">
           <span>Door Gift</span>
-          <strong>MA4 ➔ 3 ซอง</strong>
+          <strong>MA4x2 หรือ MA3x1</strong>
         </div>
         <div class="info-box" style="grid-column: span 2;">
           <span>เวลาแข่งขัน</span>
@@ -409,19 +409,25 @@
       </div>
 
       <div id="details-content" style="display: none; padding-top: 1rem; border-top: 1px solid var(--glass-border);">
-        <h4 style="color: var(--primary); margin-top: 0;">🎁 ของรางวัล: Booster Pack (MA4)</h4>
+        <h4 style="color: var(--primary); margin-top: 0;">🎁 ของรางวัล (เลือกรับได้ตามความสมัครใจ)</h4>
         <div style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.6;">
           <strong>ผู้สมัคร 1 - 7 คน:</strong><br>
-          🥇 ที่ 1: 6 ซอง | คนอื่นๆ: 3 ซอง (Door Gift)<br><br>
+          🥇 ที่ 1: MA4x5 หรือ (MA3x1 + ซองอื่นๆx2) | คนอื่นๆ: MA4x2 หรือ MA3x1<br><br>
           <strong>ผู้สมัคร 8 - 15 คน:</strong><br>
-          🥇 ที่ 1: 6 ซอง | 🥈 ที่ 2: 5 ซอง | 🥉 ที่ 3: 4 ซอง<br>
-          • คนอื่นๆ: 3 ซอง (Door Gift)<br><br>
+          🥇 ที่ 1: MA4x5 หรือ (MA3x1 + ซองอื่นๆx2)<br>
+          🥈 ที่ 2: MA4x4 หรือ (MA3x1 + ซองอื่นๆx1)<br>
+          🥉 ที่ 3: MA4x3 หรือ MA3x1<br>
+          • คนอื่นๆ: MA4x2 หรือ MA3x1<br><br>
           <strong>ผู้สมัคร 16 คนขึ้นไป:</strong><br>
-          🥇 ที่ 1: 8 ซอง | 🥈 ที่ 2: 7 ซอง | 🥉 ที่ 3: 5 ซอง | 🎖️ที่ 4-6: 4 ซอง<br>
-          • คนอื่นๆ: 3 ซอง (Door Gift)
+          🥇 ที่ 1: MA4x7 หรือ (MA3x2 + ซองอื่นๆx1)<br>
+          🥈 ที่ 2: MA4x6 หรือ MA3x2<br>
+          🥉 ที่ 3: MA4x4 หรือ (MA3x1 + ซองอื่นๆx1)<br>
+          🎖️ ที่ 4-6: MA4x3 หรือ MA3x1<br>
+          • คนอื่นๆ: MA4x2 หรือ MA3x1
         </div>
         <div style="margin-top: 1.5rem; background: rgba(251, 191, 36, 0.1); padding: 1rem; border-radius: 0.75rem; border: 1px solid rgba(251, 191, 36, 0.2); font-size: 0.85rem;">
-          ✨ <strong>Option พิเศษ:</strong> สามารถเลือกแลกรับ MA3 (1 ซอง) แทน MA4 (3 ซอง) ได้
+          ✨ <strong>หมายเหตุ:</strong> *ซองอื่นๆ คือซองเสริมมูลค่า 50 บาท (เช่น หน้ากากจอมลวงตา)<br>
+          ⚠️ หาก MA4 หมดจะจัดแจกเป็นเซต MA3 แทนตามที่ระบุไว้ครับ
         </div>
       </div>
     </div>
@@ -436,11 +442,11 @@
 
     <div class="promo-section">
       <h3 class="promo-title">การ์ดโปรโม GYM BATTLE</h3>
-      <div style="text-align: center; color: var(--text-muted); font-size: 0.9rem;">🎁 ของรางวัลประจำเดือนเมษายน 2569</div>
+      <div style="text-align: center; color: var(--text-muted); font-size: 0.9rem;">🎁 ของรางวัลประจำเดือนพฤษภาคม 2569</div>
 
       <div style="margin-top: 2rem;">
         <div class="date-header" onclick="toggleSet('set-new', 'arrow-new')" style="cursor: pointer; border-radius: 1rem; border-bottom: 1px solid var(--glass-border);">
-          <span>🔥 ชุดใหม่ล่าสุด (เมษายน)</span>
+          <span>🔥 ชุดใหม่ล่าสุด (พฤษภาคม)</span>
           <span id="arrow-new">▲</span>
         </div>
         <div id="set-new" class="promo-cards-grid" style="margin-bottom: 3rem;"></div>
@@ -471,14 +477,13 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    const apiUrl = "https://script.google.com/macros/s/AKfycbzzmfGwpuGE31ZJR6S3cYBRaAYh6F64gLOmlhZ6WEZ2cs-oRvn8L3xENE4gv6N4umdQ/exec?type=json";
+    const apiUrl = "https://script.google.com/macros/s/AKfycbx6UHStLora2VL2_7RI1I2fOigIKa-2gJBCMI7ZD77nLKqII2XdF2UIxjePIoECSYzd/exec?type=json";
     const memberDashboardApi = "https://script.google.com/macros/s/AKfycbxtjsDwHI6nJU4OIHExUxMaZwUn3qwakvdkzwbQO7C8Trzz5Gh84SX6F1gqb4BOFQcn/exec?func=getMemberDashboardData";
 
-    const aprilDates = [
-      "วันศุกร์ที่ 3 เมษายน 2569", "วันเสาร์ที่ 4 เมษายน 2569", "วันอังคารที่ 7 เมษายน 2569",
-      "วันศุกร์ที่ 10 เมษายน 2569", "วันเสาร์ที่ 11 เมษายน 2569", "วันอังคารที่ 14 เมษายน 2569",
-      "วันศุกร์ที่ 17 เมษายน 2569", "วันเสาร์ที่ 18 เมษายน 2569", "วันอังคารที่ 21 เมษายน 2569",
-      "วันศุกร์ที่ 24 เมษายน 2569", "วันเสาร์ที่ 25 เมษายน 2569", "วันอังคารที่ 28 เมษายน 2569"
+    const mayDates = [
+      "วันศุกร์ที่ 1 พฤษภาคม 2569", "วันเสาร์ที่ 2 พฤษภาคม 2569", "วันอังคารที่ 5 พฤษภาคม 2569",
+      "วันอังคารที่ 19 พฤษภาคม 2569", "วันศุกร์ที่ 22 พฤษภาคม 2569", "วันเสาร์ที่ 23 พฤษภาคม 2569",
+      "วันอังคารที่ 26 พฤษภาคม 2569", "วันศุกร์ที่ 29 พฤษภาคม 2569", "วันเสาร์ที่ 30 พฤษภาคม 2569"
     ];
 
     const rankEmojis = {
@@ -525,10 +530,10 @@
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
-        let upcomingIndex = aprilDates.findIndex(date => parseThaiDate(date) >= today);
-        if (upcomingIndex === -1) upcomingIndex = aprilDates.length - 1;
+        let upcomingIndex = mayDates.findIndex(date => parseThaiDate(date) >= today);
+        if (upcomingIndex === -1) upcomingIndex = mayDates.length - 1;
 
-        aprilDates.forEach((date, idx) => {
+        mayDates.forEach((date, idx) => {
           const players = (data.groupedData && data.groupedData[date]) || [];
           const isUpcoming = (idx === upcomingIndex);
           const groupId = `group-${idx}`;
