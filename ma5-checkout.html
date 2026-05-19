@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MA5 Checkout — Up Level Academy</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+    <style>
+        /* ========== CONFIG (Champ fill these in) ========== */
+        /* APPS_SCRIPT_URL, FB_APP_ID, KSHOP_QR_URL — see <script> at bottom */
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Kanit', sans-serif;
+            background: linear-gradient(135deg, #080015 0%, #150030 30%, #0d0d25 60%, #150030 80%, #080015 100%);
+            background-size: 400% 400%;
+            animation: gradShift 18s ease infinite;
+            margin: 0;
+            padding: 1rem;
+            min-height: 100vh;
+            color: #fff;
+        }
+
+        @keyframes gradShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 1rem 0.5rem;
+        }
+
+        #back-btn {
+            position: fixed;
+            top: 16px; left: 16px; z-index: 100;
+            background: rgba(30, 0, 60, 0.75);
+            backdrop-filter: blur(8px);
+            color: #c9a4f5;
+            text-decoration: none;
+            font-size: 0.85rem; font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 20px;
+            border: 1px solid rgba(180, 100, 255, 0.4);
+            transition: all 0.2s ease;
+        }
+
+        #back-btn:hover {
+            background: rgba(124, 77, 255, 0.35);
+            color: #fff;
+            box-shadow: 0 0 12px rgba(124, 77, 255, 0.5);
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-top: 3.5rem;
+            background: linear-gradient(45deg, #c9a4f5, #e8d5ff, #9b59b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 0 12px rgba(180, 100, 255, 0.6));
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #b8a3e0;
+            font-size: 0.95rem;
+            margin-bottom: 2rem;
+        }
+
+        .step {
+            background: rgba(120, 60, 200, 0.1);
+            border: 1px solid rgba(180, 100, 255, 0.25);
+            border-radius: 16px;
+            padding: 1.2rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .step.active {
+            border-color: rgba(180, 100, 255, 0.7);
+            box-shadow: 0 0 20px rgba(124, 77, 255, 0.3);
+        }
+
+        .step.locked {
+            opacity: 0.4;
+            pointer-events: none;
+        }
+
+        .step.done {
+            border-color: rgba(60, 180, 100, 0.5);
+            background: rgba(40, 100, 60, 0.15);
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .step-number {
+            width: 28px; height: 28px;
+            border-radius: 50%;
+            background: rgba(124, 77, 255, 0.3);
+            border: 2px solid rgba(180, 100, 255, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.85rem;
+            flex-shrink: 0;
+        }
+
+        .step.done .step-number {
+            background: rgba(60, 180, 100, 0.4);
+            border-color: rgba(60, 220, 100, 0.7);
+        }
+
+        .step-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #e0d5ff;
+        }
+
+        .step.done .step-title { color: #b0f0c0; }
+
+        .input-row {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .input-row label {
+            font-size: 0.85rem;
+            color: #c9a4f5;
+        }
+
+        .input-row input {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(180, 100, 255, 0.3);
+            border-radius: 8px;
+            padding: 0.7rem 0.9rem;
+            color: #fff;
+            font-family: 'Kanit', sans-serif;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+
+        .input-row input:focus {
+            outline: none;
+            border-color: rgba(180, 100, 255, 0.7);
+            box-shadow: 0 0 10px rgba(124, 77, 255, 0.4);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            background: linear-gradient(45deg, #7c4dff, #b39ddb, #6a1de0);
+            background-size: 200% 200%;
+            animation: btnGrad 4s ease infinite;
+            color: #fff;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 50px;
+            font-family: 'Kanit', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 100%;
+        }
+
+        @keyframes btnGrad {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(124, 77, 255, 0.5);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            animation: none;
+        }
+
+        .btn.facebook {
+            background: linear-gradient(45deg, #1877f2, #4267b2);
+        }
+
+        .btn.success {
+            background: linear-gradient(45deg, #16a34a, #22c55e);
+        }
+
+        .btn.secondary {
+            background: rgba(120, 60, 200, 0.3);
+            border: 1px solid rgba(180, 100, 255, 0.4);
+        }
+
+        .fb-user-card {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            background: rgba(24, 119, 242, 0.15);
+            border: 1px solid rgba(24, 119, 242, 0.4);
+            border-radius: 12px;
+            padding: 0.8rem;
+            margin-top: 0.8rem;
+        }
+
+        .fb-user-card img {
+            width: 48px; height: 48px;
+            border-radius: 50%;
+            border: 2px solid #1877f2;
+        }
+
+        .fb-user-name { font-weight: 700; }
+        .fb-user-status { font-size: 0.8rem; color: #b3d4fc; }
+
+        .entitlement-list { margin-top: 0.5rem; }
+
+        .entitlement-item {
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            padding: 0.7rem 0.5rem;
+            border-bottom: 1px solid rgba(180, 100, 255, 0.15);
+        }
+
+        .entitlement-item:last-child { border-bottom: none; }
+
+        .ent-checkbox {
+            width: 22px; height: 22px;
+            border: 2px solid rgba(180, 100, 255, 0.5);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: all 0.2s;
+            background: rgba(0,0,0,0.3);
+        }
+
+        .ent-checkbox.checked {
+            background: #7c4dff;
+            border-color: #c9a4f5;
+            box-shadow: 0 0 12px rgba(124, 77, 255, 0.6);
+        }
+
+        .ent-checkbox.checked::after {
+            content: '✓';
+            color: #fff;
+            font-weight: 900;
+            font-size: 14px;
+        }
+
+        .ent-checkbox.locked {
+            opacity: 0.35;
+            cursor: not-allowed;
+            background: rgba(100, 100, 100, 0.2);
+        }
+
+        .ent-body { flex: 1; }
+        .ent-label { font-weight: 700; font-size: 0.95rem; color: #fff; }
+        .ent-desc { font-size: 0.78rem; color: #b8a3e0; margin-top: 2px; line-height: 1.4; }
+        .ent-status { font-size: 0.75rem; margin-top: 4px; }
+        .ent-status.ok { color: #6bcf7f; }
+        .ent-status.fail { color: #f87171; }
+        .ent-status.checking { color: #fbbf24; }
+
+        .total-display {
+            background: rgba(120, 60, 200, 0.2);
+            border: 2px dashed rgba(180, 100, 255, 0.5);
+            border-radius: 12px;
+            padding: 1rem;
+            text-align: center;
+            margin: 0.8rem 0;
+        }
+
+        .total-label { font-size: 0.85rem; color: #c9a4f5; }
+        .total-amount {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #e8d5ff;
+            text-shadow: 0 0 15px rgba(180, 100, 255, 0.6);
+        }
+
+        .qr-display {
+            background: #fff;
+            border-radius: 12px;
+            padding: 1rem;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .qr-display img {
+            max-width: 100%;
+            height: auto;
+            max-height: 280px;
+        }
+
+        .qr-amount-tag {
+            display: inline-block;
+            background: #16a34a;
+            color: #fff;
+            font-weight: 700;
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            margin-top: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .file-upload-zone {
+            border: 2px dashed rgba(180, 100, 255, 0.4);
+            border-radius: 12px;
+            padding: 1.2rem 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #c9a4f5;
+        }
+
+        .file-upload-zone:hover {
+            border-color: rgba(180, 100, 255, 0.7);
+            background: rgba(120, 60, 200, 0.1);
+        }
+
+        .file-upload-zone.has-file {
+            border-color: rgba(60, 220, 100, 0.5);
+            background: rgba(40, 100, 60, 0.15);
+            color: #b0f0c0;
+        }
+
+        .file-preview {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 8px;
+            margin-top: 0.5rem;
+        }
+
+        .alert {
+            padding: 0.7rem 0.9rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            margin: 0.5rem 0;
+        }
+
+        .alert.info {
+            background: rgba(60, 130, 220, 0.15);
+            border: 1px solid rgba(60, 130, 220, 0.4);
+            color: #93c5fd;
+        }
+
+        .alert.success {
+            background: rgba(40, 180, 80, 0.15);
+            border: 1px solid rgba(40, 180, 80, 0.4);
+            color: #6ee7a0;
+        }
+
+        .alert.error {
+            background: rgba(220, 60, 60, 0.15);
+            border: 1px solid rgba(220, 60, 60, 0.4);
+            color: #fca5a5;
+        }
+
+        .alert.warn {
+            background: rgba(220, 180, 60, 0.15);
+            border: 1px solid rgba(220, 180, 60, 0.4);
+            color: #fcd34d;
+        }
+
+        .lc { display: inline-flex; align-items: center; }
+        .lc svg { width: 16px; height: 16px; stroke: currentColor; stroke-width: 2; }
+        .lc.lg svg { width: 22px; height: 22px; }
+
+        .spinner {
+            display: inline-block;
+            width: 14px; height: 14px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-top-color: #c9a4f5;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 0.4rem;
+            vertical-align: middle;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .result-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 1rem;
+        }
+
+        .result-modal.show { display: flex; }
+
+        .result-modal-content {
+            background: linear-gradient(135deg, #1a0035, #2d0a4d);
+            border: 2px solid rgba(180, 100, 255, 0.6);
+            border-radius: 20px;
+            padding: 2rem 1.5rem;
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 0 50px rgba(124, 77, 255, 0.5);
+        }
+
+        .result-icon { font-size: 4rem; margin-bottom: 0.8rem; }
+        .result-title { font-size: 1.4rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .result-message { color: #c9a4f5; margin-bottom: 1.5rem; line-height: 1.6; }
+
+        @media (max-width: 480px) {
+            .container { padding: 0.5rem 0; }
+            h1 { font-size: 1.5rem; margin-top: 4rem; }
+            .step { padding: 1rem 0.8rem; }
+            .total-amount { font-size: 1.6rem; }
+        }
+    </style>
+</head>
+
+<body>
+    <a href="ma5-preorder.html" id="back-btn"><span class="lc"><i data-lucide="arrow-left"></i></span> หน้าข้อมูล</a>
+
+    <div class="container">
+        <h1>✨ Checkout MA5 เงามืดคุกคาม</h1>
+        <div class="subtitle">พรีออเดอร์ 1,400 บาท / Box · สูงสุด 3 Box</div>
+
+        <!-- STEP 1: Facebook Login -->
+        <div class="step active" id="step-1">
+            <div class="step-header">
+                <div class="step-number">1</div>
+                <div class="step-title">เข้าสู่ระบบด้วย Facebook</div>
+            </div>
+            <button id="btn-fb-login" class="btn facebook">
+                <span class="lc lg"><i data-lucide="facebook"></i></span>
+                เข้าสู่ระบบ Facebook
+            </button>
+            <div id="fb-user-display" style="display:none;"></div>
+        </div>
+
+        <!-- STEP 2: Customer Info -->
+        <div class="step locked" id="step-2">
+            <div class="step-header">
+                <div class="step-number">2</div>
+                <div class="step-title">ข้อมูลผู้สั่งซื้อ</div>
+            </div>
+            <div class="input-row">
+                <label>ชื่อ-นามสกุล *</label>
+                <input type="text" id="input-name" placeholder="กรอกชื่อ-นามสกุลจริง" />
+            </div>
+            <div class="input-row">
+                <label>เบอร์โทรศัพท์ *</label>
+                <input type="tel" id="input-phone" placeholder="0xx-xxx-xxxx" maxlength="13" />
+            </div>
+            <button id="btn-check-member" class="btn">
+                <span class="lc"><i data-lucide="search"></i></span>
+                ตรวจสอบสิทธิ์สมาชิก
+            </button>
+            <div id="member-result" style="display:none;"></div>
+        </div>
+
+        <!-- STEP 3: Entitlements -->
+        <div class="step locked" id="step-3">
+            <div class="step-header">
+                <div class="step-number">3</div>
+                <div class="step-title">เลือกสิทธิ์พรีออเดอร์</div>
+            </div>
+
+            <div class="alert warn">
+                <span class="lc"><i data-lucide="alert-triangle"></i></span>
+                แอดมินจะตรวจสอบลิงก์คอมเมนต์ของคุณภายหลัง — กรุณากรอกข้อมูลจริง
+            </div>
+
+            <div class="entitlement-list">
+                <div class="entitlement-item" data-box="1">
+                    <div class="ent-checkbox" id="cb-1"></div>
+                    <div class="ent-body">
+                        <div class="ent-label">Box ที่ 1 — 1,400 บาท</div>
+                        <div class="ent-desc">ฉันได้คอมเมนต์ใต้โพสต์แคมเปญบน Facebook แล้ว</div>
+                    </div>
+                </div>
+                <div class="entitlement-item" data-box="2">
+                    <div class="ent-checkbox" id="cb-2"></div>
+                    <div class="ent-body">
+                        <div class="ent-label">Box ที่ 2 — เพิ่ม 1,400 บาท</div>
+                        <div class="ent-desc">คอมเมนต์ของฉันมีรูปรีวิวร้านแนบไว้ด้วย</div>
+                    </div>
+                </div>
+                <div class="entitlement-item" data-box="3">
+                    <div class="ent-checkbox locked" id="cb-3"></div>
+                    <div class="ent-body">
+                        <div class="ent-label">Box ที่ 3 — เพิ่ม 1,400 บาท</div>
+                        <div class="ent-desc">เฉพาะสมาชิกกิลด์เดิม (Match เบอร์โทรในฐานข้อมูล)</div>
+                        <div class="ent-status checking" id="status-3"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-row" id="comment-url-row" style="display:none;margin-top:0.8rem;">
+                <label>ลิงก์คอมเมนต์ของคุณ (URL คอมเมนต์ใต้โพสต์) *</label>
+                <input type="url" id="input-comment-url" placeholder="https://www.facebook.com/..." />
+                <div style="font-size:0.75rem;color:#b8a3e0;margin-top:4px;">
+                    กดที่เวลาคอมเมนต์ → คัดลอกลิงก์ → วางที่นี่
+                </div>
+            </div>
+
+            <div class="total-display">
+                <div class="total-label">ยอดรวมที่ต้องชำระ</div>
+                <div class="total-amount" id="total-display">0 บาท</div>
+            </div>
+
+            <button id="btn-proceed-payment" class="btn" disabled>
+                <span class="lc"><i data-lucide="credit-card"></i></span>
+                ไปขั้นตอนชำระเงิน
+            </button>
+        </div>
+
+        <!-- STEP 4: Payment -->
+        <div class="step locked" id="step-4">
+            <div class="step-header">
+                <div class="step-number">4</div>
+                <div class="step-title">ชำระเงินผ่าน KShop</div>
+            </div>
+
+            <div class="alert info">
+                <span class="lc"><i data-lucide="info"></i></span>
+                สแกน QR แล้วโอนยอดตรงตามจำนวนที่กำหนด (ระบบเช็คอัตโนมัติ)
+            </div>
+
+            <div class="qr-display">
+                <img id="kshop-qr-img" src="" alt="KShop QR" />
+                <div class="qr-amount-tag" id="qr-amount-tag">โอน 0 บาท</div>
+            </div>
+
+            <div class="input-row">
+                <label>อัปโหลดสลิปโอนเงิน *</label>
+                <div class="file-upload-zone" id="slip-zone">
+                    <span class="lc lg"><i data-lucide="upload-cloud"></i></span>
+                    <div style="margin-top:0.5rem;">คลิกหรือลากไฟล์มาวาง</div>
+                    <input type="file" id="slip-input" accept="image/*" style="display:none;" />
+                </div>
+                <img id="slip-preview" class="file-preview" style="display:none;" />
+            </div>
+
+            <button id="btn-submit-order" class="btn success" disabled>
+                <span class="lc"><i data-lucide="check-circle"></i></span>
+                ยืนยันการสั่งซื้อ
+            </button>
+        </div>
+    </div>
+
+    <!-- Result Modal -->
+    <div class="result-modal" id="result-modal">
+        <div class="result-modal-content">
+            <div class="result-icon" id="result-icon">✨</div>
+            <div class="result-title" id="result-title">สำเร็จ!</div>
+            <div class="result-message" id="result-message"></div>
+            <button class="btn" onclick="window.location.href='ma5-preorder.html'">กลับหน้าข้อมูล</button>
+        </div>
+    </div>
+
+    <!-- Facebook SDK -->
+    <div id="fb-root"></div>
+
+    <script>
+        /* ===================== CONFIG ===================== */
+        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw220nOc36exhqF5i4YIyReivU2dAGWrsOtg4QCXQErnCfF5TER1Nuy8SDo2Kobjbd_ag/exec";
+        const FB_APP_ID       = "891492400071353";
+        const KSHOP_QR_URL    = "https://i.postimg.cc/9Qf7H5S7/QR-KShop.jpg";
+        const PRICE_PER_BOX   = 1400;
+        const FB_POST_URL     = "";  // ใส่ URL โพสต์แคมเปญ MA5 (เพื่อโชว์ลิงก์ให้ลูกค้าไปคอมเมนต์)
+        /* ================================================== */
+
+        const state = {
+            fbUserId: null,
+            fbName: null,
+            fbPicture: null,
+            customerName: '',
+            phone: '',
+            isMember: false,
+            memberData: null,
+            commentUrl: '',
+            commentHasImage: false,
+            selectedBoxes: 0,
+            slipBase64: null,
+            slipFile: null
+        };
+
+        /* ---------- Facebook SDK init ---------- */
+        window.fbAsyncInit = function() {
+            FB.init({ appId: FB_APP_ID, cookie: true, xfbml: false, version: 'v19.0' });
+        };
+        (function(d, s, id){
+            var js, fjs = d.getElementsByTagName(s)[0];
+            if (d.getElementById(id)) return;
+            js = d.createElement(s); js.id = id;
+            js.src = "https://connect.facebook.net/en_US/sdk.js";
+            fjs.parentNode.insertBefore(js, fjs);
+        }(document, 'script', 'facebook-jssdk'));
+
+        /* ---------- DOM refs ---------- */
+        const step1 = document.getElementById('step-1');
+        const step2 = document.getElementById('step-2');
+        const step3 = document.getElementById('step-3');
+        const step4 = document.getElementById('step-4');
+
+        /* ---------- STEP 1: FB Login ---------- */
+        document.getElementById('btn-fb-login').onclick = () => {
+            FB.login(response => {
+                if (response.status === 'connected') {
+                    FB.api('/me', { fields: 'id,name,picture.width(200).height(200)' }, user => {
+                        state.fbUserId  = user.id;
+                        state.fbName    = user.name;
+                        state.fbPicture = user.picture && user.picture.data ? user.picture.data.url : '';
+                        showFBUser();
+                        unlockStep(step1, step2);
+                    });
+                }
+            }, { scope: 'public_profile' });
+        };
+
+        function showFBUser() {
+            document.getElementById('btn-fb-login').style.display = 'none';
+            const display = document.getElementById('fb-user-display');
+            display.style.display = 'block';
+            display.innerHTML = `
+                <div class="fb-user-card">
+                    ${state.fbPicture ? `<img src="${state.fbPicture}" alt="">` : ''}
+                    <div>
+                        <div class="fb-user-name">${state.fbName}</div>
+                        <div class="fb-user-status">เข้าสู่ระบบเรียบร้อย ✓</div>
+                    </div>
+                </div>`;
+            step1.classList.add('done');
+        }
+
+        /* ---------- STEP 2: Member Check ---------- */
+        document.getElementById('btn-check-member').onclick = async () => {
+            const name  = document.getElementById('input-name').value.trim();
+            const phone = document.getElementById('input-phone').value.trim();
+            if (!name || !phone) { alert('กรุณากรอกชื่อและเบอร์โทร'); return; }
+            if (phone.replace(/\D/g, '').length < 9) { alert('เบอร์โทรไม่ถูกต้อง'); return; }
+
+            state.customerName = name;
+            state.phone        = phone;
+
+            const btn = document.getElementById('btn-check-member');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span>กำลังตรวจสอบ...';
+
+            try {
+                const res = await fetch(`${APPS_SCRIPT_URL}?action=member_lookup&phone=${encodeURIComponent(phone)}&name=${encodeURIComponent(name)}`);
+                const data = await res.json();
+                state.isMember   = !!data.isMember;
+                state.memberData = data;
+
+                const result = document.getElementById('member-result');
+                result.style.display = 'block';
+                if (data.isMember) {
+                    result.innerHTML = `<div class="alert success"><span class="lc"><i data-lucide="badge-check"></i></span> สมาชิกเดิม ${data.codename ? '['+data.codename+']' : ''} ${data.rank ? '· '+data.rank : ''} — ปลดล็อก Box 3 อัตโนมัติ</div>`;
+                } else {
+                    result.innerHTML = `<div class="alert info"><span class="lc"><i data-lucide="user-plus"></i></span> ลูกค้าใหม่ — สามารถสั่งได้สูงสุด 2 Box (ต้องคอมเมนต์ใต้โพสต์)</div>`;
+                }
+                lucide.createIcons();
+
+                step2.classList.add('done');
+                unlockStep(step2, step3);
+                initEntitlements();
+            } catch (err) {
+                alert('เกิดข้อผิดพลาด: ' + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<span class="lc"><i data-lucide="search"></i></span> ตรวจสอบสิทธิ์สมาชิก';
+                lucide.createIcons();
+            }
+        };
+
+        /* ---------- STEP 3: Entitlements (trust + admin audit) ---------- */
+        function initEntitlements() {
+            // Box 1, 2: ติ๊กเองได้ (user ยืนยันด้วยตัวเอง — admin audit ทีหลังจาก URL)
+            document.getElementById('cb-1').onclick = () => toggleBox(1);
+            document.getElementById('cb-2').onclick = () => toggleBox(2);
+
+            // Box 3: gate ด้วย isMember
+            const cb3     = document.getElementById('cb-3');
+            const status3 = document.getElementById('status-3');
+            if (state.isMember) {
+                cb3.classList.remove('locked');
+                cb3.onclick = () => toggleBox(3);
+                status3.className = 'ent-status ok';
+                status3.textContent = 'สมาชิกเดิม ✓';
+            } else {
+                cb3.classList.add('locked');
+                cb3.onclick = null;
+                status3.className = 'ent-status fail';
+                status3.textContent = 'เฉพาะสมาชิกกิลด์เดิมเท่านั้น';
+            }
+        }
+
+        function toggleBox(boxNum) {
+            const cb = document.getElementById('cb-' + boxNum);
+            if (cb.classList.contains('locked')) return;
+            const isChecked = cb.classList.contains('checked');
+            if (!isChecked) {
+                // ติ๊ก progressive: 1..N (เฉพาะอันที่ไม่ locked)
+                for (let i = 1; i <= boxNum; i++) {
+                    const c = document.getElementById('cb-' + i);
+                    if (!c.classList.contains('locked')) c.classList.add('checked');
+                }
+            } else {
+                // un-tick: N..3
+                for (let i = boxNum; i <= 3; i++) {
+                    document.getElementById('cb-' + i).classList.remove('checked');
+                }
+            }
+            recalcTotal();
+        }
+
+        function recalcTotal() {
+            let count = 0;
+            for (let i = 1; i <= 3; i++) {
+                if (document.getElementById('cb-' + i).classList.contains('checked')) count++;
+            }
+            state.selectedBoxes = count;
+            const total = count * PRICE_PER_BOX;
+            document.getElementById('total-display').textContent = total.toLocaleString() + ' บาท';
+
+            // โชว์ช่อง comment URL ถ้าติ๊ก Box 1 ขึ้นไป
+            const needsCommentUrl = count >= 1;
+            document.getElementById('comment-url-row').style.display = needsCommentUrl ? '' : 'none';
+
+            const urlInput = document.getElementById('input-comment-url');
+            const validUrl = urlInput.value.trim().startsWith('http');
+            document.getElementById('btn-proceed-payment').disabled = count === 0 || (needsCommentUrl && !validUrl);
+        }
+
+        document.getElementById('input-comment-url').addEventListener('input', () => {
+            state.commentUrl = document.getElementById('input-comment-url').value.trim();
+            recalcTotal();
+        });
+
+        /* ---------- STEP 4: Payment ---------- */
+        document.getElementById('btn-proceed-payment').onclick = () => {
+            const total = state.selectedBoxes * PRICE_PER_BOX;
+            document.getElementById('qr-amount-tag').textContent = 'โอน ' + total.toLocaleString() + ' บาท';
+            document.getElementById('kshop-qr-img').src = KSHOP_QR_URL;
+            step3.classList.add('done');
+            unlockStep(step3, step4);
+        };
+
+        /* ---------- Slip Upload ---------- */
+        const slipZone  = document.getElementById('slip-zone');
+        const slipInput = document.getElementById('slip-input');
+        slipZone.onclick = () => slipInput.click();
+        slipZone.ondragover = e => { e.preventDefault(); slipZone.style.background = 'rgba(120,60,200,0.2)'; };
+        slipZone.ondragleave = () => { slipZone.style.background = ''; };
+        slipZone.ondrop = e => { e.preventDefault(); slipZone.style.background = ''; if (e.dataTransfer.files[0]) handleSlipFile(e.dataTransfer.files[0]); };
+        slipInput.onchange = e => { if (e.target.files[0]) handleSlipFile(e.target.files[0]); };
+
+        function handleSlipFile(file) {
+            if (!file.type.startsWith('image/')) { alert('กรุณาเลือกไฟล์รูปภาพ'); return; }
+            if (file.size > 5 * 1024 * 1024) { alert('ไฟล์ใหญ่เกิน 5MB'); return; }
+            state.slipFile = file;
+            const reader = new FileReader();
+            reader.onload = e => {
+                state.slipBase64 = e.target.result;
+                const preview = document.getElementById('slip-preview');
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+                slipZone.classList.add('has-file');
+                slipZone.innerHTML = '<span class="lc lg"><i data-lucide="check-circle"></i></span><div style="margin-top:0.5rem;">' + file.name + '</div>';
+                lucide.createIcons();
+                document.getElementById('btn-submit-order').disabled = false;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        /* ---------- Submit Order ---------- */
+        document.getElementById('btn-submit-order').onclick = async () => {
+            if (!state.slipBase64) { alert('กรุณาอัปโหลดสลิป'); return; }
+
+            const btn = document.getElementById('btn-submit-order');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span>กำลังส่งข้อมูล...';
+
+            const cb2Checked = document.getElementById('cb-2').classList.contains('checked');
+            const payload = {
+                fbUserId:        state.fbUserId,
+                fbName:          state.fbName,
+                customerName:    state.customerName,
+                phone:           state.phone,
+                boxes:           state.selectedBoxes,
+                amount:          state.selectedBoxes * PRICE_PER_BOX,
+                commentUrl:      state.commentUrl,
+                claimedHasImage: cb2Checked,
+                isMember:        state.isMember,
+                slipBase64:      state.slipBase64
+            };
+
+            try {
+                const res = await fetch(APPS_SCRIPT_URL, {
+                    method:  'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body:    JSON.stringify(payload)
+                });
+                const data = await res.json();
+                showResult(data);
+            } catch (err) {
+                showResult({ success: false, error: err.message });
+            }
+        };
+
+        function showResult(data) {
+            const modal   = document.getElementById('result-modal');
+            const icon    = document.getElementById('result-icon');
+            const title   = document.getElementById('result-title');
+            const message = document.getElementById('result-message');
+
+            if (data.success && data.verified) {
+                icon.textContent    = '✅';
+                title.textContent   = 'สั่งซื้อสำเร็จ!';
+                message.innerHTML   = 'ระบบยืนยันการชำระเงินเรียบร้อย<br>เก็บใบเสร็จไว้รับสินค้าหน้าร้าน';
+            } else if (data.success && !data.verified) {
+                icon.textContent    = '⏳';
+                title.textContent   = 'รอการตรวจสอบสลิป';
+                message.innerHTML   = 'ระบบรับออเดอร์แล้ว แต่ยังไม่สามารถยืนยันสลิปอัตโนมัติได้<br>แอดมินจะตรวจสอบและติดต่อกลับ';
+            } else if (data.error === 'exceeds_entitlement') {
+                icon.textContent    = '⚠️';
+                title.textContent   = 'สั่งเกินสิทธิ์';
+                message.innerHTML   = `สิทธิ์ของคุณ: ${data.allowed} Box · ที่สั่ง: ${data.requested} Box`;
+            } else if (data.error === 'quota_exceeded') {
+                icon.textContent    = '🚫';
+                title.textContent   = 'โควต้าเต็มแล้ว';
+                message.innerHTML   = `เหลือเพียง ${data.remaining || 0} Box`;
+            } else {
+                icon.textContent    = '❌';
+                title.textContent   = 'เกิดข้อผิดพลาด';
+                message.innerHTML   = data.error || 'ไม่สามารถประมวลผลได้ — ลองอีกครั้ง';
+            }
+            modal.classList.add('show');
+        }
+
+        /* ---------- Helpers ---------- */
+        function unlockStep(prevStep, nextStep) {
+            prevStep.classList.remove('active');
+            nextStep.classList.remove('locked');
+            nextStep.classList.add('active');
+            nextStep.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        /* ---------- Init Lucide ---------- */
+        lucide.createIcons();
+    </script>
+</body>
+</html>
