@@ -447,23 +447,10 @@
         <h1>✨ Checkout MA5 เงามืดคุกคาม</h1>
         <div class="subtitle">พรีออเดอร์ 1,400 บาท / Box · สูงสุด 3 Box</div>
 
-        <!-- STEP 1: Facebook Login -->
+        <!-- STEP 1: Customer Info -->
         <div class="step active" id="step-1">
             <div class="step-header">
                 <div class="step-number">1</div>
-                <div class="step-title">เข้าสู่ระบบด้วย Facebook</div>
-            </div>
-            <button id="btn-fb-login" class="btn facebook">
-                <span class="lc lg"><i data-lucide="facebook"></i></span>
-                เข้าสู่ระบบ Facebook
-            </button>
-            <div id="fb-user-display" style="display:none;"></div>
-        </div>
-
-        <!-- STEP 2: Customer Info -->
-        <div class="step locked" id="step-2">
-            <div class="step-header">
-                <div class="step-number">2</div>
                 <div class="step-title">ข้อมูลผู้สั่งซื้อ</div>
             </div>
             <div class="input-row">
@@ -481,16 +468,16 @@
             <div id="member-result" style="display:none;"></div>
         </div>
 
-        <!-- STEP 3: Entitlements -->
-        <div class="step locked" id="step-3">
+        <!-- STEP 2: Entitlements + Comment Proof -->
+        <div class="step locked" id="step-2">
             <div class="step-header">
-                <div class="step-number">3</div>
-                <div class="step-title">เลือกสิทธิ์พรีออเดอร์</div>
+                <div class="step-number">2</div>
+                <div class="step-title">เลือกสิทธิ์ + หลักฐานคอมเมนต์</div>
             </div>
 
             <div class="alert warn">
                 <span class="lc"><i data-lucide="alert-triangle"></i></span>
-                แอดมินจะตรวจสอบลิงก์คอมเมนต์ของคุณภายหลัง — กรุณากรอกข้อมูลจริง
+                แอดมินตรวจสอบรูปคอมเมนต์ภายหลัง — ถ้าผิดพลาด admin คืนเงินได้
             </div>
 
             <div class="entitlement-list">
@@ -518,11 +505,16 @@
                 </div>
             </div>
 
-            <div class="input-row" id="comment-url-row" style="display:none;margin-top:0.8rem;">
-                <label>ลิงก์คอมเมนต์ของคุณ (URL คอมเมนต์ใต้โพสต์) *</label>
-                <input type="url" id="input-comment-url" placeholder="https://www.facebook.com/..." />
+            <div class="input-row" id="comment-proof-row" style="display:none;margin-top:0.8rem;">
+                <label>อัปโหลดรูปแคปจอคอมเมนต์ของคุณ *</label>
+                <div class="file-upload-zone" id="comment-zone">
+                    <span class="lc lg"><i data-lucide="image"></i></span>
+                    <div style="margin-top:0.5rem;">คลิกหรือลากรูปมาวาง</div>
+                    <input type="file" id="comment-input" accept="image/*" style="display:none;" />
+                </div>
+                <img id="comment-preview" class="file-preview" style="display:none;" />
                 <div style="font-size:0.75rem;color:#b8a3e0;margin-top:4px;">
-                    กดที่เวลาคอมเมนต์ → คัดลอกลิงก์ → วางที่นี่
+                    แคปจอให้เห็น (1) ชื่อบัญชี FB ของคุณ (2) ข้อความ/รูปคอมเมนต์ (3) ชื่อโพสต์ MA5
                 </div>
             </div>
 
@@ -537,10 +529,10 @@
             </button>
         </div>
 
-        <!-- STEP 4: Payment -->
-        <div class="step locked" id="step-4">
+        <!-- STEP 3: Payment -->
+        <div class="step locked" id="step-3">
             <div class="step-header">
-                <div class="step-number">4</div>
+                <div class="step-number">3</div>
                 <div class="step-title">ชำระเงินผ่าน KShop</div>
             </div>
 
@@ -581,82 +573,30 @@
         </div>
     </div>
 
-    <!-- Facebook SDK -->
-    <div id="fb-root"></div>
-
     <script>
         /* ===================== CONFIG ===================== */
         const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw220nOc36exhqF5i4YIyReivU2dAGWrsOtg4QCXQErnCfF5TER1Nuy8SDo2Kobjbd_ag/exec";
-        const FB_APP_ID       = "891492400071353";
         const KSHOP_QR_URL    = "https://i.postimg.cc/9Qf7H5S7/QR-KShop.jpg";
         const PRICE_PER_BOX   = 1400;
-        const FB_POST_URL     = "";  // ใส่ URL โพสต์แคมเปญ MA5 (เพื่อโชว์ลิงก์ให้ลูกค้าไปคอมเมนต์)
         /* ================================================== */
 
         const state = {
-            fbUserId: null,
-            fbName: null,
-            fbPicture: null,
             customerName: '',
             phone: '',
             isMember: false,
             memberData: null,
-            commentUrl: '',
-            commentHasImage: false,
+            commentImageBase64: null,
             selectedBoxes: 0,
             slipBase64: null,
             slipFile: null
         };
 
-        /* ---------- Facebook SDK init ---------- */
-        window.fbAsyncInit = function() {
-            FB.init({ appId: FB_APP_ID, cookie: true, xfbml: false, version: 'v19.0' });
-        };
-        (function(d, s, id){
-            var js, fjs = d.getElementsByTagName(s)[0];
-            if (d.getElementById(id)) return;
-            js = d.createElement(s); js.id = id;
-            js.src = "https://connect.facebook.net/en_US/sdk.js";
-            fjs.parentNode.insertBefore(js, fjs);
-        }(document, 'script', 'facebook-jssdk'));
-
         /* ---------- DOM refs ---------- */
         const step1 = document.getElementById('step-1');
         const step2 = document.getElementById('step-2');
         const step3 = document.getElementById('step-3');
-        const step4 = document.getElementById('step-4');
 
-        /* ---------- STEP 1: FB Login ---------- */
-        document.getElementById('btn-fb-login').onclick = () => {
-            FB.login(response => {
-                if (response.status === 'connected') {
-                    FB.api('/me', { fields: 'id,name,picture.width(200).height(200)' }, user => {
-                        state.fbUserId  = user.id;
-                        state.fbName    = user.name;
-                        state.fbPicture = user.picture && user.picture.data ? user.picture.data.url : '';
-                        showFBUser();
-                        unlockStep(step1, step2);
-                    });
-                }
-            }, { scope: 'public_profile' });
-        };
-
-        function showFBUser() {
-            document.getElementById('btn-fb-login').style.display = 'none';
-            const display = document.getElementById('fb-user-display');
-            display.style.display = 'block';
-            display.innerHTML = `
-                <div class="fb-user-card">
-                    ${state.fbPicture ? `<img src="${state.fbPicture}" alt="">` : ''}
-                    <div>
-                        <div class="fb-user-name">${state.fbName}</div>
-                        <div class="fb-user-status">เข้าสู่ระบบเรียบร้อย ✓</div>
-                    </div>
-                </div>`;
-            step1.classList.add('done');
-        }
-
-        /* ---------- STEP 2: Member Check ---------- */
+        /* ---------- STEP 1: Member Check ---------- */
         document.getElementById('btn-check-member').onclick = async () => {
             const name  = document.getElementById('input-name').value.trim();
             const phone = document.getElementById('input-phone').value.trim();
@@ -685,8 +625,8 @@
                 }
                 lucide.createIcons();
 
-                step2.classList.add('done');
-                unlockStep(step2, step3);
+                step1.classList.add('done');
+                unlockStep(step1, step2);
                 initEntitlements();
             } catch (err) {
                 alert('เกิดข้อผิดพลาด: ' + err.message);
@@ -697,9 +637,9 @@
             }
         };
 
-        /* ---------- STEP 3: Entitlements (trust + admin audit) ---------- */
+        /* ---------- STEP 2: Entitlements (trust + admin audit) ---------- */
         function initEntitlements() {
-            // Box 1, 2: ติ๊กเองได้ (user ยืนยันด้วยตัวเอง — admin audit ทีหลังจาก URL)
+            // Box 1, 2: ติ๊กเองได้ (user ยืนยันด้วยตัวเอง — admin audit ทีหลังจากรูปแคปจอ)
             document.getElementById('cb-1').onclick = () => toggleBox(1);
             document.getElementById('cb-2').onclick = () => toggleBox(2);
 
@@ -747,27 +687,44 @@
             const total = count * PRICE_PER_BOX;
             document.getElementById('total-display').textContent = total.toLocaleString() + ' บาท';
 
-            // โชว์ช่อง comment URL ถ้าติ๊ก Box 1 ขึ้นไป
-            const needsCommentUrl = count >= 1;
-            document.getElementById('comment-url-row').style.display = needsCommentUrl ? '' : 'none';
-
-            const urlInput = document.getElementById('input-comment-url');
-            const validUrl = urlInput.value.trim().startsWith('http');
-            document.getElementById('btn-proceed-payment').disabled = count === 0 || (needsCommentUrl && !validUrl);
+            const needsProof = count >= 1;
+            document.getElementById('comment-proof-row').style.display = needsProof ? '' : 'none';
+            document.getElementById('btn-proceed-payment').disabled = count === 0 || (needsProof && !state.commentImageBase64);
         }
 
-        document.getElementById('input-comment-url').addEventListener('input', () => {
-            state.commentUrl = document.getElementById('input-comment-url').value.trim();
-            recalcTotal();
-        });
+        /* ---------- Comment Screenshot Upload ---------- */
+        const commentZone  = document.getElementById('comment-zone');
+        const commentInput = document.getElementById('comment-input');
+        commentZone.onclick = () => commentInput.click();
+        commentZone.ondragover = e => { e.preventDefault(); commentZone.style.background = 'rgba(120,60,200,0.2)'; };
+        commentZone.ondragleave = () => { commentZone.style.background = ''; };
+        commentZone.ondrop = e => { e.preventDefault(); commentZone.style.background = ''; if (e.dataTransfer.files[0]) handleCommentFile(e.dataTransfer.files[0]); };
+        commentInput.onchange = e => { if (e.target.files[0]) handleCommentFile(e.target.files[0]); };
 
-        /* ---------- STEP 4: Payment ---------- */
+        function handleCommentFile(file) {
+            if (!file.type.startsWith('image/')) { alert('กรุณาเลือกไฟล์รูปภาพ'); return; }
+            if (file.size > 5 * 1024 * 1024) { alert('ไฟล์ใหญ่เกิน 5MB'); return; }
+            const reader = new FileReader();
+            reader.onload = e => {
+                state.commentImageBase64 = e.target.result;
+                const preview = document.getElementById('comment-preview');
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+                commentZone.classList.add('has-file');
+                commentZone.innerHTML = '<span class="lc lg"><i data-lucide="check-circle"></i></span><div style="margin-top:0.5rem;">' + file.name + '</div>';
+                lucide.createIcons();
+                recalcTotal();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        /* ---------- STEP 3: Payment ---------- */
         document.getElementById('btn-proceed-payment').onclick = () => {
             const total = state.selectedBoxes * PRICE_PER_BOX;
             document.getElementById('qr-amount-tag').textContent = 'โอน ' + total.toLocaleString() + ' บาท';
             document.getElementById('kshop-qr-img').src = KSHOP_QR_URL;
-            step3.classList.add('done');
-            unlockStep(step3, step4);
+            step2.classList.add('done');
+            unlockStep(step2, step3);
         };
 
         /* ---------- Slip Upload ---------- */
@@ -807,16 +764,14 @@
 
             const cb2Checked = document.getElementById('cb-2').classList.contains('checked');
             const payload = {
-                fbUserId:        state.fbUserId,
-                fbName:          state.fbName,
-                customerName:    state.customerName,
-                phone:           state.phone,
-                boxes:           state.selectedBoxes,
-                amount:          state.selectedBoxes * PRICE_PER_BOX,
-                commentUrl:      state.commentUrl,
-                claimedHasImage: cb2Checked,
-                isMember:        state.isMember,
-                slipBase64:      state.slipBase64
+                customerName:       state.customerName,
+                phone:              state.phone,
+                boxes:              state.selectedBoxes,
+                amount:             state.selectedBoxes * PRICE_PER_BOX,
+                commentImageBase64: state.commentImageBase64,
+                claimedHasImage:    cb2Checked,
+                isMember:           state.isMember,
+                slipBase64:         state.slipBase64
             };
 
             try {
