@@ -62,7 +62,7 @@
             text-align: center;
             font-size: 1.8rem;
             font-weight: 700;
-            margin-top: 3.5rem;
+            margin-top: 0.5rem;
             background: linear-gradient(45deg, #c9a4f5, #e8d5ff, #9b59b6);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -533,19 +533,71 @@
 
         @media (max-width: 480px) {
             .container { padding: 0.5rem 0; }
-            h1 { font-size: 1.5rem; margin-top: 4rem; }
+            h1 { font-size: 1.5rem; margin-top: 0.5rem; }
             .step { padding: 1rem 0.8rem; }
             .total-amount { font-size: 1.6rem; }
             .promo-cards-grid { grid-template-columns: repeat(2, 1fr); }
             .promo-card-item img { height: 110px; }
         }
+
+        /* ===== Logo + hero box image + floating packs ===== */
+        .shop-logo {
+            display: block;
+            width: 110px;
+            margin: 0 auto 0.4rem;
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.45));
+        }
+
+        .hero-box-img {
+            display: block;
+            width: 100%;
+            max-width: 320px;
+            margin: 0.4rem auto 1.4rem;
+            border-radius: 14px;
+            filter: drop-shadow(0 10px 24px rgba(124, 77, 255, 0.35));
+        }
+
+        .floating-card-pack {
+            position: fixed;
+            width: 70px;
+            height: auto;
+            z-index: 5;
+            pointer-events: none;
+            opacity: 0.55;
+            animation: cuteShake 2s ease-in-out infinite;
+        }
+        .floating-card-pack.right { top: 80px; right: 12px; animation-delay: 0s; }
+        .floating-card-pack.left  { top: 80px; left: 12px;  animation-delay: 0.3s; }
+
+        @keyframes cuteShake {
+            0%, 100% { transform: translate(0, 0) rotate(0deg) scale(1); }
+            10% { transform: translate(-3px, -2px) rotate(-3deg) scale(1.05); }
+            20% { transform: translate(3px, 2px) rotate(3deg) scale(1.02); }
+            30% { transform: translate(-2px, 3px) rotate(-2deg) scale(1.03); }
+            40% { transform: translate(2px, -3px) rotate(2deg) scale(1.04); }
+            50% { transform: translate(-1px, -1px) rotate(-1deg) scale(1.05); }
+            60% { transform: translate(1px, 2px) rotate(1deg) scale(1.03); }
+            70% { transform: translate(-2px, 1px) rotate(-2deg) scale(1.04); }
+            80% { transform: translate(2px, -2px) rotate(2deg) scale(1.02); }
+            90% { transform: translate(-1px, 1px) rotate(-1deg) scale(1.03); }
+        }
+
+        @media (max-width: 768px) {
+            .floating-card-pack { width: 48px; opacity: 0.45; top: 70px; }
+        }
     </style>
 </head>
 
 <body>
+    <!-- Floating pack images (ดุ๊กดิ๊ก) -->
+    <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2026/04/MA5_pillow_img_THA.png" alt="MA5 Pack" class="floating-card-pack right">
+    <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2026/04/MA5_pillow_img_THA.png" alt="MA5 Pack" class="floating-card-pack left">
+
     <div class="container">
+        <img src="https://i.postimg.cc/wjzpnxjB/Up-Level-01-1.png" alt="Up Level Academy" class="shop-logo">
         <h1>✨ Checkout MA5 เงามืดคุกคาม</h1>
         <div class="subtitle">พรีออเดอร์ 1,400 บาท / Box · สูงสุด 3 Box</div>
+        <img src="https://i.postimg.cc/2y8MKCYJ/MA5-Box-Open.png" alt="Booster Box MA5" class="hero-box-img">
 
         <!-- Card info (collapsible) -->
         <details class="card-info-details">
