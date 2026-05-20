@@ -53,6 +53,8 @@ const PRE_PRICE_BOX  = 1400;
 const PATH_A_BOXES         = 1;     // เปิดให้ทุกคน
 const PATH_B_BOXES         = 2;     // เฉพาะสมาชิก guild
 const PATH_B_NEEDS_MEMBER  = true;
+const PER_PHONE_LIMIT      = 2;     // รวมทุก order ต่อเบอร์
+const DUP_WINDOW_MS        = 60000; // window กัน double-submit
 
 // ===== โควต้ารวม (legacy + new) =====
 const BOX_QUOTA      = 70;
@@ -161,6 +163,38 @@ function countUsedQuotaFromSheet(sheet) {
     usedBoxes += parseInt(row[COL_BOXES - 1]) || 0;
   }
   return usedBoxes;
+}
+
+// Count active boxes for a phone (skip refunded/cancelled/over-quota/mismatched)
+function countBoxesForPhone(sheet, normPhone) {
+  const data = sheet.getDataRange().getValues();
+  let total = 0;
+  for (let i = 1; i < data.length; i++) {
+    const row = data[i];
+    const rowPhone = normalizePhone(row[COL_PHONE - 1]);
+    if (rowPhone !== normPhone) continue;
+    const status = String(row[COL_STATUS - 1] || "");
+    if (/เกินโควต้า|ยกเลิก|คืนเงิน|ยอดไม่ตรง/.test(status)) continue;
+    total += parseInt(row[COL_BOXES - 1]) || 0;
+  }
+  return total;
+}
+
+// Detect a row with the same phone in the past DUP_WINDOW_MS (re-submit guard)
+function isRecentDuplicate(sheet, normPhone) {
+  const data = sheet.getDataRange().getValues();
+  const now  = Date.now();
+  for (let i = data.length - 1; i >= 1; i--) {
+    const row = data[i];
+    const rowPhone = normalizePhone(row[COL_PHONE - 1]);
+    if (rowPhone !== normPhone) continue;
+    const ts = row[COL_TIMESTAMP - 1];
+    let t = NaN;
+    if (ts instanceof Date) t = ts.getTime();
+    else if (ts) { const d = new Date(ts); t = d.getTime(); }
+    if (!isNaN(t) && (now - t) < DUP_WINDOW_MS) return true;
+  }
+  return false;
 }
 
 function countLegacyBoxes() {
@@ -321,6 +355,29 @@ function doPost(e) {
     const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
     if (!sheet) return jsonResponse({ success: false, error: "sheet_not_found" });
 
+    const normPhone = normalizePhone(body.phone);
+
+    // Duplicate submission guard (same phone within DUP_WINDOW_MS)
+    if (isRecentDuplicate(sheet, normPhone)) {
+      return jsonResponse({
+        success: false,
+        error:   "duplicate_recent",
+        message: "พบการสั่งซื้อจากเบอร์นี้เมื่อสักครู่ — รอสักครู่แล้วลองใหม่"
+      });
+    }
+
+    // Per-phone lifetime limit (sum of active rows + this submission)
+    const existingForPhone = countBoxesForPhone(sheet, normPhone);
+    if (existingForPhone + boxes > PER_PHONE_LIMIT) {
+      return jsonResponse({
+        success:   false,
+        error:     "exceeds_personal_limit",
+        existing:  existingForPhone,
+        requested: boxes,
+        limit:     PER_PHONE_LIMIT
+      });
+    }
+
     const newCount    = countUsedQuotaFromSheet(sheet);
     const legacyCount = countLegacyBoxes();
     const used        = newCount + legacyCount;
@@ -347,7 +404,6 @@ function doPost(e) {
     let transRef = "";
 
     if (slipUrl) {
-      setFilePublic(slipUrl);
       const verified = verifySlip(slipUrl);
       if (verified && verified.success) {
         const amt = parseFloat(verified.data.amount);
@@ -466,7 +522,8 @@ function saveImageToDrive(base64Str, phone, prefix) {
     const blob     = Utilities.newBlob(bytes, mimeType, `${prefix}_${normalizePhone(phone)}_${Date.now()}.${ext}`);
     const folder   = DriveApp.getFolderById(SLIP_FOLDER_ID);
     const file     = folder.createFile(blob);
-    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    // No public sharing — file inherits folder permissions (admin/owner only).
+    // SlipOK reads blob bytes via DriveApp auth, not via public URL.
     return file.getUrl();
   } catch (err) {
     console.error("saveImageToDrive error:", err);
@@ -702,7 +759,6 @@ function retriggerVerification() {
   const slipUrl = sheet.getRange(row, COL_SLIP).getValue();
   if (!slipUrl) { ui.alert("❌ ไม่มีลิงก์สลิป"); return; }
 
-  setFilePublic(slipUrl);
   const verified = verifySlip(slipUrl);
   const boxes    = parseInt(sheet.getRange(row, COL_BOXES).getValue()) || 0;
   const expected = boxes * PRE_PRICE_BOX;
@@ -764,7 +820,6 @@ function testSlipOK() {
   if (row <= 1) return;
   const slipUrl = sheet.getRange(row, COL_SLIP).getValue();
   if (!slipUrl) { ui.alert("❌ ไม่มีลิงก์สลิป"); return; }
-  setFilePublic(slipUrl);
   const result = verifySlip(slipUrl);
   if (result && result.success) {
     const d = result.data;

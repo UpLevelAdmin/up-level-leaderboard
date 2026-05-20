@@ -1033,6 +1033,14 @@
                 icon.textContent    = '🔒';
                 title.textContent   = 'Path B ต้องเป็นสมาชิก';
                 message.innerHTML   = 'รีวิว 2 Box สำหรับสมาชิก Guild เท่านั้น';
+            } else if (data.error === 'duplicate_recent') {
+                icon.textContent    = '⏱';
+                title.textContent   = 'สั่งซ้ำเร็วเกินไป';
+                message.innerHTML   = data.message || 'พบการสั่งซื้อจากเบอร์นี้เมื่อสักครู่ — รอสักครู่แล้วลองใหม่';
+            } else if (data.error === 'exceeds_personal_limit') {
+                icon.textContent    = '⚠️';
+                title.textContent   = 'เกินสิทธิ์ต่อท่าน';
+                message.innerHTML   = `เบอร์นี้สั่งไปแล้ว ${data.existing || 0} Box · จำกัด ${data.limit || 2} Box ต่อท่าน`;
             } else if (data.error === 'quota_exceeded') {
                 icon.textContent    = '🚫';
                 title.textContent   = 'ของหมดแล้ว';
