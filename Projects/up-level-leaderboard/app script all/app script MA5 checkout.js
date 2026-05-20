@@ -559,6 +559,7 @@ function onOpen() {
   SpreadsheetApp.getUi()
     .createMenu("💜 MA5 Checkout (Trust v2)")
     .addItem("✅ ยืนยันชำระ (Admin)",          "adminForcePaid")
+    .addItem("↩️ คืนเงิน (เลือกแถว)",           "adminRefund")
     .addItem("🔍 ตรวจสลิปค้าง (เลือกแถว)",      "retriggerVerification")
     .addItem("📊 สรุปออเดอร์ (รวม legacy)",     "showOrderSummary")
     .addSeparator()
@@ -567,6 +568,78 @@ function onOpen() {
     .addItem("🧪 ทดสอบ SlipOK",                "testSlipOK")
     .addItem("🧪 ทดสอบ Member Lookup",         "testMemberLookup")
     .addToUi();
+}
+
+// =============================================
+//  Admin refund — mark row as refunded + alert
+//  Quota counter auto-skips refunded rows.
+// =============================================
+function adminRefund() {
+  const ui    = SpreadsheetApp.getUi();
+  const sheet = SpreadsheetApp.getActiveSheet();
+  const row   = sheet.getActiveCell().getRow();
+  if (row <= 1) { ui.alert("⚠️ คลิกแถวลูกค้าก่อน"); return; }
+
+  const name   = String(sheet.getRange(row, COL_NAME).getValue() || "");
+  const phone  = String(sheet.getRange(row, COL_PHONE).getValue() || "");
+  const boxes  = parseInt(sheet.getRange(row, COL_BOXES).getValue()) || 0;
+  const status = String(sheet.getRange(row, COL_STATUS).getValue() || "");
+  if (!name) { ui.alert("⚠️ row นี้ไม่มีข้อมูลลูกค้า"); return; }
+
+  const adminPrompt = ui.prompt("📌 Admin", "ชื่อแอดมิน:", ui.ButtonSet.OK_CANCEL);
+  if (adminPrompt.getSelectedButton() !== ui.Button.OK) return;
+  const adminName = adminPrompt.getResponseText().trim();
+  if (!adminName) return;
+
+  const reasonPrompt = ui.prompt("เหตุผลที่คืนเงิน", "เช่น: คอมเมนต์ไม่ตรงกติกา / ปลอมสิทธิ์สมาชิก", ui.ButtonSet.OK_CANCEL);
+  if (reasonPrompt.getSelectedButton() !== ui.Button.OK) return;
+  const reason = reasonPrompt.getResponseText().trim() || "ไม่ระบุ";
+
+  const total = boxes * PRE_PRICE_BOX;
+  const confirm = ui.alert(
+    "ยืนยันคืนเงิน",
+    `ลูกค้า: ${name}\nเบอร์: ${phone}\nBox: ${boxes} (${total.toLocaleString()} บาท)\nสถานะเดิม: ${status}\n\nแอดมิน: ${adminName}\nเหตุผล: ${reason}\n\n⚠️ โอนเงินคืนผ่าน KShop ก่อนแล้วค่อยกด YES`,
+    ui.ButtonSet.YES_NO
+  );
+  if (confirm !== ui.Button.YES) return;
+
+  const newStatus = `🔄 คืนเงิน · ${adminName} · ${reason}`;
+  sheet.getRange(row, COL_STATUS).setValue(newStatus);
+
+  sendTelegram(
+    `🔄 *MA5 Checkout — คืนเงิน*\n\n` +
+    `👤 ${name}\n` +
+    `📱 ${phone}\n` +
+    `📦 ${boxes} Box (${total.toLocaleString()} บาท)\n` +
+    `📊 สถานะเดิม: ${status}\n` +
+    `❌ เหตุผล: ${reason}\n` +
+    `✍️ Admin: ${adminName}\n` +
+    `🪣 Quota ${boxes} Box คืนเข้าระบบแล้ว`
+  );
+
+  // Optional Firebase notify (best-effort)
+  try {
+    UrlFetchApp.fetch(FIREBASE_WEBHOOK, {
+      method:      "post",
+      contentType: "application/json",
+      payload:     JSON.stringify({
+        secret: FIREBASE_SECRET,
+        payment: {
+          phoneNumber:  normalizePhone(phone),
+          customerName: name,
+          amount:       total,
+          status:       "refunded",
+          source:       "ma5_checkout_refund",
+          note:         `Refund by ${adminName} | ${reason}`
+        }
+      }),
+      muteHttpExceptions: true
+    });
+  } catch (e) {
+    console.error("Firebase refund sync error:", e);
+  }
+
+  ui.alert(`🔄 บันทึกคืนเงินแล้ว · ${boxes} Box คืนเข้า quota`);
 }
 
 function wipeTestData() {
