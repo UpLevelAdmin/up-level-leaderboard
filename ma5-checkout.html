@@ -626,7 +626,7 @@
     <div class="container">
         <img src="https://i.postimg.cc/wjzpnxjB/Up-Level-01-1.png" alt="Up Level Academy" class="shop-logo">
         <h1>✨ Checkout MA5 เงามืดคุกคาม</h1>
-        <div class="subtitle">พรีออเดอร์ 1,400 บาท / Box · สูงสุด 3 Box ต่อท่าน</div>
+        <div class="subtitle">พรีออเดอร์ 1,400 บาท / Box · สูงสุด 2 Box ต่อท่าน</div>
         <div id="quota-banner" class="quota-banner">กำลังโหลดโควต้า…</div>
         <img src="https://i.postimg.cc/2y8MKCYJ/MA5-Box-Open.png" alt="Booster Box MA5" class="hero-box-img">
 
@@ -719,23 +719,16 @@
                 <div class="entitlement-item path-item" data-path="A" id="path-A">
                     <div class="ent-checkbox" id="cb-A"></div>
                     <div class="ent-body">
-                        <div class="ent-label">A · ผู้เล่นใหม่ → <strong>1 Box</strong></div>
+                        <div class="ent-label">A · คอมเมนต์เด็ค → <strong>1 Box</strong></div>
                         <div class="ent-desc">คอมเมนต์ใต้โพสต์: ภาพเด็คที่ชอบ + ชื่อเด็ค + แท็กเพื่อน 1 คน</div>
                     </div>
                 </div>
-                <div class="entitlement-item path-item" data-path="B" id="path-B">
+                <div class="entitlement-item path-item locked-row" data-path="B" id="path-B">
                     <div class="ent-checkbox" id="cb-B"></div>
                     <div class="ent-body">
-                        <div class="ent-label">B · ผู้เล่นเก่า → <strong>2 Box</strong></div>
+                        <div class="ent-label">B · รีวิว (เฉพาะสมาชิก) → <strong>2 Box</strong></div>
                         <div class="ent-desc">คอมเมนต์รีวิวความประทับใจที่มีต่อ Up Level + แนบภาพประกอบ</div>
-                    </div>
-                </div>
-                <div class="entitlement-item locked-row" id="member-bonus-row">
-                    <div class="ent-checkbox" id="cb-M"></div>
-                    <div class="ent-body">
-                        <div class="ent-label">🏰 Bonus · สมาชิก Guild → <strong>+1 Box</strong></div>
-                        <div class="ent-desc">ตรวจสอบจากเบอร์ + ชื่อใน Up Lv Guild (auto จาก STEP 1)</div>
-                        <div class="ent-status checking" id="status-M"></div>
+                        <div class="ent-status checking" id="status-B"></div>
                     </div>
                 </div>
             </div>
@@ -856,11 +849,11 @@
                 const result = document.getElementById('member-result');
                 result.style.display = 'block';
                 if (data.isMember) {
-                    result.innerHTML = `<div class="alert success"><span class="lc"><i data-lucide="badge-check"></i></span> สมาชิก ${data.codename ? '['+data.codename+']' : ''} ${data.rank ? '· '+data.rank : ''} — ปลดล็อก +1 Box bonus</div>`;
+                    result.innerHTML = `<div class="alert success"><span class="lc"><i data-lucide="badge-check"></i></span> สมาชิก ${data.codename ? '['+data.codename+']' : ''} ${data.rank ? '· '+data.rank : ''} — ปลดล็อก Path B (2 Box)</div>`;
                 } else if (data.reason === 'name_mismatch') {
-                    result.innerHTML = `<div class="alert warn"><span class="lc"><i data-lucide="alert-triangle"></i></span> เบอร์ตรงแต่ชื่อไม่ตรงกับในระบบสมาชิก — โปรดใช้ชื่อตรงตามที่ลงทะเบียน หรือดำเนินการต่อโดยไม่มี bonus</div>`;
+                    result.innerHTML = `<div class="alert warn"><span class="lc"><i data-lucide="alert-triangle"></i></span> เบอร์ตรงแต่ชื่อไม่ตรงกับในระบบสมาชิก — Path B ใช้ไม่ได้ ใช้ชื่อตรงตามที่ลงทะเบียนเพื่อปลดล็อก</div>`;
                 } else {
-                    result.innerHTML = `<div class="alert info"><span class="lc"><i data-lucide="user-plus"></i></span> ไม่ใช่สมาชิก — สั่งได้ตามกติกา (A=1 Box / B=2 Box)</div>`;
+                    result.innerHTML = `<div class="alert info"><span class="lc"><i data-lucide="user-plus"></i></span> ไม่ใช่สมาชิก — สั่งได้ Path A (1 Box) เท่านั้น</div>`;
                 }
                 lucide.createIcons();
 
@@ -876,35 +869,34 @@
             }
         };
 
-        /* ---------- STEP 2: Path A/B + member bonus auto ---------- */
+        /* ---------- STEP 2: Path A (any) / Path B (member only) ---------- */
         function initEntitlements() {
             document.getElementById('path-A').onclick = () => selectPath('A');
-            document.getElementById('path-B').onclick = () => selectPath('B');
 
-            // Member bonus checkbox is display-only — auto-set from member lookup
-            const cbM     = document.getElementById('cb-M');
-            const statusM = document.getElementById('status-M');
-            const memberRow = document.getElementById('member-bonus-row');
+            const pathB   = document.getElementById('path-B');
+            const statusB = document.getElementById('status-B');
             if (state.isMember) {
-                cbM.classList.add('checked');
-                memberRow.classList.remove('locked-row');
-                statusM.className = 'ent-status ok';
-                statusM.textContent = `✓ ${state.memberData.codename ? '['+state.memberData.codename+']' : 'สมาชิก'} ปลดล็อก +1 Box`;
+                pathB.classList.remove('locked-row');
+                pathB.onclick = () => selectPath('B');
+                statusB.className = 'ent-status ok';
+                statusB.textContent = `✓ ${state.memberData.codename ? '['+state.memberData.codename+']' : 'สมาชิก'} ปลดล็อก Path B`;
             } else {
-                cbM.classList.remove('checked');
-                memberRow.classList.add('locked-row');
-                statusM.className = 'ent-status fail';
+                pathB.classList.add('locked-row');
+                pathB.onclick = null;
+                statusB.className = 'ent-status fail';
                 const r = state.memberData ? state.memberData.reason : '';
                 if (r === 'name_mismatch') {
-                    statusM.textContent = 'เบอร์ตรงแต่ชื่อไม่ตรง (โปรดใช้ชื่อตรงตามที่ลงทะเบียน)';
+                    statusB.textContent = 'เบอร์ตรงแต่ชื่อไม่ตรง — ใช้ชื่อตามที่ลงทะเบียน';
                 } else {
-                    statusM.textContent = 'ไม่พบในระบบสมาชิก — ข้าม bonus';
+                    statusB.textContent = 'เฉพาะสมาชิกกิลด์เท่านั้น';
                 }
             }
             recalcTotal();
         }
 
         function selectPath(p) {
+            // Block path B for non-members defensively
+            if (p === 'B' && !state.isMember) return;
             state.pathChoice = p;
             document.getElementById('cb-A').classList.toggle('checked', p === 'A');
             document.getElementById('cb-B').classList.toggle('checked', p === 'B');
@@ -913,20 +905,16 @@
 
         function recalcTotal() {
             const path  = state.pathChoice;
-            const base  = path === 'A' ? 1 : (path === 'B' ? 2 : 0);
-            const bonus = state.isMember ? 1 : 0;
-            const count = path ? base + bonus : 0;
+            const count = path === 'A' ? 1 : (path === 'B' ? 2 : 0);
 
             state.selectedBoxes = count;
             const total = count * PRICE_PER_BOX;
             document.getElementById('total-display').textContent = total.toLocaleString() + ' บาท';
 
             const breakdown = document.getElementById('box-breakdown');
-            if (path) {
-                breakdown.textContent = `${base} Box (Path ${path})${bonus ? ` + ${bonus} Box (สมาชิก)` : ''} = ${count} Box`;
-            } else {
-                breakdown.textContent = 'กรุณาเลือกประเภท';
-            }
+            if (path === 'A') breakdown.textContent = '1 Box · คอมเมนต์เด็ค';
+            else if (path === 'B') breakdown.textContent = '2 Box · รีวิว (สมาชิก)';
+            else breakdown.textContent = 'กรุณาเลือกประเภท';
 
             const needsProof = count >= 1;
             document.getElementById('comment-proof-row').style.display = needsProof ? '' : 'none';
@@ -1038,14 +1026,14 @@
                 icon.textContent    = '⏳';
                 title.textContent   = 'รอการตรวจสอบสลิป';
                 message.innerHTML   = 'ระบบรับออเดอร์แล้ว แต่ยังไม่สามารถยืนยันสลิปอัตโนมัติได้<br>แอดมินจะตรวจสอบและติดต่อกลับ';
-            } else if (data.error === 'exceeds_entitlement') {
-                icon.textContent    = '⚠️';
-                title.textContent   = 'สั่งเกินสิทธิ์';
-                message.innerHTML   = `สิทธิ์ของคุณ: ${data.allowed} Box · ที่สั่ง: ${data.requested} Box`;
+            } else if (data.error === 'path_b_requires_member') {
+                icon.textContent    = '🔒';
+                title.textContent   = 'Path B ต้องเป็นสมาชิก';
+                message.innerHTML   = 'รีวิว 2 Box สำหรับสมาชิก Guild เท่านั้น';
             } else if (data.error === 'quota_exceeded') {
                 icon.textContent    = '🚫';
-                title.textContent   = 'โควต้าเต็มแล้ว';
-                message.innerHTML   = `เหลือเพียง ${data.remaining || 0} Box`;
+                title.textContent   = 'ของหมดแล้ว';
+                message.innerHTML   = data.remaining > 0 ? `เหลือเพียง ${data.remaining} Box` : 'ขออภัย — โควต้าเต็ม';
             } else {
                 icon.textContent    = '❌';
                 title.textContent   = 'เกิดข้อผิดพลาด';
@@ -1072,18 +1060,17 @@
                 const quota  = parseInt(data.boxQuota) || 60;
                 if (data.isBoxFull || remain <= 0) {
                     banner.className = 'quota-banner full';
-                    banner.textContent = '🚫 ขออภัย — โควต้าเต็มแล้ว (' + quota + '/' + quota + ' Box)';
-                    // hide step containers + show single message
+                    banner.textContent = '🚫 ขออภัย — ของหมดแล้ว';
                     ['step-1','step-2','step-3'].forEach(id => {
                         const el = document.getElementById(id);
                         if (el) el.style.display = 'none';
                     });
                 } else if (remain <= 10) {
                     banner.className = 'quota-banner low';
-                    banner.textContent = `⚠️ เหลือเพียง ${remain} จาก ${quota} Box`;
+                    banner.textContent = `⚠️ เหลือเพียง ${remain} Box`;
                 } else {
                     banner.className = 'quota-banner';
-                    banner.textContent = `🪣 เหลือ ${remain} จาก ${quota} Box`;
+                    banner.textContent = `🪣 เหลืออีก ${remain} Box`;
                 }
             } catch (err) {
                 banner.textContent = 'โควต้า: ไม่สามารถโหลดได้';
