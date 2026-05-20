@@ -173,7 +173,7 @@ function getOrderStatus(phone) {
   };
 }
 
-const SCRIPT_VERSION = "v3.7";
+const SCRIPT_VERSION = "v3.8";
 
 function getSummary() {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
@@ -524,6 +524,7 @@ function doPost(e) {
       "checkout"
     ];
     sheet.appendRow(newRow);
+    SpreadsheetApp.flush();  // force commit so concurrent requests see this row before lock release
 
     if (status === "✅ ชำระแล้ว") {
       syncToFirebase({

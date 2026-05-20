@@ -1007,8 +1007,11 @@
         }
 
         /* ---------- Submit Order (with progress + timeout) ---------- */
+        let submitting = false;
         document.getElementById('btn-submit-order').onclick = async () => {
+            if (submitting) return;
             if (!state.slipBase64) { alert('กรุณาอัปโหลดสลิป'); return; }
+            submitting = true;
 
             const btn = document.getElementById('btn-submit-order');
             btn.disabled = true;
