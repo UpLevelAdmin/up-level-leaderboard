@@ -628,6 +628,26 @@
         <h1>✨ Checkout MA5 เงามืดคุกคาม</h1>
         <div class="subtitle">พรีออเดอร์ 1,400 บาท / Box · สูงสุด 2 Box ต่อท่าน</div>
         <div id="quota-banner" class="quota-banner">กำลังโหลดโควต้า…</div>
+
+        <!-- Status check (collapsible) -->
+        <details class="card-info-details" id="status-check-section">
+            <summary>
+                <span class="lc"><i data-lucide="search"></i></span>
+                ตรวจสอบสถานะออเดอร์ของฉัน
+                <span class="lc chev"><i data-lucide="chevron-down"></i></span>
+            </summary>
+            <div class="card-info-content">
+                <div class="input-row">
+                    <label>กรอกเบอร์โทรที่ใช้สั่งซื้อ</label>
+                    <input type="tel" id="status-phone" placeholder="0xx-xxx-xxxx" maxlength="13" />
+                </div>
+                <button id="btn-check-status" class="btn">
+                    <span class="lc"><i data-lucide="search"></i></span>
+                    ตรวจสอบ
+                </button>
+                <div id="status-result" style="margin-top:0.8rem;"></div>
+            </div>
+        </details>
         <img src="https://i.postimg.cc/2y8MKCYJ/MA5-Box-Open.png" alt="Booster Box MA5" class="hero-box-img">
 
         <!-- Card info (collapsible) -->
@@ -986,13 +1006,28 @@
             reader.readAsDataURL(file);
         }
 
-        /* ---------- Submit Order ---------- */
+        /* ---------- Submit Order (with progress + timeout) ---------- */
         document.getElementById('btn-submit-order').onclick = async () => {
             if (!state.slipBase64) { alert('กรุณาอัปโหลดสลิป'); return; }
 
             const btn = document.getElementById('btn-submit-order');
             btn.disabled = true;
-            btn.innerHTML = '<span class="spinner"></span>กำลังส่งข้อมูล...';
+
+            const stages = [
+                'กำลังบันทึก... (อย่าปิดหน้า)',
+                'กำลังตรวจสอบสลิป...',
+                'เกือบเสร็จแล้ว...',
+                'ใช้เวลานานกว่าปกติ — กรุณาอย่ากดส่งซ้ำ'
+            ];
+            let stageIdx = 0;
+            btn.innerHTML = '<span class="spinner"></span>' + stages[0];
+            const tick = setInterval(() => {
+                stageIdx = Math.min(stageIdx + 1, stages.length - 1);
+                btn.innerHTML = '<span class="spinner"></span>' + stages[stageIdx];
+            }, 8000);
+
+            const controller = new AbortController();
+            const timeoutId  = setTimeout(() => controller.abort(), 45000);
 
             const payload = {
                 customerName:       state.customerName,
@@ -1006,12 +1041,62 @@
                 const res = await fetch(APPS_SCRIPT_URL, {
                     method:  'POST',
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body:    JSON.stringify(payload)
+                    body:    JSON.stringify(payload),
+                    signal:  controller.signal
                 });
+                clearTimeout(timeoutId);
+                clearInterval(tick);
                 const data = await res.json();
                 showResult(data);
             } catch (err) {
-                showResult({ success: false, error: err.message });
+                clearTimeout(timeoutId);
+                clearInterval(tick);
+                if (err.name === 'AbortError') {
+                    showResult({
+                        success: false,
+                        error:   'timeout',
+                        message: 'ระบบใช้เวลานานกว่าปกติ<br><strong>โปรดอย่ากดส่งซ้ำ</strong> — ระบบจะบันทึกออเดอร์ของคุณภายในไม่กี่นาที<br>ตรวจสถานะด้วยปุ่ม "ตรวจสอบสถานะออเดอร์ของฉัน" ด้านบน'
+                    });
+                } else {
+                    showResult({ success: false, error: err.message });
+                }
+            }
+        };
+
+        /* ---------- Order status checker ---------- */
+        document.getElementById('btn-check-status').onclick = async () => {
+            const phone = document.getElementById('status-phone').value.trim();
+            const result = document.getElementById('status-result');
+            if (!phone) { result.innerHTML = '<div class="alert warn">กรุณากรอกเบอร์โทร</div>'; return; }
+
+            const btn = document.getElementById('btn-check-status');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span>กำลังตรวจ...';
+            result.innerHTML = '';
+
+            try {
+                const res  = await fetch(`${APPS_SCRIPT_URL}?action=order_status&phone=${encodeURIComponent(phone)}`);
+                const data = await res.json();
+                if (!data.found) {
+                    result.innerHTML = '<div class="alert info">ยังไม่พบออเดอร์ของเบอร์นี้ในระบบ</div>';
+                } else {
+                    let html = '<div style="font-weight:600;margin-bottom:0.5rem;">พบ ' + data.count + ' ออเดอร์:</div>';
+                    data.orders.forEach(o => {
+                        const ts = new Date(o.timestamp).toLocaleString('th-TH', { dateStyle: 'short', timeStyle: 'short' });
+                        html += `<div class="alert info" style="margin-bottom:0.5rem;">
+                            <div style="font-size:0.8rem;color:#b8a3e0;">${ts}</div>
+                            <div><strong>${o.customerName}</strong> · ${o.boxes} Box · ${o.memberType}</div>
+                            <div style="margin-top:4px;">${o.status}</div>
+                        </div>`;
+                    });
+                    result.innerHTML = html;
+                }
+            } catch (err) {
+                result.innerHTML = '<div class="alert warn">เกิดข้อผิดพลาด: ' + err.message + '</div>';
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<span class="lc"><i data-lucide="search"></i></span> ตรวจสอบ';
+                lucide.createIcons();
             }
         };
 
@@ -1037,6 +1122,10 @@
                 icon.textContent    = '⏱';
                 title.textContent   = 'สั่งซ้ำเร็วเกินไป';
                 message.innerHTML   = data.message || 'พบการสั่งซื้อจากเบอร์นี้เมื่อสักครู่ — รอสักครู่แล้วลองใหม่';
+            } else if (data.error === 'timeout') {
+                icon.textContent    = '⏱';
+                title.textContent   = 'ใช้เวลานานกว่าปกติ';
+                message.innerHTML   = data.message || 'ระบบยังบันทึกอยู่ — โปรดอย่ากดส่งซ้ำ';
             } else if (data.error === 'duplicate_slip') {
                 icon.textContent    = '🚫';
                 title.textContent   = 'สลิปนี้ถูกใช้แล้ว';

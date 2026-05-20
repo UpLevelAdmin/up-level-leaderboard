@@ -133,13 +133,47 @@ function doGet(e) {
     if (action === "member_lookup") {
       return jsonResponse(lookupMember(e.parameter.phone, e.parameter.name));
     }
+    if (action === "order_status") {
+      return jsonResponse(getOrderStatus(e.parameter.phone));
+    }
     return jsonResponse(getSummary());
   } catch (err) {
     return jsonResponse({ error: String(err) });
   }
 }
 
-const SCRIPT_VERSION = "v3.6";
+// Return the latest order(s) for a given phone (privacy: only fields the
+// customer themselves would care about — no slip URL, no comment URL).
+function getOrderStatus(phone) {
+  const normPhone = normalizePhone(phone);
+  if (!normPhone) return { found: false, reason: "no_phone" };
+
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+  if (!sheet) return { found: false, reason: "sheet_not_found" };
+
+  const data    = sheet.getDataRange().getValues();
+  const orders  = [];
+  for (let i = 1; i < data.length; i++) {
+    const row = data[i];
+    const rowPhone = normalizePhone(row[COL_PHONE - 1]);
+    if (rowPhone !== normPhone) continue;
+    const ts = row[COL_TIMESTAMP - 1];
+    orders.push({
+      timestamp:    ts instanceof Date ? ts.toISOString() : String(ts),
+      customerName: String(row[COL_NAME - 1] || ""),
+      boxes:        parseInt(row[COL_BOXES - 1]) || 0,
+      status:       String(row[COL_STATUS - 1] || ""),
+      memberType:   String(row[COL_MEMBER_TYPE - 1] || "")
+    });
+  }
+  return {
+    found:   orders.length > 0,
+    count:   orders.length,
+    orders:  orders
+  };
+}
+
+const SCRIPT_VERSION = "v3.7";
 
 function getSummary() {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
