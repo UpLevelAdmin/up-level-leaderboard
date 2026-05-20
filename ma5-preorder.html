@@ -6,6 +6,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>🌑 พรีออเดอร์ MA5 เงามืดคุกคาม - Up Level Academy</title>
 
+    <script>
+        // MA5 cutover: after 2026-05-20 12:00 Bangkok, this page redirects to the new checkout.
+        (function () {
+            var CUTOFF = new Date('2026-05-20T12:00:00+07:00').getTime();
+            if (Date.now() >= CUTOFF) {
+                window.location.replace('ma5-checkout.html');
+            }
+        })();
+    </script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;700&display=swap" rel="stylesheet">
