@@ -691,6 +691,9 @@
             <div class="input-row">
                 <label>ชื่อ-นามสกุล *</label>
                 <input type="text" id="input-name" placeholder="กรอกชื่อ-นามสกุลจริง" />
+                <div style="font-size:0.72rem;color:#fbbf24;margin-top:4px;line-height:1.4;">
+                    💡 สมาชิก Up Lv: ใช้ชื่อ <strong>ภาษาเดียวกัน</strong> กับที่เคยสมัคร (ไทย/อังกฤษ) หรือใส่ <strong>ชื่อเล่น / Codename</strong> ก็ได้ · ไม่ต้องใส่คำนำหน้า "นาย/นาง"
+                </div>
             </div>
             <div class="input-row">
                 <label>เบอร์โทรศัพท์ *</label>
@@ -1070,7 +1073,7 @@
                     banner.textContent = `⚠️ เหลือเพียง ${remain} Box`;
                 } else {
                     banner.className = 'quota-banner';
-                    banner.textContent = `🪣 เหลืออีก ${remain} Box`;
+                    banner.textContent = `📦 เหลืออีก ${remain} Box`;
                 }
             } catch (err) {
                 banner.textContent = 'โควต้า: ไม่สามารถโหลดได้';

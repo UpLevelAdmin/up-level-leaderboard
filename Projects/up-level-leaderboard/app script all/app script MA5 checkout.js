@@ -80,8 +80,34 @@ function normalizeName(s) {
   return String(s || "").trim().replace(/\s+/g, " ").toLowerCase();
 }
 
+// Strip honorifics/prefixes (Thai + English) from the front of a name
+const NAME_PREFIXES = [
+  "นาย", "นาง", "นางสาว", "น.ส.", "นส.", "นส",
+  "ด.ช.", "ด.ญ.", "ดช.", "ดญ.",
+  "ดร.", "ดร",
+  "mr.", "mr", "mrs.", "mrs", "ms.", "ms", "dr.", "dr"
+];
+function stripPrefix(name) {
+  let n = normalizeName(name);
+  if (!n) return "";
+  // remove dots/spaces inside common prefixes first
+  for (let i = 0; i < 3; i++) {
+    let stripped = false;
+    for (const p of NAME_PREFIXES) {
+      const lp = p.toLowerCase();
+      if (n === lp || n.startsWith(lp + " ") || n.startsWith(lp)) {
+        n = n.substring(lp.length).trim();
+        stripped = true;
+        break;
+      }
+    }
+    if (!stripped) break;
+  }
+  return n;
+}
+
 function firstWord(name) {
-  const n = normalizeName(name);
+  const n = stripPrefix(name);
   if (!n) return "";
   return n.split(" ")[0];
 }
@@ -158,13 +184,18 @@ function countLegacyBoxes() {
 }
 
 // =============================================
-//  Member Lookup — name first-word + phone match
+//  Member Lookup — phone + flexible name match
+//  Match passes if phone matches AND the customer's input first-word
+//  matches ANY of: legal name first word / nickname / codename (all
+//  case-insensitive, prefix-stripped). Helps when the customer
+//  registered with "นาย ธนภัทร" but types "ธนภัทร" or "JJ".
 // =============================================
 function lookupMember(phone, name) {
   const normPhone = normalizePhone(phone);
   if (!normPhone) return { isMember: false, reason: "no_phone" };
 
   const inputFirst = firstWord(name);
+  const inputFull  = normalizeName(name);
 
   try {
     const ext   = SpreadsheetApp.openById(GUILD_MEMBER_SHEET_ID);
@@ -174,13 +205,14 @@ function lookupMember(phone, name) {
     const data    = sheet.getDataRange().getValues();
     const headers = data[0].map(h => String(h).toLowerCase());
 
-    let phoneCol = -1, codenameCol = -1, rankCol = -1, nameCol = -1;
+    let phoneCol = -1, codenameCol = -1, rankCol = -1, nameCol = -1, nicknameCol = -1;
     for (let i = 0; i < headers.length; i++) {
       const h = headers[i];
-      if (phoneCol    === -1 && (h.includes("phone")    || h.includes("เบอร์") || h.includes("โทร") || h.includes("tel"))) phoneCol    = i;
+      if (phoneCol    === -1 && (h.includes("phone")    || h.includes("เบอร์") || h.includes("โทร") || h.includes("tel"))) phoneCol = i;
       if (codenameCol === -1 && (h.includes("codename") || h.includes("โค้ดเนม"))) codenameCol = i;
       if (rankCol     === -1 && (h.includes("rank")     || h.includes("แรงค์"))) rankCol = i;
-      if (nameCol     === -1 && (h.includes("name")     || h.includes("ชื่อ"))) nameCol = i;
+      if (nicknameCol === -1 && (h.includes("ชื่อเล่น") || h.includes("nickname"))) nicknameCol = i;
+      if (nameCol     === -1 && nicknameCol !== i && (h.includes("ชื่อ-") || h.includes("ชื่อ - ") || h.includes("full name") || (h.includes("ชื่อ") && !h.includes("ชื่อเล่น")))) nameCol = i;
     }
     if (phoneCol === -1) return { isMember: false, reason: "phone_col_not_found" };
 
@@ -188,24 +220,47 @@ function lookupMember(phone, name) {
       const rowPhone = normalizePhone(data[r][phoneCol]);
       if (!rowPhone || rowPhone !== normPhone) continue;
 
-      const rowName  = nameCol !== -1 ? data[r][nameCol] : "";
-      const rowFirst = firstWord(rowName);
+      const rowName     = nameCol     !== -1 ? data[r][nameCol]     : "";
+      const rowNickname = nicknameCol !== -1 ? data[r][nicknameCol] : "";
+      const rowCodename = codenameCol !== -1 ? data[r][codenameCol] : "";
 
-      // Name match required (ถ้ามี name col + ลูกค้ากรอกชื่อมา)
-      if (nameCol !== -1 && inputFirst && rowFirst && inputFirst !== rowFirst) {
+      const candidates = [
+        firstWord(rowName),
+        normalizeName(rowNickname),
+        normalizeName(rowCodename)
+      ].filter(Boolean);
+
+      const matched = inputFirst && candidates.some(c => c === inputFirst);
+      // Also accept full-input match against any candidate (e.g. user types "JJ")
+      const matchedFull = inputFull && candidates.some(c => c === inputFull);
+
+      if (!inputFirst) {
+        // No name provided — accept on phone match only (lenient)
         return {
-          isMember: false,
-          reason:   "name_mismatch",
-          hint:     "เบอร์ตรงแต่ชื่อไม่ตรงกับในระบบ"
+          isMember: true,
+          codename: rowCodename,
+          rank:     rankCol !== -1 ? data[r][rankCol] : "",
+          name:     rowName,
+          rowNum:   r + 1
+        };
+      }
+
+      if (matched || matchedFull) {
+        return {
+          isMember: true,
+          codename: rowCodename,
+          rank:     rankCol !== -1 ? data[r][rankCol] : "",
+          name:     rowName,
+          matchedBy: matchedFull ? "full" : "first",
+          rowNum:   r + 1
         };
       }
 
       return {
-        isMember: true,
-        codename: codenameCol !== -1 ? data[r][codenameCol] : "",
-        rank:     rankCol     !== -1 ? data[r][rankCol]     : "",
-        name:     rowName,
-        rowNum:   r + 1
+        isMember: false,
+        reason:   "name_mismatch",
+        hint:     "เบอร์ตรงแต่ชื่อ/ชื่อเล่น/codename ไม่ตรงกับในระบบ",
+        candidates: candidates
       };
     }
     return { isMember: false, reason: "not_in_member_list" };
