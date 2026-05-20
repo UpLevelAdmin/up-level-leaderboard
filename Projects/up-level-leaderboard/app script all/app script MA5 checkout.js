@@ -55,7 +55,7 @@ const PATH_B_BOXES         = 2;     // เฉพาะสมาชิก guild
 const PATH_B_NEEDS_MEMBER  = true;
 
 // ===== โควต้ารวม (legacy + new) =====
-const BOX_QUOTA      = 60;
+const BOX_QUOTA      = 70;
 
 // ===== Legacy Elite Sheet (รอบ VIP เก่า) =====
 const LEGACY_SHEET_ID   = "1aKgYogobcyZoji5Yh0-A6B93GO8GscjrbbIa80-3k-w";
