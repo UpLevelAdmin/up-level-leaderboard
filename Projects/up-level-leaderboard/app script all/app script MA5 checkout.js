@@ -75,7 +75,12 @@ const SLIP_FOLDER_ID = "17wqoFtIAfpMOAZM2jgF5uaA10BuDr3H5";
 //  Helpers
 // =============================================
 function normalizePhone(p) {
-  return String(p || "").replace(/[^\d]/g, "");
+  let s = String(p || "").replace(/[^\d]/g, "");
+  // Strip Thai country code +66
+  if (s.length === 11 && s.startsWith("66")) s = s.substring(2);
+  // Re-add leading 0 if Google Sheets stripped it from a 10-digit Thai mobile
+  if (s.length === 9 && /^[689]/.test(s)) s = "0" + s;
+  return s;
 }
 
 function normalizeName(s) {
@@ -134,7 +139,7 @@ function doGet(e) {
   }
 }
 
-const SCRIPT_VERSION = "v3.5";
+const SCRIPT_VERSION = "v3.6";
 
 function getSummary() {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
@@ -473,7 +478,7 @@ function doPost(e) {
       new Date(),
       body.customerName,
       "",
-      body.phone,
+      "'" + body.phone,                      // D Phone — apostrophe forces text (preserves leading 0)
       boxes,
       "รับที่ร้าน",
       "",
