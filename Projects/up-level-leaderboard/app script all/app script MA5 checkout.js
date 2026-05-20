@@ -134,12 +134,15 @@ function doGet(e) {
   }
 }
 
+const SCRIPT_VERSION = "v3.5";
+
 function getSummary() {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
   const newCount    = sheet ? countUsedQuotaFromSheet(sheet) : 0;
   const legacyCount = countLegacyBoxes();
   const used        = newCount + legacyCount;
   return {
+    version:        SCRIPT_VERSION,
     boxQuota:       BOX_QUOTA,
     usedBoxes:      used,
     usedNew:        newCount,
