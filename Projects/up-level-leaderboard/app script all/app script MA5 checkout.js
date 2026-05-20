@@ -259,8 +259,7 @@ function lookupMember(phone, name) {
       return {
         isMember: false,
         reason:   "name_mismatch",
-        hint:     "เบอร์ตรงแต่ชื่อ/ชื่อเล่น/codename ไม่ตรงกับในระบบ",
-        candidates: candidates
+        hint:     "เบอร์ตรงแต่ชื่อไม่ตรง — ลองชื่อเล่นหรือ codename"
       };
     }
     return { isMember: false, reason: "not_in_member_list" };

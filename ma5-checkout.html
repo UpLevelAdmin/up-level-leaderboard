@@ -854,7 +854,7 @@
                 if (data.isMember) {
                     result.innerHTML = `<div class="alert success"><span class="lc"><i data-lucide="badge-check"></i></span> สมาชิก ${data.codename ? '['+data.codename+']' : ''} ${data.rank ? '· '+data.rank : ''} — ปลดล็อก Path B (2 Box)</div>`;
                 } else if (data.reason === 'name_mismatch') {
-                    result.innerHTML = `<div class="alert warn"><span class="lc"><i data-lucide="alert-triangle"></i></span> เบอร์ตรงแต่ชื่อไม่ตรงกับในระบบสมาชิก — Path B ใช้ไม่ได้ ใช้ชื่อตรงตามที่ลงทะเบียนเพื่อปลดล็อก</div>`;
+                    result.innerHTML = `<div class="alert warn"><span class="lc"><i data-lucide="alert-triangle"></i></span><div><strong>เบอร์ตรง แต่ชื่อไม่ตรงในระบบสมาชิก</strong><br>อาจเป็นที่ภาษาไม่ตรง (ไทย/อังกฤษ) หรือสะกดผิด<br>ลองกรอก <strong>ชื่อเล่น</strong> หรือ <strong>Codename</strong> ที่ใช้ตอนสมัคร แล้วกดตรวจสอบใหม่</div></div>`;
                 } else {
                     result.innerHTML = `<div class="alert info"><span class="lc"><i data-lucide="user-plus"></i></span> ไม่ใช่สมาชิก — สั่งได้ Path A (1 Box) เท่านั้น</div>`;
                 }
