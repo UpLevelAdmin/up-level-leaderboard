@@ -180,6 +180,19 @@ function countBoxesForPhone(sheet, normPhone) {
   return total;
 }
 
+// Find existing row with the same slip transRef (col J). Returns 1-based row number or -1.
+function findDuplicateTransRef(sheet, transRef) {
+  if (!transRef) return -1;
+  const tr = String(transRef).trim();
+  if (!tr) return -1;
+  const data = sheet.getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) {
+    const existing = String(data[i][COL_FB_USER_ID - 1] || "").trim();
+    if (existing && existing === tr) return i + 1;
+  }
+  return -1;
+}
+
 // Detect a row with the same phone in the past DUP_WINDOW_MS (re-submit guard)
 function isRecentDuplicate(sheet, normPhone) {
   const data = sheet.getDataRange().getValues();
@@ -402,17 +415,48 @@ function doPost(e) {
     let status = "❌ ยังไม่ชำระ";
     let verifiedAmount = null;
     let transRef = "";
+    let senderName = "";
+    let senderMismatch = false;
 
     if (slipUrl) {
       const verified = verifySlip(slipUrl);
       if (verified && verified.success) {
         const amt = parseFloat(verified.data.amount);
+        transRef = verified.data.transRef || "";
+
+        // Duplicate slip guard — reject if this transRef already used in any prior row
+        if (transRef) {
+          const dupRow = findDuplicateTransRef(sheet, transRef);
+          if (dupRow > 0) {
+            return jsonResponse({
+              success: false,
+              error:   "duplicate_slip",
+              message: `สลิปนี้เคยถูกใช้แล้ว (อ้างอิงแถว ${dupRow})`,
+              transRef: transRef
+            });
+          }
+        }
+
+        // Sender name check — flag if slip sender doesn't seem to match customer
+        const senderObj = verified.data.sender || {};
+        senderName = String(senderObj.displayName || senderObj.name || "").trim();
+        if (senderName) {
+          const senderFirst = firstWord(senderName);
+          const customerFirst = firstWord(body.customerName);
+          if (senderFirst && customerFirst && senderFirst !== customerFirst) {
+            senderMismatch = true;
+          }
+        }
+
         if (Math.abs(amt - expectedAmount) < 1) {
           status         = "✅ ชำระแล้ว";
           verifiedAmount = amt;
-          transRef       = verified.data.transRef || "";
         } else {
           status = `⚠️ ยอดไม่ตรง (${amt}/${expectedAmount})`;
+        }
+
+        if (senderMismatch) {
+          status += ` ⚠️ sender:${senderName}`;
         }
       } else {
         status = "⏳ รอตรวจสอบสลิป";
@@ -432,7 +476,7 @@ function doPost(e) {
       "",
       slipUrl,
       status,
-      "",
+      transRef,                              // J Slip TransRef (was reserved)
       commentImgUrl + flag,
       isMember ? "เก่า" : "ใหม่",
       "checkout"
@@ -454,6 +498,7 @@ function doPost(e) {
 
     const pathLabel = pathChoice === "A" ? "คอมเมนต์เด็ค" : "รีวิว (สมาชิก)";
     const memberLabel = isMember ? "🏰 สมาชิกเดิม" : "🆕 ไม่ใช่สมาชิก";
+    const senderLine = senderMismatch ? `⚠️ Sender ไม่ตรง: ${senderName}\n` : "";
     sendTelegram(
       `💜 *MA5 Checkout — ออเดอร์ใหม่!*\n\n` +
       `👤 ${body.customerName}\n` +
@@ -462,6 +507,7 @@ function doPost(e) {
       `📦 ${boxes} Box (${expectedAmount.toLocaleString()} บาท)\n` +
       `${memberLabel}\n` +
       `📊 ${status}\n` +
+      senderLine +
       `🪣 quota ${used + boxes}/${BOX_QUOTA}\n` +
       (commentImgUrl ? `🖼 [Comment](${commentImgUrl})\n` : "") +
       (slipUrl ? `🧾 [Slip](${slipUrl})` : "")
@@ -498,7 +544,7 @@ function ensureHeaders(sheet) {
     "ที่อยู่",
     "สลิป URL",
     "สถานะ",
-    "(reserved)",
+    "Slip TransRef",
     "Comment Screenshot",
     "Member",
     "Source"

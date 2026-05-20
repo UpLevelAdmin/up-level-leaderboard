@@ -1037,6 +1037,10 @@
                 icon.textContent    = '⏱';
                 title.textContent   = 'สั่งซ้ำเร็วเกินไป';
                 message.innerHTML   = data.message || 'พบการสั่งซื้อจากเบอร์นี้เมื่อสักครู่ — รอสักครู่แล้วลองใหม่';
+            } else if (data.error === 'duplicate_slip') {
+                icon.textContent    = '🚫';
+                title.textContent   = 'สลิปนี้ถูกใช้แล้ว';
+                message.innerHTML   = data.message || 'สลิปนี้เคยใช้ในออเดอร์ก่อนหน้าแล้ว — โปรดใช้สลิปการโอนเงินจริงครั้งใหม่';
             } else if (data.error === 'exceeds_personal_limit') {
                 icon.textContent    = '⚠️';
                 title.textContent   = 'เกินสิทธิ์ต่อท่าน';
