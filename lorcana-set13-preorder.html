@@ -743,6 +743,143 @@
             margin-bottom: 0.7rem;
         }
 
+        /* ===== Submit overlay (full-screen during submit) ===== */
+        .submit-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.88);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center; justify-content: center;
+            z-index: 1050;
+            padding: 1rem;
+        }
+        .submit-overlay.show { display: flex; }
+        .submit-overlay-card {
+            background: linear-gradient(135deg, var(--vine-deep), var(--plum-deep));
+            border: 1.5px solid rgba(245,197,66,0.55);
+            border-radius: 20px;
+            max-width: 440px; width: 100%;
+            padding: 1.8rem 1.4rem 1.5rem;
+            text-align: center;
+            box-shadow: 0 0 50px rgba(245,197,66,0.25);
+        }
+        .submit-spinner-lg {
+            width: 56px; height: 56px;
+            margin: 0 auto 1rem;
+            border: 4px solid rgba(245,197,66,0.18);
+            border-top-color: var(--gold);
+            border-radius: 50%;
+            animation: spin 0.9s linear infinite;
+        }
+        .submit-overlay h3 {
+            font-family: 'Kanit', sans-serif;
+            font-weight: 700; font-size: 1.2rem;
+            color: var(--gold-soft);
+            margin-bottom: 0.4rem;
+            letter-spacing: 0.3px;
+        }
+        .submit-eta {
+            font-size: 0.84rem;
+            color: var(--ink-mute);
+            margin-bottom: 1rem;
+        }
+        .submit-stage {
+            min-height: 32px;
+            font-size: 0.92rem;
+            color: var(--vine-glow);
+            font-weight: 600;
+            margin: 0.4rem 0 1rem;
+            transition: opacity 0.2s;
+        }
+        .submit-warn {
+            background: rgba(245,197,66,0.13);
+            border: 1px solid rgba(245,197,66,0.45);
+            border-radius: 12px;
+            padding: 0.65rem 0.9rem;
+            font-size: 0.83rem;
+            color: var(--gold-soft);
+            line-height: 1.55;
+        }
+        .submit-warn b { color: #fff; }
+        .submit-warn-late {
+            margin-top: 0.7rem;
+            display: none;
+            background: rgba(220,60,60,0.12);
+            border: 1px solid rgba(220,60,60,0.4);
+            color: #fca5a5;
+            text-align: left;
+            padding: 0.7rem 0.9rem;
+            border-radius: 12px;
+            font-size: 0.82rem;
+            line-height: 1.6;
+        }
+        .submit-warn-late.show { display: block; }
+        .submit-warn-late ul { margin: 0.3rem 0 0 1.1rem; padding: 0; }
+        .submit-warn-late li { margin: 2px 0; }
+
+        /* ===== Your-Order persistent card ===== */
+        .my-order-card {
+            background: linear-gradient(135deg, rgba(45,138,78,0.25), rgba(58,23,88,0.35));
+            border: 1.5px solid rgba(110,210,138,0.55);
+            border-radius: 18px;
+            padding: 1rem 1rem 0.9rem;
+            margin-bottom: 1rem;
+            position: relative;
+            box-shadow: 0 0 22px rgba(110,210,138,0.18);
+        }
+        .my-order-card.verified { border-color: rgba(110,210,138,0.7); background: linear-gradient(135deg, rgba(45,138,78,0.35), rgba(58,23,88,0.30)); }
+        .my-order-card.pending  { border-color: rgba(245,197,66,0.55); background: linear-gradient(135deg, rgba(245,197,66,0.10), rgba(58,23,88,0.30)); }
+        .my-order-head {
+            display: flex; align-items: center; gap: 0.5rem;
+            font-size: 0.78rem; color: var(--vine-glow);
+            font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase;
+            margin-bottom: 0.4rem;
+        }
+        .my-order-head .lc svg { width: 16px; height: 16px; }
+        .my-order-name { font-size: 1.05rem; font-weight: 700; color: var(--gold-soft); margin-bottom: 4px; }
+        .my-order-items { font-size: 0.85rem; color: var(--ink); line-height: 1.45; }
+        .my-order-amounts {
+            display: flex; gap: 0.6rem; flex-wrap: wrap;
+            margin: 0.5rem 0 0.5rem;
+            font-size: 0.82rem;
+        }
+        .my-order-amounts > div { background: rgba(0,0,0,0.25); padding: 0.3rem 0.7rem; border-radius: 999px; }
+        .my-order-amounts b { color: var(--gold-soft); }
+        .my-order-status {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: var(--vine-glow);
+            margin: 0.3rem 0 0.6rem;
+        }
+        .my-order-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .my-order-btn {
+            display: inline-flex; align-items: center; gap: 0.35rem;
+            padding: 0.45rem 0.85rem;
+            border-radius: 999px;
+            font-size: 0.82rem; font-weight: 600;
+            background: rgba(110,210,138,0.2);
+            border: 1px solid rgba(110,210,138,0.4);
+            color: var(--vine-glow);
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.15s;
+        }
+        .my-order-btn:hover { background: rgba(110,210,138,0.32); color: var(--gold-soft); }
+        .my-order-btn .lc svg { width: 13px; height: 13px; }
+        .my-order-close {
+            position: absolute; top: 8px; right: 10px;
+            width: 26px; height: 26px;
+            background: rgba(0,0,0,0.35);
+            border: 1px solid rgba(255,255,255,0.18);
+            border-radius: 50%;
+            color: var(--ink-mute);
+            font-size: 14px; line-height: 1;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .my-order-close:hover { background: rgba(220,60,60,0.4); color: #fff; }
+        .my-order-ts { font-size: 0.72rem; color: var(--ink-mute); margin-top: 0.4rem; }
+
         /* ===== Sticky cart bar (mobile only) ===== */
         .cart-bar {
             position: fixed;
@@ -842,6 +979,9 @@
             <div class="cd-cell"><div class="cd-num" id="cd-s">--</div><div class="cd-label">วินาที</div></div>
         </div>
         <div class="cd-close-msg" id="cd-close-msg">ปิดรับพรีออเดอร์แล้ว — ขอบคุณทุกการสนับสนุนครับ</div>
+
+        <!-- ===== Your Order (persistent, auto from localStorage) ===== -->
+        <div id="my-order-slot"></div>
 
         <!-- ===== Order status check ===== -->
         <div class="card reveal tilt">
@@ -1046,6 +1186,28 @@
     <div class="img-modal" id="img-modal">
         <button class="img-modal-close" type="button" aria-label="ปิด">✕</button>
         <img id="img-modal-pic" src="" alt="zoom" />
+    </div>
+
+    <!-- ===== Submit Overlay (full-screen during POST) ===== -->
+    <div class="submit-overlay" id="submit-overlay" aria-live="assertive" aria-busy="true">
+        <div class="submit-overlay-card">
+            <div class="submit-spinner-lg"></div>
+            <h3>กำลังบันทึกออเดอร์ของคุณ</h3>
+            <div class="submit-eta">ใช้เวลาประมาณ 10–30 วินาที</div>
+            <div class="submit-stage" id="submit-stage">กำลังอัปโหลดสลิป...</div>
+            <div class="submit-warn">
+                <b>ห้ามปิดหน้านี้</b> และ <b>ห้ามกดส่งซ้ำ</b><br>
+                ระบบกำลังบันทึกออเดอร์ของคุณอยู่ครับ
+            </div>
+            <div class="submit-warn-late" id="submit-warn-late">
+                ใช้เวลานานกว่าปกติแล้ว — หากต้องการปิดหน้านี้ สามารถ:
+                <ul>
+                    <li>ดูที่หัวข้อ "ตรวจสอบสถานะออเดอร์" ด้านบน</li>
+                    <li>หรือทักทาง LINE / Facebook ของร้าน</li>
+                </ul>
+                <b>กรุณาอย่ากดส่งซ้ำ</b> เพื่อป้องกันออเดอร์ซ้ำ
+            </div>
+        </div>
     </div>
 
     <!-- ===== Result Modal ===== -->
@@ -1260,27 +1422,42 @@
         });
 
         /* ---------- Submit ---------- */
+        const ORDER_LS_KEY = "lorcana_set13_order";
+
         document.getElementById("btn-submit-order").onclick = async () => {
             if (state.submitting) return;
             if (Date.now() >= CLOSE_AT) { showResult({ success: false, error: "preorder_closed" }); return; }
 
             state.submitting = true;
-            const btn = document.getElementById("btn-submit-order");
-            const errBox = document.getElementById("submit-error");
+            const btn       = document.getElementById("btn-submit-order");
+            const overlay   = document.getElementById("submit-overlay");
+            const stageEl   = document.getElementById("submit-stage");
+            const lateBox   = document.getElementById("submit-warn-late");
+            const errBox    = document.getElementById("submit-error");
             errBox.innerHTML = "";
             btn.disabled = true;
+            lateBox.classList.remove("show");
+            overlay.classList.add("show");
+            document.body.style.overflow = "hidden";
 
-            // Stage messages
-            const stages = ["กำลังบันทึก...", "กำลังตรวจสอบสลิป...", "เกือบเสร็จ...", "ใช้เวลานานกว่าปกติ — กรุณาอย่ากดส่งซ้ำ"];
+            // Stage cycling in overlay
+            const stages = [
+                "กำลังอัปโหลดสลิป...",
+                "กำลังตรวจสอบยอดอัตโนมัติ...",
+                "กำลังบันทึกลงระบบ...",
+                "เกือบเสร็จแล้ว..."
+            ];
             let stageIdx = 0;
-            const setStage = () => {
-                btn.innerHTML = '<span class="spinner"></span>' + stages[stageIdx];
-            };
-            setStage();
+            stageEl.textContent = stages[0];
             const stageTimer = setInterval(() => {
                 stageIdx = Math.min(stageIdx + 1, stages.length - 1);
-                setStage();
-            }, 8000);
+                stageEl.style.opacity = "0";
+                setTimeout(() => {
+                    stageEl.textContent = stages[stageIdx];
+                    stageEl.style.opacity = "1";
+                }, 180);
+            }, 7000);
+            const lateTimer = setTimeout(() => lateBox.classList.add("show"), 30000);
 
             const payload = {
                 customerName: document.getElementById("input-name").value.trim(),
@@ -1289,7 +1466,7 @@
                 address:      document.getElementById("input-address").value.trim(),
                 items:        state.cart,
                 slipBase64:   state.slipBase64,
-                clientVersion: "lorcana13.v1"
+                clientVersion: "lorcana13.v3"
             };
 
             const ctrl = new AbortController();
@@ -1303,6 +1480,22 @@
                     signal:  ctrl.signal
                 });
                 const data = await res.json();
+                // Persist order locally so customer can see it again on next visit
+                if (data && data.success) {
+                    saveLocalOrder({
+                        customerName: payload.customerName,
+                        phone:        payload.phone,
+                        shipping:     payload.shipping,
+                        items:        payload.items,
+                        deposit:      data.deposit || 0,
+                        remaining:    data.remaining || 0,
+                        total:        data.total || 0,
+                        status:       data.status || "",
+                        verified:     !!data.verified,
+                        timestamp:    Date.now()
+                    });
+                    renderMyOrderCard();
+                }
                 showResult(data);
             } catch (err) {
                 if (err.name === "AbortError") {
@@ -1312,12 +1505,134 @@
                 }
             } finally {
                 clearTimeout(tid);
+                clearTimeout(lateTimer);
                 clearInterval(stageTimer);
-                // intentionally leave submitting=true on hard errors so customer must refresh — prevents double-submit
+                overlay.classList.remove("show");
+                document.body.style.overflow = "";
                 btn.innerHTML = '<span class="lc"><i data-lucide="sparkles"></i></span> ยืนยันการสั่งซื้อ';
                 lucide.createIcons();
             }
         };
+
+        /* ---------- localStorage: ออเดอร์ของท่าน ---------- */
+        function saveLocalOrder(o) {
+            try { localStorage.setItem(ORDER_LS_KEY, JSON.stringify(o)); } catch (e) {}
+        }
+        function loadLocalOrder() {
+            try {
+                const raw = localStorage.getItem(ORDER_LS_KEY);
+                if (!raw) return null;
+                return JSON.parse(raw);
+            } catch (e) { return null; }
+        }
+        function clearLocalOrder() {
+            try { localStorage.removeItem(ORDER_LS_KEY); } catch (e) {}
+        }
+
+        function renderMyOrderCard() {
+            const slot = document.getElementById("my-order-slot");
+            const o = loadLocalOrder();
+            if (!o) { slot.innerHTML = ""; return; }
+
+            const itemsTxt = SKUS
+                .map(s => (o.items && o.items[s.key] > 0) ? `${s.name} × ${o.items[s.key]}` : "")
+                .filter(Boolean)
+                .join(", ");
+
+            const klass = o.verified ? "verified" : "pending";
+            const tsStr = o.timestamp ? new Date(o.timestamp).toLocaleString("th-TH") : "";
+            const shipLabel = o.shipping === "ship" ? "จัดส่ง" : "รับที่ร้าน";
+
+            slot.innerHTML = `
+                <div class="my-order-card ${klass}">
+                    <button class="my-order-close" id="my-order-close" title="ซ่อนออเดอร์นี้">✕</button>
+                    <div class="my-order-head">
+                        <span class="lc"><i data-lucide="bookmark-check"></i></span>
+                        ออเดอร์ของท่าน · บันทึกในเครื่องนี้แล้ว
+                    </div>
+                    <div class="my-order-name">${escapeHtml(o.customerName)} · ${shipLabel}</div>
+                    <div class="my-order-items">${escapeHtml(itemsTxt)}</div>
+                    <div class="my-order-amounts">
+                        <div>มัดจำ <b>${(o.deposit||0).toLocaleString()}</b></div>
+                        <div>คงเหลือ <b>${(o.remaining||0).toLocaleString()}</b></div>
+                        <div>ยอดเต็ม <b>${(o.total||0).toLocaleString()}</b></div>
+                    </div>
+                    <div class="my-order-status">${escapeHtml(o.status || "-")}</div>
+                    <div class="my-order-actions">
+                        <button class="my-order-btn" id="my-order-refresh">
+                            <span class="lc"><i data-lucide="refresh-cw"></i></span> เช็คสถานะอีกครั้ง
+                        </button>
+                        <button class="my-order-btn" id="my-order-hide">
+                            <span class="lc"><i data-lucide="x-circle"></i></span> ซ่อนออเดอร์นี้
+                        </button>
+                    </div>
+                    <div class="my-order-ts">📸 แคปจอช่องนี้เก็บไว้เป็นหลักฐานได้นะครับ · บันทึกเมื่อ ${tsStr}</div>
+                </div>`;
+            lucide.createIcons();
+
+            document.getElementById("my-order-refresh").onclick = refreshMyOrderStatus;
+            document.getElementById("my-order-hide").onclick = () => {
+                if (confirm("ซ่อนออเดอร์นี้จากหน้าเว็บ? (ระบบของร้านยังเก็บออเดอร์ไว้ปกติ)")) {
+                    clearLocalOrder();
+                    slot.innerHTML = "";
+                }
+            };
+            document.getElementById("my-order-close").onclick = () => {
+                if (confirm("ซ่อนออเดอร์นี้จากหน้าเว็บ? (ระบบของร้านยังเก็บออเดอร์ไว้ปกติ)")) {
+                    clearLocalOrder();
+                    slot.innerHTML = "";
+                }
+            };
+        }
+
+        async function refreshMyOrderStatus() {
+            const o = loadLocalOrder();
+            if (!o || !o.phone) return;
+            const btn = document.getElementById("my-order-refresh");
+            const origHTML = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> กำลังเช็ค...';
+            try {
+                const res = await fetch(`${APPS_SCRIPT_URL}?action=order_status&phone=${encodeURIComponent(o.phone)}`);
+                const data = await res.json();
+                if (data.found && data.orders && data.orders.length > 0) {
+                    // Match by timestamp proximity (within 5 minutes) — pick the closest order
+                    let best = null, bestDiff = Infinity;
+                    const target = o.timestamp || Date.now();
+                    data.orders.forEach(ord => {
+                        const t = new Date(ord.timestamp).getTime();
+                        const diff = Math.abs(t - target);
+                        if (diff < bestDiff) { bestDiff = diff; best = ord; }
+                    });
+                    if (best) {
+                        o.status = best.status;
+                        o.verified = String(best.status || "").includes("มัดจำแล้ว");
+                        o.deposit = best.deposit || o.deposit;
+                        o.remaining = best.remaining || o.remaining;
+                        o.total = best.total || o.total;
+                        saveLocalOrder(o);
+                        renderMyOrderCard();
+                        return;
+                    }
+                }
+                btn.disabled = false;
+                btn.innerHTML = origHTML;
+                lucide.createIcons();
+                alert("ไม่พบออเดอร์ของท่านในระบบ — ทักทาง LINE / Facebook ของร้านได้นะครับ");
+            } catch (err) {
+                btn.disabled = false;
+                btn.innerHTML = origHTML;
+                lucide.createIcons();
+                alert("เช็คสถานะไม่สำเร็จ: " + err.message);
+            }
+        }
+
+        function escapeHtml(s) {
+            return String(s || "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+        }
+
+        // Render saved order on page load
+        renderMyOrderCard();
 
         function showResult(data) {
             const modal = document.getElementById("result-modal");
