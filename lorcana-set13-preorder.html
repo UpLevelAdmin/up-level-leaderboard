@@ -743,6 +743,64 @@
             margin-bottom: 0.7rem;
         }
 
+        /* ===== Recent orders ticker ===== */
+        .recent-card {
+            background: linear-gradient(135deg, rgba(45,138,78,0.10), rgba(58,23,88,0.15));
+            border: 1px solid rgba(110,210,138,0.25);
+            border-radius: 16px;
+            padding: 0.85rem 0.9rem 0.7rem;
+            margin-bottom: 1rem;
+            backdrop-filter: blur(6px);
+        }
+        .recent-head {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .recent-title {
+            font-size: 0.85rem; font-weight: 700; color: var(--gold-soft);
+            display: flex; align-items: center; gap: 0.4rem;
+            letter-spacing: 0.3px;
+        }
+        .recent-title .lc svg { width: 16px; height: 16px; }
+        .recent-live {
+            font-size: 0.7rem; color: var(--vine-glow);
+            display: inline-flex; align-items: center; gap: 0.3rem;
+        }
+        .recent-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: var(--vine-glow);
+            box-shadow: 0 0 8px var(--vine-glow);
+            animation: pulse 1.6s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50%      { opacity: 0.5; transform: scale(0.85); }
+        }
+        .recent-list { display: flex; flex-direction: column; gap: 0.32rem; }
+        .recent-row {
+            display: flex; align-items: center; gap: 0.5rem;
+            font-size: 0.82rem;
+            padding: 0.3rem 0.55rem;
+            background: rgba(0,0,0,0.22);
+            border-radius: 8px;
+            line-height: 1.3;
+        }
+        .recent-row .rname {
+            font-weight: 700; color: var(--ink); min-width: 70px;
+        }
+        .recent-row .rphone { color: var(--ink-mute); font-family: 'Kanit', sans-serif; font-size: 0.78rem; }
+        .recent-row .rstatus {
+            margin-left: auto;
+            font-size: 0.72rem;
+            padding: 2px 8px;
+            border-radius: 999px;
+            white-space: nowrap;
+        }
+        .recent-row .rstatus.ok { background: rgba(110,210,138,0.22); color: var(--vine-glow); }
+        .recent-row .rstatus.pending { background: rgba(245,197,66,0.18); color: var(--gold-soft); }
+        .recent-empty { font-size: 0.82rem; color: var(--ink-mute); text-align: center; padding: 0.4rem; }
+
         /* ===== Submit overlay (full-screen during submit) ===== */
         .submit-overlay {
             position: fixed; inset: 0;
@@ -982,6 +1040,18 @@
 
         <!-- ===== Your Order (persistent, auto from localStorage) ===== -->
         <div id="my-order-slot"></div>
+
+        <!-- ===== Recent orders ticker ===== -->
+        <div class="recent-card" id="recent-card" style="display:none;">
+            <div class="recent-head">
+                <div class="recent-title">
+                    <span class="lc"><i data-lucide="activity"></i></span>
+                    ออเดอร์ล่าสุด
+                </div>
+                <div class="recent-live"><span class="recent-dot"></span> Live</div>
+            </div>
+            <div class="recent-list" id="recent-list"></div>
+        </div>
 
         <!-- ===== Order status check ===== -->
         <div class="card reveal tilt">
@@ -1466,8 +1536,30 @@
                 address:      document.getElementById("input-address").value.trim(),
                 items:        state.cart,
                 slipBase64:   state.slipBase64,
-                clientVersion: "lorcana13.v3"
+                clientVersion: "lorcana13.v4"
             };
+
+            // Compute deposit/total locally to seed the card (server is source of truth on response)
+            const subPreview = SKUS.reduce((sum, s) => sum + (state.cart[s.key] || 0) * s.price, 0);
+            const shipPreview = state.shipping === "ship" ? SHIPPING_FEE : 0;
+            const totalPreview = subPreview + shipPreview;
+            const depositPreview = Math.round(subPreview * DEPOSIT_RATE);
+
+            // Pre-save BEFORE fetch — if response gets lost, the card still shows + customer can refresh status
+            saveLocalOrder({
+                customerName: payload.customerName,
+                phone:        payload.phone,
+                shipping:     payload.shipping,
+                items:        payload.items,
+                deposit:      depositPreview,
+                remaining:    totalPreview - depositPreview,
+                total:        totalPreview,
+                status:       "⏳ กำลังรอผล...",
+                verified:     false,
+                pending:      true,
+                timestamp:    Date.now()
+            });
+            renderMyOrderCard();
 
             const ctrl = new AbortController();
             const tid  = setTimeout(() => ctrl.abort(), SUBMIT_TIMEOUT_MS);
@@ -1480,24 +1572,31 @@
                     signal:  ctrl.signal
                 });
                 const data = await res.json();
-                // Persist order locally so customer can see it again on next visit
+                // Update card with server-confirmed values
                 if (data && data.success) {
                     saveLocalOrder({
                         customerName: payload.customerName,
                         phone:        payload.phone,
                         shipping:     payload.shipping,
                         items:        payload.items,
-                        deposit:      data.deposit || 0,
-                        remaining:    data.remaining || 0,
-                        total:        data.total || 0,
+                        deposit:      data.deposit || depositPreview,
+                        remaining:    data.remaining || (totalPreview - depositPreview),
+                        total:        data.total || totalPreview,
                         status:       data.status || "",
                         verified:     !!data.verified,
+                        pending:      false,
                         timestamp:    Date.now()
                     });
+                    renderMyOrderCard();
+                    refreshRecent();  // refresh ticker so customer's own order may appear
+                } else if (data && data.error) {
+                    // Backend rejected (e.g. duplicate, quota) — clear the pending pre-save
+                    clearLocalOrder();
                     renderMyOrderCard();
                 }
                 showResult(data);
             } catch (err) {
+                // Network/timeout — keep pending pre-saved card so customer can refresh status later
                 if (err.name === "AbortError") {
                     showResult({ success: false, error: "timeout" });
                 } else {
@@ -1539,9 +1638,13 @@
                 .filter(Boolean)
                 .join(", ");
 
-            const klass = o.verified ? "verified" : "pending";
+            const klass = o.pending ? "pending" : (o.verified ? "verified" : "pending");
             const tsStr = o.timestamp ? new Date(o.timestamp).toLocaleString("th-TH") : "";
             const shipLabel = o.shipping === "ship" ? "จัดส่ง" : "รับที่ร้าน";
+
+            const pendingNote = o.pending
+                ? `<div class="alert info" style="margin:0.4rem 0;font-size:0.82rem;"><span class="lc"><i data-lucide="info"></i></span> ส่งข้อมูลไปยังร้านแล้ว แต่ระบบยังไม่ได้รับคำตอบกลับ — กด <b>"เช็คสถานะอีกครั้ง"</b> เพื่อยืนยันออเดอร์ของท่านครับ</div>`
+                : "";
 
             slot.innerHTML = `
                 <div class="my-order-card ${klass}">
@@ -1558,6 +1661,7 @@
                         <div>ยอดเต็ม <b>${(o.total||0).toLocaleString()}</b></div>
                     </div>
                     <div class="my-order-status">${escapeHtml(o.status || "-")}</div>
+                    ${pendingNote}
                     <div class="my-order-actions">
                         <button class="my-order-btn" id="my-order-refresh">
                             <span class="lc"><i data-lucide="refresh-cw"></i></span> เช็คสถานะอีกครั้ง
@@ -1610,6 +1714,7 @@
                         o.deposit = best.deposit || o.deposit;
                         o.remaining = best.remaining || o.remaining;
                         o.total = best.total || o.total;
+                        o.pending = false;
                         saveLocalOrder(o);
                         renderMyOrderCard();
                         return;
@@ -1633,6 +1738,37 @@
 
         // Render saved order on page load
         renderMyOrderCard();
+
+        /* ---------- Recent orders ticker ---------- */
+        async function refreshRecent() {
+            try {
+                const res = await fetch(`${APPS_SCRIPT_URL}?action=recent&limit=5&_=${Date.now()}`);
+                const data = await res.json();
+                const card = document.getElementById("recent-card");
+                const list = document.getElementById("recent-list");
+                if (!data || !data.found || !data.orders || data.orders.length === 0) {
+                    card.style.display = "none";
+                    return;
+                }
+                list.innerHTML = data.orders.map(o => {
+                    const cls = o.verified ? "ok" : "pending";
+                    const txt = o.verified ? "มัดจำแล้ว" : "รอตรวจสลิป";
+                    const itemSummary = o.items > 0 ? `${o.items} ชิ้น` : "";
+                    return `<div class="recent-row">
+                        <span class="rname">${escapeHtml(o.name)}</span>
+                        <span class="rphone">${escapeHtml(o.phone)}</span>
+                        <span class="rphone">· ${itemSummary}</span>
+                        <span class="rstatus ${cls}">${txt}</span>
+                    </div>`;
+                }).join("");
+                card.style.display = "";
+                lucide.createIcons();
+            } catch (e) {
+                // silent fail — ticker is non-critical
+            }
+        }
+        refreshRecent();
+        setInterval(refreshRecent, 60000);
 
         function showResult(data) {
             const modal = document.getElementById("result-modal");

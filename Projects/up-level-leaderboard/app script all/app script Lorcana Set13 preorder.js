@@ -15,7 +15,7 @@
  * =============================================
  */
 
-const SCRIPT_VERSION = "lorcana13.v3";
+const SCRIPT_VERSION = "lorcana13.v4";
 
 // ===== Config =====
 const SHEET_NAME      = "Responses";
@@ -126,10 +126,54 @@ function doGet(e) {
     if (action === "order_status") {
       return jsonResponse(getOrderStatus(e.parameter.phone));
     }
+    if (action === "recent") {
+      return jsonResponse(getRecentOrders(parseInt(e.parameter.limit) || 5));
+    }
     return jsonResponse(getSummary());
   } catch (err) {
     return jsonResponse({ error: String(err) });
   }
+}
+
+// Return last N orders with PII masked (first 5 chars of name, last-4 hidden phone)
+function getRecentOrders(limit) {
+  const n = Math.min(Math.max(1, limit || 5), 10);
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+  if (!sheet) return { found: false, orders: [] };
+
+  const data = sheet.getDataRange().getValues();
+  const out  = [];
+  // Walk from newest to oldest (bottom to top)
+  for (let i = data.length - 1; i >= 1 && out.length < n; i--) {
+    const row = data[i];
+    const name   = String(row[COL_NAME - 1] || "").trim();
+    if (!name) continue;
+    const status = String(row[COL_STATUS - 1] || "");
+    if (/คืนเงิน|ยกเลิก|เกินโควต้า/.test(status)) continue;
+
+    const phoneRaw = normalizePhone(row[COL_PHONE - 1]);
+    const phoneMasked = phoneRaw.length >= 7
+      ? phoneRaw.substring(0, 3) + "-XXX-" + phoneRaw.substring(phoneRaw.length - 4)
+      : "xxx-xxx-xxxx";
+
+    // First word (or first 5 Thai chars) of name + …
+    const stripped = stripPrefix(name);
+    const namePart = stripped.length > 5 ? stripped.substring(0, 5) + "…" : stripped;
+
+    // Item summary (count of all SKU qty)
+    let itemQty = 0;
+    for (let s = 0; s < SKUS.length; s++) itemQty += parseInt(row[COL_QTY_START - 1 + s]) || 0;
+
+    const ts = row[COL_TIMESTAMP - 1];
+    out.push({
+      name:      namePart,
+      phone:     phoneMasked,
+      items:     itemQty,
+      verified:  status.indexOf("มัดจำแล้ว") >= 0,
+      timestamp: ts instanceof Date ? ts.toISOString() : String(ts)
+    });
+  }
+  return { found: out.length > 0, count: out.length, orders: out };
 }
 
 function getSummary() {
