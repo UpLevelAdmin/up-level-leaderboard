@@ -3,7 +3,35 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Lorcana Set 13 Preorder — Attack of the Vine | Up Level Academy</title>
+    <title>Pre-Order Lorcana Set 13 — Attack of the Vine | Up Level Academy</title>
+
+    <script>
+        // After 2026-05-31 23:59 Bangkok, redirect to home (allow ?status=1 to check existing orders)
+        (function () {
+            var CLOSE_AT = new Date('2026-05-31T23:59:00+07:00').getTime();
+            var bypass   = /[?&]status=1\b/.test(location.search);
+            if (!bypass && Date.now() >= CLOSE_AT) {
+                window.location.replace('index.html');
+            }
+        })();
+    </script>
+    <meta name="description" content="พรีออเดอร์ Disney Lorcana Set 13 — Attack of the Vine ที่ Up Level Academy · มัดจำ 50% · ปิดรับ 31 พ.ค. 2026" />
+
+    <!-- Open Graph / FB / LINE share preview -->
+    <meta property="og:title" content="Pre-Order Lorcana Set 13 — Attack of the Vine | Up Level Academy" />
+    <meta property="og:description" content="พรีออเดอร์ Disney Lorcana Set 13 — Attack of the Vine ที่ Up Level Academy · มัดจำ 50% · Booster Box / Playmat / Starter / Gift Box / Quest / Portfolio · ปิดรับ 31 พ.ค. 2026" />
+    <meta property="og:image" content="https://ravensburger.cloud/cms/gallery/lorcana-web/products/s13-attack-of-the-vine/heroes-logos-and-backgrounds/dlc_s13_1920x1080.jpg" />
+    <meta property="og:image:width" content="1920" />
+    <meta property="og:image:height" content="1080" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://uplevelguild.netlify.app/lorcana-set13-preorder.html" />
+    <meta property="og:site_name" content="Up Level Academy" />
+    <meta property="og:locale" content="th_TH" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Pre-Order Lorcana Set 13 — Attack of the Vine" />
+    <meta name="twitter:description" content="พรีออเดอร์ Disney Lorcana Set 13 ที่ Up Level Academy · มัดจำ 50% · ปิด 31 พ.ค. 2026" />
+    <meta name="twitter:image" content="https://ravensburger.cloud/cms/gallery/lorcana-web/products/s13-attack-of-the-vine/heroes-logos-and-backgrounds/dlc_s13_1920x1080.jpg" />
+    <link rel="canonical" href="https://uplevelguild.netlify.app/lorcana-set13-preorder.html" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -682,6 +710,76 @@
         .order-row .items { color: var(--gold-soft); margin: 4px 0; }
         .order-row .status { font-weight: 700; }
 
+        /* ===== Contact card ===== */
+        .contact-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+        }
+        .contact-btn {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: 0.35rem;
+            padding: 0.7rem 0.4rem;
+            border-radius: 12px;
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #fff;
+            border: 1px solid rgba(245,197,66,0.3);
+            background: rgba(13,31,18,0.5);
+            transition: all 0.18s;
+        }
+        .contact-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 18px rgba(0,0,0,0.35); }
+        .contact-btn.fb   { background: linear-gradient(135deg, #1877f2, #0d6efd); }
+        .contact-btn.line { background: linear-gradient(135deg, #06c755, #05b14c); }
+        .contact-btn.maps { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+        .contact-btn .lc svg { width: 24px; height: 24px; }
+        .contact-help {
+            font-size: 0.82rem;
+            color: var(--ink-mute);
+            line-height: 1.55;
+            text-align: center;
+            margin-bottom: 0.7rem;
+        }
+
+        /* ===== Sticky cart bar (mobile only) ===== */
+        .cart-bar {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            z-index: 60;
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.7rem;
+            padding: 0.7rem 0.9rem calc(0.7rem + env(safe-area-inset-bottom, 0px));
+            background: rgba(13, 31, 18, 0.94);
+            backdrop-filter: blur(14px);
+            border-top: 1px solid rgba(245,197,66,0.35);
+            box-shadow: 0 -8px 24px rgba(0,0,0,0.55);
+            transform: translateY(110%);
+            transition: transform 0.25s cubic-bezier(.2,.7,.3,1);
+        }
+        .cart-bar.show { transform: translateY(0); }
+        .cart-bar-info { display: flex; flex-direction: column; min-width: 0; }
+        .cart-bar-label { font-size: 0.7rem; color: var(--ink-mute); letter-spacing: 0.4px; }
+        .cart-bar-amt   { font-size: 1.1rem; font-weight: 800; color: var(--gold-soft); line-height: 1.1; }
+        .cart-bar-btn {
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            padding: 0.6rem 1.1rem;
+            border-radius: 999px;
+            background: linear-gradient(45deg, var(--vine-leaf), var(--gold));
+            color: #0a1a10;
+            font-weight: 700;
+            font-size: 0.92rem;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(245,197,66,0.4);
+            flex-shrink: 0;
+        }
+        .cart-bar-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .cart-bar-btn .lc svg { width: 16px; height: 16px; }
+
         @media (max-width: 480px) {
             .container { padding: 0.4rem 0.5rem 1.5rem; }
             .hero { min-height: 320px; padding: 3.2rem 0.8rem 1.2rem; border-radius: 0 0 22px 22px; }
@@ -702,6 +800,8 @@
             .step-item .step-title { font-size: 0.9rem; }
             .step-item .step-text  { font-size: 0.82rem; }
             .step-item .step-num { font-size: 1.25rem; min-width: 28px; height: 28px; }
+            .cart-bar { display: flex; }
+            .container { padding-bottom: 6rem; }
         }
     </style>
 </head>
@@ -907,6 +1007,38 @@
             <span class="lc"><i data-lucide="info"></i></span>
             กำหนดของถึงร้านโดยประมาณช่วงเดือนกรกฎาคม-สิงหาคม 2026 ทางร้านจะแจ้งวันรับ/จัดส่งอีกครั้งครับ
         </div>
+
+        <!-- ===== Contact ===== -->
+        <div class="card reveal tilt">
+            <h2><span class="lc"><i data-lucide="message-circle"></i></span> ติดต่อสอบถาม</h2>
+            <p class="contact-help">มีคำถามเรื่องพรีออเดอร์ การชำระเงิน หรือสินค้า ทักทางร้านได้เลยครับ</p>
+            <div class="contact-grid">
+                <a class="contact-btn fb" href="https://www.facebook.com/uplevel.acad" target="_blank" rel="noopener">
+                    <span class="lc"><i data-lucide="facebook"></i></span>
+                    <span>Facebook</span>
+                </a>
+                <a class="contact-btn line" href="https://line.me/ti/g2/uGTOOvPJuCjaxW_ZlJyjroEU7zOqLuBaWw9UaQ" target="_blank" rel="noopener">
+                    <span class="lc"><i data-lucide="message-square"></i></span>
+                    <span>LINE Group</span>
+                </a>
+                <a class="contact-btn maps" href="https://maps.app.goo.gl/4Lk4CnLN9bKoVW7y6" target="_blank" rel="noopener">
+                    <span class="lc"><i data-lucide="map-pin"></i></span>
+                    <span>หน้าร้าน</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== Sticky cart bar (mobile) ===== -->
+    <div class="cart-bar" id="cart-bar">
+        <div class="cart-bar-info">
+            <div class="cart-bar-label">มัดจำตอนนี้</div>
+            <div class="cart-bar-amt" id="cart-bar-amt">0 บาท</div>
+        </div>
+        <button class="cart-bar-btn" id="cart-bar-btn" type="button">
+            <span class="lc"><i data-lucide="arrow-down-circle"></i></span>
+            ไปยืนยัน
+        </button>
     </div>
 
     <!-- ===== Image Zoom Lightbox ===== -->
@@ -1059,8 +1191,24 @@
             document.getElementById("remaining-line").textContent  = remaining.toLocaleString() + " บาท";
             document.getElementById("total-display").innerHTML     = '<span class="num">' + deposit.toLocaleString() + '</span><span class="unit">บาท (มัดจำ 50% ของยอดสินค้า)</span>';
             document.getElementById("qr-amount-tag").textContent   = "มัดจำ " + deposit.toLocaleString() + " บาท";
+            // Sticky cart bar
+            const cartBar = document.getElementById("cart-bar");
+            document.getElementById("cart-bar-amt").textContent = deposit.toLocaleString() + " บาท";
+            if (getTotalQty() > 0) cartBar.classList.add("show");
+            else                   cartBar.classList.remove("show");
             updateSubmitState();
         }
+
+        /* ---------- Sticky cart bar action ---------- */
+        document.getElementById("cart-bar-btn").addEventListener("click", () => {
+            const submitBtn = document.getElementById("btn-submit-order");
+            // If submit is enabled, click it. Otherwise scroll to payment section.
+            if (!submitBtn.disabled) {
+                submitBtn.click();
+            } else {
+                document.getElementById("kshop-qr-img").scrollIntoView({ behavior: "smooth", block: "center" });
+            }
+        });
 
         /* ---------- Slip upload ---------- */
         const slipZone  = document.getElementById("slip-zone");
