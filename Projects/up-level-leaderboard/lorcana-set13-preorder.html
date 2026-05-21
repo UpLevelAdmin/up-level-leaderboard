@@ -793,7 +793,7 @@
                         <div class="step-text">
                             เมื่อทราบยอดที่สามารถส่งให้ได้แล้ว ทางร้านจะประกาศอีกครั้งครับ<br>
                             • ถ้าของได้มาครบ → ทุกท่านได้สินค้าตามที่สั่งทั้งหมด<br>
-                            • ถ้าของได้มาไม่พอ → ขอ <b>เกลี่ยให้ทุกท่านได้รับสินค้าก่อนเป็นหลัก</b> โดยอาจปรับลดจำนวนลงตามสัดส่วน
+                            • ถ้าของได้มาไม่พอ → ขอ <b>กระจายให้ทุกท่านได้รับสินค้าก่อนเป็นหลัก</b> โดยอาจปรับลดจำนวนลงตามสัดส่วน
                         </div>
                     </div>
                 </div>
@@ -865,9 +865,9 @@
             <div class="total-box">
                 <div class="total-line"><span>ยอดสินค้า</span><span id="subtotal-line">0 บาท</span></div>
                 <div class="total-line"><span>ค่าจัดส่ง</span><span id="shipfee-line">0 บาท</span></div>
-                <div class="total-line"><span>ยอดเต็ม</span><span id="total-line">0 บาท</span></div>
-                <div class="total-line"><span>คงเหลือจ่ายตอนรับของ</span><span id="remaining-line">0 บาท</span></div>
-                <div class="total-line grand"><span>มัดจำตอนนี้ (50%)</span><span></span></div>
+                <div class="total-line"><span>ยอดรวม</span><span id="total-line">0 บาท</span></div>
+                <div class="total-line"><span>จ่ายตอนรับของ (50% สินค้า + ค่าส่ง)</span><span id="remaining-line">0 บาท</span></div>
+                <div class="total-line grand"><span>มัดจำตอนนี้ (50% ของยอดสินค้า)</span><span></span></div>
                 <div class="total-amount" id="total-display"><span class="num">0</span><span class="unit">บาท</span></div>
             </div>
             <div class="alert warn" style="margin-top:0.6rem;font-size:0.82rem;">
@@ -1050,13 +1050,14 @@
             const sub   = getSubtotal();
             const fee   = state.shipping === "ship" ? SHIPPING_FEE : 0;
             const grand = sub + fee;
-            const deposit   = Math.round(grand * DEPOSIT_RATE);
+            // Deposit = 50% ของยอดสินค้า (ค่าส่งเก็บทีหลังพร้อมคงเหลือ)
+            const deposit   = Math.round(sub * DEPOSIT_RATE);
             const remaining = grand - deposit;
             document.getElementById("subtotal-line").textContent   = sub.toLocaleString() + " บาท";
             document.getElementById("shipfee-line").textContent    = fee.toLocaleString() + " บาท";
             document.getElementById("total-line").textContent      = grand.toLocaleString() + " บาท";
             document.getElementById("remaining-line").textContent  = remaining.toLocaleString() + " บาท";
-            document.getElementById("total-display").innerHTML     = '<span class="num">' + deposit.toLocaleString() + '</span><span class="unit">บาท (มัดจำ 50%)</span>';
+            document.getElementById("total-display").innerHTML     = '<span class="num">' + deposit.toLocaleString() + '</span><span class="unit">บาท (มัดจำ 50% ของยอดสินค้า)</span>';
             document.getElementById("qr-amount-tag").textContent   = "มัดจำ " + deposit.toLocaleString() + " บาท";
             updateSubmitState();
         }

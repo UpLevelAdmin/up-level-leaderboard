@@ -15,7 +15,7 @@
  * =============================================
  */
 
-const SCRIPT_VERSION = "lorcana13.v2";
+const SCRIPT_VERSION = "lorcana13.v3";
 
 // ===== Config =====
 const SHEET_NAME      = "Responses";
@@ -273,8 +273,8 @@ function doPost(e) {
 
     const shipFee   = shipping === "ship" ? SHIPPING_FEE : 0;
     const total     = subtotal + shipFee;
-    // Deposit เป็นจำนวนเต็มบาท (ปัดเศษให้ตรงกับยอด QR ที่ลูกค้าโอนได้)
-    const deposit   = Math.round(total * DEPOSIT_RATE);
+    // Deposit = 50% ของยอดสินค้าเท่านั้น (ค่าส่งเก็บทีหลังพร้อมยอดคงเหลือ)
+    const deposit   = Math.round(subtotal * DEPOSIT_RATE);
     const remaining = total - deposit;
 
     if (!body.slipBase64) {
@@ -399,7 +399,7 @@ function doPost(e) {
       `${shipLine}\n` +
       `🛒 รายการ (${totalQty} ชิ้น):\n${itemLines}\n` +
       `💰 ยอดเต็ม ${total.toLocaleString()} บาท\n` +
-      `💵 มัดจำ 50% = ${deposit.toLocaleString()} บาท (เหลือ ${remaining.toLocaleString()})\n` +
+      `💵 มัดจำ 50% สินค้า = ${deposit.toLocaleString()} บาท (คงเหลือ + ค่าส่ง ${remaining.toLocaleString()})\n` +
       `📊 ${status}\n` +
       senderLine +
       (slipUrl ? `🧾 [Slip](${slipUrl})` : "")
