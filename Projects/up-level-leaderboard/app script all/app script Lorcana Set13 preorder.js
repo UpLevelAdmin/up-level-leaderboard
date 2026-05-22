@@ -167,6 +167,109 @@ const TH_CONSONANT_MAP = {
   "ศ":"s","ษ":"s","ส":"s","ห":"h","ฬ":"l","อ":"","ฮ":"h"
 };
 
+// Final-position roman per Thai consonant (per RTGS, simplified).
+// Different from initial: ด→t (not d), บ→p (not b), ย→i, ว→o, etc.
+const TH_FINAL = {
+  "ก":"k","ข":"k","ค":"k","ฆ":"k",
+  "ง":"ng",
+  "จ":"t","ช":"t","ซ":"t","ศ":"t","ษ":"t","ส":"t",
+  "ฎ":"t","ฏ":"t","ฐ":"t","ฑ":"t","ฒ":"t","ด":"t","ต":"t","ถ":"t","ท":"t","ธ":"t",
+  "ญ":"n","ณ":"n","น":"n","ร":"n","ล":"n","ฬ":"n",
+  "บ":"p","ป":"p","พ":"p","ฟ":"p","ภ":"p","ผ":"p",
+  "ม":"m",
+  "ย":"i","ว":"o"
+};
+
+// Thai vowels by position.
+const TH_VOWEL_DIACRITIC = { "ั":"a","ิ":"i","ี":"i","ึ":"ue","ื":"ue","ุ":"u","ู":"u","็":"" };
+const TH_VOWEL_INLINE    = { "ะ":"a","า":"a","ำ":"am" };
+const TH_VOWEL_PRE       = { "เ":"e","แ":"ae","โ":"o","ใ":"ai","ไ":"ai" };
+const TH_TONE_MARKS      = "่้๊๋";
+
+function isToneOrSilencer(ch) {
+  return ch === "์" || TH_TONE_MARKS.indexOf(ch) >= 0;
+}
+
+// Approximate RTGS romanization of a Thai (or mixed) token.
+// Rules applied:
+//   - ์ silencer drops the preceding consonant
+//   - tone marks ignored
+//   - pre-vowels (เ แ โ ใ ไ) attach AFTER the next initial consonant
+//   - consonant with no vowel + more consonants remaining  → initial + implicit "a"
+//   - consonant with no vowel at end of token             → use FINAL map
+//   - latin chars pass through unchanged (lowercased)
+// Imperfect (no lexicon), but produces strings close enough that
+// Levenshtein on the result lines up with real ID-card spellings.
+function thaiRomanize(s) {
+  if (!s) return "";
+  const chars = String(s).toLowerCase().split("");
+  const silent = new Array(chars.length).fill(false);
+  for (let i = 1; i < chars.length; i++) {
+    if (chars[i] === "์") silent[i - 1] = true;
+  }
+  function consonantsRemainingFrom(k) {
+    let n = 0;
+    for (let i = k; i < chars.length; i++) {
+      if (silent[i]) continue;
+      if (Object.prototype.hasOwnProperty.call(TH_CONSONANT_MAP, chars[i])) n++;
+    }
+    return n;
+  }
+
+  let out = "";
+  let i = 0;
+  let preVowel = "";
+
+  while (i < chars.length) {
+    const ch = chars[i];
+    if (silent[i] || isToneOrSilencer(ch)) { i++; continue; }
+
+    if (Object.prototype.hasOwnProperty.call(TH_VOWEL_PRE, ch)) {
+      preVowel = TH_VOWEL_PRE[ch];
+      i++;
+      continue;
+    }
+
+    if (Object.prototype.hasOwnProperty.call(TH_CONSONANT_MAP, ch)) {
+      // Look ahead past silent/tone marks for the next significant char.
+      let j = i + 1;
+      while (j < chars.length && (silent[j] || isToneOrSilencer(chars[j]))) j++;
+      const nextCh = j < chars.length ? chars[j] : "";
+
+      const hasDiacritic = Object.prototype.hasOwnProperty.call(TH_VOWEL_DIACRITIC, nextCh);
+      const hasInline    = Object.prototype.hasOwnProperty.call(TH_VOWEL_INLINE, nextCh);
+      const hasPre       = preVowel !== "";
+      const hasVowel     = hasDiacritic || hasInline || hasPre;
+
+      if (hasVowel) {
+        out += TH_CONSONANT_MAP[ch];
+        if (hasPre)       { out += preVowel; preVowel = ""; }
+        if (hasDiacritic) { out += TH_VOWEL_DIACRITIC[nextCh]; i = j + 1; continue; }
+        if (hasInline)    { out += TH_VOWEL_INLINE[nextCh];    i = j + 1; continue; }
+        i = j;
+        continue;
+      }
+
+      const remaining = consonantsRemainingFrom(i + 1);
+      if (remaining > 0) {
+        // Implicit "a" between consonants (default Thai vowel in unmarked syllables).
+        out += TH_CONSONANT_MAP[ch] + "a";
+      } else {
+        // End of token — use FINAL form.
+        out += (Object.prototype.hasOwnProperty.call(TH_FINAL, ch) ? TH_FINAL[ch] : TH_CONSONANT_MAP[ch]);
+      }
+      i++;
+      continue;
+    }
+
+    if (/[a-z]/.test(ch)) { out += ch; i++; continue; }
+    i++;
+  }
+  // Flush any dangling pre-vowel (malformed input).
+  if (preVowel) out += preVowel;
+  return out;
+}
+
 // Build a consonant-only skeleton from a single token (TH, EN, or mixed).
 // Strips Thai vowels/tone marks; for roman letters, drops a/e/i/o/u/y.
 // Handles the Thai silencer "์" — the preceding consonant becomes silent.
@@ -244,7 +347,26 @@ function tokensMatch(a, b) {
     const skThreshold = skMax <= 4 ? 1 : 2;
     if (levenshtein(skA, skB) <= skThreshold) return true;
   }
+  // Full RTGS-ish romanization with vowels — closer to ID-card spelling.
+  const rA = thaiRomanize(a);
+  const rB = thaiRomanize(b);
+  if (romanizeMatch(rA, rB)) return true;
+  // จ has two common romanizations: "ch" (RTGS) and "j" (informal — e.g. จิรา→Jira).
+  // If either side starts with "ch", also try with "j" prefix.
+  if (rA.indexOf("ch") === 0 || rB.indexOf("ch") === 0) {
+    const altA = rA.indexOf("ch") === 0 ? "j" + rA.substring(2) : rA;
+    const altB = rB.indexOf("ch") === 0 ? "j" + rB.substring(2) : rB;
+    if (romanizeMatch(altA, altB)) return true;
+  }
   return false;
+}
+
+function romanizeMatch(rA, rB) {
+  if (rA.length < 3 || rB.length < 3) return false;
+  if (rA === rB) return true;
+  const rMax = Math.max(rA.length, rB.length);
+  const rThreshold = rMax <= 4 ? 1 : rMax <= 7 ? 2 : rMax <= 10 ? 3 : 4;
+  return levenshtein(rA, rB) <= rThreshold;
 }
 
 // Cross-compare every sender token against every customer token.
