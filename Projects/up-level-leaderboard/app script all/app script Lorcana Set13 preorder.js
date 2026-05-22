@@ -148,6 +148,50 @@ const NAME_ALIASES = {
   "x":      ["เอ็กซ์"]
 };
 
+// Map Thai consonants → roman equivalents (RTGS-ish).
+// Used to build a consonant-only skeleton so "ชวณัฐ" ↔ "Chawanut" can match
+// without maintaining per-person alias entries.
+// Single-char roman per consonant — practical romanization
+// (drops RTGS aspiration "h" so ค→k, ท→t, พ→p which is what real bank names look like).
+const TH_CONSONANT_MAP = {
+  "ก":"k","ข":"k","ฃ":"k","ค":"k","ฅ":"k","ฆ":"k",
+  "ง":"ng",
+  "จ":"ch","ฉ":"ch","ช":"ch","ซ":"s","ฌ":"ch",
+  "ญ":"y",
+  "ฎ":"d","ฏ":"t","ฐ":"t","ฑ":"t","ฒ":"t","ณ":"n",
+  "ด":"d","ต":"t","ถ":"t","ท":"t","ธ":"t",
+  "น":"n",
+  "บ":"b","ป":"p","ผ":"p","ฝ":"f","พ":"p","ฟ":"f","ภ":"p",
+  "ม":"m",
+  "ย":"y","ร":"r","ล":"l","ว":"w",
+  "ศ":"s","ษ":"s","ส":"s","ห":"h","ฬ":"l","อ":"","ฮ":"h"
+};
+
+// Build a consonant-only skeleton from a single token (TH, EN, or mixed).
+// Strips Thai vowels/tone marks; for roman letters, drops a/e/i/o/u/y.
+// Handles the Thai silencer "์" — the preceding consonant becomes silent.
+function consonantSkeleton(s) {
+  if (!s) return "";
+  const lower = String(s).toLowerCase();
+  const chars = lower.split("");
+  const silent = new Array(chars.length).fill(false);
+  for (let i = 1; i < chars.length; i++) {
+    if (chars[i] === "์") silent[i - 1] = true; // ์ thanthakhat
+  }
+  let out = "";
+  for (let i = 0; i < chars.length; i++) {
+    if (silent[i]) continue;
+    const ch = chars[i];
+    if (Object.prototype.hasOwnProperty.call(TH_CONSONANT_MAP, ch)) {
+      out += TH_CONSONANT_MAP[ch];
+    } else if (/[a-z]/.test(ch)) {
+      if (!/[aeiouy]/.test(ch)) out += ch;
+    }
+    // ignore Thai vowels, tone marks, digits, punctuation
+  }
+  return out;
+}
+
 function levenshtein(a, b) {
   a = a || ""; b = b || "";
   const m = a.length, n = b.length;
@@ -190,6 +234,16 @@ function tokensMatch(a, b) {
   if (aliasesA.indexOf(b) >= 0) return true;
   const aliasesB = NAME_ALIASES[b] || [];
   if (aliasesB.indexOf(a) >= 0) return true;
+  // Consonant skeleton — catches Thai given name ↔ EN romanization
+  // (e.g. ชวณัฐ→"chwnth" vs Chawanut→"chwnt")
+  const skA = consonantSkeleton(a);
+  const skB = consonantSkeleton(b);
+  if (skA.length >= 3 && skB.length >= 3) {
+    if (skA === skB) return true;
+    const skMax = Math.max(skA.length, skB.length);
+    const skThreshold = skMax <= 4 ? 1 : 2;
+    if (levenshtein(skA, skB) <= skThreshold) return true;
+  }
   return false;
 }
 
