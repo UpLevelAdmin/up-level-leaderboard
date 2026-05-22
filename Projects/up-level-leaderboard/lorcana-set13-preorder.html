@@ -591,6 +591,74 @@
             box-shadow: 0 4px 12px rgba(245,197,66,0.4);
         }
 
+        /* ===== Pay amount panel (big number + copy/save actions) ===== */
+        .pay-amount-panel {
+            margin: 0.8rem 0 0.6rem;
+            padding: 1rem 0.9rem;
+            border-radius: 14px;
+            background: linear-gradient(135deg, rgba(45,138,78,0.22), rgba(245,197,66,0.18));
+            border: 1px solid rgba(245,197,66,0.5);
+            text-align: center;
+        }
+        .pay-amount-label {
+            font-size: 0.82rem;
+            color: var(--gold-soft);
+            font-weight: 600;
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
+        }
+        .pay-amount-big {
+            font-size: 2.6rem;
+            font-weight: 800;
+            color: var(--gold);
+            line-height: 1.1;
+            margin: 0.3rem 0 0.1rem;
+            letter-spacing: -1px;
+            text-shadow: 0 0 18px rgba(245,197,66,0.4);
+        }
+        .pay-amount-big .baht { font-size: 1.2rem; color: var(--ink); margin-left: 0.3rem; font-weight: 600; }
+        .pay-amount-hint {
+            font-size: 0.78rem;
+            color: rgba(245,235,210,0.7);
+            margin-top: 0.2rem;
+            font-style: italic;
+        }
+        .pay-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            margin-top: 0.7rem;
+        }
+        .pay-action-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            background: rgba(245,197,66,0.14);
+            border: 1px solid rgba(245,197,66,0.5);
+            color: var(--gold-soft);
+            font-family: 'Kanit', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 600;
+            padding: 0.55rem 0.6rem;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.18s;
+        }
+        .pay-action-btn:hover {
+            background: rgba(245,197,66,0.24);
+            transform: translateY(-1px);
+        }
+        .pay-action-btn.copied {
+            background: rgba(110,210,138,0.25);
+            border-color: var(--vine-glow);
+            color: var(--vine-glow);
+        }
+        .pay-action-btn:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+
         .file-upload-zone {
             border: 2px dashed rgba(110,210,138,0.45);
             border-radius: 12px;
@@ -710,6 +778,59 @@
         .order-row .ts { font-size: 0.75rem; color: var(--ink-mute); margin-bottom: 4px; }
         .order-row .items { color: var(--gold-soft); margin: 4px 0; }
         .order-row .status { font-weight: 700; }
+        .next-action {
+            display: flex;
+            gap: 0.5rem;
+            align-items: flex-start;
+            margin-top: 0.45rem;
+            padding: 0.55rem 0.7rem;
+            border-radius: 8px;
+            font-size: 0.82rem;
+            line-height: 1.45;
+        }
+        .next-action.done    { background: rgba(45,138,78,0.18);  border: 1px solid rgba(110,210,138,0.45); color: var(--vine-glow); }
+        .next-action.pending { background: rgba(245,197,66,0.13); border: 1px solid rgba(245,197,66,0.45); color: var(--gold-soft); }
+        .next-action.warn    { background: rgba(220,60,60,0.13);  border: 1px solid rgba(220,60,60,0.45); color: #fca5a5; }
+        .next-action.refund,
+        .next-action.cancel,
+        .next-action.unknown { background: rgba(150,150,150,0.13); border: 1px solid rgba(150,150,150,0.4); color: #ccc; }
+        .next-action .nx-label { font-weight: 700; margin-right: 0.3rem; }
+
+        /* "รวมทั้งหมดของคุณ" card */
+        .agg-card {
+            background: linear-gradient(135deg, rgba(58,23,88,0.4), rgba(45,138,78,0.25));
+            border: 1px solid rgba(245,197,66,0.5);
+            border-radius: 12px;
+            padding: 0.9rem 0.95rem;
+            margin-bottom: 0.7rem;
+        }
+        .agg-card .agg-head {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-weight: 700;
+            color: var(--gold);
+            margin-bottom: 0.4rem;
+            font-size: 0.95rem;
+        }
+        .agg-card .agg-items {
+            color: var(--ink);
+            font-size: 0.85rem;
+            line-height: 1.7;
+            margin: 0.2rem 0 0.4rem;
+        }
+        .agg-card .agg-items b { color: var(--vine-glow); }
+        .agg-card .agg-amounts {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.4rem;
+            font-size: 0.82rem;
+            margin-top: 0.4rem;
+            padding-top: 0.5rem;
+            border-top: 1px dashed rgba(245,197,66,0.3);
+        }
+        .agg-card .agg-amounts div { text-align: center; }
+        .agg-card .agg-amounts b { display: block; color: var(--gold); font-size: 0.95rem; margin-top: 2px; }
 
         /* ===== Contact card ===== */
         .contact-grid {
@@ -1195,8 +1316,24 @@
                 สแกน QR แล้วโอนยอดตรงตามจำนวน ระบบเช็คสลิปอัตโนมัติ
             </div>
             <div class="qr-display">
-                <div class="qr-plate"><img id="kshop-qr-img" src="https://i.postimg.cc/9Qf7H5S7/QR-KShop.jpg" alt="KShop QR" /></div>
+                <div class="qr-plate"><img id="kshop-qr-img" src="https://i.postimg.cc/9Qf7H5S7/QR-KShop.jpg" alt="KShop QR" crossorigin="anonymous" /></div>
                 <div class="qr-amount-tag" id="qr-amount-tag">มัดจำ 0 บาท</div>
+            </div>
+
+            <div class="pay-amount-panel">
+                <div class="pay-amount-label">ยอดที่ต้องโอน</div>
+                <div class="pay-amount-big"><span id="pay-amount-num">0</span><span class="baht">บาท</span></div>
+                <div class="pay-amount-hint">กดปุ่มด้านล่างเพื่อคัดลอกยอด / เซฟ QR เก็บไว้สแกน</div>
+                <div class="pay-actions">
+                    <button type="button" class="pay-action-btn" id="btn-copy-amount">
+                        <span class="lc"><i data-lucide="copy"></i></span>
+                        <span id="copy-btn-label">คัดลอกยอด</span>
+                    </button>
+                    <button type="button" class="pay-action-btn" id="btn-save-qr">
+                        <span class="lc"><i data-lucide="download"></i></span>
+                        <span>เซฟ QR</span>
+                    </button>
+                </div>
             </div>
             <div class="input-row">
                 <label>อัปโหลดสลิปโอนเงิน *</label>
@@ -1424,6 +1561,9 @@
             document.getElementById("remaining-line").textContent  = remaining.toLocaleString() + " บาท";
             document.getElementById("total-display").innerHTML     = '<span class="num">' + deposit.toLocaleString() + '</span><span class="unit">บาท (มัดจำ 50% ของยอดสินค้า)</span>';
             document.getElementById("qr-amount-tag").textContent   = "มัดจำ " + deposit.toLocaleString() + " บาท";
+            document.getElementById("pay-amount-num").textContent  = deposit.toLocaleString();
+            // Stash raw number (digits only) for copy-to-clipboard
+            document.getElementById("btn-copy-amount").dataset.amount = String(deposit);
             // Sticky cart bar
             const cartBar = document.getElementById("cart-bar");
             document.getElementById("cart-bar-amt").textContent = deposit.toLocaleString() + " บาท";
@@ -1431,6 +1571,63 @@
             else                   cartBar.classList.remove("show");
             updateSubmitState();
         }
+
+        /* ---------- Copy ยอด button ---------- */
+        document.getElementById("btn-copy-amount").addEventListener("click", async (e) => {
+            const btn = e.currentTarget;
+            const amount = btn.dataset.amount || "0";
+            const label = document.getElementById("copy-btn-label");
+            if (amount === "0") {
+                label.textContent = "เลือกของก่อน";
+                setTimeout(() => label.textContent = "คัดลอกยอด", 1400);
+                return;
+            }
+            try {
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    await navigator.clipboard.writeText(amount);
+                } else {
+                    // Fallback for older browsers
+                    const ta = document.createElement("textarea");
+                    ta.value = amount;
+                    ta.style.position = "fixed";
+                    ta.style.opacity  = "0";
+                    document.body.appendChild(ta);
+                    ta.select();
+                    document.execCommand("copy");
+                    document.body.removeChild(ta);
+                }
+                btn.classList.add("copied");
+                label.textContent = "คัดลอกแล้ว ✓";
+                setTimeout(() => {
+                    btn.classList.remove("copied");
+                    label.textContent = "คัดลอกยอด";
+                }, 1800);
+            } catch (err) {
+                label.textContent = "คัดลอกไม่ได้";
+                setTimeout(() => label.textContent = "คัดลอกยอด", 1800);
+            }
+        });
+
+        /* ---------- Save QR button ---------- */
+        document.getElementById("btn-save-qr").addEventListener("click", async () => {
+            const img = document.getElementById("kshop-qr-img");
+            const filename = "KShop-QR-Lorcana-Set13.jpg";
+            try {
+                const res  = await fetch(img.src, { mode: "cors" });
+                const blob = await res.blob();
+                const url  = URL.createObjectURL(blob);
+                const a    = document.createElement("a");
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                setTimeout(() => URL.revokeObjectURL(url), 1000);
+            } catch (err) {
+                // Fallback: open image in new tab (user long-press to save on mobile)
+                window.open(img.src, "_blank");
+            }
+        });
 
         /* ---------- Sticky cart bar action ---------- */
         document.getElementById("cart-bar-btn").addEventListener("click", () => {
@@ -1642,9 +1839,33 @@
             const tsStr = o.timestamp ? new Date(o.timestamp).toLocaleString("th-TH") : "";
             const shipLabel = o.shipping === "ship" ? "จัดส่ง" : "รับที่ร้าน";
 
-            const pendingNote = o.pending
-                ? `<div class="alert info" style="margin:0.4rem 0;font-size:0.82rem;"><span class="lc"><i data-lucide="info"></i></span> ส่งข้อมูลไปยังร้านแล้ว แต่ระบบยังไม่ได้รับคำตอบกลับ — กด <b>"เช็คสถานะอีกครั้ง"</b> เพื่อยืนยันออเดอร์ของท่านครับ</div>`
-                : "";
+            // Status-derived next-action block (matches the styling of the status check page)
+            let nextActionBlock = "";
+            if (o.pending) {
+                nextActionBlock = `<div class="next-action pending">
+                    <span class="lc"><i data-lucide="clock"></i></span>
+                    <div><span class="nx-label">รอผลตอบกลับ:</span> ส่งข้อมูลไปยังร้านแล้ว — กด <b>"เช็คสถานะอีกครั้ง"</b> เพื่อยืนยันว่าออเดอร์ถูกบันทึก</div>
+                </div>`;
+            } else if (o.verified) {
+                nextActionBlock = `<div class="next-action done">
+                    <span class="lc"><i data-lucide="check-circle"></i></span>
+                    <div><span class="nx-label">เสร็จเรียบร้อย:</span> ไม่ต้องทำอะไรเพิ่ม — ทางร้านจะคอนเฟิร์มยอดสินค้าจริงหลังปิดพรีออเดอร์ และแจ้งชำระยอดคงเหลืออีกครั้ง</div>
+                </div>`;
+            } else {
+                const s = String(o.status || "");
+                if (s.indexOf("ยอดไม่ตรง") >= 0) {
+                    nextActionBlock = `<div class="next-action warn">
+                        <span class="lc"><i data-lucide="alert-triangle"></i></span>
+                        <div><span class="nx-label">ยอดโอนไม่ตรง:</span> กรุณาทักแอดมินทาง LINE / Facebook เพื่อแก้ไข</div>
+                    </div>`;
+                } else {
+                    nextActionBlock = `<div class="next-action pending">
+                        <span class="lc"><i data-lucide="clock"></i></span>
+                        <div><span class="nx-label">รอตรวจสลิป:</span> ทางร้านจะตรวจและยืนยันออเดอร์ภายใน 24 ชม. — ไม่ต้องส่งซ้ำ</div>
+                    </div>`;
+                }
+            }
+
 
             slot.innerHTML = `
                 <div class="my-order-card ${klass}">
@@ -1661,7 +1882,7 @@
                         <div>ยอดเต็ม <b>${(o.total||0).toLocaleString()}</b></div>
                     </div>
                     <div class="my-order-status">${escapeHtml(o.status || "-")}</div>
-                    ${pendingNote}
+                    ${nextActionBlock}
                     <div class="my-order-actions">
                         <button class="my-order-btn" id="my-order-refresh">
                             <span class="lc"><i data-lucide="refresh-cw"></i></span> เช็คสถานะอีกครั้ง
@@ -1778,12 +1999,19 @@
 
             if (data.success && data.verified) {
                 icon.textContent = "✅";
-                title.textContent = "มัดจำสำเร็จ!";
-                msg.innerHTML = "ระบบยืนยันยอดมัดจำเรียบร้อย<br>มัดจำ: <b>" + (data.deposit||0).toLocaleString() + " บาท</b> · คงเหลือ <b>" + (data.remaining||0).toLocaleString() + " บาท</b> จ่ายตอนรับของ<br><small>หลังปิดพรีออเดอร์ 31 พ.ค. ทางร้านจะคอนเฟิร์มยอดอีกครั้งครับ</small>";
+                title.textContent = "เสร็จเรียบร้อย!";
+                msg.innerHTML =
+                    "<b>ไม่ต้องทำอะไรเพิ่มครับ</b> ระบบยืนยันมัดจำเรียบร้อย<br><br>" +
+                    "💵 มัดจำ <b>" + (data.deposit||0).toLocaleString() + " บาท</b>" +
+                    " · คงเหลือ <b>" + (data.remaining||0).toLocaleString() + " บาท</b> (จ่ายตอนรับของ)<br><br>" +
+                    "<small>หลังปิดพรีออเดอร์ 31 พ.ค. ทางร้านจะคอนเฟิร์มยอดและแจ้งชำระคงเหลืออีกครั้งครับ</small>";
             } else if (data.success && !data.verified) {
                 icon.textContent = "⏳";
-                title.textContent = "รอตรวจสอบสลิป";
-                msg.innerHTML = "ระบบรับออเดอร์แล้ว แต่ยังตรวจสลิปอัตโนมัติไม่ผ่าน<br>แอดมินจะตรวจและติดต่อกลับ";
+                title.textContent = "รับออเดอร์แล้ว · รอตรวจสลิป";
+                msg.innerHTML =
+                    "<b>ระบบรับออเดอร์ของท่านแล้ว — ไม่ต้องส่งซ้ำ</b><br><br>" +
+                    "ทางร้านจะตรวจสลิปและยืนยันออเดอร์ <b>ภายใน 24 ชม.</b><br>" +
+                    "ตรวจสถานะได้ที่การ์ด <b>\"ออเดอร์ของท่าน\"</b> ด้านบน หรือทักแอดมินทาง LINE / Facebook";
             } else if (data.error === "booster_limit_exceeded") {
                 icon.textContent = "📦"; title.textContent = "Booster เกินสิทธิ์";
                 msg.innerHTML = data.message || `Booster Box จำกัด ${BOOSTER_LIMIT} กล่อง/ท่าน`;
@@ -1831,21 +2059,54 @@
                     out.innerHTML = '<div class="alert warn">ไม่พบออเดอร์จากเบอร์นี้</div>';
                     return;
                 }
-                out.innerHTML = data.orders.map(o => {
-                    const itemTxt = (o.items || []).map(i => `${i.name} × ${i.qty}`).join(", ");
+
+                let html = "";
+
+                // Aggregated card — only show when 2+ active orders to avoid noise
+                const agg = data.aggregated;
+                if (agg && agg.orderCount >= 2 && agg.items && agg.items.length > 0) {
+                    const itemLines = agg.items.map(it => `<b>${escapeHtml(it.name)}</b> × ${it.qty}`).join("<br>");
+                    const allPaidNote = agg.allPaid
+                        ? `<div class="alert success" style="margin:0.5rem 0 0;font-size:0.82rem;">✅ ทุกออเดอร์มัดจำเรียบร้อย — รอคอนเฟิร์มยอดสินค้าจริง</div>`
+                        : `<div class="alert warn" style="margin:0.5rem 0 0;font-size:0.82rem;">⏳ ยังมี ${agg.pendingCount} ออเดอร์ที่รอตรวจ/ชำระ — ดูแต่ละรายการด้านล่าง</div>`;
+                    html += `<div class="agg-card">
+                        <div class="agg-head"><span class="lc"><i data-lucide="package"></i></span> รวมทั้งหมดของคุณ (${agg.orderCount} ออเดอร์)</div>
+                        <div class="agg-items">${itemLines}</div>
+                        <div class="agg-amounts">
+                            <div>ยอดเต็ม<b>${(agg.total||0).toLocaleString()}</b></div>
+                            <div>มัดจำ<b>${(agg.deposit||0).toLocaleString()}</b></div>
+                            <div>คงเหลือ<b>${(agg.remaining||0).toLocaleString()}</b></div>
+                        </div>
+                        ${allPaidNote}
+                    </div>`;
+                }
+
+                html += data.orders.map(o => {
+                    const itemTxt = (o.items || []).map(i => `${escapeHtml(i.name)} × ${i.qty}`).join(", ");
                     const ts = o.timestamp ? new Date(o.timestamp).toLocaleString("th-TH") : "";
                     const depLine = (o.deposit || o.remaining)
                         ? `<div>💵 มัดจำ ${(o.deposit||0).toLocaleString()} / คงเหลือ ${(o.remaining||0).toLocaleString()}</div>`
                         : "";
+
+                    const nx = o.nextAction || { kind: "unknown", label: "ติดต่อแอดมิน", text: "สถานะไม่ชัดเจน" };
+                    const nxBlock = `<div class="next-action ${nx.kind}">
+                        <span class="lc"><i data-lucide="${nx.kind === 'done' ? 'check-circle' : (nx.kind === 'warn' ? 'alert-triangle' : 'clock')}"></i></span>
+                        <div><span class="nx-label">${escapeHtml(nx.label)}:</span>${escapeHtml(nx.text)}</div>
+                    </div>`;
+
                     return `<div class="order-row">
                         <div class="ts">${ts}</div>
-                        <div><b>${o.name}</b> · ${o.shipping}</div>
+                        <div><b>${escapeHtml(o.name)}</b> · ${escapeHtml(o.shipping)}</div>
                         <div class="items">${itemTxt}</div>
                         <div>💰 ยอดเต็ม ${(o.total||0).toLocaleString()} บาท</div>
                         ${depLine}
-                        <div class="status">${o.status || "-"}</div>
+                        <div class="status">${escapeHtml(o.status || "-")}</div>
+                        ${nxBlock}
                     </div>`;
                 }).join("");
+
+                out.innerHTML = html;
+                lucide.createIcons();
             } catch (err) {
                 out.innerHTML = '<div class="alert error">เกิดข้อผิดพลาด: ' + err.message + '</div>';
             }

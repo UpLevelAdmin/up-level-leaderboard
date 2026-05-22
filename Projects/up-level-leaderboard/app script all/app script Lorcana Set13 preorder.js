@@ -129,6 +129,9 @@ function doGet(e) {
     if (action === "recent") {
       return jsonResponse(getRecentOrders(parseInt(e.parameter.limit) || 5));
     }
+    if (action === "dashboard") {
+      return jsonResponse(getDashboardSummary());
+    }
     return jsonResponse(getSummary());
   } catch (err) {
     return jsonResponse({ error: String(err) });
@@ -188,6 +191,51 @@ function getSummary() {
   };
 }
 
+// Derive a customer-facing "next step" hint from raw sheet status
+function deriveNextAction(status) {
+  const s = String(status || "");
+  if (s.indexOf("มัดจำแล้ว") >= 0) {
+    return {
+      kind: "done",
+      label: "เสร็จเรียบร้อย",
+      text:  "ไม่ต้องทำอะไรเพิ่ม — ทางร้านจะคอนเฟิร์มยอดสินค้าจริงหลังปิดพรีออเดอร์ และแจ้งชำระยอดคงเหลืออีกครั้ง"
+    };
+  }
+  if (s.indexOf("ยอดไม่ตรง") >= 0) {
+    return {
+      kind: "warn",
+      label: "ยอดโอนไม่ตรง",
+      text:  "ยอดที่โอนไม่ตรงกับมัดจำที่ระบบคำนวณ — กรุณาทักแอดมินทาง LINE / Facebook เพื่อแก้ไข"
+    };
+  }
+  if (s.indexOf("รอตรวจ") >= 0) {
+    return {
+      kind: "pending",
+      label: "รอตรวจสลิป",
+      text:  "ทางร้านจะตรวจสลิปและยืนยันออเดอร์ภายใน 24 ชม. — ไม่ต้องส่งซ้ำ"
+    };
+  }
+  if (s.indexOf("คืนเงิน") >= 0) {
+    return {
+      kind: "refund",
+      label: "คืนเงินแล้ว",
+      text:  "ออเดอร์นี้ถูกคืนเงิน — ติดต่อแอดมินถ้ามีคำถาม"
+    };
+  }
+  if (s.indexOf("ยกเลิก") >= 0 || s.indexOf("เกินโควต้า") >= 0) {
+    return {
+      kind: "cancel",
+      label: "ออเดอร์ถูกยกเลิก",
+      text:  "ติดต่อแอดมินทาง LINE / Facebook เพื่อสอบถามรายละเอียด"
+    };
+  }
+  return {
+    kind: "unknown",
+    label: "ติดต่อแอดมิน",
+    text:  "สถานะไม่ชัดเจน — กรุณาทักแอดมินเพื่อยืนยันออเดอร์"
+  };
+}
+
 // Customer-safe order lookup (no slip URL, no address)
 function getOrderStatus(phone) {
   const normPhone = normalizePhone(phone);
@@ -209,19 +257,62 @@ function getOrderStatus(phone) {
       if (q > 0) items.push({ name: SKUS[s].name, qty: q });
     }
 
-    const ts = row[COL_TIMESTAMP - 1];
+    const ts     = row[COL_TIMESTAMP - 1];
+    const status = String(row[COL_STATUS - 1] || "");
     orders.push({
-      timestamp: ts instanceof Date ? ts.toISOString() : String(ts),
-      name:      String(row[COL_NAME - 1] || ""),
-      shipping:  String(row[COL_SHIPPING - 1] || ""),
-      items:     items,
-      total:     parseFloat(row[COL_TOTAL - 1]) || 0,
-      deposit:   parseFloat(row[COL_DEPOSIT - 1]) || 0,
-      remaining: parseFloat(row[COL_REMAINING - 1]) || 0,
-      status:    String(row[COL_STATUS - 1] || "")
+      timestamp:  ts instanceof Date ? ts.toISOString() : String(ts),
+      name:       String(row[COL_NAME - 1] || ""),
+      shipping:   String(row[COL_SHIPPING - 1] || ""),
+      items:      items,
+      total:      parseFloat(row[COL_TOTAL - 1]) || 0,
+      deposit:    parseFloat(row[COL_DEPOSIT - 1]) || 0,
+      remaining:  parseFloat(row[COL_REMAINING - 1]) || 0,
+      status:     status,
+      nextAction: deriveNextAction(status)
     });
   }
-  return { found: orders.length > 0, count: orders.length, orders: orders };
+
+  // Aggregated view across all active (non-cancelled, non-refunded) orders
+  // for shipping consolidation — "รวมทั้งหมดของคุณ"
+  const active = orders.filter(o => {
+    const s = o.status || "";
+    return s.indexOf("คืนเงิน") < 0 && s.indexOf("ยกเลิก") < 0 && s.indexOf("เกินโควต้า") < 0;
+  });
+
+  const itemMap = {};   // name -> qty
+  let aggTotal = 0, aggDeposit = 0, aggRemaining = 0, aggQty = 0;
+  let paidCount = 0, pendingCount = 0;
+  active.forEach(o => {
+    aggTotal     += o.total     || 0;
+    aggDeposit   += o.deposit   || 0;
+    aggRemaining += o.remaining || 0;
+    (o.items || []).forEach(it => {
+      itemMap[it.name] = (itemMap[it.name] || 0) + (it.qty || 0);
+      aggQty += it.qty || 0;
+    });
+    if (String(o.status || "").indexOf("มัดจำแล้ว") >= 0) paidCount++;
+    else pendingCount++;
+  });
+
+  const aggItems = Object.keys(itemMap).map(name => ({ name: name, qty: itemMap[name] }));
+  const allPaid  = active.length > 0 && paidCount === active.length;
+
+  return {
+    found:      orders.length > 0,
+    count:      orders.length,
+    orders:     orders,
+    aggregated: {
+      orderCount:   active.length,
+      paidCount:    paidCount,
+      pendingCount: pendingCount,
+      allPaid:      allPaid,
+      totalQty:     aggQty,
+      total:        aggTotal,
+      deposit:      aggDeposit,
+      remaining:    aggRemaining,
+      items:        aggItems
+    }
+  };
 }
 
 // =============================================
@@ -570,6 +661,249 @@ function sendTelegram(text) {
 }
 
 // =============================================
+//  Dashboard — aggregated SKU/order/revenue stats
+// =============================================
+const DASHBOARD_TAB = "Dashboard";
+
+// Pure computation — returns dashboard data object (no side effects)
+function computeDashboardData() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+  if (!sheet) return null;
+
+  const data = sheet.getDataRange().getValues();
+
+  const skuTotals = SKUS.map(() => ({ qty: 0, revenue: 0 }));
+  let totalOrders = 0, paid = 0, pending = 0, unpaid = 0, refunded = 0;
+  let depositRevenue = 0, fullRevenue = 0;
+  let mismatchCount = 0;
+
+  const phoneSet = {};                  // unique customers
+  const customerAgg = {};               // phone -> { name, qty, total }
+
+  for (let i = 1; i < data.length; i++) {
+    const row = data[i];
+    if (!row[COL_NAME - 1]) continue;
+
+    const status      = String(row[COL_STATUS - 1] || "");
+    const orderTotal  = parseFloat(row[COL_TOTAL - 1])   || 0;
+    const orderDep    = parseFloat(row[COL_DEPOSIT - 1]) || 0;
+    const phone       = normalizePhone(row[COL_PHONE - 1]);
+    const name        = String(row[COL_NAME - 1] || "");
+
+    totalOrders++;
+
+    const isRefunded = /คืนเงิน|ยกเลิก|เกินโควต้า/.test(status);
+    if (isRefunded) {
+      refunded++;
+      continue;  // exclude from SKU + revenue counts
+    }
+
+    if (phone) phoneSet[phone] = true;
+
+    if (status.indexOf("มัดจำแล้ว") >= 0) {
+      paid++;
+      depositRevenue += orderDep;
+      fullRevenue    += orderTotal;
+    } else if (status.indexOf("ยอดไม่ตรง") >= 0) {
+      mismatchCount++;
+      unpaid++;
+    } else if (status.indexOf("รอตรวจ") >= 0) {
+      pending++;
+    } else {
+      unpaid++;
+    }
+
+    let rowQty = 0;
+    for (let s = 0; s < SKUS.length; s++) {
+      const q = parseInt(row[COL_QTY_START - 1 + s]) || 0;
+      if (q > 0) {
+        skuTotals[s].qty     += q;
+        skuTotals[s].revenue += q * SKUS[s].price;
+        rowQty += q;
+      }
+    }
+
+    if (phone) {
+      if (!customerAgg[phone]) {
+        customerAgg[phone] = { name: name, phone: phone, qty: 0, total: 0 };
+      }
+      customerAgg[phone].qty   += rowQty;
+      customerAgg[phone].total += orderTotal;
+    }
+  }
+
+  const customers = Object.keys(customerAgg).map(p => customerAgg[p]);
+  customers.sort((a, b) => b.total - a.total);
+
+  return {
+    updatedAt:    new Date().toISOString(),
+    totalOrders:  totalOrders,
+    uniqueCustomers: Object.keys(phoneSet).length,
+    paid:         paid,
+    pending:      pending,
+    unpaid:       unpaid,
+    refunded:     refunded,
+    mismatch:     mismatchCount,
+    depositRevenue: depositRevenue,
+    fullRevenue:  fullRevenue,
+    skus:         SKUS.map((s, i) => ({
+      key:     s.key,
+      name:    s.name,
+      price:   s.price,
+      qty:     skuTotals[i].qty,
+      revenue: skuTotals[i].revenue
+    })),
+    topCustomers: customers.slice(0, 10)
+  };
+}
+
+// Returns JSON for ?action=dashboard
+function getDashboardSummary() {
+  const d = computeDashboardData();
+  if (!d) return { error: "sheet_not_found" };
+  return d;
+}
+
+// Writes/refreshes the "Dashboard" tab in the sheet
+function updateDashboardTab() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName(DASHBOARD_TAB);
+  if (!sheet) sheet = ss.insertSheet(DASHBOARD_TAB);
+
+  sheet.clear();
+  const d = computeDashboardData();
+  if (!d) { sheet.getRange(1, 1).setValue("❌ ไม่พบ sheet ข้อมูล"); return; }
+
+  const tz       = ss.getSpreadsheetTimeZone() || "Asia/Bangkok";
+  const updated  = Utilities.formatDate(new Date(d.updatedAt), tz, "yyyy-MM-dd HH:mm");
+  const activeOrders = d.totalOrders - d.refunded;
+
+  const rows = [];
+  rows.push(["🌿 Lorcana Set 13 — Dashboard"]);
+  rows.push(["อัพเดทล่าสุด: " + updated]);
+  rows.push([""]);
+  rows.push(["═══ สรุปออเดอร์ ═══"]);
+  rows.push(["ออเดอร์ทั้งหมด",       d.totalOrders]);
+  rows.push(["ลูกค้าไม่ซ้ำ (เบอร์)",  d.uniqueCustomers]);
+  rows.push(["✅ มัดจำแล้ว",         d.paid]);
+  rows.push(["⏳ รอตรวจ",            d.pending]);
+  rows.push(["❌ รอชำระ / ผิดพลาด",   d.unpaid]);
+  rows.push(["⚠️ ยอดไม่ตรง (ในนั้น)", d.mismatch]);
+  rows.push(["🔄 คืนเงิน / ยกเลิก",   d.refunded]);
+  rows.push([""]);
+  rows.push(["═══ ยอดเงิน ═══"]);
+  rows.push(["💵 มัดจำที่ verified",  d.depositRevenue]);
+  rows.push(["💰 ยอดเต็มถ้าครบ",      d.fullRevenue]);
+  rows.push([""]);
+  rows.push(["═══ ยอดสินค้า (active orders) ═══"]);
+  rows.push(["SKU", "จำนวน", "ราคา/ชิ้น", "ยอดรวม"]);
+  d.skus.forEach(s => {
+    rows.push([s.name, s.qty, s.price, s.revenue]);
+  });
+  rows.push([""]);
+  rows.push(["═══ Top ลูกค้า (ตามยอดเต็ม) ═══"]);
+  rows.push(["#", "ชื่อ", "เบอร์", "จำนวนชิ้น", "ยอดเต็ม"]);
+  d.topCustomers.forEach((c, i) => {
+    rows.push([i + 1, c.name, c.phone, c.qty, c.total]);
+  });
+
+  // Write all rows in one batch (faster than per-cell)
+  const maxCols = rows.reduce((m, r) => Math.max(m, r.length), 1);
+  const padded  = rows.map(r => {
+    const copy = r.slice();
+    while (copy.length < maxCols) copy.push("");
+    return copy;
+  });
+  sheet.getRange(1, 1, padded.length, maxCols).setValues(padded);
+
+  // Simple formatting
+  try {
+    sheet.getRange(1, 1).setFontSize(16).setFontWeight("bold");
+    sheet.getRange(2, 1).setFontStyle("italic").setFontColor("#666");
+
+    // Bold the section headers (lines that start with ═══)
+    for (let r = 0; r < padded.length; r++) {
+      if (String(padded[r][0]).indexOf("═══") === 0) {
+        sheet.getRange(r + 1, 1, 1, maxCols).setFontWeight("bold").setBackground("#1F2E4A").setFontColor("#F5C542");
+      }
+    }
+    sheet.autoResizeColumns(1, maxCols);
+  } catch (e) {}
+}
+
+// Manual menu wrapper
+function refreshDashboardNow() {
+  updateDashboardTab();
+  SpreadsheetApp.getUi().alert("🔄 อัพเดท Dashboard tab เรียบร้อย");
+}
+
+// =============================================
+//  Daily Telegram summary
+// =============================================
+function buildSummaryText(d) {
+  const tz       = SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone() || "Asia/Bangkok";
+  const updated  = Utilities.formatDate(new Date(d.updatedAt), tz, "dd/MM HH:mm");
+
+  let txt = `🌿 *Lorcana Set 13 — สรุปยอดพรีออเดอร์*\n`;
+  txt += `_อัพเดท ${updated}_\n\n`;
+  txt += `📋 ออเดอร์: *${d.totalOrders}* (ลูกค้าไม่ซ้ำ ${d.uniqueCustomers})\n`;
+  txt += `✅ มัดจำ ${d.paid}  ⏳ รอตรวจ ${d.pending}  ❌ รอชำระ ${d.unpaid}\n`;
+  txt += `🔄 คืนเงิน/ยกเลิก ${d.refunded}\n\n`;
+  txt += `💵 มัดจำ verified: *${d.depositRevenue.toLocaleString()}* บาท\n`;
+  txt += `💰 ยอดเต็มถ้าครบ: *${d.fullRevenue.toLocaleString()}* บาท\n\n`;
+  txt += `🛒 *ยอดสินค้า:*\n`;
+  d.skus.forEach(s => {
+    if (s.qty > 0) {
+      txt += `• ${s.name}: *${s.qty}*  (${s.revenue.toLocaleString()} บาท)\n`;
+    }
+  });
+
+  const closeMs = new Date(CLOSE_AT_ISO).getTime() - Date.now();
+  if (closeMs > 0) {
+    const days  = Math.floor(closeMs / 86400000);
+    const hours = Math.floor((closeMs % 86400000) / 3600000);
+    txt += `\n⏰ ปิดรับใน ${days} วัน ${hours} ชม.`;
+  } else {
+    txt += `\n⏰ ปิดรับแล้ว`;
+  }
+  return txt;
+}
+
+function sendDailySummary() {
+  const d = computeDashboardData();
+  if (!d) {
+    sendTelegram("❌ Daily summary failed: sheet not found");
+    return;
+  }
+  sendTelegram(buildSummaryText(d));
+  // Refresh dashboard tab at the same time
+  try { updateDashboardTab(); } catch (e) {}
+}
+
+// Manual menu wrapper — "ส่ง summary ตอนนี้"
+function sendSummaryNow() {
+  sendDailySummary();
+  SpreadsheetApp.getUi().alert("📤 ส่ง summary ไป Telegram เรียบร้อย");
+}
+
+// Run ONCE to install the 9:00 AM trigger
+function setupDailyTrigger() {
+  // Clean up any existing daily summary triggers
+  ScriptApp.getProjectTriggers().forEach(t => {
+    if (t.getHandlerFunction() === "sendDailySummary") {
+      ScriptApp.deleteTrigger(t);
+    }
+  });
+  ScriptApp.newTrigger("sendDailySummary")
+    .timeBased()
+    .atHour(9)
+    .everyDays(1)
+    .inTimezone("Asia/Bangkok")
+    .create();
+  SpreadsheetApp.getUi().alert("✅ ตั้ง trigger ส่ง daily summary 9:00 น. แล้ว");
+}
+
+// =============================================
 //  Admin Menu
 // =============================================
 function onOpen() {
@@ -578,7 +912,11 @@ function onOpen() {
     .addItem("✅ ยืนยันชำระ (Admin)",       "adminForcePaid")
     .addItem("↩️ คืนเงิน (เลือกแถว)",        "adminRefund")
     .addItem("🔍 ตรวจสลิปค้าง (เลือกแถว)",   "retriggerVerification")
-    .addItem("📊 สรุปออเดอร์",               "showOrderSummary")
+    .addItem("📊 สรุปออเดอร์ (popup)",       "showOrderSummary")
+    .addSeparator()
+    .addItem("🔄 อัพเดท Dashboard tab",      "refreshDashboardNow")
+    .addItem("📤 ส่ง Summary ไป Telegram",   "sendSummaryNow")
+    .addItem("⏰ ตั้ง trigger daily 9 โมง",   "setupDailyTrigger")
     .addSeparator()
     .addItem("🔧 Ensure Headers",           "manualEnsureHeaders")
     .addItem("🧪 ทดสอบ SlipOK",             "testSlipOK")
