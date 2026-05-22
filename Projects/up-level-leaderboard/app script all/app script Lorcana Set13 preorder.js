@@ -200,8 +200,9 @@ function isToneOrSilencer(ch) {
 //   - latin chars pass through unchanged (lowercased)
 // Imperfect (no lexicon), but produces strings close enough that
 // Levenshtein on the result lines up with real ID-card spellings.
-function thaiRomanize(s) {
+function thaiRomanize(s, implicitVowel) {
   if (!s) return "";
+  const implicit = implicitVowel || "a";
   const chars = String(s).toLowerCase().split("");
   const silent = new Array(chars.length).fill(false);
   for (let i = 1; i < chars.length; i++) {
@@ -252,8 +253,10 @@ function thaiRomanize(s) {
 
       const remaining = consonantsRemainingFrom(i + 1);
       if (remaining > 0) {
-        // Implicit "a" between consonants (default Thai vowel in unmarked syllables).
-        out += TH_CONSONANT_MAP[ch] + "a";
+        // Implicit vowel between consonants. Thai unmarked syllables default
+        // to "a" in most cases but "o" in many common names (สม→Som, กร→Kor,
+        // ทร→Thor). Both candidates are tested by the matcher.
+        out += TH_CONSONANT_MAP[ch] + implicit;
       } else {
         // End of token — use FINAL form.
         out += (Object.prototype.hasOwnProperty.call(TH_FINAL, ch) ? TH_FINAL[ch] : TH_CONSONANT_MAP[ch]);
@@ -348,15 +351,21 @@ function tokensMatch(a, b) {
     if (levenshtein(skA, skB) <= skThreshold) return true;
   }
   // Full RTGS-ish romanization with vowels — closer to ID-card spelling.
-  const rA = thaiRomanize(a);
-  const rB = thaiRomanize(b);
-  if (romanizeMatch(rA, rB)) return true;
-  // จ has two common romanizations: "ch" (RTGS) and "j" (informal — e.g. จิรา→Jira).
-  // If either side starts with "ch", also try with "j" prefix.
-  if (rA.indexOf("ch") === 0 || rB.indexOf("ch") === 0) {
-    const altA = rA.indexOf("ch") === 0 ? "j" + rA.substring(2) : rA;
-    const altB = rB.indexOf("ch") === 0 ? "j" + rB.substring(2) : rB;
-    if (romanizeMatch(altA, altB)) return true;
+  // Try both implicit-vowel variants ("a" and "o") since Thai unmarked syllables
+  // can take either depending on the word (สม→Som, ทร→Thor vs สา→Sa).
+  const variantsA = [thaiRomanize(a, "a"), thaiRomanize(a, "o")];
+  const variantsB = [thaiRomanize(b, "a"), thaiRomanize(b, "o")];
+  for (let i = 0; i < variantsA.length; i++) {
+    for (let j = 0; j < variantsB.length; j++) {
+      if (romanizeMatch(variantsA[i], variantsB[j])) return true;
+      // จ has two common romanizations: "ch" (RTGS) and "j" (informal — e.g. จิรา→Jira).
+      const rA = variantsA[i], rB = variantsB[j];
+      if (rA.indexOf("ch") === 0 || rB.indexOf("ch") === 0) {
+        const altA = rA.indexOf("ch") === 0 ? "j" + rA.substring(2) : rA;
+        const altB = rB.indexOf("ch") === 0 ? "j" + rB.substring(2) : rB;
+        if (romanizeMatch(altA, altB)) return true;
+      }
+    }
   }
   return false;
 }
@@ -364,9 +373,25 @@ function tokensMatch(a, b) {
 function romanizeMatch(rA, rB) {
   if (rA.length < 3 || rB.length < 3) return false;
   if (rA === rB) return true;
-  const rMax = Math.max(rA.length, rB.length);
+  const cA = canonicalRoman(rA);
+  const cB = canonicalRoman(rB);
+  if (cA === cB) return true;
+  const rMax = Math.max(cA.length, cB.length);
   const rThreshold = rMax <= 4 ? 1 : rMax <= 7 ? 2 : rMax <= 10 ? 3 : 4;
-  return levenshtein(rA, rB) <= rThreshold;
+  return levenshtein(cA, cB) <= rThreshold;
+}
+
+// Collapse common romanization variants to one canonical form so
+// "Thaksin" (RTGS aspirated) and "Taksin" (simplified) compare equal.
+//   kh/ph/th/bh → k/p/t/b   (drop aspiration h)
+//   ee → i                  (long ee written for อี)
+//   v → w                   (Pali/royal V-spellings like Vajira)
+function canonicalRoman(r) {
+  if (!r) return "";
+  return r.toLowerCase()
+    .replace(/([kptb])h/g, "$1")
+    .replace(/ee/g, "i")
+    .replace(/v/g, "w");
 }
 
 // Cross-compare every sender token against every customer token.
