@@ -108,6 +108,105 @@ function firstWord(name) {
   return n.split(" ")[0];
 }
 
+// ===== Sender name matching (fuzzy + TH/EN aliases) =====
+// Common Thai nickname ↔ English/Thai romanization variants.
+// Extend as we see real bank-side names that the basic matcher misses.
+const NAME_ALIASES = {
+  "champ":  ["แชมป์", "แชมป", "เเชมป์"],
+  "boom":   ["บูม", "บูมบูม"],
+  "ice":    ["ไอซ์", "ไอท์"],
+  "leo":    ["ลีโอ"],
+  "tan":    ["แทน", "ตัน", "ธัญ"],
+  "ploy":   ["พลอย"],
+  "mind":   ["มายด์", "มาย"],
+  "earth":  ["เอิร์ธ", "เอิร์ท"],
+  "fern":   ["เฟิร์น"],
+  "may":    ["เมย์", "เม"],
+  "june":   ["จูน"],
+  "ohm":    ["โอม", "โอห์ม"],
+  "first":  ["เฟิร์ส", "เฟิรส"],
+  "guy":    ["กาย"],
+  "knight": ["ไนท์"],
+  "bank":   ["แบงค์", "แบงก์"],
+  "best":   ["เบสท์", "เบส"],
+  "ploy":   ["พลอย"],
+  "nine":   ["นาย"],
+  "win":    ["วิน"],
+  "ohh":    ["โอ๊ะ", "โอ"],
+  "pun":    ["ปัน", "พัน"],
+  "team":   ["ทีม"],
+  "view":   ["วิว"],
+  "ken":    ["เคน"],
+  "kim":    ["กิม"],
+  "nut":    ["นัท", "ณัฐ"],
+  "noon":   ["นุ่น"],
+  "non":    ["โน่น", "นน"],
+  "namo":   ["นะโม"],
+  "title":  ["ไทเทิล"],
+  "tee":    ["ตี๋"],
+  "top":    ["ท็อป"],
+  "x":      ["เอ็กซ์"]
+};
+
+function levenshtein(a, b) {
+  a = a || ""; b = b || "";
+  const m = a.length, n = b.length;
+  if (m === 0) return n;
+  if (n === 0) return m;
+  const dp = new Array(n + 1);
+  for (let j = 0; j <= n; j++) dp[j] = j;
+  for (let i = 1; i <= m; i++) {
+    let prev = dp[0];
+    dp[0] = i;
+    for (let j = 1; j <= n; j++) {
+      const tmp = dp[j];
+      const cost = a.charAt(i - 1) === b.charAt(j - 1) ? 0 : 1;
+      dp[j] = Math.min(dp[j] + 1, dp[j - 1] + 1, prev + cost);
+      prev = tmp;
+    }
+  }
+  return dp[n];
+}
+
+function nameTokens(name) {
+  const n = stripPrefix(name);
+  if (!n) return [];
+  return n.split(/\s+/).filter(t => t.length > 0);
+}
+
+// Check if two single tokens are "the same name" — exact, substring, fuzzy, or alias.
+function tokensMatch(a, b) {
+  if (!a || !b) return false;
+  if (a === b) return true;
+  // Substring (only if base token is >= 3 chars to avoid trivial matches)
+  if (a.length >= 3 && b.indexOf(a) >= 0) return true;
+  if (b.length >= 3 && a.indexOf(b) >= 0) return true;
+  // Levenshtein — tolerant for short tokens (1 edit) and longer (2 edits)
+  const maxLen = Math.max(a.length, b.length);
+  const threshold = maxLen <= 4 ? 1 : 2;
+  if (levenshtein(a, b) <= threshold) return true;
+  // TH ↔ EN alias table
+  const aliasesA = NAME_ALIASES[a] || [];
+  if (aliasesA.indexOf(b) >= 0) return true;
+  const aliasesB = NAME_ALIASES[b] || [];
+  if (aliasesB.indexOf(a) >= 0) return true;
+  return false;
+}
+
+// Cross-compare every sender token against every customer token.
+// If ANY pair matches, treat as same person (not a mismatch).
+function isSenderMismatch(senderName, customerName) {
+  const sTokens = nameTokens(senderName);
+  const cTokens = nameTokens(customerName);
+  if (sTokens.length === 0 || cTokens.length === 0) return false;
+  for (let i = 0; i < sTokens.length; i++) {
+    for (let j = 0; j < cTokens.length; j++) {
+      if (tokensMatch(sTokens[i], cTokens[j])) return false;
+    }
+  }
+  return true;
+}
+
 function jsonResponse(obj) {
   return ContentService.createTextOutput(JSON.stringify(obj))
     .setMimeType(ContentService.MimeType.JSON);
@@ -131,6 +230,9 @@ function doGet(e) {
     }
     if (action === "dashboard") {
       return jsonResponse(getDashboardSummary());
+    }
+    if (action === "shipping_list") {
+      return jsonResponse(getShippingList());
     }
     return jsonResponse(getSummary());
   } catch (err) {
@@ -477,11 +579,7 @@ function doPost(e) {
         const senderObj = verified.data.sender || {};
         senderName = String(senderObj.displayName || senderObj.name || "").trim();
         if (senderName) {
-          const senderFirst   = firstWord(senderName);
-          const customerFirst = firstWord(body.customerName);
-          if (senderFirst && customerFirst && senderFirst !== customerFirst) {
-            senderMismatch = true;
-          }
+          senderMismatch = isSenderMismatch(senderName, body.customerName);
         }
 
         if (Math.abs(amt - deposit) < 1) {
@@ -658,6 +756,120 @@ function sendTelegram(text) {
   } catch (e) {
     console.error("Telegram Error:", e);
   }
+}
+
+// =============================================
+//  Shipping list — aggregated per customer (for CSV export)
+// =============================================
+function getShippingList() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+  if (!sheet) return { error: "sheet_not_found" };
+
+  const data = sheet.getDataRange().getValues();
+
+  // phone -> aggregated customer record
+  const byPhone = {};
+
+  for (let i = 1; i < data.length; i++) {
+    const row    = data[i];
+    const name   = String(row[COL_NAME - 1] || "").trim();
+    if (!name) continue;
+
+    const status = String(row[COL_STATUS - 1] || "");
+    // Skip cancelled / refunded / over-quota
+    if (/คืนเงิน|ยกเลิก|เกินโควต้า/.test(status)) continue;
+
+    const phone     = normalizePhone(row[COL_PHONE - 1]);
+    if (!phone) continue;
+
+    const shipping  = String(row[COL_SHIPPING - 1] || "");
+    const address   = String(row[COL_ADDRESS - 1] || "").trim();
+    const total     = parseFloat(row[COL_TOTAL - 1])     || 0;
+    const deposit   = parseFloat(row[COL_DEPOSIT - 1])   || 0;
+    const remaining = parseFloat(row[COL_REMAINING - 1]) || 0;
+    const ts        = row[COL_TIMESTAMP - 1];
+
+    if (!byPhone[phone]) {
+      byPhone[phone] = {
+        phone:        phone,
+        name:         name,
+        shippingMethod: shipping,
+        address:      shipping.indexOf("จัดส่ง") >= 0 ? address : "",
+        items:        {},                  // sku.key -> qty
+        total:        0,
+        deposit:      0,
+        remaining:    0,
+        orderCount:   0,
+        paidCount:    0,
+        statuses:     [],
+        firstOrderAt: ts,
+        lastOrderAt:  ts
+      };
+    }
+    const rec = byPhone[phone];
+
+    // Prefer "จัดส่ง" + address over "รับที่ร้าน" if any row chose to ship
+    if (shipping.indexOf("จัดส่ง") >= 0) {
+      rec.shippingMethod = shipping;
+      if (address) rec.address = address;
+    }
+
+    for (let s = 0; s < SKUS.length; s++) {
+      const q = parseInt(row[COL_QTY_START - 1 + s]) || 0;
+      if (q > 0) rec.items[SKUS[s].key] = (rec.items[SKUS[s].key] || 0) + q;
+    }
+
+    rec.total       += total;
+    rec.deposit     += deposit;
+    rec.remaining   += remaining;
+    rec.orderCount  += 1;
+    if (status.indexOf("มัดจำแล้ว") >= 0) rec.paidCount += 1;
+    rec.statuses.push(status);
+
+    const tsMs = ts instanceof Date ? ts.getTime() : new Date(ts).getTime();
+    const firstMs = rec.firstOrderAt instanceof Date ? rec.firstOrderAt.getTime() : new Date(rec.firstOrderAt).getTime();
+    const lastMs  = rec.lastOrderAt  instanceof Date ? rec.lastOrderAt.getTime()  : new Date(rec.lastOrderAt).getTime();
+    if (!isNaN(tsMs)) {
+      if (tsMs < firstMs) rec.firstOrderAt = ts;
+      if (tsMs > lastMs)  rec.lastOrderAt  = ts;
+    }
+  }
+
+  // Flatten + add SKU columns
+  const customers = Object.keys(byPhone).map(p => {
+    const rec = byPhone[p];
+    const itemList = SKUS
+      .filter(s => (rec.items[s.key] || 0) > 0)
+      .map(s => ({ key: s.key, name: s.name, qty: rec.items[s.key] }));
+    const totalQty = itemList.reduce((sum, it) => sum + it.qty, 0);
+    return {
+      phone:          rec.phone,
+      name:           rec.name,
+      shippingMethod: rec.shippingMethod,
+      address:        rec.address,
+      items:          itemList,
+      itemsByKey:     rec.items,    // raw object for CSV column mapping
+      totalQty:       totalQty,
+      total:          rec.total,
+      deposit:        rec.deposit,
+      remaining:      rec.remaining,
+      orderCount:     rec.orderCount,
+      paidCount:      rec.paidCount,
+      allPaid:        rec.paidCount === rec.orderCount,
+      statuses:       rec.statuses,
+      firstOrderAt:   rec.firstOrderAt instanceof Date ? rec.firstOrderAt.toISOString() : String(rec.firstOrderAt),
+      lastOrderAt:    rec.lastOrderAt  instanceof Date ? rec.lastOrderAt.toISOString()  : String(rec.lastOrderAt)
+    };
+  });
+
+  customers.sort((a, b) => b.total - a.total);
+
+  return {
+    updatedAt:    new Date().toISOString(),
+    customerCount: customers.length,
+    skus:         SKUS.map(s => ({ key: s.key, name: s.name, price: s.price })),
+    customers:    customers
+  };
 }
 
 // =============================================
