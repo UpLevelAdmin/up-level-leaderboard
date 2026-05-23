@@ -15,7 +15,7 @@
  * =============================================
  */
 
-const SCRIPT_VERSION = "lorcana13.v3";
+const SCRIPT_VERSION = "lorcana13.v6";
 
 // ===== Config =====
 const SHEET_NAME      = "Responses";
@@ -34,6 +34,8 @@ const DUP_WINDOW_MS   = 60000;
 const DEPOSIT_RATE    = 0.5;   // 50% มัดจำ
 const BOOSTER_KEY     = "booster_box";
 const BOOSTER_LIMIT   = 4;     // 1 case = 4 boxes ต่อคน
+const BOOSTER_TOTAL_CAP    = 100;  // global cap — count only rows already verified (✅ มัดจำแล้ว)
+const BOOSTER_FORCE_CLOSED = true; // manual kill-switch: reject all booster orders regardless of count
 
 // ===== SKU catalog (must match frontend) =====
 const SKUS = [
@@ -108,6 +110,306 @@ function firstWord(name) {
   return n.split(" ")[0];
 }
 
+// ===== Sender name matching (fuzzy + TH/EN aliases) =====
+// Common Thai nickname ↔ English/Thai romanization variants.
+// Extend as we see real bank-side names that the basic matcher misses.
+const NAME_ALIASES = {
+  "champ":  ["แชมป์", "แชมป", "เเชมป์"],
+  "boom":   ["บูม", "บูมบูม"],
+  "ice":    ["ไอซ์", "ไอท์"],
+  "leo":    ["ลีโอ"],
+  "tan":    ["แทน", "ตัน", "ธัญ"],
+  "ploy":   ["พลอย"],
+  "mind":   ["มายด์", "มาย"],
+  "earth":  ["เอิร์ธ", "เอิร์ท"],
+  "fern":   ["เฟิร์น"],
+  "may":    ["เมย์", "เม"],
+  "june":   ["จูน"],
+  "ohm":    ["โอม", "โอห์ม"],
+  "first":  ["เฟิร์ส", "เฟิรส"],
+  "guy":    ["กาย"],
+  "knight": ["ไนท์"],
+  "bank":   ["แบงค์", "แบงก์"],
+  "best":   ["เบสท์", "เบส"],
+  "ploy":   ["พลอย"],
+  "nine":   ["นาย"],
+  "win":    ["วิน"],
+  "ohh":    ["โอ๊ะ", "โอ"],
+  "pun":    ["ปัน", "พัน"],
+  "team":   ["ทีม"],
+  "view":   ["วิว"],
+  "ken":    ["เคน"],
+  "kim":    ["กิม"],
+  "nut":    ["นัท", "ณัฐ"],
+  "noon":   ["นุ่น"],
+  "non":    ["โน่น", "นน"],
+  "namo":   ["นะโม"],
+  "title":  ["ไทเทิล"],
+  "tee":    ["ตี๋"],
+  "top":    ["ท็อป"],
+  "x":      ["เอ็กซ์"]
+};
+
+// Map Thai consonants → roman equivalents (RTGS-ish).
+// Used to build a consonant-only skeleton so "ชวณัฐ" ↔ "Chawanut" can match
+// without maintaining per-person alias entries.
+// Single-char roman per consonant — practical romanization
+// (drops RTGS aspiration "h" so ค→k, ท→t, พ→p which is what real bank names look like).
+const TH_CONSONANT_MAP = {
+  "ก":"k","ข":"k","ฃ":"k","ค":"k","ฅ":"k","ฆ":"k",
+  "ง":"ng",
+  "จ":"ch","ฉ":"ch","ช":"ch","ซ":"s","ฌ":"ch",
+  "ญ":"y",
+  "ฎ":"d","ฏ":"t","ฐ":"t","ฑ":"t","ฒ":"t","ณ":"n",
+  "ด":"d","ต":"t","ถ":"t","ท":"t","ธ":"t",
+  "น":"n",
+  "บ":"b","ป":"p","ผ":"p","ฝ":"f","พ":"p","ฟ":"f","ภ":"p",
+  "ม":"m",
+  "ย":"y","ร":"r","ล":"l","ว":"w",
+  "ศ":"s","ษ":"s","ส":"s","ห":"h","ฬ":"l","อ":"","ฮ":"h"
+};
+
+// Final-position roman per Thai consonant (per RTGS, simplified).
+// Different from initial: ด→t (not d), บ→p (not b), ย→i, ว→o, etc.
+const TH_FINAL = {
+  "ก":"k","ข":"k","ค":"k","ฆ":"k",
+  "ง":"ng",
+  "จ":"t","ช":"t","ซ":"t","ศ":"t","ษ":"t","ส":"t",
+  "ฎ":"t","ฏ":"t","ฐ":"t","ฑ":"t","ฒ":"t","ด":"t","ต":"t","ถ":"t","ท":"t","ธ":"t",
+  "ญ":"n","ณ":"n","น":"n","ร":"n","ล":"n","ฬ":"n",
+  "บ":"p","ป":"p","พ":"p","ฟ":"p","ภ":"p","ผ":"p",
+  "ม":"m",
+  "ย":"i","ว":"o"
+};
+
+// Thai vowels by position.
+const TH_VOWEL_DIACRITIC = { "ั":"a","ิ":"i","ี":"i","ึ":"ue","ื":"ue","ุ":"u","ู":"u","็":"" };
+const TH_VOWEL_INLINE    = { "ะ":"a","า":"a","ำ":"am" };
+const TH_VOWEL_PRE       = { "เ":"e","แ":"ae","โ":"o","ใ":"ai","ไ":"ai" };
+const TH_TONE_MARKS      = "่้๊๋";
+
+function isToneOrSilencer(ch) {
+  return ch === "์" || TH_TONE_MARKS.indexOf(ch) >= 0;
+}
+
+// Approximate RTGS romanization of a Thai (or mixed) token.
+// Rules applied:
+//   - ์ silencer drops the preceding consonant
+//   - tone marks ignored
+//   - pre-vowels (เ แ โ ใ ไ) attach AFTER the next initial consonant
+//   - consonant with no vowel + more consonants remaining  → initial + implicit "a"
+//   - consonant with no vowel at end of token             → use FINAL map
+//   - latin chars pass through unchanged (lowercased)
+// Imperfect (no lexicon), but produces strings close enough that
+// Levenshtein on the result lines up with real ID-card spellings.
+function thaiRomanize(s, implicitVowel) {
+  if (!s) return "";
+  const implicit = implicitVowel || "a";
+  const chars = String(s).toLowerCase().split("");
+  const silent = new Array(chars.length).fill(false);
+  for (let i = 1; i < chars.length; i++) {
+    if (chars[i] === "์") silent[i - 1] = true;
+  }
+  function consonantsRemainingFrom(k) {
+    let n = 0;
+    for (let i = k; i < chars.length; i++) {
+      if (silent[i]) continue;
+      if (Object.prototype.hasOwnProperty.call(TH_CONSONANT_MAP, chars[i])) n++;
+    }
+    return n;
+  }
+
+  let out = "";
+  let i = 0;
+  let preVowel = "";
+
+  while (i < chars.length) {
+    const ch = chars[i];
+    if (silent[i] || isToneOrSilencer(ch)) { i++; continue; }
+
+    if (Object.prototype.hasOwnProperty.call(TH_VOWEL_PRE, ch)) {
+      preVowel = TH_VOWEL_PRE[ch];
+      i++;
+      continue;
+    }
+
+    if (Object.prototype.hasOwnProperty.call(TH_CONSONANT_MAP, ch)) {
+      // Look ahead past silent/tone marks for the next significant char.
+      let j = i + 1;
+      while (j < chars.length && (silent[j] || isToneOrSilencer(chars[j]))) j++;
+      const nextCh = j < chars.length ? chars[j] : "";
+
+      const hasDiacritic = Object.prototype.hasOwnProperty.call(TH_VOWEL_DIACRITIC, nextCh);
+      const hasInline    = Object.prototype.hasOwnProperty.call(TH_VOWEL_INLINE, nextCh);
+      const hasPre       = preVowel !== "";
+      const hasVowel     = hasDiacritic || hasInline || hasPre;
+
+      if (hasVowel) {
+        out += TH_CONSONANT_MAP[ch];
+        if (hasPre)       { out += preVowel; preVowel = ""; }
+        if (hasDiacritic) { out += TH_VOWEL_DIACRITIC[nextCh]; i = j + 1; continue; }
+        if (hasInline)    { out += TH_VOWEL_INLINE[nextCh];    i = j + 1; continue; }
+        i = j;
+        continue;
+      }
+
+      const remaining = consonantsRemainingFrom(i + 1);
+      if (remaining > 0) {
+        // Implicit vowel between consonants. Thai unmarked syllables default
+        // to "a" in most cases but "o" in many common names (สม→Som, กร→Kor,
+        // ทร→Thor). Both candidates are tested by the matcher.
+        out += TH_CONSONANT_MAP[ch] + implicit;
+      } else {
+        // End of token — use FINAL form.
+        out += (Object.prototype.hasOwnProperty.call(TH_FINAL, ch) ? TH_FINAL[ch] : TH_CONSONANT_MAP[ch]);
+      }
+      i++;
+      continue;
+    }
+
+    if (/[a-z]/.test(ch)) { out += ch; i++; continue; }
+    i++;
+  }
+  // Flush any dangling pre-vowel (malformed input).
+  if (preVowel) out += preVowel;
+  return out;
+}
+
+// Build a consonant-only skeleton from a single token (TH, EN, or mixed).
+// Strips Thai vowels/tone marks; for roman letters, drops a/e/i/o/u/y.
+// Handles the Thai silencer "์" — the preceding consonant becomes silent.
+function consonantSkeleton(s) {
+  if (!s) return "";
+  const lower = String(s).toLowerCase();
+  const chars = lower.split("");
+  const silent = new Array(chars.length).fill(false);
+  for (let i = 1; i < chars.length; i++) {
+    if (chars[i] === "์") silent[i - 1] = true; // ์ thanthakhat
+  }
+  let out = "";
+  for (let i = 0; i < chars.length; i++) {
+    if (silent[i]) continue;
+    const ch = chars[i];
+    if (Object.prototype.hasOwnProperty.call(TH_CONSONANT_MAP, ch)) {
+      out += TH_CONSONANT_MAP[ch];
+    } else if (/[a-z]/.test(ch)) {
+      if (!/[aeiouy]/.test(ch)) out += ch;
+    }
+    // ignore Thai vowels, tone marks, digits, punctuation
+  }
+  return out;
+}
+
+function levenshtein(a, b) {
+  a = a || ""; b = b || "";
+  const m = a.length, n = b.length;
+  if (m === 0) return n;
+  if (n === 0) return m;
+  const dp = new Array(n + 1);
+  for (let j = 0; j <= n; j++) dp[j] = j;
+  for (let i = 1; i <= m; i++) {
+    let prev = dp[0];
+    dp[0] = i;
+    for (let j = 1; j <= n; j++) {
+      const tmp = dp[j];
+      const cost = a.charAt(i - 1) === b.charAt(j - 1) ? 0 : 1;
+      dp[j] = Math.min(dp[j] + 1, dp[j - 1] + 1, prev + cost);
+      prev = tmp;
+    }
+  }
+  return dp[n];
+}
+
+function nameTokens(name) {
+  const n = stripPrefix(name);
+  if (!n) return [];
+  return n.split(/\s+/).filter(t => t.length > 0);
+}
+
+// Check if two single tokens are "the same name" — exact, substring, fuzzy, or alias.
+function tokensMatch(a, b) {
+  if (!a || !b) return false;
+  if (a === b) return true;
+  // Substring (only if base token is >= 3 chars to avoid trivial matches)
+  if (a.length >= 3 && b.indexOf(a) >= 0) return true;
+  if (b.length >= 3 && a.indexOf(b) >= 0) return true;
+  // Levenshtein — tolerant for short tokens (1 edit) and longer (2 edits)
+  const maxLen = Math.max(a.length, b.length);
+  const threshold = maxLen <= 4 ? 1 : 2;
+  if (levenshtein(a, b) <= threshold) return true;
+  // TH ↔ EN alias table
+  const aliasesA = NAME_ALIASES[a] || [];
+  if (aliasesA.indexOf(b) >= 0) return true;
+  const aliasesB = NAME_ALIASES[b] || [];
+  if (aliasesB.indexOf(a) >= 0) return true;
+  // Consonant skeleton — catches Thai given name ↔ EN romanization
+  // (e.g. ชวณัฐ→"chwnth" vs Chawanut→"chwnt")
+  const skA = consonantSkeleton(a);
+  const skB = consonantSkeleton(b);
+  if (skA.length >= 3 && skB.length >= 3) {
+    if (skA === skB) return true;
+    const skMax = Math.max(skA.length, skB.length);
+    const skThreshold = skMax <= 4 ? 1 : 2;
+    if (levenshtein(skA, skB) <= skThreshold) return true;
+  }
+  // Full RTGS-ish romanization with vowels — closer to ID-card spelling.
+  // Try both implicit-vowel variants ("a" and "o") since Thai unmarked syllables
+  // can take either depending on the word (สม→Som, ทร→Thor vs สา→Sa).
+  const variantsA = [thaiRomanize(a, "a"), thaiRomanize(a, "o")];
+  const variantsB = [thaiRomanize(b, "a"), thaiRomanize(b, "o")];
+  for (let i = 0; i < variantsA.length; i++) {
+    for (let j = 0; j < variantsB.length; j++) {
+      if (romanizeMatch(variantsA[i], variantsB[j])) return true;
+      // จ has two common romanizations: "ch" (RTGS) and "j" (informal — e.g. จิรา→Jira).
+      const rA = variantsA[i], rB = variantsB[j];
+      if (rA.indexOf("ch") === 0 || rB.indexOf("ch") === 0) {
+        const altA = rA.indexOf("ch") === 0 ? "j" + rA.substring(2) : rA;
+        const altB = rB.indexOf("ch") === 0 ? "j" + rB.substring(2) : rB;
+        if (romanizeMatch(altA, altB)) return true;
+      }
+    }
+  }
+  return false;
+}
+
+function romanizeMatch(rA, rB) {
+  if (rA.length < 3 || rB.length < 3) return false;
+  if (rA === rB) return true;
+  const cA = canonicalRoman(rA);
+  const cB = canonicalRoman(rB);
+  if (cA === cB) return true;
+  const rMax = Math.max(cA.length, cB.length);
+  const rThreshold = rMax <= 4 ? 1 : rMax <= 7 ? 2 : rMax <= 10 ? 3 : 4;
+  return levenshtein(cA, cB) <= rThreshold;
+}
+
+// Collapse common romanization variants to one canonical form so
+// "Thaksin" (RTGS aspirated) and "Taksin" (simplified) compare equal.
+//   kh/ph/th/bh → k/p/t/b   (drop aspiration h)
+//   ee → i                  (long ee written for อี)
+//   v → w                   (Pali/royal V-spellings like Vajira)
+function canonicalRoman(r) {
+  if (!r) return "";
+  return r.toLowerCase()
+    .replace(/([kptb])h/g, "$1")
+    .replace(/ee/g, "i")
+    .replace(/v/g, "w");
+}
+
+// Cross-compare every sender token against every customer token.
+// If ANY pair matches, treat as same person (not a mismatch).
+function isSenderMismatch(senderName, customerName) {
+  const sTokens = nameTokens(senderName);
+  const cTokens = nameTokens(customerName);
+  if (sTokens.length === 0 || cTokens.length === 0) return false;
+  for (let i = 0; i < sTokens.length; i++) {
+    for (let j = 0; j < cTokens.length; j++) {
+      if (tokensMatch(sTokens[i], cTokens[j])) return false;
+    }
+  }
+  return true;
+}
+
 function jsonResponse(obj) {
   return ContentService.createTextOutput(JSON.stringify(obj))
     .setMimeType(ContentService.MimeType.JSON);
@@ -126,21 +428,128 @@ function doGet(e) {
     if (action === "order_status") {
       return jsonResponse(getOrderStatus(e.parameter.phone));
     }
+    if (action === "recent") {
+      return jsonResponse(getRecentOrders(parseInt(e.parameter.limit) || 5));
+    }
+    if (action === "dashboard") {
+      return jsonResponse(getDashboardSummary());
+    }
+    if (action === "shipping_list") {
+      return jsonResponse(getShippingList());
+    }
     return jsonResponse(getSummary());
   } catch (err) {
     return jsonResponse({ error: String(err) });
   }
 }
 
+// Return last N orders with PII masked (first 5 chars of name, last-4 hidden phone)
+function getRecentOrders(limit) {
+  const n = Math.min(Math.max(1, limit || 5), 10);
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+  if (!sheet) return { found: false, orders: [] };
+
+  const data = sheet.getDataRange().getValues();
+  const out  = [];
+  // Walk from newest to oldest (bottom to top)
+  for (let i = data.length - 1; i >= 1 && out.length < n; i--) {
+    const row = data[i];
+    const name   = String(row[COL_NAME - 1] || "").trim();
+    if (!name) continue;
+    const status = String(row[COL_STATUS - 1] || "");
+    if (/คืนเงิน|ยกเลิก|เกินโควต้า/.test(status)) continue;
+
+    const phoneRaw = normalizePhone(row[COL_PHONE - 1]);
+    const phoneMasked = phoneRaw.length >= 7
+      ? phoneRaw.substring(0, 3) + "-XXX-" + phoneRaw.substring(phoneRaw.length - 4)
+      : "xxx-xxx-xxxx";
+
+    // First word (or first 5 Thai chars) of name + …
+    const stripped = stripPrefix(name);
+    const namePart = stripped.length > 5 ? stripped.substring(0, 5) + "…" : stripped;
+
+    // Item summary (count of all SKU qty)
+    let itemQty = 0;
+    for (let s = 0; s < SKUS.length; s++) itemQty += parseInt(row[COL_QTY_START - 1 + s]) || 0;
+
+    const ts = row[COL_TIMESTAMP - 1];
+    out.push({
+      name:      namePart,
+      phone:     phoneMasked,
+      items:     itemQty,
+      verified:  status.indexOf("มัดจำแล้ว") >= 0,
+      timestamp: ts instanceof Date ? ts.toISOString() : String(ts)
+    });
+  }
+  return { found: out.length > 0, count: out.length, orders: out };
+}
+
 function getSummary() {
+  let boosterSoldOut = BOOSTER_FORCE_CLOSED;
+  if (!boosterSoldOut) {
+    try {
+      const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+      if (sheet) {
+        boosterSoldOut = countPaidBoosterTotal(sheet) >= BOOSTER_TOTAL_CAP;
+      }
+    } catch (err) {
+      boosterSoldOut = false;
+    }
+  }
   return {
-    version:      SCRIPT_VERSION,
-    closeAt:      CLOSE_AT_ISO,
-    closed:       isPreorderClosed(),
-    skus:         SKUS,
-    shipping:     SHIPPING_FEE,
-    depositRate:  DEPOSIT_RATE,
-    boosterLimit: BOOSTER_LIMIT
+    version:        SCRIPT_VERSION,
+    closeAt:        CLOSE_AT_ISO,
+    closed:         isPreorderClosed(),
+    skus:           SKUS,
+    shipping:       SHIPPING_FEE,
+    depositRate:    DEPOSIT_RATE,
+    boosterLimit:   BOOSTER_LIMIT,
+    boosterSoldOut: boosterSoldOut
+  };
+}
+
+// Derive a customer-facing "next step" hint from raw sheet status
+function deriveNextAction(status) {
+  const s = String(status || "");
+  if (s.indexOf("มัดจำแล้ว") >= 0) {
+    return {
+      kind: "done",
+      label: "เสร็จเรียบร้อย",
+      text:  "ไม่ต้องทำอะไรเพิ่ม — ทางร้านจะคอนเฟิร์มยอดสินค้าจริงหลังปิดพรีออเดอร์ และแจ้งชำระยอดคงเหลืออีกครั้ง"
+    };
+  }
+  if (s.indexOf("ยอดไม่ตรง") >= 0) {
+    return {
+      kind: "warn",
+      label: "ยอดโอนไม่ตรง",
+      text:  "ยอดที่โอนไม่ตรงกับมัดจำที่ระบบคำนวณ — กรุณาทักแอดมินทาง LINE / Facebook เพื่อแก้ไข"
+    };
+  }
+  if (s.indexOf("รอตรวจ") >= 0) {
+    return {
+      kind: "pending",
+      label: "รอตรวจสลิป",
+      text:  "ทางร้านจะตรวจสลิปและยืนยันออเดอร์ภายใน 24 ชม. — ไม่ต้องส่งซ้ำ"
+    };
+  }
+  if (s.indexOf("คืนเงิน") >= 0) {
+    return {
+      kind: "refund",
+      label: "คืนเงินแล้ว",
+      text:  "ออเดอร์นี้ถูกคืนเงิน — ติดต่อแอดมินถ้ามีคำถาม"
+    };
+  }
+  if (s.indexOf("ยกเลิก") >= 0 || s.indexOf("เกินโควต้า") >= 0) {
+    return {
+      kind: "cancel",
+      label: "ออเดอร์ถูกยกเลิก",
+      text:  "ติดต่อแอดมินทาง LINE / Facebook เพื่อสอบถามรายละเอียด"
+    };
+  }
+  return {
+    kind: "unknown",
+    label: "ติดต่อแอดมิน",
+    text:  "สถานะไม่ชัดเจน — กรุณาทักแอดมินเพื่อยืนยันออเดอร์"
   };
 }
 
@@ -165,19 +574,62 @@ function getOrderStatus(phone) {
       if (q > 0) items.push({ name: SKUS[s].name, qty: q });
     }
 
-    const ts = row[COL_TIMESTAMP - 1];
+    const ts     = row[COL_TIMESTAMP - 1];
+    const status = String(row[COL_STATUS - 1] || "");
     orders.push({
-      timestamp: ts instanceof Date ? ts.toISOString() : String(ts),
-      name:      String(row[COL_NAME - 1] || ""),
-      shipping:  String(row[COL_SHIPPING - 1] || ""),
-      items:     items,
-      total:     parseFloat(row[COL_TOTAL - 1]) || 0,
-      deposit:   parseFloat(row[COL_DEPOSIT - 1]) || 0,
-      remaining: parseFloat(row[COL_REMAINING - 1]) || 0,
-      status:    String(row[COL_STATUS - 1] || "")
+      timestamp:  ts instanceof Date ? ts.toISOString() : String(ts),
+      name:       String(row[COL_NAME - 1] || ""),
+      shipping:   String(row[COL_SHIPPING - 1] || ""),
+      items:      items,
+      total:      parseFloat(row[COL_TOTAL - 1]) || 0,
+      deposit:    parseFloat(row[COL_DEPOSIT - 1]) || 0,
+      remaining:  parseFloat(row[COL_REMAINING - 1]) || 0,
+      status:     status,
+      nextAction: deriveNextAction(status)
     });
   }
-  return { found: orders.length > 0, count: orders.length, orders: orders };
+
+  // Aggregated view across all active (non-cancelled, non-refunded) orders
+  // for shipping consolidation — "รวมทั้งหมดของคุณ"
+  const active = orders.filter(o => {
+    const s = o.status || "";
+    return s.indexOf("คืนเงิน") < 0 && s.indexOf("ยกเลิก") < 0 && s.indexOf("เกินโควต้า") < 0;
+  });
+
+  const itemMap = {};   // name -> qty
+  let aggTotal = 0, aggDeposit = 0, aggRemaining = 0, aggQty = 0;
+  let paidCount = 0, pendingCount = 0;
+  active.forEach(o => {
+    aggTotal     += o.total     || 0;
+    aggDeposit   += o.deposit   || 0;
+    aggRemaining += o.remaining || 0;
+    (o.items || []).forEach(it => {
+      itemMap[it.name] = (itemMap[it.name] || 0) + (it.qty || 0);
+      aggQty += it.qty || 0;
+    });
+    if (String(o.status || "").indexOf("มัดจำแล้ว") >= 0) paidCount++;
+    else pendingCount++;
+  });
+
+  const aggItems = Object.keys(itemMap).map(name => ({ name: name, qty: itemMap[name] }));
+  const allPaid  = active.length > 0 && paidCount === active.length;
+
+  return {
+    found:      orders.length > 0,
+    count:      orders.length,
+    orders:     orders,
+    aggregated: {
+      orderCount:   active.length,
+      paidCount:    paidCount,
+      pendingCount: pendingCount,
+      allPaid:      allPaid,
+      totalQty:     aggQty,
+      total:        aggTotal,
+      deposit:      aggDeposit,
+      remaining:    aggRemaining,
+      items:        aggItems
+    }
+  };
 }
 
 // =============================================
@@ -201,6 +653,22 @@ function findDuplicateTransRef(sheet, transRef) {
     if (existing && existing === tr) return i + 1;
   }
   return -1;
+}
+
+// Count booster boxes from rows that are already verified ("✅ มัดจำแล้ว")
+function countPaidBoosterTotal(sheet) {
+  const boosterIdx = SKUS.findIndex(s => s.key === BOOSTER_KEY);
+  if (boosterIdx < 0) return 0;
+  const col  = COL_QTY_START + boosterIdx;
+  const data = sheet.getDataRange().getValues();
+  let total = 0;
+  for (let i = 1; i < data.length; i++) {
+    const row = data[i];
+    const status = String(row[COL_STATUS - 1] || "");
+    if (status.indexOf("มัดจำแล้ว") < 0) continue;
+    total += parseInt(row[col - 1]) || 0;
+  }
+  return total;
 }
 
 // Count active booster boxes ordered by a phone (skip cancelled/refunded rows)
@@ -309,6 +777,28 @@ function doPost(e) {
           message:   `Booster Box จำกัด ${BOOSTER_LIMIT} กล่อง/ท่าน (1 case) · ของท่านมีอยู่แล้ว ${existingBooster} กล่อง`
         });
       }
+
+      // Manual kill-switch — close booster regardless of paid count
+      if (BOOSTER_FORCE_CLOSED) {
+        return jsonResponse({
+          success: false,
+          error:   "booster_sold_out",
+          message: "Booster Box ปิดรับพรีออเดอร์รอบนี้แล้ว — สินค้าอื่นยังสั่งได้ปกติ"
+        });
+      }
+
+      // Global Booster Box cap — only paid (มัดจำแล้ว) rows count toward the cap
+      const paidBoosterTotal = countPaidBoosterTotal(sheet);
+      if (paidBoosterTotal + requestedBooster > BOOSTER_TOTAL_CAP) {
+        return jsonResponse({
+          success:   false,
+          error:     "booster_sold_out",
+          paid:      paidBoosterTotal,
+          requested: requestedBooster,
+          cap:       BOOSTER_TOTAL_CAP,
+          message:   "Booster Box ปิดรับพรีออเดอร์รอบนี้แล้ว — สินค้าอื่นยังสั่งได้ปกติ"
+        });
+      }
     }
 
     // Save slip
@@ -342,11 +832,7 @@ function doPost(e) {
         const senderObj = verified.data.sender || {};
         senderName = String(senderObj.displayName || senderObj.name || "").trim();
         if (senderName) {
-          const senderFirst   = firstWord(senderName);
-          const customerFirst = firstWord(body.customerName);
-          if (senderFirst && customerFirst && senderFirst !== customerFirst) {
-            senderMismatch = true;
-          }
+          senderMismatch = isSenderMismatch(senderName, body.customerName);
         }
 
         if (Math.abs(amt - deposit) < 1) {
@@ -526,6 +1012,363 @@ function sendTelegram(text) {
 }
 
 // =============================================
+//  Shipping list — aggregated per customer (for CSV export)
+// =============================================
+function getShippingList() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+  if (!sheet) return { error: "sheet_not_found" };
+
+  const data = sheet.getDataRange().getValues();
+
+  // phone -> aggregated customer record
+  const byPhone = {};
+
+  for (let i = 1; i < data.length; i++) {
+    const row    = data[i];
+    const name   = String(row[COL_NAME - 1] || "").trim();
+    if (!name) continue;
+
+    const status = String(row[COL_STATUS - 1] || "");
+    // Skip cancelled / refunded / over-quota
+    if (/คืนเงิน|ยกเลิก|เกินโควต้า/.test(status)) continue;
+
+    const phone     = normalizePhone(row[COL_PHONE - 1]);
+    if (!phone) continue;
+
+    const shipping  = String(row[COL_SHIPPING - 1] || "");
+    const address   = String(row[COL_ADDRESS - 1] || "").trim();
+    const total     = parseFloat(row[COL_TOTAL - 1])     || 0;
+    const deposit   = parseFloat(row[COL_DEPOSIT - 1])   || 0;
+    const remaining = parseFloat(row[COL_REMAINING - 1]) || 0;
+    const ts        = row[COL_TIMESTAMP - 1];
+
+    if (!byPhone[phone]) {
+      byPhone[phone] = {
+        phone:        phone,
+        name:         name,
+        shippingMethod: shipping,
+        address:      shipping.indexOf("จัดส่ง") >= 0 ? address : "",
+        items:        {},                  // sku.key -> qty
+        total:        0,
+        deposit:      0,
+        remaining:    0,
+        orderCount:   0,
+        paidCount:    0,
+        statuses:     [],
+        firstOrderAt: ts,
+        lastOrderAt:  ts
+      };
+    }
+    const rec = byPhone[phone];
+
+    // Prefer "จัดส่ง" + address over "รับที่ร้าน" if any row chose to ship
+    if (shipping.indexOf("จัดส่ง") >= 0) {
+      rec.shippingMethod = shipping;
+      if (address) rec.address = address;
+    }
+
+    for (let s = 0; s < SKUS.length; s++) {
+      const q = parseInt(row[COL_QTY_START - 1 + s]) || 0;
+      if (q > 0) rec.items[SKUS[s].key] = (rec.items[SKUS[s].key] || 0) + q;
+    }
+
+    rec.total       += total;
+    rec.deposit     += deposit;
+    rec.remaining   += remaining;
+    rec.orderCount  += 1;
+    if (status.indexOf("มัดจำแล้ว") >= 0) rec.paidCount += 1;
+    rec.statuses.push(status);
+
+    const tsMs = ts instanceof Date ? ts.getTime() : new Date(ts).getTime();
+    const firstMs = rec.firstOrderAt instanceof Date ? rec.firstOrderAt.getTime() : new Date(rec.firstOrderAt).getTime();
+    const lastMs  = rec.lastOrderAt  instanceof Date ? rec.lastOrderAt.getTime()  : new Date(rec.lastOrderAt).getTime();
+    if (!isNaN(tsMs)) {
+      if (tsMs < firstMs) rec.firstOrderAt = ts;
+      if (tsMs > lastMs)  rec.lastOrderAt  = ts;
+    }
+  }
+
+  // Flatten + add SKU columns
+  const customers = Object.keys(byPhone).map(p => {
+    const rec = byPhone[p];
+    const itemList = SKUS
+      .filter(s => (rec.items[s.key] || 0) > 0)
+      .map(s => ({ key: s.key, name: s.name, qty: rec.items[s.key] }));
+    const totalQty = itemList.reduce((sum, it) => sum + it.qty, 0);
+    return {
+      phone:          rec.phone,
+      name:           rec.name,
+      shippingMethod: rec.shippingMethod,
+      address:        rec.address,
+      items:          itemList,
+      itemsByKey:     rec.items,    // raw object for CSV column mapping
+      totalQty:       totalQty,
+      total:          rec.total,
+      deposit:        rec.deposit,
+      remaining:      rec.remaining,
+      orderCount:     rec.orderCount,
+      paidCount:      rec.paidCount,
+      allPaid:        rec.paidCount === rec.orderCount,
+      statuses:       rec.statuses,
+      firstOrderAt:   rec.firstOrderAt instanceof Date ? rec.firstOrderAt.toISOString() : String(rec.firstOrderAt),
+      lastOrderAt:    rec.lastOrderAt  instanceof Date ? rec.lastOrderAt.toISOString()  : String(rec.lastOrderAt)
+    };
+  });
+
+  customers.sort((a, b) => b.total - a.total);
+
+  return {
+    updatedAt:    new Date().toISOString(),
+    customerCount: customers.length,
+    skus:         SKUS.map(s => ({ key: s.key, name: s.name, price: s.price })),
+    customers:    customers
+  };
+}
+
+// =============================================
+//  Dashboard — aggregated SKU/order/revenue stats
+// =============================================
+const DASHBOARD_TAB = "Dashboard";
+
+// Pure computation — returns dashboard data object (no side effects)
+function computeDashboardData() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+  if (!sheet) return null;
+
+  const data = sheet.getDataRange().getValues();
+
+  const skuTotals = SKUS.map(() => ({ qty: 0, revenue: 0 }));
+  let totalOrders = 0, paid = 0, pending = 0, unpaid = 0, refunded = 0;
+  let depositRevenue = 0, fullRevenue = 0;
+  let mismatchCount = 0;
+
+  const phoneSet = {};                  // unique customers
+  const customerAgg = {};               // phone -> { name, qty, total }
+
+  for (let i = 1; i < data.length; i++) {
+    const row = data[i];
+    if (!row[COL_NAME - 1]) continue;
+
+    const status      = String(row[COL_STATUS - 1] || "");
+    const orderTotal  = parseFloat(row[COL_TOTAL - 1])   || 0;
+    const orderDep    = parseFloat(row[COL_DEPOSIT - 1]) || 0;
+    const phone       = normalizePhone(row[COL_PHONE - 1]);
+    const name        = String(row[COL_NAME - 1] || "");
+
+    totalOrders++;
+
+    const isRefunded = /คืนเงิน|ยกเลิก|เกินโควต้า/.test(status);
+    if (isRefunded) {
+      refunded++;
+      continue;  // exclude from SKU + revenue counts
+    }
+
+    if (phone) phoneSet[phone] = true;
+
+    if (status.indexOf("มัดจำแล้ว") >= 0) {
+      paid++;
+      depositRevenue += orderDep;
+      fullRevenue    += orderTotal;
+    } else if (status.indexOf("ยอดไม่ตรง") >= 0) {
+      mismatchCount++;
+      unpaid++;
+    } else if (status.indexOf("รอตรวจ") >= 0) {
+      pending++;
+    } else {
+      unpaid++;
+    }
+
+    let rowQty = 0;
+    for (let s = 0; s < SKUS.length; s++) {
+      const q = parseInt(row[COL_QTY_START - 1 + s]) || 0;
+      if (q > 0) {
+        skuTotals[s].qty     += q;
+        skuTotals[s].revenue += q * SKUS[s].price;
+        rowQty += q;
+      }
+    }
+
+    if (phone) {
+      if (!customerAgg[phone]) {
+        customerAgg[phone] = { name: name, phone: phone, qty: 0, total: 0 };
+      }
+      customerAgg[phone].qty   += rowQty;
+      customerAgg[phone].total += orderTotal;
+    }
+  }
+
+  const customers = Object.keys(customerAgg).map(p => customerAgg[p]);
+  customers.sort((a, b) => b.total - a.total);
+
+  return {
+    updatedAt:    new Date().toISOString(),
+    totalOrders:  totalOrders,
+    uniqueCustomers: Object.keys(phoneSet).length,
+    paid:         paid,
+    pending:      pending,
+    unpaid:       unpaid,
+    refunded:     refunded,
+    mismatch:     mismatchCount,
+    depositRevenue: depositRevenue,
+    fullRevenue:  fullRevenue,
+    skus:         SKUS.map((s, i) => ({
+      key:     s.key,
+      name:    s.name,
+      price:   s.price,
+      qty:     skuTotals[i].qty,
+      revenue: skuTotals[i].revenue
+    })),
+    topCustomers: customers.slice(0, 10)
+  };
+}
+
+// Returns JSON for ?action=dashboard
+function getDashboardSummary() {
+  const d = computeDashboardData();
+  if (!d) return { error: "sheet_not_found" };
+  return d;
+}
+
+// Writes/refreshes the "Dashboard" tab in the sheet
+function updateDashboardTab() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName(DASHBOARD_TAB);
+  if (!sheet) sheet = ss.insertSheet(DASHBOARD_TAB);
+
+  sheet.clear();
+  const d = computeDashboardData();
+  if (!d) { sheet.getRange(1, 1).setValue("❌ ไม่พบ sheet ข้อมูล"); return; }
+
+  const tz       = ss.getSpreadsheetTimeZone() || "Asia/Bangkok";
+  const updated  = Utilities.formatDate(new Date(d.updatedAt), tz, "yyyy-MM-dd HH:mm");
+  const activeOrders = d.totalOrders - d.refunded;
+
+  const rows = [];
+  rows.push(["🌿 Lorcana Set 13 — Dashboard"]);
+  rows.push(["อัพเดทล่าสุด: " + updated]);
+  rows.push([""]);
+  rows.push(["═══ สรุปออเดอร์ ═══"]);
+  rows.push(["ออเดอร์ทั้งหมด",       d.totalOrders]);
+  rows.push(["ลูกค้าไม่ซ้ำ (เบอร์)",  d.uniqueCustomers]);
+  rows.push(["✅ มัดจำแล้ว",         d.paid]);
+  rows.push(["⏳ รอตรวจ",            d.pending]);
+  rows.push(["❌ รอชำระ / ผิดพลาด",   d.unpaid]);
+  rows.push(["⚠️ ยอดไม่ตรง (ในนั้น)", d.mismatch]);
+  rows.push(["🔄 คืนเงิน / ยกเลิก",   d.refunded]);
+  rows.push([""]);
+  rows.push(["═══ ยอดเงิน ═══"]);
+  rows.push(["💵 มัดจำที่ verified",  d.depositRevenue]);
+  rows.push(["💰 ยอดเต็มถ้าครบ",      d.fullRevenue]);
+  rows.push([""]);
+  rows.push(["═══ ยอดสินค้า (active orders) ═══"]);
+  rows.push(["SKU", "จำนวน", "ราคา/ชิ้น", "ยอดรวม"]);
+  d.skus.forEach(s => {
+    rows.push([s.name, s.qty, s.price, s.revenue]);
+  });
+  rows.push([""]);
+  rows.push(["═══ Top ลูกค้า (ตามยอดเต็ม) ═══"]);
+  rows.push(["#", "ชื่อ", "เบอร์", "จำนวนชิ้น", "ยอดเต็ม"]);
+  d.topCustomers.forEach((c, i) => {
+    rows.push([i + 1, c.name, c.phone, c.qty, c.total]);
+  });
+
+  // Write all rows in one batch (faster than per-cell)
+  const maxCols = rows.reduce((m, r) => Math.max(m, r.length), 1);
+  const padded  = rows.map(r => {
+    const copy = r.slice();
+    while (copy.length < maxCols) copy.push("");
+    return copy;
+  });
+  sheet.getRange(1, 1, padded.length, maxCols).setValues(padded);
+
+  // Simple formatting
+  try {
+    sheet.getRange(1, 1).setFontSize(16).setFontWeight("bold");
+    sheet.getRange(2, 1).setFontStyle("italic").setFontColor("#666");
+
+    // Bold the section headers (lines that start with ═══)
+    for (let r = 0; r < padded.length; r++) {
+      if (String(padded[r][0]).indexOf("═══") === 0) {
+        sheet.getRange(r + 1, 1, 1, maxCols).setFontWeight("bold").setBackground("#1F2E4A").setFontColor("#F5C542");
+      }
+    }
+    sheet.autoResizeColumns(1, maxCols);
+  } catch (e) {}
+}
+
+// Manual menu wrapper
+function refreshDashboardNow() {
+  updateDashboardTab();
+  SpreadsheetApp.getUi().alert("🔄 อัพเดท Dashboard tab เรียบร้อย");
+}
+
+// =============================================
+//  Daily Telegram summary
+// =============================================
+function buildSummaryText(d) {
+  const tz       = SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone() || "Asia/Bangkok";
+  const updated  = Utilities.formatDate(new Date(d.updatedAt), tz, "dd/MM HH:mm");
+
+  let txt = `🌿 *Lorcana Set 13 — สรุปยอดพรีออเดอร์*\n`;
+  txt += `_อัพเดท ${updated}_\n\n`;
+  txt += `📋 ออเดอร์: *${d.totalOrders}* (ลูกค้าไม่ซ้ำ ${d.uniqueCustomers})\n`;
+  txt += `✅ มัดจำ ${d.paid}  ⏳ รอตรวจ ${d.pending}  ❌ รอชำระ ${d.unpaid}\n`;
+  txt += `🔄 คืนเงิน/ยกเลิก ${d.refunded}\n\n`;
+  txt += `💵 มัดจำ verified: *${d.depositRevenue.toLocaleString()}* บาท\n`;
+  txt += `💰 ยอดเต็มถ้าครบ: *${d.fullRevenue.toLocaleString()}* บาท\n\n`;
+  txt += `🛒 *ยอดสินค้า:*\n`;
+  d.skus.forEach(s => {
+    if (s.qty > 0) {
+      txt += `• ${s.name}: *${s.qty}*  (${s.revenue.toLocaleString()} บาท)\n`;
+    }
+  });
+
+  const closeMs = new Date(CLOSE_AT_ISO).getTime() - Date.now();
+  if (closeMs > 0) {
+    const days  = Math.floor(closeMs / 86400000);
+    const hours = Math.floor((closeMs % 86400000) / 3600000);
+    txt += `\n⏰ ปิดรับใน ${days} วัน ${hours} ชม.`;
+  } else {
+    txt += `\n⏰ ปิดรับแล้ว`;
+  }
+  return txt;
+}
+
+function sendDailySummary() {
+  const d = computeDashboardData();
+  if (!d) {
+    sendTelegram("❌ Daily summary failed: sheet not found");
+    return;
+  }
+  sendTelegram(buildSummaryText(d));
+  // Refresh dashboard tab at the same time
+  try { updateDashboardTab(); } catch (e) {}
+}
+
+// Manual menu wrapper — "ส่ง summary ตอนนี้"
+function sendSummaryNow() {
+  sendDailySummary();
+  SpreadsheetApp.getUi().alert("📤 ส่ง summary ไป Telegram เรียบร้อย");
+}
+
+// Run ONCE to install the 9:00 AM trigger
+function setupDailyTrigger() {
+  // Clean up any existing daily summary triggers
+  ScriptApp.getProjectTriggers().forEach(t => {
+    if (t.getHandlerFunction() === "sendDailySummary") {
+      ScriptApp.deleteTrigger(t);
+    }
+  });
+  ScriptApp.newTrigger("sendDailySummary")
+    .timeBased()
+    .atHour(9)
+    .everyDays(1)
+    .inTimezone("Asia/Bangkok")
+    .create();
+  SpreadsheetApp.getUi().alert("✅ ตั้ง trigger ส่ง daily summary 9:00 น. แล้ว");
+}
+
+// =============================================
 //  Admin Menu
 // =============================================
 function onOpen() {
@@ -534,7 +1377,11 @@ function onOpen() {
     .addItem("✅ ยืนยันชำระ (Admin)",       "adminForcePaid")
     .addItem("↩️ คืนเงิน (เลือกแถว)",        "adminRefund")
     .addItem("🔍 ตรวจสลิปค้าง (เลือกแถว)",   "retriggerVerification")
-    .addItem("📊 สรุปออเดอร์",               "showOrderSummary")
+    .addItem("📊 สรุปออเดอร์ (popup)",       "showOrderSummary")
+    .addSeparator()
+    .addItem("🔄 อัพเดท Dashboard tab",      "refreshDashboardNow")
+    .addItem("📤 ส่ง Summary ไป Telegram",   "sendSummaryNow")
+    .addItem("⏰ ตั้ง trigger daily 9 โมง",   "setupDailyTrigger")
     .addSeparator()
     .addItem("🔧 Ensure Headers",           "manualEnsureHeaders")
     .addItem("🧪 ทดสอบ SlipOK",             "testSlipOK")
