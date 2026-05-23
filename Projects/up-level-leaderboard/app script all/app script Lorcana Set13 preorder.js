@@ -15,7 +15,7 @@
  * =============================================
  */
 
-const SCRIPT_VERSION = "lorcana13.v4";
+const SCRIPT_VERSION = "lorcana13.v5";
 
 // ===== Config =====
 const SHEET_NAME      = "Responses";
@@ -34,6 +34,7 @@ const DUP_WINDOW_MS   = 60000;
 const DEPOSIT_RATE    = 0.5;   // 50% มัดจำ
 const BOOSTER_KEY     = "booster_box";
 const BOOSTER_LIMIT   = 4;     // 1 case = 4 boxes ต่อคน
+const BOOSTER_TOTAL_CAP = 100; // global cap — count only rows already verified (✅ มัดจำแล้ว)
 
 // ===== SKU catalog (must match frontend) =====
 const SKUS = [
@@ -483,14 +484,24 @@ function getRecentOrders(limit) {
 }
 
 function getSummary() {
+  let boosterSoldOut = false;
+  try {
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+    if (sheet) {
+      boosterSoldOut = countPaidBoosterTotal(sheet) >= BOOSTER_TOTAL_CAP;
+    }
+  } catch (err) {
+    boosterSoldOut = false;
+  }
   return {
-    version:      SCRIPT_VERSION,
-    closeAt:      CLOSE_AT_ISO,
-    closed:       isPreorderClosed(),
-    skus:         SKUS,
-    shipping:     SHIPPING_FEE,
-    depositRate:  DEPOSIT_RATE,
-    boosterLimit: BOOSTER_LIMIT
+    version:        SCRIPT_VERSION,
+    closeAt:        CLOSE_AT_ISO,
+    closed:         isPreorderClosed(),
+    skus:           SKUS,
+    shipping:       SHIPPING_FEE,
+    depositRate:    DEPOSIT_RATE,
+    boosterLimit:   BOOSTER_LIMIT,
+    boosterSoldOut: boosterSoldOut
   };
 }
 
@@ -641,6 +652,22 @@ function findDuplicateTransRef(sheet, transRef) {
   return -1;
 }
 
+// Count booster boxes from rows that are already verified ("✅ มัดจำแล้ว")
+function countPaidBoosterTotal(sheet) {
+  const boosterIdx = SKUS.findIndex(s => s.key === BOOSTER_KEY);
+  if (boosterIdx < 0) return 0;
+  const col  = COL_QTY_START + boosterIdx;
+  const data = sheet.getDataRange().getValues();
+  let total = 0;
+  for (let i = 1; i < data.length; i++) {
+    const row = data[i];
+    const status = String(row[COL_STATUS - 1] || "");
+    if (status.indexOf("มัดจำแล้ว") < 0) continue;
+    total += parseInt(row[col - 1]) || 0;
+  }
+  return total;
+}
+
 // Count active booster boxes ordered by a phone (skip cancelled/refunded rows)
 function countBoosterForPhone(sheet, normPhone) {
   const boosterIdx = SKUS.findIndex(s => s.key === BOOSTER_KEY);
@@ -745,6 +772,19 @@ function doPost(e) {
           requested: requestedBooster,
           limit:     BOOSTER_LIMIT,
           message:   `Booster Box จำกัด ${BOOSTER_LIMIT} กล่อง/ท่าน (1 case) · ของท่านมีอยู่แล้ว ${existingBooster} กล่อง`
+        });
+      }
+
+      // Global Booster Box cap — only paid (มัดจำแล้ว) rows count toward the cap
+      const paidBoosterTotal = countPaidBoosterTotal(sheet);
+      if (paidBoosterTotal + requestedBooster > BOOSTER_TOTAL_CAP) {
+        return jsonResponse({
+          success:   false,
+          error:     "booster_sold_out",
+          paid:      paidBoosterTotal,
+          requested: requestedBooster,
+          cap:       BOOSTER_TOTAL_CAP,
+          message:   "Booster Box ปิดรับพรีออเดอร์รอบนี้แล้ว — สินค้าอื่นยังสั่งได้ปกติ"
         });
       }
     }
