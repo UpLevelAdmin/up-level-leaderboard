@@ -1385,7 +1385,57 @@ function onOpen() {
     .addSeparator()
     .addItem("🔧 Ensure Headers",           "manualEnsureHeaders")
     .addItem("🧪 ทดสอบ SlipOK",             "testSlipOK")
+    .addSeparator()
+    .addItem("🛠️ Normalize manual rows",    "normalizeManualRows")
     .addToUi();
+}
+
+/**
+ * Fix rows that were keyed in by hand so they match the auto-saved format:
+ *   - Column C (phone): re-write with leading `'` so Sheets keeps it as text
+ *     (numeric phones lose the leading 0 and look wrong in filters).
+ *   - Column V (script_version): blank → "manual" so we can tell hand-entered
+ *     rows apart from form submissions.
+ * Skips header row and rows with no customer name. Safe to run repeatedly.
+ */
+function normalizeManualRows() {
+  const ui    = SpreadsheetApp.getUi();
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+  if (!sheet) { ui.alert("❌ ไม่พบ sheet Responses"); return; }
+
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 2) { ui.alert("ไม่มีแถวข้อมูล"); return; }
+
+  const range  = sheet.getRange(2, 1, lastRow - 1, COL_NOTES);
+  const values = range.getValues();
+  let phoneFixed = 0, versionFixed = 0;
+
+  for (let i = 0; i < values.length; i++) {
+    const row    = values[i];
+    const rowNum = i + 2;
+    if (!String(row[COL_NAME - 1] || "").trim()) continue;
+
+    // Phone — force text-cast if stored as number or missing leading 0
+    const phoneCell = sheet.getRange(rowNum, COL_PHONE);
+    const phoneVal  = phoneCell.getValue();
+    const phoneStr  = phoneCell.getDisplayValue();
+    const isNumber  = typeof phoneVal === "number";
+    const lostZero  = !isNumber && phoneStr && /^\d{9}$/.test(phoneStr);
+    if (isNumber || lostZero) {
+      const digits = String(phoneStr).replace(/[^\d]/g, "");
+      const padded = digits.length === 9 ? "0" + digits : digits;
+      phoneCell.setValue("'" + padded);
+      phoneFixed++;
+    }
+
+    // Version — blank → "manual"
+    if (!String(row[COL_NOTES - 1] || "").trim()) {
+      sheet.getRange(rowNum, COL_NOTES).setValue("manual");
+      versionFixed++;
+    }
+  }
+
+  ui.alert(`✅ Normalized\n· phones: ${phoneFixed}\n· versions: ${versionFixed}`);
 }
 
 function manualEnsureHeaders() {
