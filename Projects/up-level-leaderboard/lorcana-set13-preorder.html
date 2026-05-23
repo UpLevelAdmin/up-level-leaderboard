@@ -1470,7 +1470,7 @@
             slipBase64:    null,
             slipFile:      null,
             submitting:    false,
-            boosterSoldOut: false
+            boosterSoldOut: true   // manual kill-switch — Booster Box closed for this preorder
         };
 
         /* ---------- Build SKU list ---------- */
@@ -1537,7 +1537,10 @@
             recalcTotal();
         });
 
-        /* ---------- Load summary (booster sold-out flag) ---------- */
+        /* ---------- Apply hardcoded sold-out immediately ---------- */
+        if (state.boosterSoldOut) applyBoosterSoldOutUI();
+
+        /* ---------- Load summary (in case kill-switch is later flipped server-side) ---------- */
         (async function loadSummary() {
             try {
                 const res = await fetch(`${APPS_SCRIPT_URL}?_=${Date.now()}`);

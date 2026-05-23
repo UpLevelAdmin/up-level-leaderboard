@@ -15,7 +15,7 @@
  * =============================================
  */
 
-const SCRIPT_VERSION = "lorcana13.v5";
+const SCRIPT_VERSION = "lorcana13.v6";
 
 // ===== Config =====
 const SHEET_NAME      = "Responses";
@@ -34,7 +34,8 @@ const DUP_WINDOW_MS   = 60000;
 const DEPOSIT_RATE    = 0.5;   // 50% มัดจำ
 const BOOSTER_KEY     = "booster_box";
 const BOOSTER_LIMIT   = 4;     // 1 case = 4 boxes ต่อคน
-const BOOSTER_TOTAL_CAP = 100; // global cap — count only rows already verified (✅ มัดจำแล้ว)
+const BOOSTER_TOTAL_CAP    = 100;  // global cap — count only rows already verified (✅ มัดจำแล้ว)
+const BOOSTER_FORCE_CLOSED = true; // manual kill-switch: reject all booster orders regardless of count
 
 // ===== SKU catalog (must match frontend) =====
 const SKUS = [
@@ -484,14 +485,16 @@ function getRecentOrders(limit) {
 }
 
 function getSummary() {
-  let boosterSoldOut = false;
-  try {
-    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
-    if (sheet) {
-      boosterSoldOut = countPaidBoosterTotal(sheet) >= BOOSTER_TOTAL_CAP;
+  let boosterSoldOut = BOOSTER_FORCE_CLOSED;
+  if (!boosterSoldOut) {
+    try {
+      const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+      if (sheet) {
+        boosterSoldOut = countPaidBoosterTotal(sheet) >= BOOSTER_TOTAL_CAP;
+      }
+    } catch (err) {
+      boosterSoldOut = false;
     }
-  } catch (err) {
-    boosterSoldOut = false;
   }
   return {
     version:        SCRIPT_VERSION,
@@ -772,6 +775,15 @@ function doPost(e) {
           requested: requestedBooster,
           limit:     BOOSTER_LIMIT,
           message:   `Booster Box จำกัด ${BOOSTER_LIMIT} กล่อง/ท่าน (1 case) · ของท่านมีอยู่แล้ว ${existingBooster} กล่อง`
+        });
+      }
+
+      // Manual kill-switch — close booster regardless of paid count
+      if (BOOSTER_FORCE_CLOSED) {
+        return jsonResponse({
+          success: false,
+          error:   "booster_sold_out",
+          message: "Booster Box ปิดรับพรีออเดอร์รอบนี้แล้ว — สินค้าอื่นยังสั่งได้ปกติ"
         });
       }
 
