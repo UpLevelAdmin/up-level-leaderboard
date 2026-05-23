@@ -1377,7 +1377,7 @@
             <p class="contact-help">มีคำถามเรื่องพรีออเดอร์ การชำระเงิน หรือสินค้า ทักทางร้านได้เลยครับ</p>
             <div class="contact-grid">
                 <a class="contact-btn fb" href="https://www.facebook.com/uplevel.acad" target="_blank" rel="noopener">
-                    <span class="lc"><i data-lucide="facebook"></i></span>
+                    <span class="lc"><i data-lucide="external-link"></i></span>
                     <span>Facebook</span>
                 </a>
                 <a class="contact-btn line" href="https://line.me/ti/g2/LPSnZIJvTPfiJRbP8RMp83m8KIL55OF7Nk44oQ" target="_blank" rel="noopener">
@@ -1470,7 +1470,7 @@
             slipBase64:    null,
             slipFile:      null,
             submitting:    false,
-            boosterSoldOut: true   // manual kill-switch — Booster Box closed for this preorder
+            boosterSoldOut: false  // server (Apps Script BOOSTER_FORCE_CLOSED or paid cap) is the source of truth — loadSummary() sets this
         };
 
         /* ---------- Build SKU list ---------- */
@@ -1537,10 +1537,7 @@
             recalcTotal();
         });
 
-        /* ---------- Apply hardcoded sold-out immediately ---------- */
-        if (state.boosterSoldOut) applyBoosterSoldOutUI();
-
-        /* ---------- Load summary (in case kill-switch is later flipped server-side) ---------- */
+        /* ---------- Load summary (booster sold-out flag) ---------- */
         (async function loadSummary() {
             try {
                 const res = await fetch(`${APPS_SCRIPT_URL}?_=${Date.now()}`);
