@@ -1470,7 +1470,7 @@
             slipBase64:    null,
             slipFile:      null,
             submitting:    false,
-            boosterSoldOut: false  // server (Apps Script BOOSTER_FORCE_CLOSED or paid cap) is the source of truth — loadSummary() sets this
+            stock:         {}    // { [skuKey]: { cap, active, remaining, forceClosed, soldOut } } from getSummary
         };
 
         /* ---------- Build SKU list ---------- */
@@ -1497,19 +1497,51 @@
             skuList.appendChild(row);
         });
 
-        /* ---------- Booster sold-out UI ---------- */
-        function applyBoosterSoldOutUI() {
-            const row = skuList.querySelector(`.sku[data-key="${BOOSTER_KEY}"]`);
-            if (!row) return;
-            if (state.boosterSoldOut) {
-                row.classList.add("sold-out");
-                state.cart[BOOSTER_KEY] = 0;
-                const qtyBox = row.querySelector(`[data-qty-key="${BOOSTER_KEY}"]`);
-                if (qtyBox) qtyBox.innerHTML = `<span class="sold-badge">Sold Out</span>`;
-                const body = row.querySelector(".sku-body .sku-limit");
-                if (body) body.textContent = "ปิดรับพรีออเดอร์รอบนี้ — สินค้าอื่นยังสั่งได้";
-                recalcTotal();
-            }
+        /* ---------- Per-SKU stock UI (cap + sold-out + remaining) ---------- */
+        const LOW_STOCK_THRESHOLD = 10;  // show "เหลือ N" badge when remaining ≤ this
+
+        function applySkuStockUI() {
+            SKUS.forEach(s => {
+                const row = skuList.querySelector(`.sku[data-key="${s.key}"]`);
+                if (!row) return;
+                const stock  = state.stock[s.key] || {};
+                const qtyBox = row.querySelector(`[data-qty-key="${s.key}"]`);
+                const body   = row.querySelector(".sku-body .sku-limit");
+                const baseLimitTxt = s.key === BOOSTER_KEY
+                    ? `สูงสุด ${BOOSTER_LIMIT} กล่อง/ท่าน (1 case)`
+                    : "";
+
+                if (stock.soldOut) {
+                    row.classList.add("sold-out");
+                    state.cart[s.key] = 0;
+                    if (qtyBox) qtyBox.innerHTML = `<span class="sold-badge">Sold Out</span>`;
+                    if (body) body.textContent = "ปิดรับพรีออเดอร์รอบนี้ — สินค้าอื่นยังสั่งได้";
+                    const qNum = document.getElementById("qty-" + s.key);
+                    if (qNum) qNum.textContent = 0;
+                    return;
+                }
+
+                // In-stock — clamp cart against remaining
+                row.classList.remove("sold-out");
+                if (qtyBox && qtyBox.querySelector(".sold-badge")) {
+                    qtyBox.innerHTML = `
+                        <button class="qty-btn" data-act="dec" data-key="${s.key}">−</button>
+                        <div class="qty-num" id="qty-${s.key}">${state.cart[s.key] || 0}</div>
+                        <button class="qty-btn" data-act="inc" data-key="${s.key}">+</button>`;
+                }
+                if (typeof stock.remaining === "number" && stock.remaining <= LOW_STOCK_THRESHOLD) {
+                    if (body) body.textContent = `เหลือเพียง ${stock.remaining} ชิ้น${baseLimitTxt ? " · " + baseLimitTxt : ""}`;
+                } else {
+                    if (body) body.textContent = baseLimitTxt;
+                }
+                // Clamp current cart qty if it exceeds remaining (e.g., someone else just took some)
+                if (typeof stock.remaining === "number" && (state.cart[s.key] || 0) > stock.remaining) {
+                    state.cart[s.key] = stock.remaining;
+                    const qNum = document.getElementById("qty-" + s.key);
+                    if (qNum) qNum.textContent = stock.remaining;
+                }
+            });
+            recalcTotal();
         }
 
         skuList.addEventListener("click", e => {
@@ -1523,13 +1555,19 @@
             const btn = e.target.closest(".qty-btn");
             if (!btn) return;
             const key = btn.dataset.key;
-            if (key === BOOSTER_KEY && state.boosterSoldOut) return;
+            const stock = state.stock[key] || {};
+            if (stock.soldOut) return;
             const act = btn.dataset.act;
             const cur = state.cart[key] || 0;
             let next = act === "inc" ? cur + 1 : Math.max(0, cur - 1);
-            // Per-SKU caps
+            // Per-person cap (booster only for now)
             if (key === BOOSTER_KEY && next > BOOSTER_LIMIT) {
                 next = BOOSTER_LIMIT;
+                flashLimitHint(btn);
+            }
+            // Per-SKU stock cap (live remaining)
+            if (typeof stock.remaining === "number" && next > stock.remaining) {
+                next = stock.remaining;
                 flashLimitHint(btn);
             }
             state.cart[key] = next;
@@ -1537,19 +1575,22 @@
             recalcTotal();
         });
 
-        /* ---------- Load summary (booster sold-out flag) ---------- */
-        (async function loadSummary() {
+        /* ---------- Load summary (per-SKU stock + sold-out flags) ---------- */
+        async function loadSummary() {
             try {
                 const res = await fetch(`${APPS_SCRIPT_URL}?_=${Date.now()}`);
                 const data = await res.json();
-                if (data && data.boosterSoldOut) {
-                    state.boosterSoldOut = true;
-                    applyBoosterSoldOutUI();
+                if (data && data.stock) {
+                    state.stock = data.stock;
+                    applySkuStockUI();
                 }
             } catch (e) {
                 // silent — non-critical; server still enforces cap on submit
             }
-        })();
+        }
+        loadSummary();
+        // Auto-refresh stock every 20s so customers see oversold SKUs go away
+        setInterval(loadSummary, 20000);
 
         function flashLimitHint(btn) {
             if (btn.dataset.flashing === "1") return;  // skip if already in flash window
@@ -2062,11 +2103,11 @@
             } else if (data.error === "booster_limit_exceeded") {
                 icon.textContent = "📦"; title.textContent = "Booster เกินสิทธิ์";
                 msg.innerHTML = data.message || `Booster Box จำกัด ${BOOSTER_LIMIT} กล่อง/ท่าน`;
-            } else if (data.error === "booster_sold_out") {
-                icon.textContent = "🌿"; title.textContent = "Booster Box ปิดรับแล้ว";
-                msg.innerHTML = data.message || "Booster Box ปิดรับพรีออเดอร์รอบนี้แล้ว — สินค้าอื่นยังสั่งได้ปกติ";
-                state.boosterSoldOut = true;
-                applyBoosterSoldOutUI();
+            } else if (data.error === "sku_sold_out" || data.error === "booster_sold_out") {
+                icon.textContent = "🌿";
+                title.textContent = (data.skuName || "สินค้า") + " ปิดรับแล้ว";
+                msg.innerHTML = data.message || ((data.skuName || "สินค้า") + " ปิดรับพรีออเดอร์รอบนี้แล้ว — สินค้าอื่นยังสั่งได้ปกติ");
+                loadSummary();  // refresh stock so UI reflects sold-out immediately
             } else if (data.error === "duplicate_recent") {
                 icon.textContent = "⏱"; title.textContent = "ส่งซ้ำเร็วเกินไป";
                 msg.innerHTML = data.message || "พบออเดอร์จากเบอร์นี้เมื่อสักครู่ — รอสักครู่แล้วลองใหม่";

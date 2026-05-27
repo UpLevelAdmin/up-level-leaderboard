@@ -15,7 +15,7 @@
  * =============================================
  */
 
-const SCRIPT_VERSION = "lorcana13.v6";
+const SCRIPT_VERSION = "lorcana13.v7";
 
 // ===== Config =====
 const SHEET_NAME      = "Responses";
@@ -34,8 +34,14 @@ const DUP_WINDOW_MS   = 60000;
 const DEPOSIT_RATE    = 0.5;   // 50% มัดจำ
 const BOOSTER_KEY     = "booster_box";
 const BOOSTER_LIMIT   = 4;     // 1 case = 4 boxes ต่อคน
-const BOOSTER_TOTAL_CAP    = 100;  // global cap — count only rows already verified (✅ มัดจำแล้ว)
-const BOOSTER_FORCE_CLOSED = true; // manual kill-switch: reject all booster orders regardless of count
+
+// SKU caps + kill-switches live in Script Properties so admin can edit live
+// from the dashboard without redeploying. Keys:
+//   sku_caps_json        e.g. {"booster_box": 100, "playmat_mike": 50}  (omit = unlimited)
+//   sku_closed_json      e.g. {"booster_box": true}  (omit/false = open)
+// Defaults below are only used the first time before Properties exist.
+const DEFAULT_SKU_CAPS    = { "booster_box": 100 };
+const DEFAULT_SKU_CLOSED  = { "booster_box": true };
 
 // ===== SKU catalog (must match frontend) =====
 const SKUS = [
@@ -66,6 +72,86 @@ const COL_TRANSREF    = COL_SLIP + 1;               // S
 const COL_SENDER      = COL_TRANSREF + 1;           // T
 const COL_STATUS      = COL_SENDER + 1;             // U
 const COL_NOTES       = COL_STATUS + 1;             // V
+
+// =============================================
+//  SKU config (caps + kill-switches) — Properties-backed
+// =============================================
+function readJsonProp(key, fallback) {
+  try {
+    const raw = PropertiesService.getScriptProperties().getProperty(key);
+    if (!raw) return fallback;
+    const parsed = JSON.parse(raw);
+    return (parsed && typeof parsed === "object") ? parsed : fallback;
+  } catch (e) {
+    return fallback;
+  }
+}
+function writeJsonProp(key, obj) {
+  PropertiesService.getScriptProperties().setProperty(key, JSON.stringify(obj || {}));
+}
+
+function getSkuCaps()    { return readJsonProp("sku_caps_json",   DEFAULT_SKU_CAPS); }
+function getSkuClosed()  { return readJsonProp("sku_closed_json", DEFAULT_SKU_CLOSED); }
+function saveSkuCaps(o)  { writeJsonProp("sku_caps_json",   o); }
+function saveSkuClosed(o){ writeJsonProp("sku_closed_json", o); }
+
+// Admin auth — token stored in Script Properties as "admin_token".
+// Set once via setupAdminToken() menu item.
+function getAdminToken() {
+  return PropertiesService.getScriptProperties().getProperty("admin_token") || "";
+}
+function checkAdminAuth(e) {
+  const expected = getAdminToken();
+  if (!expected) return false;  // not configured → deny
+  const provided =
+    (e && e.parameter && e.parameter.token) ||
+    (e && e.postData && e.postData.contents && safeParseToken(e.postData.contents)) || "";
+  return provided && provided === expected;
+}
+function safeParseToken(raw) {
+  try { const j = JSON.parse(raw); return j && j.token; } catch (e) { return ""; }
+}
+
+// Count active (non-refunded/cancelled) units per SKU.
+// Returns { [skuKey]: number }
+function countActiveSkuTotals(sheet) {
+  const data = sheet.getDataRange().getValues();
+  const totals = {};
+  SKUS.forEach(s => { totals[s.key] = 0; });
+  for (let i = 1; i < data.length; i++) {
+    const row    = data[i];
+    if (!row[COL_NAME - 1]) continue;
+    const status = String(row[COL_STATUS - 1] || "");
+    if (/คืนเงิน|ยกเลิก|เกินโควต้า/.test(status)) continue;
+    for (let s = 0; s < SKUS.length; s++) {
+      const q = parseInt(row[COL_QTY_START - 1 + s]) || 0;
+      if (q > 0) totals[SKUS[s].key] += q;
+    }
+  }
+  return totals;
+}
+
+// Build per-SKU sold-out + remaining map from caps + active counts.
+// activeTotals: { [key]: number } (from countActiveSkuTotals)
+function buildSkuStock(activeTotals) {
+  const caps   = getSkuCaps();
+  const closed = getSkuClosed();
+  const out = {};
+  SKUS.forEach(s => {
+    const cap        = (typeof caps[s.key] === "number" && caps[s.key] > 0) ? caps[s.key] : null;
+    const isClosed   = closed[s.key] === true;
+    const active     = activeTotals ? (activeTotals[s.key] || 0) : 0;
+    const remaining  = cap !== null ? Math.max(0, cap - active) : null;
+    out[s.key] = {
+      cap:        cap,
+      active:     active,
+      remaining:  remaining,
+      forceClosed: isClosed,
+      soldOut:    isClosed || (cap !== null && remaining <= 0)
+    };
+  });
+  return out;
+}
 
 // =============================================
 //  Helpers
@@ -437,10 +523,58 @@ function doGet(e) {
     if (action === "shipping_list") {
       return jsonResponse(getShippingList());
     }
+    if (action === "admin_config") {
+      if (!checkAdminAuth(e)) return jsonResponse({ error: "unauthorized" });
+      return jsonResponse(getAdminConfig());
+    }
     return jsonResponse(getSummary());
   } catch (err) {
     return jsonResponse({ error: String(err) });
   }
+}
+
+// Admin config payload — read by champ-hq dashboard
+function getAdminConfig() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+  const activeTotals = sheet ? countActiveSkuTotals(sheet) : null;
+  const stock = buildSkuStock(activeTotals);
+  return {
+    updatedAt: new Date().toISOString(),
+    skus:      SKUS.map(s => ({ key: s.key, name: s.name, price: s.price })),
+    caps:      getSkuCaps(),
+    closed:    getSkuClosed(),
+    stock:     stock
+  };
+}
+
+// Save admin config — body { caps: {...}, closed: {...}, token: "..." }
+// Replaces both maps atomically. Caller sends complete maps.
+function saveAdminConfig(body) {
+  if (!body || typeof body !== "object") throw new Error("invalid_body");
+  const caps   = (body.caps && typeof body.caps === "object") ? body.caps : null;
+  const closed = (body.closed && typeof body.closed === "object") ? body.closed : null;
+  if (!caps && !closed) throw new Error("nothing_to_update");
+
+  // Sanitize: only known SKU keys, numbers >= 0 for caps, booleans for closed
+  if (caps) {
+    const clean = {};
+    SKUS.forEach(s => {
+      if (Object.prototype.hasOwnProperty.call(caps, s.key)) {
+        const n = parseInt(caps[s.key]);
+        if (!isNaN(n) && n > 0) clean[s.key] = n;
+        // n <= 0 or missing → unlimited (no key)
+      }
+    });
+    saveSkuCaps(clean);
+  }
+  if (closed) {
+    const clean = {};
+    SKUS.forEach(s => {
+      if (closed[s.key] === true) clean[s.key] = true;
+    });
+    saveSkuClosed(clean);
+  }
+  return getAdminConfig();
 }
 
 // Return last N orders with PII masked (first 5 chars of name, last-4 hidden phone)
@@ -485,17 +619,21 @@ function getRecentOrders(limit) {
 }
 
 function getSummary() {
-  let boosterSoldOut = BOOSTER_FORCE_CLOSED;
-  if (!boosterSoldOut) {
-    try {
-      const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
-      if (sheet) {
-        boosterSoldOut = countPaidBoosterTotal(sheet) >= BOOSTER_TOTAL_CAP;
-      }
-    } catch (err) {
-      boosterSoldOut = false;
+  let stock = {};
+  let activeTotals = null;
+  try {
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+    if (sheet) {
+      activeTotals = countActiveSkuTotals(sheet);
+      stock = buildSkuStock(activeTotals);
+    } else {
+      stock = buildSkuStock(null);
     }
+  } catch (err) {
+    stock = buildSkuStock(null);
   }
+  // Back-compat: keep boosterSoldOut at top level so older clients still work
+  const boosterStock = stock[BOOSTER_KEY] || { soldOut: false };
   return {
     version:        SCRIPT_VERSION,
     closeAt:        CLOSE_AT_ISO,
@@ -504,7 +642,8 @@ function getSummary() {
     shipping:       SHIPPING_FEE,
     depositRate:    DEPOSIT_RATE,
     boosterLimit:   BOOSTER_LIMIT,
-    boosterSoldOut: boosterSoldOut
+    boosterSoldOut: !!boosterStock.soldOut,
+    stock:          stock
   };
 }
 
@@ -655,22 +794,6 @@ function findDuplicateTransRef(sheet, transRef) {
   return -1;
 }
 
-// Count booster boxes from rows that are already verified ("✅ มัดจำแล้ว")
-function countPaidBoosterTotal(sheet) {
-  const boosterIdx = SKUS.findIndex(s => s.key === BOOSTER_KEY);
-  if (boosterIdx < 0) return 0;
-  const col  = COL_QTY_START + boosterIdx;
-  const data = sheet.getDataRange().getValues();
-  let total = 0;
-  for (let i = 1; i < data.length; i++) {
-    const row = data[i];
-    const status = String(row[COL_STATUS - 1] || "");
-    if (status.indexOf("มัดจำแล้ว") < 0) continue;
-    total += parseInt(row[col - 1]) || 0;
-  }
-  return total;
-}
-
 // Count active booster boxes ordered by a phone (skip cancelled/refunded rows)
 function countBoosterForPhone(sheet, normPhone) {
   const boosterIdx = SKUS.findIndex(s => s.key === BOOSTER_KEY);
@@ -709,6 +832,20 @@ function isRecentDuplicate(sheet, normPhone) {
 //  doPost — Submit order
 // =============================================
 function doPost(e) {
+  const action = e && e.parameter && e.parameter.action;
+
+  // Admin config update — separate auth path, no lock needed
+  if (action === "admin_config") {
+    try {
+      if (!checkAdminAuth(e)) return jsonResponse({ success: false, error: "unauthorized" });
+      const body = JSON.parse(e.postData.contents);
+      const cfg = saveAdminConfig(body);
+      return jsonResponse({ success: true, config: cfg });
+    } catch (err) {
+      return jsonResponse({ success: false, error: String(err) });
+    }
+  }
+
   const lock = LockService.getScriptLock();
   try { lock.waitLock(15000); } catch (err) {
     return jsonResponse({ success: false, error: "busy_try_again" });
@@ -777,26 +914,48 @@ function doPost(e) {
           message:   `Booster Box จำกัด ${BOOSTER_LIMIT} กล่อง/ท่าน (1 case) · ของท่านมีอยู่แล้ว ${existingBooster} กล่อง`
         });
       }
+    }
 
-      // Manual kill-switch — close booster regardless of paid count
-      if (BOOSTER_FORCE_CLOSED) {
+    // Per-SKU caps + kill-switches — count ACTIVE rows (not just paid) so
+    // pending/รอตรวจ submits also reserve the slot. Closes the race window
+    // where 5 customers transfer for the last slot but only 1 gets confirmed.
+    const skuCaps    = getSkuCaps();
+    const skuClosed  = getSkuClosed();
+    const activeTotals = countActiveSkuTotals(sheet);
+    for (let s = 0; s < SKUS.length; s++) {
+      const req = qtyArr[s];
+      if (req <= 0) continue;
+      const key = SKUS[s].key;
+      const name = SKUS[s].name;
+
+      if (skuClosed[key] === true) {
         return jsonResponse({
           success: false,
-          error:   "booster_sold_out",
-          message: "Booster Box ปิดรับพรีออเดอร์รอบนี้แล้ว — สินค้าอื่นยังสั่งได้ปกติ"
+          error:   "sku_sold_out",
+          skuKey:  key,
+          skuName: name,
+          message: `${name} ปิดรับพรีออเดอร์รอบนี้แล้ว — สินค้าอื่นยังสั่งได้ปกติ`
         });
       }
 
-      // Global Booster Box cap — only paid (มัดจำแล้ว) rows count toward the cap
-      const paidBoosterTotal = countPaidBoosterTotal(sheet);
-      if (paidBoosterTotal + requestedBooster > BOOSTER_TOTAL_CAP) {
+      const cap = (typeof skuCaps[key] === "number" && skuCaps[key] > 0) ? skuCaps[key] : null;
+      if (cap === null) continue;
+
+      const active = activeTotals[key] || 0;
+      if (active + req > cap) {
+        const left = Math.max(0, cap - active);
         return jsonResponse({
           success:   false,
-          error:     "booster_sold_out",
-          paid:      paidBoosterTotal,
-          requested: requestedBooster,
-          cap:       BOOSTER_TOTAL_CAP,
-          message:   "Booster Box ปิดรับพรีออเดอร์รอบนี้แล้ว — สินค้าอื่นยังสั่งได้ปกติ"
+          error:     "sku_sold_out",
+          skuKey:    key,
+          skuName:   name,
+          active:    active,
+          requested: req,
+          cap:       cap,
+          remaining: left,
+          message:   left > 0
+            ? `${name} เหลือเพียง ${left} ชิ้น — กรุณาลดจำนวนแล้วลองใหม่`
+            : `${name} ปิดรับพรีออเดอร์รอบนี้แล้ว — สินค้าอื่นยังสั่งได้ปกติ`
         });
       }
     }
@@ -1383,11 +1542,48 @@ function onOpen() {
     .addItem("📤 ส่ง Summary ไป Telegram",   "sendSummaryNow")
     .addItem("⏰ ตั้ง trigger daily 9 โมง",   "setupDailyTrigger")
     .addSeparator()
+    .addItem("🔐 ตั้ง Admin Token (ครั้งแรก)", "setupAdminToken")
+    .addItem("📋 ดู Caps & Stock",          "showAdminConfig")
+    .addSeparator()
     .addItem("🔧 Ensure Headers",           "manualEnsureHeaders")
     .addItem("🧪 ทดสอบ SlipOK",             "testSlipOK")
     .addSeparator()
     .addItem("🛠️ Normalize manual rows",    "normalizeManualRows")
     .addToUi();
+}
+
+// Generate a random admin token and save to Script Properties.
+// Run once, then copy the token into champ-hq env LORCANA_ADMIN_TOKEN.
+function setupAdminToken() {
+  const ui = SpreadsheetApp.getUi();
+  const existing = getAdminToken();
+  if (existing) {
+    const resp = ui.alert(
+      "Admin token มีอยู่แล้ว",
+      "Token ปัจจุบัน:\n" + existing + "\n\nสร้างใหม่ทับ? (ของเก่าจะใช้ไม่ได้)",
+      ui.ButtonSet.YES_NO
+    );
+    if (resp !== ui.Button.YES) return;
+  }
+  const token = Utilities.getUuid().replace(/-/g, "") + Utilities.getUuid().replace(/-/g, "");
+  PropertiesService.getScriptProperties().setProperty("admin_token", token);
+  ui.alert("✅ Admin Token", "Token ใหม่:\n\n" + token + "\n\nคัดลอกใส่ LORCANA_ADMIN_TOKEN ใน champ-hq env", ui.ButtonSet.OK);
+}
+
+function showAdminConfig() {
+  const cfg = getAdminConfig();
+  const lines = [];
+  lines.push("Caps & Stock — Lorcana Set 13");
+  lines.push("อัพเดท: " + cfg.updatedAt);
+  lines.push("");
+  cfg.skus.forEach(s => {
+    const st = cfg.stock[s.key] || {};
+    const capTxt = st.cap === null ? "∞" : st.cap;
+    const closedTxt = st.forceClosed ? "  [ปิดรับ]" : "";
+    const remTxt = st.remaining === null ? "" : ` · เหลือ ${st.remaining}`;
+    lines.push(`• ${s.name}: ${st.active}/${capTxt}${remTxt}${closedTxt}`);
+  });
+  SpreadsheetApp.getUi().alert("📋 Caps & Stock", lines.join("\n"), SpreadsheetApp.getUi().ButtonSet.OK);
 }
 
 /**
