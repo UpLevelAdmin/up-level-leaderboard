@@ -72,6 +72,31 @@ const COL_TRANSREF    = COL_SLIP + 1;               // S
 const COL_SENDER      = COL_TRANSREF + 1;           // T
 const COL_STATUS      = COL_SENDER + 1;             // U
 const COL_NOTES       = COL_STATUS + 1;             // V
+// Phase 2 columns — appended when allocation is committed + remaining payment flow
+const COL_ALLOC_JSON    = COL_NOTES + 1;            // W  {"sku_key": qty}
+const COL_FINAL_AMOUNT  = COL_ALLOC_JSON + 1;       // X  subtotal allocated + shipFee
+const COL_PHASE2_DUE    = COL_FINAL_AMOUNT + 1;     // Y  final − depositPaid (can be negative)
+const COL_PHASE2_SLIP   = COL_PHASE2_DUE + 1;       // Z  slip URL for phase 2
+const COL_PHASE2_REF    = COL_PHASE2_SLIP + 1;      // AA SlipOK transRef for phase 2
+const COL_PHASE2_STATUS = COL_PHASE2_REF + 1;       // AB phase 2 status string
+
+// Workflow phases (single Script Property `workflow_phase`)
+const PHASE_COLLECTING            = "collecting";
+const PHASE_CLOSED_AWAITING_ALLOC = "closed_awaiting_alloc";
+const PHASE_ALLOC_COMMITTED       = "alloc_committed";
+const PHASE_PHASE2_OPEN           = "phase2_open";
+const PHASE_DONE                  = "done";
+const VALID_PHASES = [
+  PHASE_COLLECTING, PHASE_CLOSED_AWAITING_ALLOC, PHASE_ALLOC_COMMITTED,
+  PHASE_PHASE2_OPEN, PHASE_DONE
+];
+const PHASE_TRANSITIONS = {
+  collecting:            ["closed_awaiting_alloc"],
+  closed_awaiting_alloc: ["alloc_committed", "collecting"],
+  alloc_committed:       ["phase2_open", "closed_awaiting_alloc"],
+  phase2_open:           ["done", "alloc_committed"],
+  done:                  ["phase2_open"]
+};
 
 // =============================================
 //  SKU config (caps + kill-switches) — Properties-backed
@@ -94,6 +119,28 @@ function getSkuCaps()    { return readJsonProp("sku_caps_json",   DEFAULT_SKU_CA
 function getSkuClosed()  { return readJsonProp("sku_closed_json", DEFAULT_SKU_CLOSED); }
 function saveSkuCaps(o)  { writeJsonProp("sku_caps_json",   o); }
 function saveSkuClosed(o){ writeJsonProp("sku_closed_json", o); }
+
+// Workflow phase — single source of truth in ScriptProperty.
+// Falls back to closed_awaiting_alloc once CLOSE_AT_ISO has passed (so even
+// if the auto-trigger never fired, the site flips correctly).
+function getWorkflowPhase() {
+  const p = PropertiesService.getScriptProperties().getProperty("workflow_phase");
+  if (p && VALID_PHASES.indexOf(p) >= 0) return p;
+  return isPreorderClosed() ? PHASE_CLOSED_AWAITING_ALLOC : PHASE_COLLECTING;
+}
+function setWorkflowPhase(next, meta) {
+  if (VALID_PHASES.indexOf(next) < 0) throw new Error("invalid_phase:" + next);
+  const props = PropertiesService.getScriptProperties();
+  props.setProperty("workflow_phase",    next);
+  props.setProperty("workflow_phase_at", new Date().toISOString());
+  if (meta && meta.deadline) props.setProperty("phase2_deadline_iso", String(meta.deadline));
+}
+function getPhase2Deadline() {
+  return PropertiesService.getScriptProperties().getProperty("phase2_deadline_iso") || "";
+}
+function getWorkflowPhaseAt() {
+  return PropertiesService.getScriptProperties().getProperty("workflow_phase_at") || "";
+}
 
 // Admin auth — token stored in Script Properties as "admin_token".
 // Set once via setupAdminToken() menu item.
@@ -527,6 +574,20 @@ function doGet(e) {
       if (!checkAdminAuth(e)) return jsonResponse({ error: "unauthorized" });
       return jsonResponse(getAdminConfig());
     }
+    if (action === "phase") {
+      // Public: storefront can poll for current phase without admin token
+      return jsonResponse({
+        phase:          getWorkflowPhase(),
+        phaseAt:        getWorkflowPhaseAt(),
+        phase2Deadline: getPhase2Deadline()
+      });
+    }
+    if (action === "phase2_csv") {
+      if (!checkAdminAuth(e)) return jsonResponse({ error: "unauthorized" });
+      return ContentService
+        .createTextOutput(getPhase2BroadcastCsv())
+        .setMimeType(ContentService.MimeType.PLAIN_TEXT);
+    }
     return jsonResponse(getSummary());
   } catch (err) {
     return jsonResponse({ error: String(err) });
@@ -545,6 +606,241 @@ function getAdminConfig() {
     closed:    getSkuClosed(),
     stock:     stock
   };
+}
+
+// =============================================
+//  Phase 2 workflow — admin handlers
+// =============================================
+
+// Admin: set workflow phase. body { phase, deadline?, token }
+function adminSetPhase(body) {
+  const lock = LockService.getScriptLock();
+  try { lock.waitLock(10000); } catch (e) { return { success: false, error: "busy_try_again" }; }
+  try {
+    const prev = getWorkflowPhase();
+    const next = String((body && body.phase) || "");
+    const allowed = PHASE_TRANSITIONS[prev] || [];
+    if (allowed.indexOf(next) < 0) throw new Error("bad_transition:" + prev + "->" + next);
+    setWorkflowPhase(next, { deadline: body && body.deadline });
+
+    if (next === PHASE_CLOSED_AWAITING_ALLOC) {
+      sendTelegram(
+        "🔒 *Lorcana 13 — ปิดพรีออเดอร์แล้ว (manual)*\n" +
+        "รอคอนเฟิร์มยอดจากตัวแทน → เปิด champ-hq บันทึก allocation"
+      );
+    } else if (next === PHASE_PHASE2_OPEN) {
+      const dl = getPhase2Deadline();
+      sendTelegram(
+        "📢 *Lorcana 13 — เปิด Phase 2 ชำระยอดคงเหลือ*\n" +
+        "กำหนดชำระภายใน " + (dl || "(ไม่กำหนด)") + "\n" +
+        "→ Download CSV ใน dashboard ไป broadcast LINE/FB"
+      );
+    } else if (next === PHASE_DONE) {
+      sendTelegram("✅ *Lorcana 13 — ปิดรอบ*\nรอบนี้จบ → เริ่มจัดส่ง");
+    } else if (next === PHASE_COLLECTING) {
+      sendTelegram("↩️ *Lorcana 13 — เปิดรับพรีออเดอร์อีกครั้ง*\n(rollback จาก " + prev + ")");
+    } else if (next === PHASE_ALLOC_COMMITTED) {
+      sendTelegram("💾 *Lorcana 13 — Allocation rolled back to committed state*\n(จาก " + prev + ")");
+    }
+    return { success: true, phase: next, phaseAt: getWorkflowPhaseAt(), phase2Deadline: getPhase2Deadline() };
+  } finally { try { lock.releaseLock(); } catch (e) {} }
+}
+
+// Admin: commit allocation. body { allocations: { "<phone>": { "<sku>": qty } }, token }
+// Writes per-row allocated_qty (greedy across that customer's rows), final_amount, phase2_due.
+// Phase must be closed_awaiting_alloc or alloc_committed (allows re-commit).
+function adminCommitAllocation(body) {
+  const lock = LockService.getScriptLock();
+  try { lock.waitLock(15000); } catch (e) { return { success: false, error: "busy_try_again" }; }
+  try {
+    const phase = getWorkflowPhase();
+    if (phase !== PHASE_CLOSED_AWAITING_ALLOC && phase !== PHASE_ALLOC_COMMITTED) {
+      throw new Error("bad_phase_for_commit:" + phase);
+    }
+    const allocByPhone = (body && body.allocations) || {};
+    if (typeof allocByPhone !== "object") throw new Error("invalid_allocations");
+
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+    if (!sheet) throw new Error("sheet_not_found");
+    ensureHeaders(sheet);
+    const data = sheet.getDataRange().getValues();
+
+    // Group sheet rows by phone (in row order), skip refund/cancel
+    const rowsByPhone = {};
+    for (let i = 1; i < data.length; i++) {
+      const row = data[i];
+      if (!row[COL_NAME - 1]) continue;
+      const ph = normalizePhone(row[COL_PHONE - 1]);
+      if (!ph) continue;
+      const status = String(row[COL_STATUS - 1] || "");
+      if (/คืนเงิน|ยกเลิก|เกินโควต้า/.test(status)) continue;
+      (rowsByPhone[ph] = rowsByPhone[ph] || []).push(i + 1);  // sheet row number (1-based)
+    }
+
+    let customers = 0, touched = 0, totalFinal = 0, totalDue = 0, refundCount = 0;
+    Object.keys(allocByPhone).forEach(phone => {
+      const ph = normalizePhone(phone);
+      const rows = rowsByPhone[ph];
+      if (!rows || !rows.length) return;
+      customers++;
+
+      // Snapshot per-row ordered qty per SKU
+      const perRowOrdered = rows.map(rowNum => {
+        const arr = {};
+        SKUS.forEach((s, sIdx) => {
+          arr[s.key] = parseInt(data[rowNum - 1][COL_QTY_START - 1 + sIdx]) || 0;
+        });
+        return arr;
+      });
+      const perRowAlloc = rows.map(() => {
+        const o = {};
+        SKUS.forEach(s => { o[s.key] = 0; });
+        return o;
+      });
+
+      // Distribute per-customer allocated qty greedily across this phone's rows
+      const wantedByPhone = allocByPhone[phone] || {};
+      SKUS.forEach(s => {
+        let remaining = parseInt(wantedByPhone[s.key]) || 0;
+        if (remaining < 0) remaining = 0;
+        for (let r = 0; r < rows.length && remaining > 0; r++) {
+          const give = Math.min(remaining, perRowOrdered[r][s.key]);
+          perRowAlloc[r][s.key] = give;
+          remaining -= give;
+        }
+      });
+
+      // Compute per-row final + due, write
+      rows.forEach((rowNum, r) => {
+        const allocMap = perRowAlloc[r];
+        const subtotal = SKUS.reduce((sum, s) => sum + (allocMap[s.key] || 0) * s.price, 0);
+        const shipFee  = parseFloat(data[rowNum - 1][COL_SHIP_FEE - 1]) || 0;
+        const final    = subtotal + (subtotal > 0 ? shipFee : 0);  // no ship fee if nothing allocated
+        const deposit  = parseFloat(data[rowNum - 1][COL_DEPOSIT - 1]) || 0;
+        const status1  = String(data[rowNum - 1][COL_STATUS - 1] || "");
+        const depositPaid = status1.indexOf("มัดจำแล้ว") >= 0 ? deposit : 0;
+        const due      = final - depositPaid;
+
+        sheet.getRange(rowNum, COL_ALLOC_JSON  ).setValue(JSON.stringify(allocMap));
+        sheet.getRange(rowNum, COL_FINAL_AMOUNT).setValue(final);
+        sheet.getRange(rowNum, COL_PHASE2_DUE  ).setValue(due);
+        if (due < 0) {
+          sheet.getRange(rowNum, COL_PHASE2_STATUS).setValue("💸 รอคืนเงิน");
+          refundCount++;
+        } else {
+          // Clear stale status if previous commit set refund
+          const existing = String(data[rowNum - 1][COL_PHASE2_STATUS - 1] || "");
+          if (existing.indexOf("รอคืนเงิน") >= 0) {
+            sheet.getRange(rowNum, COL_PHASE2_STATUS).setValue("");
+          }
+        }
+        totalFinal += final;
+        totalDue   += Math.max(0, due);
+        touched++;
+      });
+    });
+
+    SpreadsheetApp.flush();
+    setWorkflowPhase(PHASE_ALLOC_COMMITTED);
+
+    sendTelegram(
+      "💾 *Lorcana 13 — บันทึก Allocation แล้ว*\n" +
+      "รวม " + customers + " ลูกค้า / " + touched + " แถว\n" +
+      "ยอด final รวม " + totalFinal.toLocaleString() + " บาท · ต้องเก็บเพิ่ม " + totalDue.toLocaleString() + " บาท\n" +
+      (refundCount > 0 ? "💸 ต้องคืนเงิน " + refundCount + " แถว\n" : "") +
+      "→ ตรวจในชีท แล้วกด \"เปิด Phase 2\" เพื่อแจ้งลูกค้า"
+    );
+    return { success: true, customers: customers, touched: touched, totalFinal: totalFinal, totalDue: totalDue, refundCount: refundCount };
+  } finally { try { lock.releaseLock(); } catch (e) {} }
+}
+
+// Customer-facing: submit phase 2 slip. body { phone, slipBase64 }
+// Writes to first active row for that phone; charges against summed phase2_due.
+function submitPhase2Payment(body) {
+  if (getWorkflowPhase() !== PHASE_PHASE2_OPEN) {
+    return { success: false, error: "phase2_not_open" };
+  }
+  const lock = LockService.getScriptLock();
+  try { lock.waitLock(15000); } catch (e) { return { success: false, error: "busy_try_again" }; }
+  try {
+    const ph = normalizePhone(body && body.phone);
+    if (!ph) return { success: false, error: "no_phone" };
+    if (!body.slipBase64) return { success: false, error: "missing_slip" };
+
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+    if (!sheet) return { success: false, error: "sheet_not_found" };
+    const data = sheet.getDataRange().getValues();
+
+    // Find first active row + sum phase2_due across all active rows for this phone
+    let firstRow = -1;
+    let totalDue = 0;
+    let alreadyPaid = false;
+    for (let i = 1; i < data.length; i++) {
+      const row = data[i];
+      if (!row[COL_NAME - 1]) continue;
+      if (normalizePhone(row[COL_PHONE - 1]) !== ph) continue;
+      const st = String(row[COL_STATUS - 1] || "");
+      if (/คืนเงิน|ยกเลิก|เกินโควต้า/.test(st)) continue;
+      if (firstRow < 0) firstRow = i + 1;
+      totalDue += parseFloat(row[COL_PHASE2_DUE - 1]) || 0;
+      const p2 = String(row[COL_PHASE2_STATUS - 1] || "");
+      if (p2.indexOf("ชำระยอดคงเหลือแล้ว") >= 0) alreadyPaid = true;
+    }
+    if (firstRow < 0) return { success: false, error: "no_order" };
+    if (alreadyPaid)  return { success: false, error: "already_paid_phase2" };
+    if (totalDue <= 0) return { success: false, error: "no_amount_due", totalDue: totalDue };
+
+    const slipUrl = saveImageToDrive(body.slipBase64, body.phone, "phase2slip");
+    let status = "⏳ รอตรวจสลิป Phase 2";
+    let transRef = "";
+    let verifiedAmount = null;
+
+    if (slipUrl) {
+      const verified = verifySlip(slipUrl);
+      if (verified && verified.success) {
+        const amt = parseFloat(verified.data.amount);
+        transRef = verified.data.transRef || "";
+        // Dup-check both phase-1 and phase-2 trans refs
+        if (transRef) {
+          for (let i = 1; i < data.length; i++) {
+            const r1 = String(data[i][COL_TRANSREF    - 1] || "").trim();
+            const r2 = String(data[i][COL_PHASE2_REF  - 1] || "").trim();
+            if ((r1 && r1 === transRef) || (r2 && r2 === transRef)) {
+              return { success: false, error: "duplicate_slip", transRef: transRef, atRow: i + 1 };
+            }
+          }
+        }
+        if (Math.abs(amt - totalDue) < 1) {
+          status = "✅ ชำระยอดคงเหลือแล้ว";
+          verifiedAmount = amt;
+        } else {
+          status = "⚠️ ยอดไม่ตรง Phase2 (" + amt + "/" + totalDue + ")";
+        }
+      }
+    }
+
+    sheet.getRange(firstRow, COL_PHASE2_SLIP  ).setValue(slipUrl);
+    sheet.getRange(firstRow, COL_PHASE2_REF   ).setValue(transRef);
+    sheet.getRange(firstRow, COL_PHASE2_STATUS).setValue(status);
+    SpreadsheetApp.flush();
+
+    sendTelegram(
+      "💴 *Lorcana 13 Phase 2 — สลิปใหม่*\n" +
+      "📱 " + body.phone + "\n" +
+      "💰 ต้องชำระ " + totalDue.toLocaleString() + " บาท\n" +
+      "📊 " + status + "\n" +
+      (slipUrl ? "🧾 [Slip](" + slipUrl + ")" : "")
+    );
+
+    return {
+      success:  true,
+      status:   status,
+      slipUrl:  slipUrl,
+      totalDue: totalDue,
+      verified: status === "✅ ชำระยอดคงเหลือแล้ว",
+      transRef: transRef
+    };
+  } finally { try { lock.releaseLock(); } catch (e) {} }
 }
 
 // Save admin config — body { caps: {...}, closed: {...}, token: "..." }
@@ -643,7 +939,10 @@ function getSummary() {
     depositRate:    DEPOSIT_RATE,
     boosterLimit:   BOOSTER_LIMIT,
     boosterSoldOut: !!boosterStock.soldOut,
-    stock:          stock
+    stock:          stock,
+    phase:          getWorkflowPhase(),
+    phaseAt:        getWorkflowPhaseAt(),
+    phase2Deadline: getPhase2Deadline()
   };
 }
 
@@ -715,6 +1014,12 @@ function getOrderStatus(phone) {
 
     const ts     = row[COL_TIMESTAMP - 1];
     const status = String(row[COL_STATUS - 1] || "");
+    // Phase 2 fields — present only after allocation is committed
+    let allocated = null;
+    try {
+      const raw = String(row[COL_ALLOC_JSON - 1] || "");
+      if (raw) allocated = JSON.parse(raw);
+    } catch (e) { allocated = null; }
     orders.push({
       timestamp:  ts instanceof Date ? ts.toISOString() : String(ts),
       name:       String(row[COL_NAME - 1] || ""),
@@ -724,7 +1029,11 @@ function getOrderStatus(phone) {
       deposit:    parseFloat(row[COL_DEPOSIT - 1]) || 0,
       remaining:  parseFloat(row[COL_REMAINING - 1]) || 0,
       status:     status,
-      nextAction: deriveNextAction(status)
+      nextAction: deriveNextAction(status),
+      allocated:    allocated,
+      finalAmount:  parseFloat(row[COL_FINAL_AMOUNT - 1]) || 0,
+      phase2Due:    parseFloat(row[COL_PHASE2_DUE - 1])   || 0,
+      phase2Status: String(row[COL_PHASE2_STATUS - 1] || "")
     });
   }
 
@@ -736,37 +1045,60 @@ function getOrderStatus(phone) {
   });
 
   const itemMap = {};   // name -> qty
+  const allocItemMap = {};  // name -> alloc qty (post-allocation)
   let aggTotal = 0, aggDeposit = 0, aggRemaining = 0, aggQty = 0;
+  let aggFinal = 0, aggPhase2Due = 0;
   let paidCount = 0, pendingCount = 0;
+  let phase2Paid = false, phase2Refund = false;
   active.forEach(o => {
     aggTotal     += o.total     || 0;
     aggDeposit   += o.deposit   || 0;
     aggRemaining += o.remaining || 0;
+    aggFinal     += o.finalAmount || 0;
+    aggPhase2Due += o.phase2Due   || 0;
     (o.items || []).forEach(it => {
       itemMap[it.name] = (itemMap[it.name] || 0) + (it.qty || 0);
       aggQty += it.qty || 0;
     });
+    if (o.allocated && typeof o.allocated === "object") {
+      SKUS.forEach(s => {
+        const q = parseInt(o.allocated[s.key]) || 0;
+        if (q > 0) allocItemMap[s.name] = (allocItemMap[s.name] || 0) + q;
+      });
+    }
     if (String(o.status || "").indexOf("มัดจำแล้ว") >= 0) paidCount++;
     else pendingCount++;
+    const p2 = String(o.phase2Status || "");
+    if (p2.indexOf("ชำระยอดคงเหลือแล้ว") >= 0) phase2Paid = true;
+    if (p2.indexOf("รอคืนเงิน") >= 0) phase2Refund = true;
   });
 
-  const aggItems = Object.keys(itemMap).map(name => ({ name: name, qty: itemMap[name] }));
-  const allPaid  = active.length > 0 && paidCount === active.length;
+  const aggItems      = Object.keys(itemMap).map(name => ({ name: name, qty: itemMap[name] }));
+  const aggAllocItems = Object.keys(allocItemMap).map(name => ({ name: name, qty: allocItemMap[name] }));
+  const allPaid       = active.length > 0 && paidCount === active.length;
 
   return {
-    found:      orders.length > 0,
-    count:      orders.length,
-    orders:     orders,
+    found:         orders.length > 0,
+    count:         orders.length,
+    orders:        orders,
+    workflowPhase: getWorkflowPhase(),
+    phase2Deadline: getPhase2Deadline(),
     aggregated: {
-      orderCount:   active.length,
-      paidCount:    paidCount,
-      pendingCount: pendingCount,
-      allPaid:      allPaid,
-      totalQty:     aggQty,
-      total:        aggTotal,
-      deposit:      aggDeposit,
-      remaining:    aggRemaining,
-      items:        aggItems
+      orderCount:     active.length,
+      paidCount:      paidCount,
+      pendingCount:   pendingCount,
+      allPaid:        allPaid,
+      totalQty:       aggQty,
+      total:          aggTotal,
+      deposit:        aggDeposit,
+      remaining:      aggRemaining,
+      items:          aggItems,
+      // Phase 2 aggregate
+      finalAmount:    aggFinal,
+      phase2Due:      aggPhase2Due,
+      phase2Paid:     phase2Paid,
+      phase2Refund:   phase2Refund,
+      allocatedItems: aggAllocItems
     }
   };
 }
@@ -846,14 +1178,45 @@ function doPost(e) {
     }
   }
 
+  // Phase 2 workflow — admin: set_phase + commit_allocation
+  if (action === "set_phase") {
+    try {
+      if (!checkAdminAuth(e)) return jsonResponse({ success: false, error: "unauthorized" });
+      const body = JSON.parse(e.postData.contents);
+      return jsonResponse(adminSetPhase(body));
+    } catch (err) {
+      return jsonResponse({ success: false, error: String(err) });
+    }
+  }
+  if (action === "commit_allocation") {
+    try {
+      if (!checkAdminAuth(e)) return jsonResponse({ success: false, error: "unauthorized" });
+      const body = JSON.parse(e.postData.contents);
+      return jsonResponse(adminCommitAllocation(body));
+    } catch (err) {
+      return jsonResponse({ success: false, error: String(err) });
+    }
+  }
+
+  // Phase 2 — customer-facing remaining-payment slip submission
+  if (action === "submit_phase2_payment") {
+    try {
+      const body = JSON.parse(e.postData.contents);
+      return jsonResponse(submitPhase2Payment(body));
+    } catch (err) {
+      return jsonResponse({ success: false, error: String(err) });
+    }
+  }
+
   const lock = LockService.getScriptLock();
   try { lock.waitLock(15000); } catch (err) {
     return jsonResponse({ success: false, error: "busy_try_again" });
   }
 
   try {
-    if (isPreorderClosed()) {
-      return jsonResponse({ success: false, error: "preorder_closed" });
+    const currentPhase = getWorkflowPhase();
+    if (currentPhase !== PHASE_COLLECTING) {
+      return jsonResponse({ success: false, error: "preorder_closed", phase: currentPhase });
     }
 
     const body = JSON.parse(e.postData.contents);
@@ -1083,6 +1446,8 @@ function ensureHeaders(sheet) {
   ];
   SKUS.forEach(s => headers.push(s.name));
   headers.push("ยอดสินค้า", "ค่าส่ง", "ยอดรวม", "มัดจำ 50%", "คงเหลือ", "สลิป URL", "Slip TransRef", "ชื่อผู้โอน", "สถานะ", "Version");
+  // Phase 2 (post-allocation) columns
+  headers.push("Allocated JSON", "ยอดสุทธิหลังจัดสรร", "ยอด Phase2 ต้องโอน", "Slip Phase 2 URL", "Phase2 TransRef", "สถานะ Phase 2");
 
   for (let c = 0; c < headers.length; c++) {
     const cell = sheet.getRange(1, c + 1);
@@ -1300,6 +1665,10 @@ function computeDashboardData() {
   let totalOrders = 0, paid = 0, pending = 0, unpaid = 0, refunded = 0;
   let depositRevenue = 0, fullRevenue = 0;
   let mismatchCount = 0;
+  // Phase 2 aggregates — only meaningful once allocation has been committed
+  const phonePhase2 = {};   // phone -> { due, status }
+  let phase2DueTotal = 0, phase2ReceivedTotal = 0;
+  let phase2Paid = 0, phase2Pending = 0, phase2Refund = 0, phase2Mismatch = 0;
 
   const phoneSet = {};                  // unique customers
   const customerAgg = {};               // phone -> { name, qty, total }
@@ -1353,11 +1722,40 @@ function computeDashboardData() {
       }
       customerAgg[phone].qty   += rowQty;
       customerAgg[phone].total += orderTotal;
+
+      // Phase-2 per-row roll-up keyed by phone
+      const due = parseFloat(row[COL_PHASE2_DUE - 1]) || 0;
+      const p2  = String(row[COL_PHASE2_STATUS - 1] || "");
+      if (!phonePhase2[phone]) phonePhase2[phone] = { due: 0, status: "" };
+      phonePhase2[phone].due += due;
+      if (p2 && !phonePhase2[phone].status) phonePhase2[phone].status = p2;
     }
   }
 
   const customers = Object.keys(customerAgg).map(p => customerAgg[p]);
   customers.sort((a, b) => b.total - a.total);
+
+  // Roll up phase-2 per-phone summary
+  Object.keys(phonePhase2).forEach(ph => {
+    const r = phonePhase2[ph];
+    const isPaid     = r.status.indexOf("ชำระยอดคงเหลือแล้ว") >= 0;
+    const isPending  = r.status.indexOf("รอตรวจสลิป Phase 2") >= 0;
+    const isMismatch = r.status.indexOf("ยอดไม่ตรง Phase2") >= 0;
+    const isRefund   = r.status.indexOf("รอคืนเงิน") >= 0;
+    if (isPaid) {
+      phase2Paid++;
+      phase2ReceivedTotal += Math.max(0, r.due);
+    } else if (isRefund) {
+      phase2Refund++;
+    } else if (isPending || isMismatch) {
+      phase2Pending++;
+      if (isMismatch) phase2Mismatch++;
+      phase2DueTotal += Math.max(0, r.due);
+    } else if (r.due > 0) {
+      phase2Pending++;
+      phase2DueTotal += r.due;
+    }
+  });
 
   return {
     updatedAt:    new Date().toISOString(),
@@ -1377,7 +1775,16 @@ function computeDashboardData() {
       qty:     skuTotals[i].qty,
       revenue: skuTotals[i].revenue
     })),
-    topCustomers: customers.slice(0, 10)
+    topCustomers: customers.slice(0, 10),
+    workflowPhase:       getWorkflowPhase(),
+    phase2:              {
+      paid:          phase2Paid,
+      pending:       phase2Pending,
+      refund:        phase2Refund,
+      mismatch:      phase2Mismatch,
+      dueTotal:      phase2DueTotal,
+      receivedTotal: phase2ReceivedTotal
+    }
   };
 }
 
@@ -1528,6 +1935,126 @@ function setupDailyTrigger() {
 }
 
 // =============================================
+//  Phase 2 — auto-close trigger + manual menu items + CSV export
+// =============================================
+
+// Install one-shot trigger at CLOSE_AT_ISO that auto-flips to closed_awaiting_alloc
+function setupCloseTrigger() {
+  ScriptApp.getProjectTriggers().forEach(t => {
+    if (t.getHandlerFunction() === "autoClosePreorder") ScriptApp.deleteTrigger(t);
+  });
+  const at = new Date(CLOSE_AT_ISO);
+  if (at.getTime() <= Date.now()) {
+    SpreadsheetApp.getUi().alert("⚠️ CLOSE_AT_ISO อยู่ในอดีตแล้ว — ไม่ตั้ง trigger");
+    return;
+  }
+  ScriptApp.newTrigger("autoClosePreorder").timeBased().at(at).create();
+  SpreadsheetApp.getUi().alert("✅ ตั้ง trigger auto-close ที่ " + CLOSE_AT_ISO);
+}
+function autoClosePreorder() {
+  // Idempotent — only flip if still in collecting
+  if (getWorkflowPhase() !== PHASE_COLLECTING) return;
+  setWorkflowPhase(PHASE_CLOSED_AWAITING_ALLOC);
+  sendTelegram(
+    "🔔 *Lorcana 13 — ปิดพรีออเดอร์อัตโนมัติแล้ว*\n" +
+    "เวลา " + new Date().toISOString() + "\n" +
+    "รอคอนเฟิร์มยอดจากตัวแทน → เปิด champ-hq บันทึก allocation"
+  );
+}
+
+function manualClosePreorder() {
+  const ui = SpreadsheetApp.getUi();
+  const prev = getWorkflowPhase();
+  if (prev !== PHASE_COLLECTING) {
+    ui.alert("ปิดไปแล้ว (phase ปัจจุบัน: " + prev + ")");
+    return;
+  }
+  const resp = ui.alert("ปิดพรีออเดอร์ตอนนี้?", "Phase จะเปลี่ยน collecting → closed_awaiting_alloc\nลูกค้าจะ submit ใหม่ไม่ได้", ui.ButtonSet.YES_NO);
+  if (resp !== ui.Button.YES) return;
+  setWorkflowPhase(PHASE_CLOSED_AWAITING_ALLOC);
+  sendTelegram("🔒 *Lorcana 13 — ปิดพรีออเดอร์แล้ว (manual)*\nรอคอนเฟิร์มยอด → เปิด champ-hq บันทึก allocation");
+  ui.alert("✅ ปิดแล้ว");
+}
+
+function showPhaseStatus() {
+  const phase = getWorkflowPhase();
+  const at    = getWorkflowPhaseAt();
+  const dl    = getPhase2Deadline();
+  SpreadsheetApp.getUi().alert(
+    "📊 Workflow Phase",
+    "ปัจจุบัน: " + phase + "\n" +
+    "เปลี่ยนเมื่อ: " + (at || "-") + "\n" +
+    "Phase 2 deadline: " + (dl || "-"),
+    SpreadsheetApp.getUi().ButtonSet.OK
+  );
+}
+
+// Build CSV for Phase 2 broadcast — Champ paste into LINE OA / FB mass message
+function getPhase2BroadcastCsv() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+  if (!sheet) return "error,sheet_not_found";
+  const data = sheet.getDataRange().getValues();
+
+  // Aggregate per phone (active only) — sum final, due; collect item names
+  const byPhone = {};
+  for (let i = 1; i < data.length; i++) {
+    const row = data[i];
+    if (!row[COL_NAME - 1]) continue;
+    const ph = normalizePhone(row[COL_PHONE - 1]);
+    if (!ph) continue;
+    const status = String(row[COL_STATUS - 1] || "");
+    if (/คืนเงิน|ยกเลิก|เกินโควต้า/.test(status)) continue;
+
+    if (!byPhone[ph]) byPhone[ph] = {
+      name:        String(row[COL_NAME - 1] || ""),
+      phone:       ph,
+      finalAmount: 0,
+      depositPaid: 0,
+      phase2Due:   0,
+      items:       {},
+      phase2Status:""
+    };
+    const rec = byPhone[ph];
+    rec.finalAmount += parseFloat(row[COL_FINAL_AMOUNT - 1]) || 0;
+    rec.phase2Due   += parseFloat(row[COL_PHASE2_DUE - 1])   || 0;
+    if (status.indexOf("มัดจำแล้ว") >= 0) {
+      rec.depositPaid += parseFloat(row[COL_DEPOSIT - 1]) || 0;
+    }
+    try {
+      const raw = String(row[COL_ALLOC_JSON - 1] || "");
+      if (raw) {
+        const alloc = JSON.parse(raw);
+        SKUS.forEach(s => {
+          const q = parseInt(alloc[s.key]) || 0;
+          if (q > 0) rec.items[s.name] = (rec.items[s.name] || 0) + q;
+        });
+      }
+    } catch (e) {}
+    const p2 = String(row[COL_PHASE2_STATUS - 1] || "");
+    if (p2 && !rec.phase2Status) rec.phase2Status = p2;
+  }
+
+  const rows = Object.keys(byPhone).map(p => byPhone[p]);
+  rows.sort((a, b) => b.phase2Due - a.phase2Due);
+
+  function csvCell(v) {
+    if (v == null) return "";
+    const s = String(v);
+    if (s.indexOf(",") >= 0 || s.indexOf('"') >= 0 || s.indexOf("\n") >= 0) {
+      return '"' + s.replace(/"/g, '""') + '"';
+    }
+    return s;
+  }
+  const lines = [];
+  lines.push(["phone", "name", "final_amount", "deposit_paid", "phase2_due", "allocated_items", "phase2_status"].map(csvCell).join(","));
+  rows.forEach(r => {
+    const itemsTxt = Object.keys(r.items).map(n => n + " × " + r.items[n]).join(" · ");
+    lines.push([r.phone, r.name, r.finalAmount, r.depositPaid, r.phase2Due, itemsTxt, r.phase2Status].map(csvCell).join(","));
+  });
+  return "﻿" + lines.join("\n");
+}
+
+// =============================================
 //  Admin Menu
 // =============================================
 function onOpen() {
@@ -1544,6 +2071,10 @@ function onOpen() {
     .addSeparator()
     .addItem("🔐 ตั้ง Admin Token (ครั้งแรก)", "setupAdminToken")
     .addItem("📋 ดู Caps & Stock",          "showAdminConfig")
+    .addSeparator()
+    .addItem("📊 ดู Phase ปัจจุบัน",        "showPhaseStatus")
+    .addItem("🔒 ปิดพรีก่อนเวลา (manual)",  "manualClosePreorder")
+    .addItem("⏰ ตั้ง trigger ปิดอัตโนมัติ", "setupCloseTrigger")
     .addSeparator()
     .addItem("🔧 Ensure Headers",           "manualEnsureHeaders")
     .addItem("🧪 ทดสอบ SlipOK",             "testSlipOK")

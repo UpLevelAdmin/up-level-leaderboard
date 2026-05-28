@@ -1268,14 +1268,35 @@
             <div class="policy-outro">ขอบคุณที่ให้ความไว้วางใจ Up Level Academy นะครับ</div>
         </div>
 
+        <!-- ===== Phase banner — only shown when phase !== collecting ===== -->
+        <div class="card reveal" id="phase-banner" style="display:none;">
+            <div id="phase-banner-content"></div>
+        </div>
+
+        <!-- ===== Phase 2 payment block — only shown when phase === phase2_open ===== -->
+        <div class="card reveal" id="phase2-payment-block" style="display:none;">
+            <h2><span class="lc"><i data-lucide="credit-card"></i></span> ชำระยอดคงเหลือ (Phase 2)</h2>
+            <p style="color:var(--ink-mute);font-size:0.88rem;margin:0 0 0.8rem;">
+                กรอกเบอร์โทรที่ใช้สั่งพรีออเดอร์ → ระบบจะแสดงรายการที่จัดสรรให้ + ยอดที่ต้องโอน → อัปสลิป
+            </p>
+            <div class="input-row">
+                <label>เบอร์โทรที่ใช้สั่ง *</label>
+                <input type="tel" id="phase2-phone" placeholder="0xx-xxx-xxxx" maxlength="13" />
+            </div>
+            <button id="btn-phase2-lookup" class="btn secondary">
+                <span class="lc"><i data-lucide="search"></i></span> ดูยอดที่ต้องโอน
+            </button>
+            <div id="phase2-detail" style="margin-top:0.9rem;"></div>
+        </div>
+
         <!-- ===== STEP 1: Product list ===== -->
-        <div class="card reveal tilt">
+        <div class="card reveal tilt" data-phase-hide="non-collecting">
             <h2><span class="lc"><i data-lucide="shopping-bag"></i></span> เลือกสินค้า</h2>
             <div id="sku-list"></div>
         </div>
 
         <!-- ===== STEP 2: Shipping ===== -->
-        <div class="card reveal tilt">
+        <div class="card reveal tilt" data-phase-hide="non-collecting">
             <h2><span class="lc"><i data-lucide="truck"></i></span> วิธีรับสินค้า</h2>
             <div class="ship-toggle">
                 <div class="ship-opt active" data-ship="pickup">
@@ -1294,7 +1315,7 @@
         </div>
 
         <!-- ===== STEP 3: Customer info ===== -->
-        <div class="card reveal tilt">
+        <div class="card reveal tilt" data-phase-hide="non-collecting">
             <h2><span class="lc"><i data-lucide="user"></i></span> ข้อมูลผู้สั่งซื้อ</h2>
             <div class="input-row">
                 <label>ชื่อ-นามสกุล *</label>
@@ -1307,7 +1328,7 @@
         </div>
 
         <!-- ===== Total ===== -->
-        <div class="card reveal tilt">
+        <div class="card reveal tilt" data-phase-hide="non-collecting">
             <h2><span class="lc"><i data-lucide="receipt"></i></span> ยอดรวม</h2>
             <div class="total-box">
                 <div class="total-line"><span>ยอดสินค้า</span><span id="subtotal-line">0 บาท</span></div>
@@ -1324,7 +1345,7 @@
         </div>
 
         <!-- ===== STEP 4: Payment ===== -->
-        <div class="card reveal tilt">
+        <div class="card reveal tilt" data-phase-hide="non-collecting">
             <h2><span class="lc"><i data-lucide="qr-code"></i></span> ชำระเงิน · KShop</h2>
             <div class="alert info">
                 <span class="lc"><i data-lucide="info"></i></span>
@@ -1366,7 +1387,7 @@
             <div id="submit-error" style="margin-top:0.6rem;"></div>
         </div>
 
-        <div class="alert warn" style="margin-top:0.8rem;">
+        <div class="alert warn" style="margin-top:0.8rem;" data-phase-hide="non-collecting">
             <span class="lc"><i data-lucide="info"></i></span>
             กำหนดของถึงร้านโดยประมาณช่วงเดือนกรกฎาคม-สิงหาคม 2026 ทางร้านจะแจ้งวันรับ/จัดส่งอีกครั้งครับ
         </div>
@@ -1393,7 +1414,7 @@
     </div>
 
     <!-- ===== Sticky cart bar (mobile) ===== -->
-    <div class="cart-bar" id="cart-bar">
+    <div class="cart-bar" id="cart-bar" data-phase-hide="non-collecting">
         <div class="cart-bar-info">
             <div class="cart-bar-label">มัดจำตอนนี้</div>
             <div class="cart-bar-amt" id="cart-bar-amt">0 บาท</div>
@@ -1470,7 +1491,9 @@
             slipBase64:    null,
             slipFile:      null,
             submitting:    false,
-            stock:         {}    // { [skuKey]: { cap, active, remaining, forceClosed, soldOut } } from getSummary
+            stock:         {},   // { [skuKey]: { cap, active, remaining, forceClosed, soldOut } } from getSummary
+            phase:         "collecting",
+            phase2Deadline: ""
         };
 
         /* ---------- Build SKU list ---------- */
@@ -1584,6 +1607,11 @@
                     state.stock = data.stock;
                     applySkuStockUI();
                 }
+                if (data) {
+                    state.phase = data.phase || "collecting";
+                    state.phase2Deadline = data.phase2Deadline || "";
+                    applyPhaseUI();
+                }
             } catch (e) {
                 // silent — non-critical; server still enforces cap on submit
             }
@@ -1591,6 +1619,195 @@
         loadSummary();
         // Auto-refresh stock every 20s so customers see oversold SKUs go away
         setInterval(loadSummary, 20000);
+
+        /* ---------- Phase router (collecting / closed / phase2_open / done) ---------- */
+        function applyPhaseUI() {
+            const phase  = state.phase || "collecting";
+            const banner = document.getElementById("phase-banner");
+            const bContent = document.getElementById("phase-banner-content");
+            const phase2Block = document.getElementById("phase2-payment-block");
+            const hideTargets = document.querySelectorAll('[data-phase-hide="non-collecting"]');
+
+            // Hide order-form sections whenever phase !== collecting
+            hideTargets.forEach(el => {
+                el.style.display = phase === "collecting" ? "" : "none";
+            });
+
+            if (phase === "collecting") {
+                banner.style.display = "none";
+                phase2Block.style.display = "none";
+                return;
+            }
+
+            // Show banner per phase
+            let bannerHtml = "";
+            if (phase === "closed_awaiting_alloc") {
+                bannerHtml = `
+                    <h2 style="margin:0 0 0.5rem;"><span class="lc"><i data-lucide="lock"></i></span> ปิดรับพรีออเดอร์แล้ว</h2>
+                    <p style="color:var(--ink-mute);font-size:0.92rem;line-height:1.55;margin:0;">
+                        ขอบคุณทุกท่านที่สั่งครับ · ตอนนี้ทางร้านกำลังรอคอนเฟิร์มยอดสินค้าจริงจากตัวแทน
+                        จะแจ้งยอดคงเหลือทาง <b>Facebook / LINE</b> ในไม่กี่วันครับ ตรวจสถานะออเดอร์ของท่านได้ที่หัวข้อ &ldquo;ตรวจสอบสถานะออเดอร์&rdquo; ด้านบน
+                    </p>`;
+            } else if (phase === "alloc_committed") {
+                bannerHtml = `
+                    <h2 style="margin:0 0 0.5rem;"><span class="lc"><i data-lucide="clipboard-check"></i></span> กำลังจัดสรรสินค้า</h2>
+                    <p style="color:var(--ink-mute);font-size:0.92rem;line-height:1.55;margin:0;">
+                        ทางร้านได้รับยอดจัดสรรจากตัวแทนแล้ว · เร็ว ๆ นี้จะเปิดให้ <b>ชำระยอดคงเหลือ</b> พร้อมประกาศใน Facebook / LINE ครับ
+                    </p>`;
+            } else if (phase === "phase2_open") {
+                const dl = state.phase2Deadline ? new Date(state.phase2Deadline).toLocaleString("th-TH", { hour12: false }) : "";
+                bannerHtml = `
+                    <h2 style="margin:0 0 0.5rem;"><span class="lc"><i data-lucide="megaphone"></i></span> เปิดชำระยอดคงเหลือแล้ว</h2>
+                    <p style="color:var(--ink-mute);font-size:0.92rem;line-height:1.55;margin:0 0 0.5rem;">
+                        กรุณาชำระยอดคงเหลือ ${dl ? `ภายใน <b>${dl}</b>` : "ตามที่ประกาศ"} ครับ
+                        ใช้แบบฟอร์มด้านล่างเพื่อดูยอดของท่านและอัปสลิป
+                    </p>
+                    <p style="color:var(--ink-mute);font-size:0.82rem;margin:0;">
+                        หากยอดคงเหลือเป็น 0 หรือติดลบ (ได้ของน้อยกว่าที่สั่ง) ทางร้านจะติดต่อคืนเงินส่วนต่างให้ครับ
+                    </p>`;
+                phase2Block.style.display = "";
+            } else if (phase === "done") {
+                bannerHtml = `
+                    <h2 style="margin:0 0 0.5rem;"><span class="lc"><i data-lucide="check-circle"></i></span> รอบนี้ปิดแล้ว</h2>
+                    <p style="color:var(--ink-mute);font-size:0.92rem;line-height:1.55;margin:0;">
+                        ทุกท่านชำระเรียบร้อย · ทางร้านกำลังจัดเตรียมของและจัดส่ง · ขอบคุณที่สนับสนุนครับ
+                    </p>`;
+            }
+            bContent.innerHTML = bannerHtml;
+            banner.style.display = "";
+            phase2Block.style.display = phase === "phase2_open" ? "" : "none";
+            if (window.lucide && window.lucide.createIcons) window.lucide.createIcons();
+        }
+
+        /* ---------- Phase 2 payment lookup + slip upload ---------- */
+        (function initPhase2Lookup() {
+            const lookupBtn = document.getElementById("btn-phase2-lookup");
+            if (!lookupBtn) return;
+            const detail = document.getElementById("phase2-detail");
+            lookupBtn.addEventListener("click", async () => {
+                const phoneInput = document.getElementById("phase2-phone");
+                const phone = (phoneInput.value || "").replace(/[^\d]/g, "");
+                if (phone.length < 9) { alert("กรอกเบอร์ให้ครบ"); return; }
+                lookupBtn.disabled = true;
+                lookupBtn.textContent = "กำลังโหลด...";
+                detail.innerHTML = "";
+                try {
+                    const res = await fetch(`${APPS_SCRIPT_URL}?action=order_status&phone=${encodeURIComponent(phone)}&_=${Date.now()}`);
+                    const data = await res.json();
+                    if (!data.found) {
+                        detail.innerHTML = `<div class="alert warn">ไม่พบออเดอร์จากเบอร์นี้ — กรุณาทักแอดมิน</div>`;
+                        return;
+                    }
+                    const agg = data.aggregated || {};
+                    if (agg.phase2Paid) {
+                        detail.innerHTML = `<div class="alert ok"><span class="lc"><i data-lucide="check-circle"></i></span> ชำระยอดคงเหลือเรียบร้อยแล้วครับ — รอรับของได้เลย</div>`;
+                        if (window.lucide && window.lucide.createIcons) window.lucide.createIcons();
+                        return;
+                    }
+                    if (agg.phase2Refund) {
+                        detail.innerHTML = `<div class="alert warn">ออเดอร์ของท่านมียอด <b>รอคืนเงิน</b> ทางร้านจะติดต่อกลับเพื่อคืนเงินครับ</div>`;
+                        return;
+                    }
+                    const due = agg.phase2Due || 0;
+                    if (due <= 0) {
+                        detail.innerHTML = `<div class="alert info">ยังไม่มียอดคงเหลือสำหรับเบอร์นี้ — รอประกาศการจัดสรรอีกครั้งครับ</div>`;
+                        return;
+                    }
+                    const allocItems = (agg.allocatedItems || [])
+                        .map(it => `<div style="display:flex;justify-content:space-between;font-size:0.92rem;padding:2px 0;"><span>${it.name}</span><span style="color:var(--gold-soft);font-weight:700;">× ${it.qty}</span></div>`)
+                        .join("");
+                    detail.innerHTML = `
+                        <div class="alert info" style="margin-bottom:0.8rem;">
+                            <div style="font-weight:700;margin-bottom:0.4rem;">รายการที่จัดสรรให้ท่าน</div>
+                            ${allocItems || '<div style="color:var(--ink-mute);">(ยังไม่มี — กรุณาทักแอดมิน)</div>'}
+                        </div>
+                        <div class="pay-amount-panel">
+                            <div class="pay-amount-label">ยอดคงเหลือต้องโอน</div>
+                            <div class="pay-amount-big"><span>${due.toLocaleString()}</span><span class="baht">บาท</span></div>
+                            <div class="pay-amount-hint">โอนเข้า KShop เดิม → อัปสลิปด้านล่าง · ระบบจะเช็คอัตโนมัติ</div>
+                        </div>
+                        <div class="qr-display" style="margin:0.7rem 0;">
+                            <div class="qr-plate"><img src="https://i.postimg.cc/9Qf7H5S7/QR-KShop.jpg" alt="KShop QR" /></div>
+                        </div>
+                        <div class="input-row">
+                            <label>อัปโหลดสลิป Phase 2 *</label>
+                            <div class="file-upload-zone" id="phase2-slip-zone">
+                                <span class="lc lg"><i data-lucide="upload-cloud"></i></span>
+                                <div style="margin-top:0.5rem;">คลิกหรือลากสลิปมาวาง</div>
+                                <input type="file" id="phase2-slip-input" accept="image/*" style="display:none;" />
+                            </div>
+                            <img id="phase2-slip-preview" class="file-preview" style="display:none;" />
+                        </div>
+                        <button id="btn-phase2-submit" class="btn" disabled>
+                            <span class="lc"><i data-lucide="sparkles"></i></span> ยืนยันการชำระ Phase 2
+                        </button>
+                        <div id="phase2-error" style="margin-top:0.6rem;"></div>`;
+                    if (window.lucide && window.lucide.createIcons) window.lucide.createIcons();
+                    wirePhase2SlipUpload(phone, due);
+                } catch (e) {
+                    detail.innerHTML = `<div class="alert err">โหลดไม่ได้: ${escapeHtml(String(e))}</div>`;
+                } finally {
+                    lookupBtn.disabled = false;
+                    lookupBtn.innerHTML = '<span class="lc"><i data-lucide="search"></i></span> ดูยอดที่ต้องโอน';
+                    if (window.lucide && window.lucide.createIcons) window.lucide.createIcons();
+                }
+            });
+        })();
+
+        function wirePhase2SlipUpload(phone, due) {
+            const zone   = document.getElementById("phase2-slip-zone");
+            const input  = document.getElementById("phase2-slip-input");
+            const preview= document.getElementById("phase2-slip-preview");
+            const btn    = document.getElementById("btn-phase2-submit");
+            const err    = document.getElementById("phase2-error");
+            let base64 = null;
+            zone.addEventListener("click", () => input.click());
+            input.addEventListener("change", e => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = ev => {
+                    base64 = ev.target.result;
+                    preview.src = base64;
+                    preview.style.display = "block";
+                    btn.disabled = false;
+                };
+                reader.readAsDataURL(file);
+            });
+            btn.addEventListener("click", async () => {
+                if (!base64) return;
+                btn.disabled = true;
+                btn.textContent = "กำลังส่ง...";
+                err.innerHTML = "";
+                try {
+                    const res = await fetch(`${APPS_SCRIPT_URL}?action=submit_phase2_payment`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ phone: phone, slipBase64: base64 })
+                    });
+                    const data = await res.json();
+                    if (data.success && data.verified) {
+                        err.innerHTML = `<div class="alert ok"><b>✅ ชำระยอดคงเหลือเรียบร้อย</b> — ขอบคุณครับ รอรับของได้เลย</div>`;
+                    } else if (data.success) {
+                        err.innerHTML = `<div class="alert info">${escapeHtml(data.status || "รอตรวจสลิป Phase 2")} — ระบบรับสลิปแล้ว ทางร้านจะคอนเฟิร์มอีกครั้ง</div>`;
+                    } else if (data.error === "duplicate_slip") {
+                        err.innerHTML = `<div class="alert warn">สลิปนี้ถูกใช้แล้ว (แถว ${data.atRow}) — กรุณาตรวจสอบ</div>`;
+                    } else if (data.error === "already_paid_phase2") {
+                        err.innerHTML = `<div class="alert info">ออเดอร์นี้ชำระ Phase 2 เรียบร้อยแล้ว</div>`;
+                    } else if (data.error === "phase2_not_open") {
+                        err.innerHTML = `<div class="alert err">ยังไม่ได้เปิด Phase 2 — กรุณารอประกาศจากร้าน</div>`;
+                    } else {
+                        err.innerHTML = `<div class="alert err">${escapeHtml(data.error || data.message || "เกิดข้อผิดพลาด")}</div>`;
+                    }
+                } catch (e) {
+                    err.innerHTML = `<div class="alert err">ส่งไม่ได้: ${escapeHtml(String(e))}</div>`;
+                } finally {
+                    btn.innerHTML = '<span class="lc"><i data-lucide="sparkles"></i></span> ยืนยันการชำระ Phase 2';
+                    btn.disabled = false;
+                    if (window.lucide && window.lucide.createIcons) window.lucide.createIcons();
+                }
+            });
+        }
 
         function flashLimitHint(btn) {
             if (btn.dataset.flashing === "1") return;  // skip if already in flash window
