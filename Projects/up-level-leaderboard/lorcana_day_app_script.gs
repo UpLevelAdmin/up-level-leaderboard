@@ -26,6 +26,10 @@ const RECENT_LIMIT    = 50;
 const TG_BOT_TOKEN    = '7268878598:AAH7Rj_Gnzg7I2T2zU0Q2nKkGjP8oKsz-b4';
 const TG_CHAT_ID      = '-4559569661';
 
+// SlipOK (auto slip verification — reuse preorder credentials)
+const SLIPOK_API_KEY  = 'SLIPOKE2TSLQJ';
+const SLIPOK_BRANCH   = '58927';
+
 const HEADERS = [
   'timestamp',
   'name',
@@ -99,8 +103,18 @@ function setup() {
   );
   sh.setConditionalFormatRules(rules);
 
+  // Touch DriveApp now so the OAuth consent screen requests Drive scope at setup time
+  // (so slip upload via doPost won't fail with "no permission to call DriveApp" later)
+  try { getSlipFolder_(); } catch (e) { Logger.log('Drive scope warm-up: ' + e); }
+
   SpreadsheetApp.flush();
-  return 'setup complete';
+  return 'setup complete (sheet + Drive folder ready)';
+}
+
+/** Standalone helper Champ can run from editor to grant Drive scope without re-running setup. */
+function authorizeDrive() {
+  const folder = getSlipFolder_();
+  return 'Drive authorized · slip folder: ' + folder.getUrl();
 }
 
 /* ─────────── ENDPOINTS ─────────── */
@@ -400,24 +414,90 @@ function handleSlipUpload_(body) {
   file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
   const slipUrl   = file.getUrl();
 
+  // SlipOK auto verify (using base64 directly — faster + no Drive sharing race)
+  const verify = verifySlip_(body.data);
+
   // Update row
   const slipColIdx   = HEADERS.indexOf('slipUrl') + 1;
   const statusColIdx = HEADERS.indexOf('paymentStatus') + 1;
+  const notesColIdx  = HEADERS.indexOf('notes') + 1;
+  const priceColIdx  = HEADERS.indexOf('tierPrice') + 1;
+  const expectedPrice = sh.getRange(rowIdx, priceColIdx).getValue();
+
+  let finalStatus = 'slip_uploaded';
+  let notes = '';
+
+  if (verify.success) {
+    const amount = Number(verify.data && verify.data.amount) || 0;
+    const sender = (verify.data && verify.data.sender && verify.data.sender.name) || '';
+    if (amount === Number(expectedPrice)) {
+      finalStatus = 'paid';
+      notes = `✓ SlipOK ${amount}฿ · ${sender}` + (verify.warning ? ' · ' + verify.warning : '');
+    } else {
+      finalStatus = 'amount_mismatch';
+      notes = `⚠ amount ${amount}฿ ≠ tier ${expectedPrice}฿ · ${sender}` + (verify.warning ? ' · ' + verify.warning : '');
+    }
+  } else {
+    notes = `✗ SlipOK: ${verify.message || 'unknown'}`;
+  }
+
   sh.getRange(rowIdx, slipColIdx).setValue(slipUrl);
-  sh.getRange(rowIdx, statusColIdx).setValue('slip_uploaded');
+  sh.getRange(rowIdx, statusColIdx).setValue(finalStatus);
+  sh.getRange(rowIdx, notesColIdx).setValue(notes);
 
   // Telegram noti
   try {
     const nameColIdx = HEADERS.indexOf('nickname') + 1;
     const tierColIdx = HEADERS.indexOf('tier') + 1;
-    const priceColIdx = HEADERS.indexOf('tierPrice') + 1;
     const nickname = sh.getRange(rowIdx, nameColIdx).getValue();
     const tier     = sh.getRange(rowIdx, tierColIdx).getValue();
-    const price    = sh.getRange(rowIdx, priceColIdx).getValue();
-    notifySlipUploaded_({ nickname, phone, tier, price, slipUrl });
+    notifySlipUploaded_({
+      nickname, phone, tier, price: expectedPrice, slipUrl,
+      status: finalStatus, notes,
+      verifyAmount: verify.success ? (verify.data && verify.data.amount) : null,
+      verifySender: verify.success ? (verify.data && verify.data.sender && verify.data.sender.name) : null,
+    });
   } catch (_) {}
 
-  return json_({ ok: true, verified: false, slipUrl });
+  return json_({
+    ok: true,
+    verified: finalStatus === 'paid',
+    status: finalStatus,
+    amount: verify.success ? (verify.data && verify.data.amount) : null,
+    expected: expectedPrice,
+    slipUrl,
+  });
+}
+
+/** Call SlipOK with base64 slip image — returns { success, data, message, warning }. */
+function verifySlip_(base64) {
+  if (!base64) return { success: false, message: 'no slip data' };
+  try {
+    const r = UrlFetchApp.fetch(
+      'https://api.slipok.com/api/line/apikey/' + SLIPOK_BRANCH,
+      {
+        method: 'post',
+        headers: {
+          'x-authorization': SLIPOK_API_KEY,
+          'Content-Type': 'application/json',
+        },
+        payload: JSON.stringify({ files: base64, log: true }),
+        muteHttpExceptions: true,
+      }
+    );
+    const result = JSON.parse(r.getContentText());
+    if (result.success) return { success: true, data: result.data };
+
+    // Duplicate slip — already used before
+    const dupCodes = [1004, 1012];
+    const msg = String(result.message || '');
+    if (dupCodes.indexOf(result.code) !== -1 || msg.indexOf('ใช้ไปแล้ว') !== -1 || msg.indexOf('used') !== -1 || msg.indexOf('สลิปซ้ำ') !== -1) {
+      return { success: true, data: result.data, warning: 'สลิปนี้เคยถูกตรวจไปแล้ว' };
+    }
+    return { success: false, message: result.message || ('SlipOK code ' + result.code) };
+  } catch (e) {
+    return { success: false, message: String(e) };
+  }
 }
 
 function getSlipFolder_() {
@@ -436,13 +516,26 @@ function getSlipFolder_() {
 function notifySlipUploaded_(o) {
   if (!TG_BOT_TOKEN || !TG_CHAT_ID) return;
   const tierLabel = o.tier === 'master' ? '⚔️ รุ่นพี่' : '🌱 น้องใหม่';
+
+  let header, footer;
+  if (o.status === 'paid') {
+    header = '✅ *Slip PAID · auto-verified*';
+    footer = '💰 รับ ' + o.verifyAmount + '฿ จาก ' + (o.verifySender || '?') + '\n🎉 mark *paid* แล้ว';
+  } else if (o.status === 'amount_mismatch') {
+    header = '⚠️ *ยอดสลิปไม่ตรง · ต้องเช็คมือ*';
+    footer = '💰 สลิป: ' + o.verifyAmount + '฿ (ควรเป็น ' + o.price + '฿)\nผู้โอน: ' + (o.verifySender || '?') + '\n➡️ ตรวจมือ + mark paid ใน sheet';
+  } else {
+    header = '📎 *สลิปใหม่ · ตรวจ SlipOK ไม่ผ่าน*';
+    footer = '➡️ ' + o.notes + '\nตรวจมือใน sheet';
+  }
+
   const msg =
-    '📎 *แนบสลิปใหม่ · Lorcana Day*\n\n' +
+    header + '\n\n' +
     '👤 ' + o.nickname + '\n' +
     '📞 ' + o.phone + '\n' +
-    '🎟️ ' + tierLabel + ' · *' + o.price + ' บาท*\n' +
+    '🎟️ ' + tierLabel + ' · ' + o.price + '฿\n' +
     '🧾 ' + o.slipUrl + '\n\n' +
-    '➡️ ตรวจสลิป แล้ว mark paid';
+    footer;
 
   UrlFetchApp.fetch('https://api.telegram.org/bot' + TG_BOT_TOKEN + '/sendMessage', {
     method: 'post',

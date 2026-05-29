@@ -1681,12 +1681,17 @@
         const data = await r.json();
         if (!data.ok) throw new Error(data.error || 'upload failed');
 
-        if (data.verified) {
+        if (data.verified || data.status === 'paid') {
           slipStatus.innerHTML = '<i data-lucide="check-circle-2" class="ico-inline"></i>ตรวจสลิปผ่าน — ที่นั่งของคุณ confirm แล้ว!';
+          slipStatus.className = 'slip-status ok';
+        } else if (data.status === 'amount_mismatch') {
+          const got = data.amount, want = data.expected;
+          slipStatus.innerHTML = `<i data-lucide="alert-triangle" class="ico-inline"></i>ยอดสลิปไม่ตรง (สลิป ${got}฿ ควรเป็น ${want}฿) — ทีมงานจะตรวจให้`;
+          slipStatus.className = 'slip-status err';
         } else {
           slipStatus.innerHTML = '<i data-lucide="check" class="ico-inline"></i>อัปโหลดสลิปแล้ว — รอทีมงานตรวจ (≤ 1 ชม.)';
+          slipStatus.className = 'slip-status ok';
         }
-        slipStatus.className = 'slip-status ok';
         if (window.lucide) lucide.createIcons();
         refreshSeatsAndList();
       } catch (err) {
