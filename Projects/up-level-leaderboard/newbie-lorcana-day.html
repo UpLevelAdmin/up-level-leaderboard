@@ -1,0 +1,1478 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🤠 ป้ายยา Lorcana Day · 31 พ.ค. — Up Level Academy</title>
+  <meta name="description"
+    content="Lorcana Day ที่ Up Level Academy · 31 พ.ค. 13:00–17:00 · 2 League · รับ 28 ที่ · ค่าเข้า 100/250 บาท">
+  <meta property="og:title" content="ป้ายยา Lorcana Day · Up Level Academy" />
+  <meta property="og:description" content="ได้ลองเล่น + พบปะเพื่อนใหม่ + แข่งสนุก · 31 พ.ค. 13:00–17:00" />
+  <meta property="og:image" content="./lorcana-posters/lorcana-day-2026-05-31/1.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <link rel="icon" href="./lorcana-posters/assets/logos/badge-circle.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;700;900&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --sky:        #6EC1E4;
+      --sky-2:      #A9DCF2;
+      --sky-deep:   #4A9FCB;
+      --orange:     #FF8C42;
+      --orange-2:   #FFC78E;
+      --orange-deep:#E66B1F;
+      --brown:      #8B5A2B;
+      --brown-deep: #5C3A1E;
+      --brown-light:#C49572;
+      --cream:      #FFF8E7;
+      --cream-card: #FFFDF5;
+      --yellow:     #FCC861;
+      --ink:        #2A1810;
+      --ink-2:      #5C3A1E;
+      --err:        #D6336C;
+      --ok:         #4CAF50;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: 'Kanit', sans-serif;
+      background: var(--sky);
+      background-image:
+        radial-gradient(ellipse at 15% 10%, rgba(255, 255, 255, 0.7) 0%, transparent 35%),
+        radial-gradient(ellipse at 85% 25%, rgba(255, 255, 255, 0.5) 0%, transparent 30%),
+        radial-gradient(ellipse at 50% 90%, rgba(255, 200, 97, 0.25) 0%, transparent 50%),
+        linear-gradient(180deg, var(--sky-2) 0%, var(--sky) 60%, #C8E6F2 100%);
+      background-attachment: fixed;
+      margin: 0;
+      padding: 1rem;
+      text-align: center;
+      min-height: 100vh;
+      color: var(--ink);
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Toy Story Lorcana card — blurred ambient bg layer */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: -40px;
+      background-image: url('./lorcana-posters/assets/lorcana-scrape/toy-story__en_8vacvsjepa.png');
+      background-repeat: no-repeat;
+      background-size: cover;
+      background-position: center;
+      filter: blur(38px) saturate(1.1) brightness(1.05);
+      opacity: 0.32;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        radial-gradient(2px 2px at 10% 18%, rgba(255, 255, 255, 0.9) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 60% 12%, rgba(255, 255, 255, 0.7) 0%, transparent 100%),
+        radial-gradient(2px 2px at 88% 35%, rgba(255, 255, 255, 0.8) 0%, transparent 100%),
+        radial-gradient(1px 1px at 35% 65%, rgba(255, 255, 255, 0.6) 0%, transparent 100%);
+      animation: sparkle 5s ease-in-out infinite alternate;
+      pointer-events: none;
+      z-index: 1;
+    }
+    @keyframes sparkle {
+      0%   { opacity: 0.4; transform: scale(1); }
+      100% { opacity: 1;   transform: scale(1.4); }
+    }
+
+    .floating-star {
+      position: fixed;
+      top: 40%;
+      z-index: 5;
+      pointer-events: none;
+      opacity: 0.75;
+      animation: starFloat 3s ease-in-out infinite;
+      filter: drop-shadow(0 0 12px rgba(255, 140, 66, 0.6));
+      font-size: 56px;
+      line-height: 1;
+    }
+    .floating-star:nth-child(1) { right: 14px; animation-delay: 0s; }
+    .floating-star:nth-child(2) { left: 14px;  animation-delay: 0.7s; }
+    @keyframes starFloat {
+      0%,100% { transform: translateY(0) rotate(-6deg); }
+      50%     { transform: translateY(-14px) rotate(6deg); }
+    }
+    @media (max-width: 720px) {
+      .floating-star { font-size: 36px; opacity: 0.4; }
+    }
+
+    .container {
+      max-width: 720px;
+      margin: auto;
+      padding: 1rem;
+      position: relative;
+      z-index: 10;
+    }
+
+    /* HERO */
+    .hero-poster {
+      width: 100%;
+      max-width: 520px;
+      margin: 0 auto 1.4rem;
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow:
+        0 16px 40px rgba(92, 58, 30, 0.35),
+        0 4px 8px rgba(92, 58, 30, 0.2);
+      border: 4px solid var(--cream);
+      transform: rotate(-1deg);
+      transition: transform 0.3s;
+    }
+    .hero-poster:hover { transform: rotate(0deg) scale(1.02); }
+    .hero-poster img { display: block; width: 100%; height: auto; }
+
+    .logo {
+      display: block;
+      width: 260px;
+      max-width: 70%;
+      height: auto;
+      margin: 0 auto 0.4rem;
+      filter: drop-shadow(0 6px 16px rgba(92, 58, 30, 0.35));
+    }
+
+    /* Home button */
+    .home-btn {
+      position: fixed;
+      top: 18px;
+      left: 18px;
+      z-index: 50;
+      width: 46px;
+      height: 46px;
+      border-radius: 14px;
+      background: var(--cream-card);
+      border: 2px solid var(--orange);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--orange-deep);
+      text-decoration: none;
+      font-size: 1.3rem;
+      box-shadow: 0 4px 12px rgba(230, 107, 31, 0.3);
+      transition: all 0.2s;
+    }
+    .home-btn:hover {
+      transform: scale(1.08);
+      background: var(--orange);
+      color: #fff;
+    }
+
+    .event-title {
+      font-size: 2.6rem;
+      font-weight: 900;
+      background: linear-gradient(135deg, var(--orange-deep) 0%, var(--orange) 35%, var(--sky-deep) 75%, var(--brown) 100%);
+      background-size: 300% 300%;
+      animation: titleFlow 4s ease infinite;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin: 0.3rem 0;
+      line-height: 1.05;
+    }
+    @keyframes titleFlow {
+      0%,100% { background-position: 0% 50%; }
+      50%     { background-position: 100% 50%; }
+    }
+
+    .event-subtitle {
+      font-size: 1.05rem;
+      color: var(--brown-deep);
+      margin: 0.4rem 0 0.6rem;
+      font-weight: 600;
+    }
+
+    .release-date {
+      display: inline-block;
+      padding: 10px 24px;
+      background: linear-gradient(135deg, var(--cream) 0%, var(--orange-2) 100%);
+      border: 2px solid var(--orange);
+      border-radius: 50px;
+      font-size: 1.05rem;
+      color: var(--brown-deep);
+      font-weight: 700;
+      margin: 0.8rem 0;
+      box-shadow: 0 4px 12px rgba(255, 140, 66, 0.25);
+    }
+
+    .product-desc {
+      font-size: 0.95rem;
+      color: var(--brown-deep);
+      line-height: 1.7;
+      margin: 1rem auto;
+      max-width: 600px;
+    }
+
+    .cta-btn {
+      display: inline-block;
+      padding: 14px 36px;
+      background: linear-gradient(135deg, var(--orange) 0%, var(--orange-deep) 100%);
+      background-size: 200% 200%;
+      animation: btnPulse 3s ease infinite;
+      color: #fff;
+      font-size: 1.1rem;
+      font-weight: 700;
+      border-radius: 50px;
+      text-decoration: none;
+      border: 3px solid var(--cream);
+      cursor: pointer;
+      box-shadow: 0 8px 22px rgba(230, 107, 31, 0.45);
+      transition: all 0.3s ease;
+      margin: 0.4rem;
+      font-family: 'Kanit', sans-serif;
+    }
+    @keyframes btnPulse {
+      0%,100% { background-position: 0% 50%; }
+      50%     { background-position: 100% 50%; }
+    }
+    .cta-btn:hover {
+      transform: translateY(-4px) scale(1.04);
+      box-shadow: 0 14px 30px rgba(230, 107, 31, 0.6);
+    }
+    .cta-btn:active { transform: translateY(-1px) scale(1.0); }
+
+    /* SECTION CARD */
+    .section-card {
+      background: var(--cream-card);
+      border: 2px solid var(--brown-light);
+      border-radius: 22px;
+      padding: 1.4rem 1.2rem;
+      margin: 1.3rem 0;
+      text-align: left;
+      box-shadow: 0 8px 20px rgba(92, 58, 30, 0.12);
+      position: relative;
+      overflow: hidden;
+    }
+    .section-card::before {
+      content: '';
+      position: absolute;
+      top: -2px; left: -2px; right: -2px;
+      height: 6px;
+      background: linear-gradient(90deg, var(--orange) 0%, var(--yellow) 50%, var(--sky) 100%);
+      border-radius: 22px 22px 0 0;
+    }
+    .section-card .poster-img {
+      display: block;
+      width: 100%;
+      border-radius: 16px;
+      box-shadow: 0 4px 14px rgba(92, 58, 30, 0.18);
+      border: 2px solid var(--cream);
+    }
+    .section-title {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: var(--orange-deep);
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+    .section-note {
+      font-size: 0.92rem;
+      color: var(--brown-deep);
+      line-height: 1.6;
+      margin-top: 0.8rem;
+      text-align: center;
+    }
+    .section-note strong { color: var(--orange-deep); }
+
+    .highlight-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px 16px;
+      background: rgba(255, 199, 142, 0.18);
+      border-radius: 12px;
+      border-left: 4px solid var(--orange);
+      margin-bottom: 10px;
+    }
+    .highlight-item .emoji { font-size: 1.4rem; flex-shrink: 0; line-height: 1.3; }
+    .highlight-item .text {
+      font-size: 0.95rem;
+      color: var(--ink-2);
+      line-height: 1.5;
+    }
+    .highlight-item .text strong { color: var(--orange-deep); }
+
+    /* TIER DETAIL */
+    .tier-detail-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 0.5rem;
+    }
+    @media (max-width: 480px) {
+      .tier-detail-grid { grid-template-columns: 1fr; }
+    }
+    .tier-detail {
+      background: linear-gradient(180deg, var(--cream) 0%, #fff 100%);
+      border: 3px solid var(--brown-light);
+      border-radius: 16px;
+      padding: 14px 14px 12px;
+    }
+    .tier-detail.newbie { border-color: var(--sky-deep); background: linear-gradient(180deg, #E3F2FD 0%, #fff 100%); }
+    .tier-detail.master { border-color: var(--orange-deep); background: linear-gradient(180deg, var(--orange-2) 0%, #fff 100%); }
+    .tier-detail-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      padding-bottom: 8px;
+      border-bottom: 2px dashed var(--brown-light);
+    }
+    .tier-detail-name { font-size: 1.05rem; font-weight: 800; color: var(--brown-deep); }
+    .tier-detail-price { font-size: 1.3rem; font-weight: 900; color: var(--orange-deep); }
+    .tier-detail.newbie .tier-detail-price { color: var(--sky-deep); }
+    .tier-detail ul {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 10px;
+    }
+    .tier-detail li {
+      padding: 4px 0 4px 22px;
+      position: relative;
+      font-size: 0.92rem;
+      color: var(--ink-2);
+      line-height: 1.45;
+    }
+    .tier-detail li::before {
+      content: '✓';
+      position: absolute;
+      left: 4px;
+      top: 4px;
+      color: var(--orange-deep);
+      font-weight: 900;
+    }
+    .tier-detail.newbie li::before { color: var(--sky-deep); }
+    .tier-detail-note {
+      font-size: 0.82rem;
+      color: var(--brown);
+      font-style: italic;
+      padding-top: 6px;
+      border-top: 1px dashed var(--brown-light);
+    }
+
+    /* TIMELINE */
+    .timeline {
+      position: relative;
+      padding: 0.2rem 0 0.2rem 1rem;
+    }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 4px;
+      top: 8px;
+      bottom: 8px;
+      width: 3px;
+      background: linear-gradient(180deg, var(--orange) 0%, var(--yellow) 50%, var(--sky-deep) 100%);
+      border-radius: 3px;
+    }
+    .tl-item {
+      position: relative;
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      padding: 8px 4px 8px 14px;
+      border-bottom: 1px dashed var(--brown-light);
+    }
+    .tl-item:last-child { border-bottom: none; }
+    .tl-item::before {
+      content: '';
+      position: absolute;
+      left: -8px;
+      top: 13px;
+      width: 12px;
+      height: 12px;
+      background: var(--orange);
+      border: 3px solid var(--cream-card);
+      border-radius: 50%;
+      box-shadow: 0 0 0 2px var(--orange);
+    }
+    .tl-time {
+      flex-shrink: 0;
+      width: 56px;
+      font-weight: 800;
+      color: var(--orange-deep);
+      font-size: 0.95rem;
+    }
+    .tl-text { font-size: 0.92rem; color: var(--ink-2); line-height: 1.45; }
+
+    /* REWARDS */
+    .reward-block {
+      background: rgba(255, 199, 142, 0.18);
+      border-left: 4px solid var(--orange);
+      border-radius: 12px;
+      padding: 12px 16px;
+      margin-bottom: 12px;
+    }
+    .reward-block.newbie { background: rgba(110, 193, 228, 0.15); border-left-color: var(--sky-deep); }
+    .reward-block.extra  { background: rgba(252, 200, 97, 0.20); border-left-color: var(--yellow); }
+    .reward-head {
+      font-weight: 800;
+      color: var(--orange-deep);
+      margin-bottom: 6px;
+      font-size: 1rem;
+    }
+    .reward-block.newbie .reward-head { color: var(--sky-deep); }
+    .reward-block ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .reward-block li {
+      font-size: 0.92rem;
+      color: var(--ink-2);
+      padding: 3px 0 3px 18px;
+      position: relative;
+      line-height: 1.5;
+    }
+    .reward-block li::before {
+      content: '·';
+      position: absolute;
+      left: 4px;
+      top: -2px;
+      color: var(--orange-deep);
+      font-weight: 900;
+      font-size: 20px;
+    }
+    .reward-block li strong { color: var(--brown-deep); }
+
+    /* RECENT LIST */
+    .recent-stats {
+      text-align: center;
+      font-size: 0.95rem;
+      color: var(--brown-deep);
+      font-weight: 700;
+      margin-bottom: 1rem;
+      padding: 8px 12px;
+      background: linear-gradient(135deg, var(--yellow) 0%, var(--orange-2) 100%);
+      border-radius: 12px;
+      border: 2px solid var(--orange);
+    }
+    .recent-stats .num {
+      font-size: 1.2rem;
+      color: var(--orange-deep);
+      font-weight: 900;
+      margin: 0 3px;
+    }
+    .recent-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      justify-content: center;
+    }
+    .recent-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #fff;
+      border: 2px solid var(--brown-light);
+      border-radius: 999px;
+      padding: 5px 12px;
+      font-size: 0.85rem;
+      color: var(--brown-deep);
+      font-weight: 600;
+      animation: chipPop 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+    }
+    .recent-chip.master { border-color: var(--orange-deep); background: linear-gradient(135deg, var(--orange-2) 0%, #fff 100%); }
+    .recent-chip.newbie { border-color: var(--sky-deep); background: linear-gradient(135deg, #E3F2FD 0%, #fff 100%); }
+    .recent-chip .badge {
+      font-size: 0.7rem;
+      padding: 1px 6px;
+      border-radius: 6px;
+      font-weight: 800;
+    }
+    .recent-chip.master .badge { background: var(--orange-deep); color: #fff; }
+    .recent-chip.newbie .badge { background: var(--sky-deep); color: #fff; }
+    .recent-chip.paid::after {
+      content: '✓';
+      color: var(--ok);
+      font-weight: 900;
+      font-size: 0.95rem;
+    }
+    @keyframes chipPop {
+      0%   { transform: scale(0.6); opacity: 0; }
+      100% { transform: scale(1);   opacity: 1; }
+    }
+    .recent-empty {
+      text-align: center;
+      color: var(--brown);
+      font-style: italic;
+      padding: 1rem;
+    }
+
+    /* SLIP UPLOAD */
+    .slip-box {
+      background: linear-gradient(180deg, #fff 0%, var(--cream) 100%);
+      border: 2px dashed var(--sky-deep);
+      border-radius: 16px;
+      padding: 1rem;
+      margin: 0 auto 1.2rem;
+      max-width: 320px;
+      text-align: center;
+    }
+    .slip-box .l {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--sky-deep);
+      margin-bottom: 8px;
+    }
+    .slip-upload {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      background: var(--sky);
+      color: #fff;
+      border: 2px solid var(--sky-deep);
+      border-radius: 10px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: 'Kanit', sans-serif;
+      font-size: 0.95rem;
+      transition: all 0.15s;
+    }
+    .slip-upload:hover { background: var(--sky-deep); transform: translateY(-2px); }
+    .slip-upload input { display: none; }
+    .slip-preview {
+      margin-top: 10px;
+      display: none;
+    }
+    .slip-preview.show { display: block; }
+    .slip-preview img {
+      max-width: 100%;
+      max-height: 220px;
+      border-radius: 8px;
+      border: 2px solid var(--cream);
+      box-shadow: 0 4px 12px rgba(92, 58, 30, 0.15);
+    }
+    .slip-status {
+      margin-top: 10px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      min-height: 22px;
+    }
+    .slip-status.ok  { color: var(--ok); }
+    .slip-status.err { color: var(--err); }
+
+    /* INFO PILLS */
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin: 1rem 0;
+    }
+    @media (max-width: 480px) {
+      .info-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    .info-pill {
+      background: linear-gradient(180deg, var(--cream) 0%, var(--orange-2) 100%);
+      border: 2px solid var(--orange);
+      border-radius: 14px;
+      padding: 10px 6px;
+      text-align: center;
+      box-shadow: 0 4px 10px rgba(255, 140, 66, 0.2);
+    }
+    .info-pill .l {
+      font-size: 0.65rem;
+      color: var(--brown);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      font-weight: 700;
+      margin-bottom: 3px;
+    }
+    .info-pill .v {
+      font-size: 0.98rem;
+      font-weight: 800;
+      color: var(--brown-deep);
+      line-height: 1.1;
+    }
+
+    /* SEATS WARNING */
+    .seats-warn {
+      background: linear-gradient(135deg, var(--yellow) 0%, var(--orange-2) 100%);
+      border: 2px solid var(--orange-deep);
+      border-radius: 14px;
+      padding: 10px 14px;
+      margin: 1rem 0;
+      text-align: center;
+      font-weight: 700;
+      color: var(--brown-deep);
+      font-size: 0.95rem;
+      box-shadow: 0 4px 12px rgba(230, 107, 31, 0.25);
+    }
+
+    /* FORM */
+    .form-wrap {
+      background: var(--cream-card);
+      border: 2px solid var(--orange);
+      border-radius: 24px;
+      padding: 1.6rem 1.3rem;
+      margin: 1.5rem 0;
+      box-shadow: 0 12px 28px rgba(230, 107, 31, 0.18);
+      text-align: left;
+      position: relative;
+      overflow: hidden;
+    }
+    .form-wrap::before {
+      content: '';
+      position: absolute;
+      top: -2px; left: -2px; right: -2px;
+      height: 8px;
+      background: linear-gradient(90deg, var(--orange) 0%, var(--yellow) 50%, var(--sky) 100%);
+      border-radius: 24px 24px 0 0;
+    }
+    .form-wrap h2 {
+      text-align: center;
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--orange-deep);
+      margin: 0.4rem 0 0.2rem;
+    }
+    .form-wrap .lead {
+      text-align: center;
+      font-size: 0.95rem;
+      color: var(--brown);
+      margin-bottom: 1.2rem;
+    }
+
+    .field { margin-bottom: 1rem; }
+    .field label.field-label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--brown-deep);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .field label.field-label .req { color: var(--err); margin-left: 3px; }
+    .field label.field-label .opt { color: var(--brown); margin-left: 6px; font-weight: 500; text-transform: none; letter-spacing: 0; }
+
+    .field input[type="text"],
+    .field input[type="tel"] {
+      width: 100%;
+      background: #fff;
+      border: 2px solid var(--brown-light);
+      border-radius: 12px;
+      padding: 12px 14px;
+      color: var(--ink);
+      font-family: 'Kanit', sans-serif;
+      font-size: 1rem;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .field input:focus {
+      outline: none;
+      border-color: var(--orange);
+      box-shadow: 0 0 0 4px rgba(255, 140, 66, 0.2);
+    }
+    .field input::placeholder { color: rgba(92, 58, 30, 0.4); }
+
+    .field-group { display: grid; gap: 8px; }
+
+    /* TIER CARDS — bigger choice */
+    .tier-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    @media (max-width: 420px) {
+      .tier-group { grid-template-columns: 1fr; }
+    }
+    .tier-card {
+      display: block;
+      cursor: pointer;
+      background: #fff;
+      border: 3px solid var(--brown-light);
+      border-radius: 16px;
+      padding: 14px 14px 12px;
+      text-align: left;
+      transition: all 0.2s;
+      position: relative;
+    }
+    .tier-card:hover { border-color: var(--orange); transform: translateY(-2px); }
+    .tier-card input { position: absolute; opacity: 0; pointer-events: none; }
+    .tier-card .tier-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    .tier-card .tier-name {
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--brown-deep);
+    }
+    .tier-card .tier-price {
+      font-size: 1.15rem;
+      font-weight: 900;
+      color: var(--orange-deep);
+    }
+    .tier-card .tier-desc {
+      font-size: 0.82rem;
+      color: var(--brown);
+      line-height: 1.45;
+    }
+    .tier-card:has(input:checked) {
+      border-color: var(--orange);
+      background: linear-gradient(135deg, var(--cream) 0%, var(--orange-2) 100%);
+      box-shadow: 0 6px 18px rgba(255, 140, 66, 0.3);
+    }
+    .tier-card:has(input:checked) .tier-name { color: var(--orange-deep); }
+
+    .pill {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #fff;
+      border: 2px solid var(--brown-light);
+      border-radius: 12px;
+      padding: 12px 14px;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-size: 0.96rem;
+      color: var(--ink-2);
+    }
+    .pill:hover { border-color: var(--orange); transform: translateX(2px); }
+    .pill input {
+      accent-color: var(--orange);
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .pill:has(input:checked) {
+      border-color: var(--orange);
+      background: linear-gradient(135deg, var(--cream) 0%, var(--orange-2) 100%);
+      box-shadow: 0 4px 12px rgba(255, 140, 66, 0.2);
+    }
+    .pill:has(input:checked) span { font-weight: 700; color: var(--brown-deep); }
+
+    .sets-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+    .sets-grid .pill { padding: 10px 12px; font-size: 0.9rem; }
+
+    #sets-wrap { display: none; }
+    #sets-wrap.show { display: block; animation: slideDown 0.3s ease; }
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .submit-btn {
+      width: 100%;
+      background: linear-gradient(135deg, var(--orange) 0%, var(--orange-deep) 100%);
+      background-size: 200% 200%;
+      animation: btnPulse 3s ease infinite;
+      color: #fff;
+      border: 3px solid var(--cream);
+      border-radius: 50px;
+      padding: 16px;
+      font-family: 'Kanit', sans-serif;
+      font-weight: 800;
+      font-size: 1.1rem;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      margin-top: 0.8rem;
+      box-shadow: 0 8px 22px rgba(230, 107, 31, 0.45);
+      transition: all 0.2s;
+    }
+    .submit-btn:hover:not(:disabled) {
+      transform: translateY(-3px) scale(1.02);
+      box-shadow: 0 14px 30px rgba(230, 107, 31, 0.6);
+    }
+    .submit-btn:active:not(:disabled) { transform: translateY(0); }
+    .submit-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      animation: none;
+      box-shadow: none;
+    }
+
+    .form-msg {
+      margin-top: 12px;
+      text-align: center;
+      font-size: 0.92rem;
+      min-height: 22px;
+      font-weight: 600;
+    }
+    .form-msg.err { color: var(--err); }
+    .form-msg.ok  { color: var(--ok); }
+
+    /* SUCCESS */
+    .success { text-align: center; padding: 2rem 1.4rem; }
+    .success .check {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--orange) 0%, var(--orange-deep) 100%);
+      margin: 0 auto 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 42px;
+      color: #fff;
+      box-shadow: 0 8px 24px rgba(230, 107, 31, 0.4);
+      animation: pop 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+    }
+    @keyframes pop {
+      0%   { transform: scale(0); }
+      60%  { transform: scale(1.15); }
+      100% { transform: scale(1); }
+    }
+    .success h2 {
+      font-size: 1.8rem;
+      color: var(--orange-deep);
+      margin-bottom: 0.5rem;
+      font-weight: 900;
+    }
+    .success p {
+      font-size: 1rem;
+      color: var(--brown-deep);
+      line-height: 1.6;
+      margin-bottom: 1.2rem;
+    }
+    .success .next-steps {
+      background: rgba(255, 199, 142, 0.25);
+      border: 2px dashed var(--brown-light);
+      border-radius: 14px;
+      padding: 1rem 1.2rem;
+      margin-bottom: 1.2rem;
+      text-align: left;
+    }
+    .success .next-steps .l {
+      font-size: 0.72rem;
+      color: var(--orange-deep);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      font-weight: 800;
+    }
+    .success .next-steps ul { list-style: none; padding: 0; margin: 0; }
+    .success .next-steps li {
+      font-size: 0.95rem;
+      color: var(--ink-2);
+      padding: 5px 0 5px 24px;
+      position: relative;
+      line-height: 1.5;
+    }
+    .success .next-steps li::before {
+      content: '🤠';
+      position: absolute;
+      left: 0;
+      top: 4px;
+      font-size: 14px;
+    }
+
+    /* QR PAYMENT BOX */
+    .qr-box {
+      background: linear-gradient(180deg, #fff 0%, var(--cream) 100%);
+      border: 3px dashed var(--orange);
+      border-radius: 18px;
+      padding: 1rem;
+      margin: 0 auto 1.2rem;
+      max-width: 320px;
+      text-align: center;
+      box-shadow: 0 8px 22px rgba(255, 140, 66, 0.2);
+    }
+    .qr-box .qr-amount {
+      font-size: 1.05rem;
+      color: var(--brown-deep);
+      margin-bottom: 0.6rem;
+      font-weight: 600;
+    }
+    .qr-box .qr-amount strong {
+      font-size: 1.8rem;
+      color: var(--orange-deep);
+      font-weight: 900;
+      margin: 0 4px;
+    }
+    .qr-box img {
+      width: 100%;
+      max-width: 240px;
+      height: auto;
+      border-radius: 10px;
+      border: 2px solid var(--cream);
+      box-shadow: 0 4px 12px rgba(92, 58, 30, 0.15);
+    }
+    .qr-box .qr-name {
+      margin-top: 0.6rem;
+      font-size: 0.85rem;
+      color: var(--brown);
+      font-weight: 600;
+    }
+
+    /* CONTACT */
+    .contact-card {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.7) 0%, rgba(169, 220, 242, 0.4) 100%);
+      border: 2px solid var(--sky-deep);
+      border-radius: 18px;
+      padding: 1.3rem;
+      margin-top: 1.4rem;
+      text-align: center;
+    }
+    .contact-card .l {
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--sky-deep);
+      margin-bottom: 6px;
+    }
+    .contact-card p { color: var(--brown-deep); margin: 4px 0; font-size: 0.95rem; }
+    .contact-card .phone {
+      display: inline-block;
+      margin-top: 6px;
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: var(--brown-deep);
+      letter-spacing: 1.2px;
+    }
+
+    .footer {
+      margin-top: 2rem;
+      padding: 1rem 0;
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--brown-deep);
+      opacity: 0.85;
+    }
+    .footer .channels { color: var(--orange-deep); font-weight: 700; }
+
+    @media (max-width: 480px) {
+      .container { padding: 8px; }
+      .event-title { font-size: 2rem; }
+      .release-date { font-size: 0.92rem; padding: 8px 18px; }
+      .section-card, .form-wrap { padding: 1.2rem 1rem; }
+      .form-wrap h2 { font-size: 1.3rem; }
+      .floating-star { font-size: 38px; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <a href="index.html" class="home-btn" aria-label="Home">🏠</a>
+
+  <span class="floating-star">⭐</span>
+  <span class="floating-star">🤠</span>
+
+  <div class="container">
+
+    <!-- HERO -->
+    <header>
+      <img src="./lorcana-posters/assets/logos/horizontal.png" alt="Up Level Academy" class="logo">
+      <h1 class="event-title">ป้ายยา LORCANA DAY</h1>
+      <div class="event-subtitle">ได้ลองเล่น · พบปะเพื่อนใหม่ · แข่งสนุก</div>
+
+      <div class="hero-poster">
+        <img src="./lorcana-posters/lorcana-day-2026-05-31/1.png" alt="Lorcana Day poster" />
+      </div>
+
+      <div class="release-date">📅 31 พ.ค. 2569 · 13:00 – 17:00</div>
+
+      <p class="product-desc">
+        🤠 มาเล่น Lorcana ครั้งแรกที่ Up Level Academy<br>
+        🃏 <strong style="color:var(--orange-deep);">น้องใหม่มาตัวเปล่าได้ — มี deck ให้ยืม</strong>
+      </p>
+
+      <a href="#signup" class="cta-btn">🎯 จองที่นั่งเลย</a>
+    </header>
+
+    <!-- QUICK INFO -->
+    <div class="section-card">
+      <div class="section-title">📍 ข้อมูลงาน</div>
+      <div class="info-grid">
+        <div class="info-pill">
+          <div class="l">วัน</div>
+          <div class="v">31 พ.ค.</div>
+        </div>
+        <div class="info-pill">
+          <div class="l">เวลา</div>
+          <div class="v">13:00–17:00</div>
+        </div>
+        <div class="info-pill">
+          <div class="l">รับ</div>
+          <div class="v">28 ที่</div>
+        </div>
+        <div class="info-pill">
+          <div class="l">ค่าเข้า</div>
+          <div class="v">฿100 / ฿250</div>
+        </div>
+      </div>
+      <div class="seats-warn">⚡ รับจำกัด 28 ที่ — first come, first serve</div>
+    </div>
+
+    <!-- TIER DETAIL -->
+    <div class="section-card">
+      <div class="section-title">🎟️ Tier ค่าเข้า</div>
+      <div class="tier-detail-grid">
+        <div class="tier-detail newbie">
+          <div class="tier-detail-head">
+            <span class="tier-detail-name">🌱 น้องใหม่</span>
+            <span class="tier-detail-price">฿100</span>
+          </div>
+          <ul>
+            <li>Welcome Gift bag</li>
+            <li>Newbie 101 + Mentor</li>
+            <li>Loaner Deck มีให้ยืม</li>
+            <li>ชิง Newbie Champion</li>
+            <li>First Win รับ booster ทันที</li>
+          </ul>
+          <div class="tier-detail-note">🃏 มาตัวเปล่าได้ — ทีมงานจัดให้ครบ</div>
+        </div>
+        <div class="tier-detail master">
+          <div class="tier-detail-head">
+            <span class="tier-detail-name">⚔️ รุ่นพี่</span>
+            <span class="tier-detail-price">฿250</span>
+          </div>
+          <ul>
+            <li>Master League</li>
+            <li>ชิง Master Champion</li>
+            <li>Illumineer Mentor</li>
+            <li>First access new product</li>
+            <li>Build friendly Community</li>
+          </ul>
+          <div class="tier-detail-note">⭐ <strong>ฝากรุ่นพี่เตรียมมา:</strong> การ์ดน่ารักๆ 20 ใบ (Welcome Gift) + Loaner Deck 1 สำรับ</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACTIVITY -->
+    <div class="section-card">
+      <div class="section-title">🎯 ในงานมีอะไรบ้าง</div>
+      <div class="highlight-item">
+        <span class="emoji">🎁</span>
+        <div class="text"><strong>Welcome Gift</strong> — สำหรับน้องใหม่เท่านั้น</div>
+      </div>
+      <div class="highlight-item">
+        <span class="emoji">👗</span>
+        <div class="text"><strong>Outfit Vote</strong> — แต่ง Disney มาลุ้นรางวัล <strong>playmat + promo</strong></div>
+      </div>
+      <div class="highlight-item">
+        <span class="emoji">🃏</span>
+        <div class="text"><strong>Pack Rush</strong> — เปิด 2 ซองก็เล่นได้เลย</div>
+      </div>
+      <div class="highlight-item">
+        <span class="emoji">🎰</span>
+        <div class="text"><strong>Lucky Draw 2 รอบ</strong> — แจกรางวัลให้จุกๆ</div>
+      </div>
+    </div>
+
+    <!-- TIMELINE -->
+    <div class="section-card">
+      <div class="section-title">🕐 Timeline</div>
+      <div class="timeline">
+        <div class="tl-item"><span class="tl-time">12:30</span><span class="tl-text">เปิดลงทะเบียน</span></div>
+        <div class="tl-item"><span class="tl-time">13:00</span><span class="tl-text">เปิดงาน</span></div>
+        <div class="tl-item"><span class="tl-time">13:15</span><span class="tl-text">Lorcana 101</span></div>
+        <div class="tl-item"><span class="tl-time">13:30</span><span class="tl-text">Swiss R1 – R2</span></div>
+        <div class="tl-item"><span class="tl-time">14:30</span><span class="tl-text">Break + 🎰 Lucky Draw #1</span></div>
+        <div class="tl-item"><span class="tl-time">15:00</span><span class="tl-text">R3 – R4</span></div>
+        <div class="tl-item"><span class="tl-time">16:00</span><span class="tl-text">👗 Outfit Vote + 🎰 Lucky Draw #2</span></div>
+        <div class="tl-item"><span class="tl-time">16:30</span><span class="tl-text">🃏 Pack Rush (Optional)</span></div>
+      </div>
+    </div>
+
+    <!-- REWARDS -->
+    <div class="section-card">
+      <div class="section-title">🏆 รางวัล</div>
+      <div class="reward-block">
+        <div class="reward-head">⚔️ Master League</div>
+        <ul>
+          <li><strong>Champion</strong> — Booster ×4 + Promo + <strong>สิทธิ์ซื้อ Trove Set 12</strong> (ของแรร์)</li>
+          <li><strong>2nd</strong> — Booster ×3 + Promo</li>
+          <li><strong>3rd – 4th</strong> — Booster ×2 + Promo</li>
+          <li><strong>Participation</strong> (ทุกคนที่ไม่ติด top 4) — Booster ×1 + Promo</li>
+        </ul>
+      </div>
+      <div class="reward-block newbie">
+        <div class="reward-head">🌱 Newbie League</div>
+        <ul>
+          <li><strong>Champion</strong> — <strong>สิทธิ์ซื้อ Trove Set 12</strong> (ของแรร์)</li>
+          <li>มือใหม่ทุกคน ถ้าชนะรอบแรก — รับเลย Booster 1 ซอง</li>
+        </ul>
+      </div>
+      <div class="reward-block extra">
+        <div class="reward-head">👗 Best Dressed</div>
+        <ul>
+          <li>Disney Cosplay ปังสุด — รับเลย <strong>Playmat + Booster</strong></li>
+        </ul>
+      </div>
+      <div class="reward-block extra">
+        <div class="reward-head">🎰 Lucky Draw 2 รอบ</div>
+        <ul>
+          <li>ผู้ที่อยู่ในงาน รอรับของรางวัลเน้นๆ</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- RECENT SIGNUPS -->
+    <div class="section-card" id="recent-card">
+      <div class="section-title">🔥 ลงทะเบียนล่าสุด</div>
+      <div class="recent-stats" id="recent-stats">กำลังโหลด…</div>
+      <div class="recent-list" id="recent-list"></div>
+    </div>
+
+    <!-- FORM -->
+    <div class="form-wrap" id="signup">
+      <h2>🎟️ ลงทะเบียนเข้าร่วม</h2>
+      <div class="lead">กรอกสั้นๆ · 1 นาทีเสร็จ</div>
+
+      <form id="signup-form" novalidate>
+
+        <div class="field">
+          <label class="field-label" for="f-name">ชื่อ – นามสกุล <span class="req">*</span></label>
+          <input id="f-name" name="name" type="text" autocomplete="name" required maxlength="80"
+            placeholder="เช่น สมชาย ใจดี" />
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="f-nickname">ชื่อเล่น <span class="req">*</span></label>
+          <input id="f-nickname" name="nickname" type="text" required maxlength="60"
+            placeholder="เช่น แชมป์" />
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="f-phone">เบอร์โทรศัพท์ <span class="req">*</span></label>
+          <input id="f-phone" name="phone" type="tel" autocomplete="tel" required inputmode="numeric" maxlength="15"
+            placeholder="0XX-XXX-XXXX" />
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="f-lineid">Line ID <span class="opt">(ถ้ามี)</span></label>
+          <input id="f-lineid" name="lineId" type="text" maxlength="80"
+            placeholder="@uplevelacademy หรือ ID ปกติ" />
+        </div>
+
+        <div class="field">
+          <label class="field-label">เลือก Tier <span class="req">*</span></label>
+          <div class="tier-group">
+            <label class="tier-card">
+              <input type="radio" name="tier" value="newbie" required>
+              <div class="tier-head">
+                <span class="tier-name">🌱 น้องใหม่</span>
+                <span class="tier-price">฿100</span>
+              </div>
+              <div class="tier-desc">Welcome Gift · Newbie 101 + Mentor · Loaner Deck · Newbie Champion · First Win booster</div>
+            </label>
+            <label class="tier-card">
+              <input type="radio" name="tier" value="master">
+              <div class="tier-head">
+                <span class="tier-name">⚔️ รุ่นพี่</span>
+                <span class="tier-price">฿250</span>
+              </div>
+              <div class="tier-desc">Master League · Master Champion · Illumineer Mentor · First access · Community</div>
+            </label>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="field-label">มี deck เป็นของตัวเองมั้ย? <span class="req">*</span></label>
+          <div class="field-group">
+            <label class="pill"><input type="radio" name="hasDeck" value="no" required><span>🙅 ไม่มี — ขอยืม deck ที่ร้าน</span></label>
+            <label class="pill"><input type="radio" name="hasDeck" value="yes"><span>🃏 มีอยู่แล้ว — เอามาเอง</span></label>
+          </div>
+        </div>
+
+        <div class="field" id="sets-wrap">
+          <label class="field-label">Set ที่เล่น (เลือกได้หลายอัน)</label>
+          <div class="sets-grid">
+            <label class="pill"><input type="checkbox" name="sets" value="set1-3"><span>Set 1–3</span></label>
+            <label class="pill"><input type="checkbox" name="sets" value="set4"><span>Set 4</span></label>
+            <label class="pill"><input type="checkbox" name="sets" value="set5"><span>Set 5</span></label>
+            <label class="pill"><input type="checkbox" name="sets" value="set6"><span>Set 6 (MA6)</span></label>
+            <label class="pill"><input type="checkbox" name="sets" value="set7"><span>Set 7</span></label>
+            <label class="pill"><input type="checkbox" name="sets" value="other"><span>อื่นๆ / ไม่แน่ใจ</span></label>
+          </div>
+        </div>
+
+        <button type="submit" class="submit-btn" id="submit-btn">🤠 ยืนยันการสมัคร</button>
+        <div class="form-msg" id="form-msg"></div>
+      </form>
+    </div>
+
+    <!-- SUCCESS -->
+    <div class="form-wrap success" id="success-state" style="display:none;">
+      <div class="check">✓</div>
+      <h2>ลงทะเบียนแล้ว!</h2>
+      <p>ขั้นต่อไป — <strong>โอนค่าเข้า</strong> เพื่อยืนยันที่นั่ง</p>
+
+      <!-- QR PAYMENT -->
+      <div class="qr-box">
+        <div class="qr-amount">โอน <strong id="qr-amount-num">100</strong> บาท</div>
+        <img id="qr-img" src="https://i.postimg.cc/9Qf7H5S7/QR-KShop.jpg" alt="QR KShop Up Level Academy" />
+        <div class="qr-name">Up Level Academy (KShop)</div>
+      </div>
+
+      <!-- SLIP UPLOAD -->
+      <div class="slip-box">
+        <div class="l">📎 แนบสลิปการโอนเงิน</div>
+        <label class="slip-upload" for="slip-file">
+          📷 เลือกรูปสลิป (จากแกลเลอรี / ถ่ายใหม่)
+          <input id="slip-file" type="file" accept="image/*" />
+        </label>
+        <div class="slip-preview" id="slip-preview">
+          <img id="slip-preview-img" alt="slip preview" />
+        </div>
+        <div class="slip-status" id="slip-status"></div>
+      </div>
+
+      <div class="next-steps">
+        <div class="l">📍 ขั้นตอน</div>
+        <ul>
+          <li>โอนเงินตามจำนวนด้านบน</li>
+          <li>แนบสลิป — ระบบตรวจอัตโนมัติ</li>
+          <li>ที่นั่งจะ confirm หลังตรวจสลิปผ่าน</li>
+          <li>มา <strong>12:30</strong> ลงทะเบียนหน้างาน · เริ่มเล่น 13:00</li>
+          <li>มีปัญหา? ทักไลน์ <strong>@uplevelacademy</strong></li>
+        </ul>
+      </div>
+
+      <button class="cta-btn" style="background: linear-gradient(135deg, var(--sky) 0%, var(--sky-deep) 100%); box-shadow: 0 8px 22px rgba(74,159,203,0.4);" onclick="location.reload()">🔄 สมัครเพิ่มอีกคน</button>
+    </div>
+
+    <!-- CONTACT -->
+    <div class="contact-card">
+      <div class="l">📍 สถานที่จัดงาน</div>
+      <p>Up Level Academy (ติด MRT บางแค ทางออก 2)</p>
+      <div class="phone">📞 097-115-6555</div>
+    </div>
+
+    <div class="footer">
+      <div><span class="channels">FB · IG · LINE</span> &nbsp;@uplevelacademy</div>
+    </div>
+
+  </div>
+
+  <script>
+    const APP_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzOoozK6-NL2-SluugEQZtF-LFBgFeO4NgDc9bV7EvyD8EJ8ElAJiZJqPglH4SLUrdJ/exec";
+
+    const form     = document.getElementById('signup-form');
+    const btn      = document.getElementById('submit-btn');
+    const msg      = document.getElementById('form-msg');
+    const setsWrap = document.getElementById('sets-wrap');
+    const success  = document.getElementById('success-state');
+    const formWrap = document.getElementById('signup');
+
+    form.addEventListener('change', (e) => {
+      if (e.target.name === 'hasDeck') {
+        setsWrap.classList.toggle('show', e.target.value === 'yes');
+      }
+    });
+
+    function normalizePhone(raw) { return String(raw || '').replace(/[^\d]/g, ''); }
+
+    let lastSignupPhone = null; // remember to attach slip later
+
+    function escHtml(s) {
+      return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+    }
+
+    // Live seats + recent list
+    async function refreshSeatsAndList() {
+      try {
+        const r = await fetch(APP_SCRIPT_URL);
+        const data = await r.json();
+        if (!data || !data.ok) return;
+
+        // Seats banner
+        const seatsEl = document.querySelector('.seats-warn');
+        if (seatsEl && typeof data.capRemaining === 'number') {
+          if (data.capRemaining <= 0) {
+            seatsEl.innerHTML = '🛑 เต็มแล้ว — ที่นั่งครบ 28 คน';
+            seatsEl.style.background = 'linear-gradient(135deg, #FFCDD2 0%, #EF5350 100%)';
+            seatsEl.style.color = '#fff';
+            btn.disabled = true;
+            btn.textContent = '🛑 เต็มแล้ว';
+          } else {
+            seatsEl.innerHTML = `⚡ เหลือ <strong>${data.capRemaining}</strong> จาก 28 ที่นั่ง — first come, first serve`;
+          }
+        }
+
+        // Recent list
+        const stats = document.getElementById('recent-stats');
+        const list  = document.getElementById('recent-list');
+        if (stats && list) {
+          const total  = data.total || 0;
+          const newbie = (data.byTier && data.byTier.newbie) || 0;
+          const master = (data.byTier && data.byTier.master) || 0;
+          stats.innerHTML = `สมัครแล้ว <span class="num">${total}</span> คน · 🌱 <span class="num">${newbie}</span> น้องใหม่ · ⚔️ <span class="num">${master}</span> รุ่นพี่`;
+
+          const recent = Array.isArray(data.recent) ? data.recent : [];
+          if (!recent.length) {
+            list.innerHTML = '<div class="recent-empty">ยังไม่มีใครสมัคร — มาเป็นคนแรก!</div>';
+          } else {
+            list.innerHTML = recent.slice(0, 30).map(r => {
+              const tier = r.tier === 'master' ? 'master' : 'newbie';
+              const tierLabel = tier === 'master' ? '⚔️ รุ่นพี่' : '🌱 น้องใหม่';
+              const paidCls = r.paymentStatus === 'paid' ? ' paid' : '';
+              return `<span class="recent-chip ${tier}${paidCls}"><span class="badge">${tierLabel}</span>${escHtml(r.nickname || r.name || '?')}</span>`;
+            }).join('');
+          }
+        }
+      } catch (_) { /* silent */ }
+    }
+    refreshSeatsAndList();
+    setInterval(refreshSeatsAndList, 30000); // refresh every 30s
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      msg.textContent = '';
+      msg.className = 'form-msg';
+
+      const fd = new FormData(form);
+      const name     = (fd.get('name')     || '').trim();
+      const nickname = (fd.get('nickname') || '').trim();
+      const phone    = normalizePhone(fd.get('phone'));
+      const lineId   = (fd.get('lineId')   || '').trim();
+      const tier     = fd.get('tier');
+      const hasDeck  = fd.get('hasDeck');
+      const sets     = fd.getAll('sets');
+
+      const errors = [];
+      if (!name || name.length < 2)         errors.push('กรอกชื่อ – นามสกุล');
+      if (!nickname)                        errors.push('กรอกชื่อเล่น');
+      if (!phone || phone.length < 9)       errors.push('เบอร์โทรไม่ถูกต้อง');
+      if (!tier)                            errors.push('เลือก Tier');
+      if (!hasDeck)                         errors.push('เลือกตัวเลือก deck');
+
+      if (errors.length) {
+        msg.textContent = errors[0];
+        msg.classList.add('err');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = '⏳ กำลังบันทึก…';
+
+      const payload = {
+        name,
+        nickname,
+        phone,
+        lineId,
+        tier,
+        hasDeck: hasDeck === 'yes',
+        sets: hasDeck === 'yes' ? sets : [],
+        source: 'web',
+      };
+
+      try {
+        const r = await fetch(APP_SCRIPT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload),
+          redirect: 'follow',
+        });
+        const data = await r.json();
+        if (!data.ok) throw new Error(data.error || 'unknown error');
+
+        // Set QR amount based on tier
+        const amount = data.tierPrice || (tier === 'master' ? 250 : 100);
+        const amountEl = document.getElementById('qr-amount-num');
+        if (amountEl) amountEl.textContent = amount;
+
+        lastSignupPhone = phone;
+        formWrap.style.display = 'none';
+        success.style.display = 'block';
+        // Scroll to success state (shows QR + slip upload), not page top
+        success.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+        // Refresh recent list
+        refreshSeatsAndList();
+      } catch (err) {
+        console.error('Signup error:', err);
+        msg.textContent = '❗ ' + (err.message || 'บันทึกไม่สำเร็จ — ลองอีกครั้ง หรือทักไลน์ @uplevelacademy');
+        msg.classList.add('err');
+        btn.disabled = false;
+        btn.textContent = '🤠 ยืนยันการสมัคร';
+      }
+    });
+
+    /* ────── SLIP UPLOAD ────── */
+    const slipFile    = document.getElementById('slip-file');
+    const slipPreview = document.getElementById('slip-preview');
+    const slipPrevImg = document.getElementById('slip-preview-img');
+    const slipStatus  = document.getElementById('slip-status');
+    const slipUploadLabel = document.querySelector('.slip-upload');
+
+    function readFileAsBase64(file) {
+      return new Promise((resolve, reject) => {
+        const fr = new FileReader();
+        fr.onload = () => {
+          const s = String(fr.result || '');
+          const idx = s.indexOf(',');
+          resolve(idx >= 0 ? s.substring(idx + 1) : s);
+        };
+        fr.onerror = reject;
+        fr.readAsDataURL(file);
+      });
+    }
+
+    slipFile.addEventListener('change', async (ev) => {
+      const file = ev.target.files && ev.target.files[0];
+      if (!file) return;
+      if (!lastSignupPhone) {
+        slipStatus.textContent = '❗ ยังไม่ได้ลงทะเบียน';
+        slipStatus.className = 'slip-status err';
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        slipStatus.textContent = '❗ ไฟล์เกิน 5MB';
+        slipStatus.className = 'slip-status err';
+        return;
+      }
+
+      // Preview immediately
+      slipPrevImg.src = URL.createObjectURL(file);
+      slipPreview.classList.add('show');
+      slipStatus.textContent = '⏳ กำลังอัปโหลด…';
+      slipStatus.className = 'slip-status';
+      slipUploadLabel.style.opacity = '0.6';
+      slipUploadLabel.style.pointerEvents = 'none';
+
+      try {
+        const base64 = await readFileAsBase64(file);
+        const r = await fetch(APP_SCRIPT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            action: 'upload-slip',
+            phone: lastSignupPhone,
+            filename: file.name,
+            mimeType: file.type || 'image/jpeg',
+            data: base64,
+          }),
+          redirect: 'follow',
+        });
+        const data = await r.json();
+        if (!data.ok) throw new Error(data.error || 'upload failed');
+
+        if (data.verified) {
+          slipStatus.innerHTML = '✅ ตรวจสลิปผ่าน — ที่นั่งของคุณ confirm แล้ว!';
+          slipStatus.className = 'slip-status ok';
+        } else {
+          slipStatus.innerHTML = '✓ อัปโหลดสลิปแล้ว — รอทีมงานตรวจ (≤ 1 ชม.)';
+          slipStatus.className = 'slip-status ok';
+        }
+        refreshSeatsAndList();
+      } catch (err) {
+        console.error('Slip upload error:', err);
+        slipStatus.textContent = '❗ ' + (err.message || 'อัปโหลดไม่สำเร็จ — ลองอีกครั้ง');
+        slipStatus.className = 'slip-status err';
+        slipUploadLabel.style.opacity = '';
+        slipUploadLabel.style.pointerEvents = '';
+      }
+    });
+  </script>
+
+</body>
+
+</html>
