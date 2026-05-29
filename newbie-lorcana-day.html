@@ -15,7 +15,7 @@
   <link rel="icon" href="./lorcana-posters/assets/logos/badge-circle.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
     :root {
@@ -40,7 +40,7 @@
     * { box-sizing: border-box; }
 
     body {
-      font-family: 'Kanit', sans-serif;
+      font-family: 'Mitr', sans-serif;
       background: var(--sky);
       background-image:
         radial-gradient(ellipse at 15% 10%, rgba(255, 255, 255, 0.7) 0%, transparent 35%),
@@ -90,26 +90,7 @@
       100% { opacity: 1;   transform: scale(1.4); }
     }
 
-    .floating-star {
-      position: fixed;
-      top: 40%;
-      z-index: 5;
-      pointer-events: none;
-      opacity: 0.75;
-      animation: starFloat 3s ease-in-out infinite;
-      filter: drop-shadow(0 0 12px rgba(255, 140, 66, 0.6));
-      font-size: 56px;
-      line-height: 1;
-    }
-    .floating-star:nth-child(1) { right: 14px; animation-delay: 0s; }
-    .floating-star:nth-child(2) { left: 14px;  animation-delay: 0.7s; }
-    @keyframes starFloat {
-      0%,100% { transform: translateY(0) rotate(-6deg); }
-      50%     { transform: translateY(-14px) rotate(6deg); }
-    }
-    @media (max-width: 720px) {
-      .floating-star { font-size: 36px; opacity: 0.4; }
-    }
+    .floating-star { display: none; }
 
     .container {
       max-width: 720px;
@@ -173,7 +154,7 @@
 
     .event-title {
       font-size: 2.6rem;
-      font-weight: 900;
+      font-weight: 700;
       background: linear-gradient(135deg, var(--orange-deep) 0%, var(--orange) 35%, var(--sky-deep) 75%, var(--brown) 100%);
       background-size: 300% 300%;
       animation: titleFlow 4s ease infinite;
@@ -232,7 +213,7 @@
       box-shadow: 0 8px 22px rgba(230, 107, 31, 0.45);
       transition: all 0.3s ease;
       margin: 0.4rem;
-      font-family: 'Kanit', sans-serif;
+      font-family: 'Mitr', sans-serif;
     }
     @keyframes btnPulse {
       0%,100% { background-position: 0% 50%; }
@@ -273,7 +254,7 @@
     }
     .section-title {
       font-size: 1.35rem;
-      font-weight: 800;
+      font-weight: 700;
       color: var(--orange-deep);
       margin-bottom: 1rem;
       text-align: center;
@@ -331,8 +312,8 @@
       padding-bottom: 8px;
       border-bottom: 2px dashed var(--brown-light);
     }
-    .tier-detail-name { font-size: 1.05rem; font-weight: 800; color: var(--brown-deep); }
-    .tier-detail-price { font-size: 1.3rem; font-weight: 900; color: var(--orange-deep); }
+    .tier-detail-name { font-size: 1.05rem; font-weight: 700; color: var(--brown-deep); }
+    .tier-detail-price { font-size: 1.3rem; font-weight: 700; color: var(--orange-deep); }
     .tier-detail.newbie .tier-detail-price { color: var(--sky-deep); }
     .tier-detail ul {
       list-style: none;
@@ -352,7 +333,7 @@
       left: 4px;
       top: 4px;
       color: var(--orange-deep);
-      font-weight: 900;
+      font-weight: 700;
     }
     .tier-detail.newbie li::before { color: var(--sky-deep); }
     .tier-detail-note {
@@ -402,7 +383,7 @@
     .tl-time {
       flex-shrink: 0;
       width: 56px;
-      font-weight: 800;
+      font-weight: 700;
       color: var(--orange-deep);
       font-size: 0.95rem;
     }
@@ -419,7 +400,7 @@
     .reward-block.newbie { background: rgba(110, 193, 228, 0.15); border-left-color: var(--sky-deep); }
     .reward-block.extra  { background: rgba(252, 200, 97, 0.20); border-left-color: var(--yellow); }
     .reward-head {
-      font-weight: 800;
+      font-weight: 700;
       color: var(--orange-deep);
       margin-bottom: 6px;
       font-size: 1rem;
@@ -443,7 +424,7 @@
       left: 4px;
       top: -2px;
       color: var(--orange-deep);
-      font-weight: 900;
+      font-weight: 700;
       font-size: 20px;
     }
     .reward-block li strong { color: var(--brown-deep); }
@@ -463,7 +444,7 @@
     .recent-stats .num {
       font-size: 1.2rem;
       color: var(--orange-deep);
-      font-weight: 900;
+      font-weight: 700;
       margin: 0 3px;
     }
     .recent-list {
@@ -491,14 +472,14 @@
       font-size: 0.7rem;
       padding: 1px 6px;
       border-radius: 6px;
-      font-weight: 800;
+      font-weight: 700;
     }
     .recent-chip.master .badge { background: var(--orange-deep); color: #fff; }
     .recent-chip.newbie .badge { background: var(--sky-deep); color: #fff; }
     .recent-chip.paid::after {
       content: '✓';
       color: var(--ok);
-      font-weight: 900;
+      font-weight: 700;
       font-size: 0.95rem;
     }
     @keyframes chipPop {
@@ -538,7 +519,7 @@
       border-radius: 10px;
       font-weight: 700;
       cursor: pointer;
-      font-family: 'Kanit', sans-serif;
+      font-family: 'Mitr', sans-serif;
       font-size: 0.95rem;
       transition: all 0.15s;
     }
@@ -593,7 +574,7 @@
     }
     .info-pill .v {
       font-size: 0.98rem;
-      font-weight: 800;
+      font-weight: 700;
       color: var(--brown-deep);
       line-height: 1.1;
     }
@@ -635,7 +616,7 @@
     .form-wrap h2 {
       text-align: center;
       font-size: 1.5rem;
-      font-weight: 800;
+      font-weight: 700;
       color: var(--orange-deep);
       margin: 0.4rem 0 0.2rem;
     }
@@ -667,7 +648,7 @@
       border-radius: 12px;
       padding: 12px 14px;
       color: var(--ink);
-      font-family: 'Kanit', sans-serif;
+      font-family: 'Mitr', sans-serif;
       font-size: 1rem;
       transition: border-color 0.15s, box-shadow 0.15s;
     }
@@ -706,12 +687,12 @@
     }
     .tier-card .tier-name {
       font-size: 1rem;
-      font-weight: 800;
+      font-weight: 700;
       color: var(--brown-deep);
     }
     .tier-card .tier-price {
       font-size: 1.15rem;
-      font-weight: 900;
+      font-weight: 700;
       color: var(--orange-deep);
     }
     .tier-card .tier-desc {
@@ -777,8 +758,8 @@
       border: 3px solid var(--cream);
       border-radius: 50px;
       padding: 16px;
-      font-family: 'Kanit', sans-serif;
-      font-weight: 800;
+      font-family: 'Mitr', sans-serif;
+      font-weight: 700;
       font-size: 1.1rem;
       letter-spacing: 0.5px;
       cursor: pointer;
@@ -833,7 +814,7 @@
       font-size: 1.8rem;
       color: var(--orange-deep);
       margin-bottom: 0.5rem;
-      font-weight: 900;
+      font-weight: 700;
     }
     .success p {
       font-size: 1rem;
@@ -855,7 +836,7 @@
       letter-spacing: 2px;
       text-transform: uppercase;
       margin-bottom: 8px;
-      font-weight: 800;
+      font-weight: 700;
     }
     .success .next-steps ul { list-style: none; padding: 0; margin: 0; }
     .success .next-steps li {
@@ -893,7 +874,7 @@
     .qr-box .qr-amount strong {
       font-size: 1.8rem;
       color: var(--orange-deep);
-      font-weight: 900;
+      font-weight: 700;
       margin: 0 4px;
     }
     .qr-box img {
@@ -922,7 +903,7 @@
     }
     .contact-card .l {
       font-size: 1rem;
-      font-weight: 800;
+      font-weight: 700;
       color: var(--sky-deep);
       margin-bottom: 6px;
     }
@@ -931,7 +912,7 @@
       display: inline-block;
       margin-top: 6px;
       font-size: 1.2rem;
-      font-weight: 800;
+      font-weight: 700;
       color: var(--brown-deep);
       letter-spacing: 1.2px;
     }
@@ -960,9 +941,6 @@
 <body>
 
   <a href="index.html" class="home-btn" aria-label="Home">🏠</a>
-
-  <span class="floating-star">⭐</span>
-  <span class="floating-star">🤠</span>
 
   <div class="container">
 
