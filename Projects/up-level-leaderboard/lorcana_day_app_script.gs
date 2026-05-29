@@ -347,26 +347,28 @@ function notifyTelegram_(row) {
   const stats = getStats_();
   const remaining = Math.max(0, CAP_TOTAL - stats.total);
 
+  // Plain text (no parse_mode) — name/nickname may contain Markdown-breaking chars (* _ [ ` )
   const msg =
-    '🤠 *Lorcana Day · สมัครใหม่*\n\n' +
+    '🤠 Lorcana Day · สมัครใหม่\n\n' +
     '👤 ' + row.name + ' (' + row.nickname + ')\n' +
     '📞 ' + row.phone + '\n' +
     (row.lineId ? '💬 Line: ' + row.lineId + '\n' : '') +
-    '🎟️ ' + tierLabel + ' · *' + row.tierPrice + ' บาท*\n' +
+    '🎟️ ' + tierLabel + ' · ' + row.tierPrice + ' บาท\n' +
     '🃏 Deck: ' + deckLabel + '\n' +
     setsLine +
-    '\n📊 รวม: ' + stats.total + '/' + CAP_TOTAL + ' · เหลือ *' + remaining + '* ที่';
+    '\n📊 รวม: ' + stats.total + '/' + CAP_TOTAL + ' · เหลือ ' + remaining + ' ที่';
 
-  UrlFetchApp.fetch('https://api.telegram.org/bot' + TG_BOT_TOKEN + '/sendMessage', {
+  const r = UrlFetchApp.fetch('https://api.telegram.org/bot' + TG_BOT_TOKEN + '/sendMessage', {
     method: 'post',
     contentType: 'application/json',
     payload: JSON.stringify({
       chat_id: TG_CHAT_ID,
       text: msg,
-      parse_mode: 'Markdown',
     }),
     muteHttpExceptions: true,
   });
+  const code = r.getResponseCode();
+  if (code !== 200) Logger.log('Telegram signup noti failed ' + code + ': ' + r.getContentText());
 }
 
 /** Test Telegram from editor */
@@ -519,13 +521,13 @@ function notifySlipUploaded_(o) {
 
   let header, footer;
   if (o.status === 'paid') {
-    header = '✅ *Slip PAID · auto-verified*';
-    footer = '💰 รับ ' + o.verifyAmount + '฿ จาก ' + (o.verifySender || '?') + '\n🎉 mark *paid* แล้ว';
+    header = '✅ Slip PAID · auto-verified';
+    footer = '💰 รับ ' + o.verifyAmount + '฿ จาก ' + (o.verifySender || '?') + '\n🎉 mark paid แล้ว';
   } else if (o.status === 'amount_mismatch') {
-    header = '⚠️ *ยอดสลิปไม่ตรง · ต้องเช็คมือ*';
+    header = '⚠️ ยอดสลิปไม่ตรง · ต้องเช็คมือ';
     footer = '💰 สลิป: ' + o.verifyAmount + '฿ (ควรเป็น ' + o.price + '฿)\nผู้โอน: ' + (o.verifySender || '?') + '\n➡️ ตรวจมือ + mark paid ใน sheet';
   } else {
-    header = '📎 *สลิปใหม่ · ตรวจ SlipOK ไม่ผ่าน*';
+    header = '📎 สลิปใหม่ · ตรวจ SlipOK ไม่ผ่าน';
     footer = '➡️ ' + o.notes + '\nตรวจมือใน sheet';
   }
 
@@ -537,15 +539,15 @@ function notifySlipUploaded_(o) {
     '🧾 ' + o.slipUrl + '\n\n' +
     footer;
 
-  UrlFetchApp.fetch('https://api.telegram.org/bot' + TG_BOT_TOKEN + '/sendMessage', {
+  const r = UrlFetchApp.fetch('https://api.telegram.org/bot' + TG_BOT_TOKEN + '/sendMessage', {
     method: 'post',
     contentType: 'application/json',
     payload: JSON.stringify({
       chat_id: TG_CHAT_ID,
       text: msg,
-      parse_mode: 'Markdown',
-      disable_web_page_preview: false,
     }),
     muteHttpExceptions: true,
   });
+  const code = r.getResponseCode();
+  if (code !== 200) Logger.log('Telegram slip noti failed ' + code + ': ' + r.getContentText());
 }
