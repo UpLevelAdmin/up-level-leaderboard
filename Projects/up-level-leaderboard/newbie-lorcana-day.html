@@ -221,39 +221,24 @@
       50%      { transform: translate(20px, -25px) scale(1.15); }
     }
 
-    /* Container scroll 3D reveal (inspired by 21st.dev container-scroll-animation) */
+    /* Hero 3D entrance — runs once on load */
     .scroll-3d {
       perspective: 1400px;
       perspective-origin: center 80%;
     }
     .scroll-3d > * {
-      transform: rotateX(28deg) scale(0.92);
+      animation: hero3d 1.1s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both;
       transform-origin: center bottom;
-      opacity: 0;
-      transition: transform 0.9s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.6s;
       will-change: transform, opacity;
     }
-    .scroll-3d.in-view > * {
-      transform: rotateX(0deg) scale(1);
-      opacity: 1;
-    }
-    @media (prefers-reduced-motion: reduce) {
-      .scroll-3d > * { transform: none; opacity: 1; transition: none; }
-      .hero-orbs span, .shader-bg::before, .shader-bg::after { animation: none; }
+    @keyframes hero3d {
+      from { transform: rotateX(28deg) scale(0.92); opacity: 0; }
+      to   { transform: rotateX(0deg) scale(1);    opacity: 1; }
     }
 
-    /* Scroll reveal — fade up for section cards */
-    .reveal {
-      opacity: 0;
-      transform: translateY(40px);
-      transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    .reveal.in-view {
-      opacity: 1;
-      transform: translateY(0);
-    }
     @media (prefers-reduced-motion: reduce) {
-      .reveal { opacity: 1; transform: none; transition: none; }
+      .scroll-3d > * { animation: none; }
+      .hero-orbs span, .shader-bg::before, .shader-bg::after { animation: none; }
     }
 
     body {
@@ -1190,7 +1175,7 @@
     </header>
 
     <!-- QUICK INFO -->
-    <div class="section-card reveal lift-card">
+    <div class="section-card lift-card">
       <div class="section-title"><i data-lucide="map-pin" class="ico-inline"></i>ข้อมูลงาน</div>
       <div class="info-grid">
         <div class="info-pill">
@@ -1214,7 +1199,7 @@
     </div>
 
     <!-- TIER DETAIL -->
-    <div class="section-card reveal lift-card">
+    <div class="section-card lift-card">
       <div class="section-title"><i data-lucide="ticket" class="ico-inline"></i>Tier ค่าเข้า</div>
       <div class="tier-detail-grid">
         <div class="tier-detail newbie">
@@ -1249,7 +1234,7 @@
     </div>
 
     <!-- ACTIVITY -->
-    <div class="section-card reveal lift-card">
+    <div class="section-card lift-card">
       <div class="section-title"><i data-lucide="target" class="ico-inline"></i>ในงานมีอะไรบ้าง</div>
       <div class="highlight-item">
         <span class="emoji"><i data-lucide="gift"></i></span>
@@ -1270,7 +1255,7 @@
     </div>
 
     <!-- TIMELINE -->
-    <div class="section-card reveal lift-card">
+    <div class="section-card lift-card">
       <div class="section-title"><i data-lucide="clock" class="ico-inline"></i>Timeline</div>
       <div class="timeline">
         <div class="tl-item"><span class="tl-time">12:30</span><span class="tl-text">เปิดลงทะเบียน</span></div>
@@ -1285,7 +1270,7 @@
     </div>
 
     <!-- REWARDS -->
-    <div class="section-card reveal lift-card">
+    <div class="section-card lift-card">
       <div class="section-title"><i data-lucide="trophy" class="ico-inline"></i>รางวัล</div>
       <div class="reward-block">
         <div class="reward-head"><i data-lucide="swords" class="ico-inline"></i>Master League</div>
@@ -1318,7 +1303,7 @@
     </div>
 
     <!-- RECENT SIGNUPS -->
-    <div class="section-card reveal" id="recent-card">
+    <div class="section-card" id="recent-card">
       <div class="section-title"><i data-lucide="flame" class="ico-inline"></i>ลงทะเบียนล่าสุด</div>
       <div class="recent-stats" id="recent-stats">กำลังโหลด…</div>
       <div class="recent-list" id="recent-list"></div>
@@ -1461,21 +1446,6 @@
       if (window.lucide) lucide.createIcons();
 
       const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-      // IntersectionObserver — reveal on scroll
-      if ('IntersectionObserver' in window) {
-        const io = new IntersectionObserver((entries) => {
-          entries.forEach(e => {
-            if (e.isIntersecting) {
-              e.target.classList.add('in-view');
-              io.unobserve(e.target);
-            }
-          });
-        }, { threshold: 0.15, rootMargin: '0px 0px -60px 0px' });
-        document.querySelectorAll('.reveal, .scroll-3d').forEach(el => io.observe(el));
-      } else {
-        document.querySelectorAll('.reveal, .scroll-3d').forEach(el => el.classList.add('in-view'));
-      }
 
       // Spotlight cursor tracking — sets --mx/--my custom props
       document.querySelectorAll('.spotlight').forEach(card => {
