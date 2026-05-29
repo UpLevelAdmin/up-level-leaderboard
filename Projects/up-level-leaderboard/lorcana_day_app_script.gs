@@ -173,6 +173,25 @@ function doPost(e) {
 
 function doGet(e) {
   try {
+    // Diagnostic: /exec?testNotify=1 → invokes notifyTelegram_ with a mock row and returns the verdict
+    if (e && e.parameter && e.parameter.testNotify === '1') {
+      try {
+        notifyTelegram_({
+          name: 'DOPOST PATH TEST',
+          nickname: 'dopost-path',
+          phone: '0900000000',
+          lineId: '',
+          tier: 'newbie',
+          tierPrice: 100,
+          hasDeck: 'no',
+          sets: '',
+        });
+        return json_({ ok: true, where: 'doGet→notifyTelegram_', sent: true });
+      } catch (err) {
+        return json_({ ok: false, where: 'doGet→notifyTelegram_', error: String(err), stack: (err && err.stack) || null });
+      }
+    }
+
     const stats = getStats_();
     if (e && e.parameter && e.parameter.stats === '1') {
       return json_({ ok: true, ...stats });
