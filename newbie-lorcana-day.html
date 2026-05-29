@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>🤠 ป้ายยา Lorcana Day · 31 พ.ค. — Up Level Academy</title>
+  <title>ป้ายยา Lorcana Day · 31 พ.ค. — Up Level Academy</title>
   <meta name="description"
     content="Lorcana Day ที่ Up Level Academy · 31 พ.ค. 13:00–17:00 · 2 League · รับ 28 ที่ · ค่าเข้า 100/250 บาท">
   <meta property="og:title" content="ป้ายยา Lorcana Day · Up Level Academy" />
@@ -16,6 +16,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
 
   <style>
     :root {
@@ -38,6 +39,222 @@
     }
 
     * { box-sizing: border-box; }
+
+    /* Lucide icons */
+    [data-lucide] {
+      display: inline-block;
+      width: 1em;
+      height: 1em;
+      vertical-align: -0.15em;
+      stroke-width: 2.2;
+      flex-shrink: 0;
+    }
+    .ico-lg [data-lucide], .ico-lg { width: 1.4em; height: 1.4em; }
+    .ico-xl [data-lucide] { width: 1.8em; height: 1.8em; }
+    .ico-inline { margin-right: 0.35em; vertical-align: -0.15em; }
+    .spin { animation: spin 0.9s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ─── 21st.dev premium effects ─── */
+
+    /* Animated conic glow border (inspired by 21st.dev Magic Card) */
+    @property --glow-angle {
+      syntax: '<angle>';
+      initial-value: 0deg;
+      inherits: false;
+    }
+    .glow-border {
+      position: relative;
+      isolation: isolate;
+    }
+    .glow-border::before {
+      content: '';
+      position: absolute;
+      inset: -2px;
+      border-radius: inherit;
+      background: conic-gradient(from var(--glow-angle), transparent 0deg, var(--orange) 90deg, var(--yellow) 180deg, var(--sky) 270deg, transparent 360deg);
+      animation: glow-spin 6s linear infinite;
+      opacity: 0;
+      transition: opacity 0.4s;
+      z-index: -1;
+      filter: blur(8px);
+    }
+    .glow-border:hover::before { opacity: 0.85; }
+    @keyframes glow-spin {
+      to { --glow-angle: 360deg; }
+    }
+
+    /* Spotlight that follows the cursor */
+    .spotlight {
+      position: relative;
+      overflow: hidden;
+    }
+    .spotlight::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      border-radius: inherit;
+      background: radial-gradient(280px circle at var(--mx, 50%) var(--my, 50%), rgba(255, 199, 142, 0.35) 0%, transparent 60%);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .spotlight:hover::after { opacity: 1; }
+
+    /* Diagonal shimmer sweep on hover (CTA + buttons) */
+    .shimmer {
+      position: relative;
+      overflow: hidden;
+      isolation: isolate;
+    }
+    .shimmer::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 60%;
+      height: 100%;
+      background: linear-gradient(110deg, transparent 0%, rgba(255, 255, 255, 0.5) 50%, transparent 100%);
+      transform: skewX(-20deg);
+      transition: left 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+      pointer-events: none;
+    }
+    .shimmer:hover::before { left: 130%; }
+
+    /* Floating aura pulse for important callouts */
+    @keyframes aura-pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(255, 140, 66, 0.5), 0 8px 22px rgba(230, 107, 31, 0.4); }
+      50%      { box-shadow: 0 0 0 14px rgba(255, 140, 66, 0), 0 12px 28px rgba(230, 107, 31, 0.55); }
+    }
+    .aura-pulse { animation: aura-pulse 2.2s ease-out infinite; }
+
+    /* Tilt 3D card */
+    .tilt-card {
+      transform-style: preserve-3d;
+      will-change: transform;
+      transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Section card: subtle lift + edge glow on hover */
+    .lift-card {
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s;
+    }
+    .lift-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 18px 38px rgba(92, 58, 30, 0.22), 0 4px 8px rgba(92, 58, 30, 0.15);
+    }
+
+    /* Shader background — flowing gradient orbs (inspired by 21st.dev shader-background) */
+    .shader-bg {
+      position: fixed;
+      inset: -10%;
+      z-index: 0;
+      pointer-events: none;
+      filter: blur(60px);
+      opacity: 0.55;
+    }
+    .shader-bg::before, .shader-bg::after {
+      content: '';
+      position: absolute;
+      border-radius: 50%;
+    }
+    .shader-bg::before {
+      width: 55%;
+      height: 55%;
+      left: 5%;
+      top: 10%;
+      background: radial-gradient(circle, rgba(255, 140, 66, 0.45) 0%, transparent 60%);
+      animation: shader-a 16s ease-in-out infinite alternate;
+    }
+    .shader-bg::after {
+      width: 50%;
+      height: 50%;
+      right: 5%;
+      bottom: 10%;
+      background: radial-gradient(circle, rgba(110, 193, 228, 0.5) 0%, transparent 60%);
+      animation: shader-b 18s ease-in-out infinite alternate;
+    }
+    @keyframes shader-a {
+      0%   { transform: translate(0, 0) scale(1); }
+      50%  { transform: translate(80px, 40px) scale(1.15); }
+      100% { transform: translate(-40px, 60px) scale(0.9); }
+    }
+    @keyframes shader-b {
+      0%   { transform: translate(0, 0) scale(1); }
+      50%  { transform: translate(-60px, -30px) scale(1.1); }
+      100% { transform: translate(40px, 40px) scale(0.95); }
+    }
+
+    /* Hero orbs — floating gradient blobs around hero (inspired by 21st.dev animated-hero) */
+    .hero-orbs {
+      position: absolute;
+      inset: -20px;
+      pointer-events: none;
+      z-index: -1;
+    }
+    .hero-orbs span {
+      position: absolute;
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      filter: blur(50px);
+      opacity: 0.55;
+      animation: orb-float 9s ease-in-out infinite;
+    }
+    .hero-orbs span:nth-child(1) {
+      top: -40px; left: -60px;
+      background: var(--orange);
+      animation-delay: 0s;
+    }
+    .hero-orbs span:nth-child(2) {
+      top: 20%; right: -60px;
+      background: var(--yellow);
+      animation-delay: 2s;
+    }
+    .hero-orbs span:nth-child(3) {
+      bottom: -40px; left: 30%;
+      background: var(--sky);
+      animation-delay: 4s;
+    }
+    @keyframes orb-float {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      50%      { transform: translate(20px, -25px) scale(1.15); }
+    }
+
+    /* Container scroll 3D reveal (inspired by 21st.dev container-scroll-animation) */
+    .scroll-3d {
+      perspective: 1400px;
+      perspective-origin: center 80%;
+    }
+    .scroll-3d > * {
+      transform: rotateX(28deg) scale(0.92);
+      transform-origin: center bottom;
+      opacity: 0;
+      transition: transform 0.9s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.6s;
+      will-change: transform, opacity;
+    }
+    .scroll-3d.in-view > * {
+      transform: rotateX(0deg) scale(1);
+      opacity: 1;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .scroll-3d > * { transform: none; opacity: 1; transition: none; }
+      .hero-orbs span, .shader-bg::before, .shader-bg::after { animation: none; }
+    }
+
+    /* Scroll reveal — fade up for section cards */
+    .reveal {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .reveal.in-view {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .reveal { opacity: 1; transform: none; transition: none; }
+    }
 
     body {
       font-family: 'Mitr', sans-serif;
@@ -805,6 +1022,7 @@
       box-shadow: 0 8px 24px rgba(230, 107, 31, 0.4);
       animation: pop 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
     }
+    .success .check [data-lucide] { width: 42px; height: 42px; stroke-width: 3; }
     @keyframes pop {
       0%   { transform: scale(0); }
       60%  { transform: scale(1.15); }
@@ -847,11 +1065,14 @@
       line-height: 1.5;
     }
     .success .next-steps li::before {
-      content: '🤠';
+      content: '';
       position: absolute;
-      left: 0;
-      top: 4px;
-      font-size: 14px;
+      left: 6px;
+      top: 10px;
+      width: 8px;
+      height: 8px;
+      background: var(--orange);
+      border-radius: 50%;
     }
 
     /* QR PAYMENT BOX */
@@ -940,33 +1161,37 @@
 
 <body>
 
-  <a href="index.html" class="home-btn" aria-label="Home">🏠</a>
+  <div class="shader-bg" aria-hidden="true"></div>
+  <a href="index.html" class="home-btn" aria-label="Home"><i data-lucide="home"></i></a>
 
   <div class="container">
 
     <!-- HERO -->
-    <header>
+    <header style="position: relative;">
+      <div class="hero-orbs" aria-hidden="true"><span></span><span></span><span></span></div>
       <img src="./lorcana-posters/assets/logos/horizontal.png" alt="Up Level Academy" class="logo">
       <h1 class="event-title">ป้ายยา LORCANA DAY</h1>
       <div class="event-subtitle">ได้ลองเล่น · พบปะเพื่อนใหม่ · แข่งสนุก</div>
 
-      <div class="hero-poster">
-        <img src="./lorcana-posters/lorcana-day-2026-05-31/1.png" alt="Lorcana Day poster" />
+      <div class="scroll-3d">
+        <div class="hero-poster spotlight">
+          <img src="./lorcana-posters/lorcana-day-2026-05-31/1.png" alt="Lorcana Day poster" />
+        </div>
       </div>
 
-      <div class="release-date">📅 31 พ.ค. 2569 · 13:00 – 17:00</div>
+      <div class="release-date"><i data-lucide="calendar" class="ico-inline"></i>31 พ.ค. 2569 · 13:00 – 17:00</div>
 
       <p class="product-desc">
-        🤠 มาเล่น Lorcana ครั้งแรกที่ Up Level Academy<br>
-        🃏 <strong style="color:var(--orange-deep);">น้องใหม่มาตัวเปล่าได้ — มี deck ให้ยืม</strong>
+        มาเล่น Lorcana ครั้งแรกที่ Up Level Academy<br>
+        <strong style="color:var(--orange-deep);">น้องใหม่มาตัวเปล่าได้ — มี deck ให้ยืม</strong>
       </p>
 
-      <a href="#signup" class="cta-btn">🎯 จองที่นั่งเลย</a>
+      <a href="#signup" class="cta-btn shimmer aura-pulse"><i data-lucide="ticket" class="ico-inline"></i>จองที่นั่งเลย</a>
     </header>
 
     <!-- QUICK INFO -->
-    <div class="section-card">
-      <div class="section-title">📍 ข้อมูลงาน</div>
+    <div class="section-card reveal lift-card">
+      <div class="section-title"><i data-lucide="map-pin" class="ico-inline"></i>ข้อมูลงาน</div>
       <div class="info-grid">
         <div class="info-pill">
           <div class="l">วัน</div>
@@ -985,16 +1210,16 @@
           <div class="v">฿100 / ฿250</div>
         </div>
       </div>
-      <div class="seats-warn">⚡ รับจำกัด 28 ที่ — first come, first serve</div>
+      <div class="seats-warn"><i data-lucide="zap" class="ico-inline"></i>รับจำกัด 28 ที่ — first come, first serve</div>
     </div>
 
     <!-- TIER DETAIL -->
-    <div class="section-card">
-      <div class="section-title">🎟️ Tier ค่าเข้า</div>
+    <div class="section-card reveal lift-card">
+      <div class="section-title"><i data-lucide="ticket" class="ico-inline"></i>Tier ค่าเข้า</div>
       <div class="tier-detail-grid">
         <div class="tier-detail newbie">
           <div class="tier-detail-head">
-            <span class="tier-detail-name">🌱 น้องใหม่</span>
+            <span class="tier-detail-name"><i data-lucide="leaf" class="ico-inline"></i>น้องใหม่</span>
             <span class="tier-detail-price">฿100</span>
           </div>
           <ul>
@@ -1004,11 +1229,11 @@
             <li>ชิง Newbie Champion</li>
             <li>First Win รับ booster ทันที</li>
           </ul>
-          <div class="tier-detail-note">🃏 มาตัวเปล่าได้ — ทีมงานจัดให้ครบ</div>
+          <div class="tier-detail-note"><i data-lucide="hand-helping" class="ico-inline"></i>มาตัวเปล่าได้ — ทีมงานจัดให้ครบ</div>
         </div>
         <div class="tier-detail master">
           <div class="tier-detail-head">
-            <span class="tier-detail-name">⚔️ รุ่นพี่</span>
+            <span class="tier-detail-name"><i data-lucide="swords" class="ico-inline"></i>รุ่นพี่</span>
             <span class="tier-detail-price">฿250</span>
           </div>
           <ul>
@@ -1018,52 +1243,52 @@
             <li>First access new product</li>
             <li>Build friendly Community</li>
           </ul>
-          <div class="tier-detail-note">⭐ <strong>ฝากรุ่นพี่เตรียมมา:</strong> การ์ดน่ารักๆ 20 ใบ (Welcome Gift) + Loaner Deck 1 สำรับ</div>
+          <div class="tier-detail-note"><i data-lucide="star" class="ico-inline"></i><strong>ฝากรุ่นพี่เตรียมมา:</strong> การ์ดน่ารักๆ 20 ใบ (Welcome Gift) + Loaner Deck 1 สำรับ</div>
         </div>
       </div>
     </div>
 
     <!-- ACTIVITY -->
-    <div class="section-card">
-      <div class="section-title">🎯 ในงานมีอะไรบ้าง</div>
+    <div class="section-card reveal lift-card">
+      <div class="section-title"><i data-lucide="target" class="ico-inline"></i>ในงานมีอะไรบ้าง</div>
       <div class="highlight-item">
-        <span class="emoji">🎁</span>
+        <span class="emoji"><i data-lucide="gift"></i></span>
         <div class="text"><strong>Welcome Gift</strong> — สำหรับน้องใหม่เท่านั้น</div>
       </div>
       <div class="highlight-item">
-        <span class="emoji">👗</span>
+        <span class="emoji"><i data-lucide="shirt"></i></span>
         <div class="text"><strong>Outfit Vote</strong> — แต่ง Disney มาลุ้นรางวัล <strong>playmat + promo</strong></div>
       </div>
       <div class="highlight-item">
-        <span class="emoji">🃏</span>
+        <span class="emoji"><i data-lucide="package-open"></i></span>
         <div class="text"><strong>Pack Rush</strong> — เปิด 2 ซองก็เล่นได้เลย</div>
       </div>
       <div class="highlight-item">
-        <span class="emoji">🎰</span>
+        <span class="emoji"><i data-lucide="dice-5"></i></span>
         <div class="text"><strong>Lucky Draw 2 รอบ</strong> — แจกรางวัลให้จุกๆ</div>
       </div>
     </div>
 
     <!-- TIMELINE -->
-    <div class="section-card">
-      <div class="section-title">🕐 Timeline</div>
+    <div class="section-card reveal lift-card">
+      <div class="section-title"><i data-lucide="clock" class="ico-inline"></i>Timeline</div>
       <div class="timeline">
         <div class="tl-item"><span class="tl-time">12:30</span><span class="tl-text">เปิดลงทะเบียน</span></div>
         <div class="tl-item"><span class="tl-time">13:00</span><span class="tl-text">เปิดงาน</span></div>
         <div class="tl-item"><span class="tl-time">13:15</span><span class="tl-text">Lorcana 101</span></div>
         <div class="tl-item"><span class="tl-time">13:30</span><span class="tl-text">Swiss R1 – R2</span></div>
-        <div class="tl-item"><span class="tl-time">14:30</span><span class="tl-text">Break + 🎰 Lucky Draw #1</span></div>
+        <div class="tl-item"><span class="tl-time">14:30</span><span class="tl-text">Break + Lucky Draw #1</span></div>
         <div class="tl-item"><span class="tl-time">15:00</span><span class="tl-text">R3 – R4</span></div>
-        <div class="tl-item"><span class="tl-time">16:00</span><span class="tl-text">👗 Outfit Vote + 🎰 Lucky Draw #2</span></div>
-        <div class="tl-item"><span class="tl-time">16:30</span><span class="tl-text">🃏 Pack Rush (Optional)</span></div>
+        <div class="tl-item"><span class="tl-time">16:00</span><span class="tl-text">Outfit Vote + Lucky Draw #2</span></div>
+        <div class="tl-item"><span class="tl-time">16:30</span><span class="tl-text">Pack Rush (Optional)</span></div>
       </div>
     </div>
 
     <!-- REWARDS -->
-    <div class="section-card">
-      <div class="section-title">🏆 รางวัล</div>
+    <div class="section-card reveal lift-card">
+      <div class="section-title"><i data-lucide="trophy" class="ico-inline"></i>รางวัล</div>
       <div class="reward-block">
-        <div class="reward-head">⚔️ Master League</div>
+        <div class="reward-head"><i data-lucide="swords" class="ico-inline"></i>Master League</div>
         <ul>
           <li><strong>Champion</strong> — Booster ×4 + Promo + <strong>สิทธิ์ซื้อ Trove Set 12</strong> (ของแรร์)</li>
           <li><strong>2nd</strong> — Booster ×3 + Promo</li>
@@ -1072,20 +1297,20 @@
         </ul>
       </div>
       <div class="reward-block newbie">
-        <div class="reward-head">🌱 Newbie League</div>
+        <div class="reward-head"><i data-lucide="leaf" class="ico-inline"></i>Newbie League</div>
         <ul>
           <li><strong>Champion</strong> — <strong>สิทธิ์ซื้อ Trove Set 12</strong> (ของแรร์)</li>
           <li>มือใหม่ทุกคน ถ้าชนะรอบแรก — รับเลย Booster 1 ซอง</li>
         </ul>
       </div>
       <div class="reward-block extra">
-        <div class="reward-head">👗 Best Dressed</div>
+        <div class="reward-head"><i data-lucide="shirt" class="ico-inline"></i>Best Dressed</div>
         <ul>
           <li>Disney Cosplay ปังสุด — รับเลย <strong>Playmat + Booster</strong></li>
         </ul>
       </div>
       <div class="reward-block extra">
-        <div class="reward-head">🎰 Lucky Draw 2 รอบ</div>
+        <div class="reward-head"><i data-lucide="dice-5" class="ico-inline"></i>Lucky Draw 2 รอบ</div>
         <ul>
           <li>ผู้ที่อยู่ในงาน รอรับของรางวัลเน้นๆ</li>
         </ul>
@@ -1093,15 +1318,15 @@
     </div>
 
     <!-- RECENT SIGNUPS -->
-    <div class="section-card" id="recent-card">
-      <div class="section-title">🔥 ลงทะเบียนล่าสุด</div>
+    <div class="section-card reveal" id="recent-card">
+      <div class="section-title"><i data-lucide="flame" class="ico-inline"></i>ลงทะเบียนล่าสุด</div>
       <div class="recent-stats" id="recent-stats">กำลังโหลด…</div>
       <div class="recent-list" id="recent-list"></div>
     </div>
 
     <!-- FORM -->
     <div class="form-wrap" id="signup">
-      <h2>🎟️ ลงทะเบียนเข้าร่วม</h2>
+      <h2><i data-lucide="ticket" class="ico-inline"></i>ลงทะเบียนเข้าร่วม</h2>
       <div class="lead">กรอกสั้นๆ · 1 นาทีเสร็จ</div>
 
       <form id="signup-form" novalidate>
@@ -1133,18 +1358,18 @@
         <div class="field">
           <label class="field-label">เลือก Tier <span class="req">*</span></label>
           <div class="tier-group">
-            <label class="tier-card">
+            <label class="tier-card tilt-card spotlight glow-border">
               <input type="radio" name="tier" value="newbie" required>
               <div class="tier-head">
-                <span class="tier-name">🌱 น้องใหม่</span>
+                <span class="tier-name"><i data-lucide="leaf" class="ico-inline"></i>น้องใหม่</span>
                 <span class="tier-price">฿100</span>
               </div>
               <div class="tier-desc">Welcome Gift · Newbie 101 + Mentor · Loaner Deck · Newbie Champion · First Win booster</div>
             </label>
-            <label class="tier-card">
+            <label class="tier-card tilt-card spotlight glow-border">
               <input type="radio" name="tier" value="master">
               <div class="tier-head">
-                <span class="tier-name">⚔️ รุ่นพี่</span>
+                <span class="tier-name"><i data-lucide="swords" class="ico-inline"></i>รุ่นพี่</span>
                 <span class="tier-price">฿250</span>
               </div>
               <div class="tier-desc">Master League · Master Champion · Illumineer Mentor · First access · Community</div>
@@ -1155,8 +1380,8 @@
         <div class="field">
           <label class="field-label">มี deck เป็นของตัวเองมั้ย? <span class="req">*</span></label>
           <div class="field-group">
-            <label class="pill"><input type="radio" name="hasDeck" value="no" required><span>🙅 ไม่มี — ขอยืม deck ที่ร้าน</span></label>
-            <label class="pill"><input type="radio" name="hasDeck" value="yes"><span>🃏 มีอยู่แล้ว — เอามาเอง</span></label>
+            <label class="pill"><input type="radio" name="hasDeck" value="no" required><span><i data-lucide="hand-helping" class="ico-inline"></i>ไม่มี — ขอยืม deck ที่ร้าน</span></label>
+            <label class="pill"><input type="radio" name="hasDeck" value="yes"><span><i data-lucide="layers" class="ico-inline"></i>มีอยู่แล้ว — เอามาเอง</span></label>
           </div>
         </div>
 
@@ -1172,14 +1397,14 @@
           </div>
         </div>
 
-        <button type="submit" class="submit-btn" id="submit-btn">🤠 ยืนยันการสมัคร</button>
+        <button type="submit" class="submit-btn shimmer" id="submit-btn"><i data-lucide="check-circle" class="ico-inline"></i>ยืนยันการสมัคร</button>
         <div class="form-msg" id="form-msg"></div>
       </form>
     </div>
 
     <!-- SUCCESS -->
     <div class="form-wrap success" id="success-state" style="display:none;">
-      <div class="check">✓</div>
+      <div class="check"><i data-lucide="check"></i></div>
       <h2>ลงทะเบียนแล้ว!</h2>
       <p>ขั้นต่อไป — <strong>โอนค่าเข้า</strong> เพื่อยืนยันที่นั่ง</p>
 
@@ -1192,9 +1417,9 @@
 
       <!-- SLIP UPLOAD -->
       <div class="slip-box">
-        <div class="l">📎 แนบสลิปการโอนเงิน</div>
+        <div class="l"><i data-lucide="paperclip" class="ico-inline"></i>แนบสลิปการโอนเงิน</div>
         <label class="slip-upload" for="slip-file">
-          📷 เลือกรูปสลิป (จากแกลเลอรี / ถ่ายใหม่)
+          <i data-lucide="camera" class="ico-inline"></i>เลือกรูปสลิป (จากแกลเลอรี / ถ่ายใหม่)
           <input id="slip-file" type="file" accept="image/*" />
         </label>
         <div class="slip-preview" id="slip-preview">
@@ -1204,7 +1429,7 @@
       </div>
 
       <div class="next-steps">
-        <div class="l">📍 ขั้นตอน</div>
+        <div class="l"><i data-lucide="list-checks" class="ico-inline"></i>ขั้นตอน</div>
         <ul>
           <li>โอนเงินตามจำนวนด้านบน</li>
           <li>แนบสลิป — ระบบตรวจอัตโนมัติ</li>
@@ -1214,14 +1439,14 @@
         </ul>
       </div>
 
-      <button class="cta-btn" style="background: linear-gradient(135deg, var(--sky) 0%, var(--sky-deep) 100%); box-shadow: 0 8px 22px rgba(74,159,203,0.4);" onclick="location.reload()">🔄 สมัครเพิ่มอีกคน</button>
+      <button class="cta-btn" style="background: linear-gradient(135deg, var(--sky) 0%, var(--sky-deep) 100%); box-shadow: 0 8px 22px rgba(74,159,203,0.4);" onclick="location.reload()"><i data-lucide="rotate-cw" class="ico-inline"></i>สมัครเพิ่มอีกคน</button>
     </div>
 
     <!-- CONTACT -->
     <div class="contact-card">
-      <div class="l">📍 สถานที่จัดงาน</div>
+      <div class="l"><i data-lucide="map-pin" class="ico-inline"></i>สถานที่จัดงาน</div>
       <p>Up Level Academy (ติด MRT บางแค ทางออก 2)</p>
-      <div class="phone">📞 097-115-6555</div>
+      <div class="phone"><i data-lucide="phone" class="ico-inline"></i>097-115-6555</div>
     </div>
 
     <div class="footer">
@@ -1231,6 +1456,52 @@
   </div>
 
   <script>
+    /* ─── Premium effects: tilt + scroll reveal + spotlight tracking ─── */
+    document.addEventListener('DOMContentLoaded', () => {
+      if (window.lucide) lucide.createIcons();
+
+      const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      // IntersectionObserver — reveal on scroll
+      if ('IntersectionObserver' in window) {
+        const io = new IntersectionObserver((entries) => {
+          entries.forEach(e => {
+            if (e.isIntersecting) {
+              e.target.classList.add('in-view');
+              io.unobserve(e.target);
+            }
+          });
+        }, { threshold: 0.15, rootMargin: '0px 0px -60px 0px' });
+        document.querySelectorAll('.reveal, .scroll-3d').forEach(el => io.observe(el));
+      } else {
+        document.querySelectorAll('.reveal, .scroll-3d').forEach(el => el.classList.add('in-view'));
+      }
+
+      // Spotlight cursor tracking — sets --mx/--my custom props
+      document.querySelectorAll('.spotlight').forEach(card => {
+        card.addEventListener('pointermove', (e) => {
+          const r = card.getBoundingClientRect();
+          card.style.setProperty('--mx', `${e.clientX - r.left}px`);
+          card.style.setProperty('--my', `${e.clientY - r.top}px`);
+        });
+      });
+
+      // 3D tilt on tier cards
+      if (!prefersReduced) {
+        document.querySelectorAll('.tilt-card').forEach(card => {
+          card.addEventListener('pointermove', (e) => {
+            const r = card.getBoundingClientRect();
+            const x = (e.clientX - r.left) / r.width - 0.5;
+            const y = (e.clientY - r.top)  / r.height - 0.5;
+            card.style.transform = `perspective(800px) rotateY(${x * 8}deg) rotateX(${-y * 8}deg) translateY(-2px)`;
+          });
+          card.addEventListener('pointerleave', () => {
+            card.style.transform = '';
+          });
+        });
+      }
+    });
+
     const APP_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzOoozK6-NL2-SluugEQZtF-LFBgFeO4NgDc9bV7EvyD8EJ8ElAJiZJqPglH4SLUrdJ/exec";
 
     const form     = document.getElementById('signup-form');
@@ -1265,13 +1536,13 @@
         const seatsEl = document.querySelector('.seats-warn');
         if (seatsEl && typeof data.capRemaining === 'number') {
           if (data.capRemaining <= 0) {
-            seatsEl.innerHTML = '🛑 เต็มแล้ว — ที่นั่งครบ 28 คน';
+            seatsEl.innerHTML = '<i data-lucide="ban" class="ico-inline"></i>เต็มแล้ว — ที่นั่งครบ 28 คน';
             seatsEl.style.background = 'linear-gradient(135deg, #FFCDD2 0%, #EF5350 100%)';
             seatsEl.style.color = '#fff';
             btn.disabled = true;
-            btn.textContent = '🛑 เต็มแล้ว';
+            btn.innerHTML = '<i data-lucide="ban" class="ico-inline"></i>เต็มแล้ว';
           } else {
-            seatsEl.innerHTML = `⚡ เหลือ <strong>${data.capRemaining}</strong> จาก 28 ที่นั่ง — first come, first serve`;
+            seatsEl.innerHTML = `<i data-lucide="zap" class="ico-inline"></i>เหลือ <strong>${data.capRemaining}</strong> จาก 28 ที่นั่ง — first come, first serve`;
           }
         }
 
@@ -1282,7 +1553,7 @@
           const total  = data.total || 0;
           const newbie = (data.byTier && data.byTier.newbie) || 0;
           const master = (data.byTier && data.byTier.master) || 0;
-          stats.innerHTML = `สมัครแล้ว <span class="num">${total}</span> คน · 🌱 <span class="num">${newbie}</span> น้องใหม่ · ⚔️ <span class="num">${master}</span> รุ่นพี่`;
+          stats.innerHTML = `สมัครแล้ว <span class="num">${total}</span> คน · <i data-lucide="leaf" class="ico-inline"></i><span class="num">${newbie}</span> น้องใหม่ · <i data-lucide="swords" class="ico-inline"></i><span class="num">${master}</span> รุ่นพี่`;
 
           const recent = Array.isArray(data.recent) ? data.recent : [];
           if (!recent.length) {
@@ -1290,12 +1561,14 @@
           } else {
             list.innerHTML = recent.slice(0, 30).map(r => {
               const tier = r.tier === 'master' ? 'master' : 'newbie';
-              const tierLabel = tier === 'master' ? '⚔️ รุ่นพี่' : '🌱 น้องใหม่';
+              const tierIcon = tier === 'master' ? 'swords' : 'leaf';
+              const tierLabel = tier === 'master' ? 'รุ่นพี่' : 'น้องใหม่';
               const paidCls = r.paymentStatus === 'paid' ? ' paid' : '';
-              return `<span class="recent-chip ${tier}${paidCls}"><span class="badge">${tierLabel}</span>${escHtml(r.nickname || r.name || '?')}</span>`;
+              return `<span class="recent-chip ${tier}${paidCls}"><span class="badge"><i data-lucide="${tierIcon}"></i>${tierLabel}</span>${escHtml(r.nickname || r.name || '?')}</span>`;
             }).join('');
           }
         }
+        if (window.lucide) lucide.createIcons();
       } catch (_) { /* silent */ }
     }
     refreshSeatsAndList();
@@ -1329,7 +1602,8 @@
       }
 
       btn.disabled = true;
-      btn.textContent = '⏳ กำลังบันทึก…';
+      btn.innerHTML = '<i data-lucide="loader-2" class="ico-inline spin"></i>กำลังบันทึก…';
+      if (window.lucide) lucide.createIcons();
 
       const payload = {
         name,
@@ -1367,10 +1641,11 @@
         refreshSeatsAndList();
       } catch (err) {
         console.error('Signup error:', err);
-        msg.textContent = '❗ ' + (err.message || 'บันทึกไม่สำเร็จ — ลองอีกครั้ง หรือทักไลน์ @uplevelacademy');
+        msg.innerHTML = '<i data-lucide="alert-triangle" class="ico-inline"></i>' + (err.message || 'บันทึกไม่สำเร็จ — ลองอีกครั้ง หรือทักไลน์ @uplevelacademy');
         msg.classList.add('err');
         btn.disabled = false;
-        btn.textContent = '🤠 ยืนยันการสมัคร';
+        btn.innerHTML = '<i data-lucide="check-circle" class="ico-inline"></i>ยืนยันการสมัคร';
+        if (window.lucide) lucide.createIcons();
       }
     });
 
@@ -1398,21 +1673,24 @@
       const file = ev.target.files && ev.target.files[0];
       if (!file) return;
       if (!lastSignupPhone) {
-        slipStatus.textContent = '❗ ยังไม่ได้ลงทะเบียน';
+        slipStatus.innerHTML = '<i data-lucide="alert-triangle" class="ico-inline"></i>ยังไม่ได้ลงทะเบียน';
         slipStatus.className = 'slip-status err';
+        if (window.lucide) lucide.createIcons();
         return;
       }
       if (file.size > 5 * 1024 * 1024) {
-        slipStatus.textContent = '❗ ไฟล์เกิน 5MB';
+        slipStatus.innerHTML = '<i data-lucide="alert-triangle" class="ico-inline"></i>ไฟล์เกิน 5MB';
         slipStatus.className = 'slip-status err';
+        if (window.lucide) lucide.createIcons();
         return;
       }
 
       // Preview immediately
       slipPrevImg.src = URL.createObjectURL(file);
       slipPreview.classList.add('show');
-      slipStatus.textContent = '⏳ กำลังอัปโหลด…';
+      slipStatus.innerHTML = '<i data-lucide="loader-2" class="ico-inline spin"></i>กำลังอัปโหลด…';
       slipStatus.className = 'slip-status';
+      if (window.lucide) lucide.createIcons();
       slipUploadLabel.style.opacity = '0.6';
       slipUploadLabel.style.pointerEvents = 'none';
 
@@ -1434,19 +1712,20 @@
         if (!data.ok) throw new Error(data.error || 'upload failed');
 
         if (data.verified) {
-          slipStatus.innerHTML = '✅ ตรวจสลิปผ่าน — ที่นั่งของคุณ confirm แล้ว!';
-          slipStatus.className = 'slip-status ok';
+          slipStatus.innerHTML = '<i data-lucide="check-circle-2" class="ico-inline"></i>ตรวจสลิปผ่าน — ที่นั่งของคุณ confirm แล้ว!';
         } else {
-          slipStatus.innerHTML = '✓ อัปโหลดสลิปแล้ว — รอทีมงานตรวจ (≤ 1 ชม.)';
-          slipStatus.className = 'slip-status ok';
+          slipStatus.innerHTML = '<i data-lucide="check" class="ico-inline"></i>อัปโหลดสลิปแล้ว — รอทีมงานตรวจ (≤ 1 ชม.)';
         }
+        slipStatus.className = 'slip-status ok';
+        if (window.lucide) lucide.createIcons();
         refreshSeatsAndList();
       } catch (err) {
         console.error('Slip upload error:', err);
-        slipStatus.textContent = '❗ ' + (err.message || 'อัปโหลดไม่สำเร็จ — ลองอีกครั้ง');
+        slipStatus.innerHTML = '<i data-lucide="alert-triangle" class="ico-inline"></i>' + (err.message || 'อัปโหลดไม่สำเร็จ — ลองอีกครั้ง');
         slipStatus.className = 'slip-status err';
         slipUploadLabel.style.opacity = '';
         slipUploadLabel.style.pointerEvents = '';
+        if (window.lucide) lucide.createIcons();
       }
     });
   </script>
