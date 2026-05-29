@@ -22,9 +22,9 @@ const CAP_MASTER      = 0;
 const EVENT_DATE      = '2026-05-31';
 const RECENT_LIMIT    = 50;
 
-// Telegram (reuse Lorcana preorder bot)
-const TG_BOT_TOKEN    = '7268878598:AAH7Rj_Gnzg7I2T2zU0Q2nKkGjP8oKsz-b4';
-const TG_CHAT_ID      = '-4559569661';
+// Telegram (UpLevel_Notify_bot → Up Level Notifier group — same as preorder-jersey)
+const TG_BOT_TOKEN    = '8124787979:AAEWOqfiEACRxkrtZSWdTNuvGQr7uff_UoI';
+const TG_CHAT_ID      = '-4911555842';
 
 // SlipOK (auto slip verification — reuse preorder credentials)
 const SLIPOK_API_KEY  = 'SLIPOKE2TSLQJ';
