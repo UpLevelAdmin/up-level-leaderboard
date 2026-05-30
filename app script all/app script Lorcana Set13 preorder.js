@@ -812,6 +812,79 @@ function adminCommitAllocation(body) {
   } finally { try { lock.releaseLock(); } catch (e) {} }
 }
 
+// Admin: per-row status action. body { rowIndex, action, note?, token }
+// Supported actions:
+//   - mark_refunded:         status → "💰 คืนเงินแล้ว" (removes row from active counts)
+//   - mark_cancelled:        status → "🚫 ยกเลิก"
+//   - approve_mismatch:      status → "✅ มัดจำแล้ว (อนุมัติ admin)"   (treat ยอดไม่ตรง as accepted)
+//   - mark_phase2_refunded:  phase2Status → "💰 คืน Phase 2 แล้ว"
+//   - reopen:                clear cancel/refund → "⏳ รอตรวจสอบสลิป"
+function adminRowAction(body) {
+  const lock = LockService.getScriptLock();
+  try { lock.waitLock(10000); } catch (e) { return { success: false, error: "busy_try_again" }; }
+  try {
+    const rowIndex = parseInt(body && body.rowIndex);
+    const action   = String((body && body.action) || "");
+    const note     = String((body && body.note) || "").trim();
+    if (!rowIndex || rowIndex < 2) return { success: false, error: "invalid_row" };
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+    if (!sheet) return { success: false, error: "sheet_not_found" };
+    if (rowIndex > sheet.getLastRow()) return { success: false, error: "row_out_of_range" };
+    const row = sheet.getRange(rowIndex, 1, 1, sheet.getLastColumn()).getValues()[0];
+    const oldStatus       = String(row[COL_STATUS - 1] || "");
+    const oldPhase2Status = String(row[COL_PHASE2_STATUS - 1] || "");
+    const customerName    = String(row[COL_NAME - 1] || "");
+    const phone           = String(row[COL_PHONE - 1] || "");
+
+    let newStatus = oldStatus;
+    let newPhase2Status = oldPhase2Status;
+    let tgIcon = "✏️";
+    let tgLabel = action;
+
+    if (action === "mark_refunded") {
+      newStatus = "💰 คืนเงินแล้ว" + (note ? " · " + note : "");
+      tgIcon = "💰"; tgLabel = "คืนเงิน (มัดจำ R1)";
+    } else if (action === "mark_cancelled") {
+      newStatus = "🚫 ยกเลิก" + (note ? " · " + note : "");
+      tgIcon = "🚫"; tgLabel = "ยกเลิกออเดอร์";
+    } else if (action === "approve_mismatch") {
+      if (oldStatus.indexOf("ยอดไม่ตรง") < 0) {
+        return { success: false, error: "not_a_mismatch_row", status: oldStatus };
+      }
+      newStatus = "✅ มัดจำแล้ว (อนุมัติ admin)" + (note ? " · " + note : "");
+      tgIcon = "✅"; tgLabel = "อนุมัติยอดไม่ตรง";
+    } else if (action === "mark_phase2_refunded") {
+      newPhase2Status = "💰 คืน Phase 2 แล้ว" + (note ? " · " + note : "");
+      tgIcon = "💰"; tgLabel = "คืน Phase 2";
+    } else if (action === "reopen") {
+      newStatus = "⏳ รอตรวจสอบสลิป" + (note ? " · " + note : "");
+      tgIcon = "↩️"; tgLabel = "เปิดออเดอร์ใหม่";
+    } else {
+      return { success: false, error: "unknown_action:" + action };
+    }
+
+    if (newStatus !== oldStatus) {
+      sheet.getRange(rowIndex, COL_STATUS).setValue(newStatus);
+    }
+    if (newPhase2Status !== oldPhase2Status) {
+      sheet.getRange(rowIndex, COL_PHASE2_STATUS).setValue(newPhase2Status);
+    }
+    SpreadsheetApp.flush();
+
+    sendTelegram(
+      tgIcon + " *Lorcana 13 — " + tgLabel + "*\n" +
+      "👤 " + customerName + " (" + phone + ")\n" +
+      "📋 row " + rowIndex + "\n" +
+      "ก่อน: " + (oldStatus || "-") + "\n" +
+      "หลัง: " + (newStatus || oldStatus) +
+      (newPhase2Status !== oldPhase2Status ? "\nPhase 2: " + newPhase2Status : "") +
+      (note ? "\nหมายเหตุ: " + note : "")
+    );
+
+    return { success: true, rowIndex: rowIndex, status: newStatus, phase2Status: newPhase2Status };
+  } finally { try { lock.releaseLock(); } catch (e) {} }
+}
+
 // Customer-facing: submit phase 2 slip. body { phone, slipBase64 }
 // Writes to first active row for that phone; charges against summed phase2_due.
 function submitPhase2Payment(body) {
@@ -1103,18 +1176,25 @@ function getOrderStatus(phone) {
       if (raw) allocated = JSON.parse(raw);
     } catch (e) { allocated = null; }
     orders.push({
+      rowIndex:   i + 1,  // 1-based sheet row (admin only — for row-action endpoint)
       timestamp:  ts instanceof Date ? ts.toISOString() : String(ts),
       name:       String(row[COL_NAME - 1] || ""),
       shipping:   String(row[COL_SHIPPING - 1] || ""),
+      address:    String(row[COL_ADDRESS - 1] || ""),
       items:      items,
       total:      parseFloat(row[COL_TOTAL - 1]) || 0,
       deposit:    parseFloat(row[COL_DEPOSIT - 1]) || 0,
       remaining:  parseFloat(row[COL_REMAINING - 1]) || 0,
       status:     status,
       nextAction: deriveNextAction(status),
+      slipUrl:      String(row[COL_SLIP - 1] || ""),
+      transRef:     String(row[COL_TRANSREF - 1] || ""),
+      senderName:   String(row[COL_SENDER - 1] || ""),
+      orderRound:   String(row[COL_ORDER_ROUND - 1] || "R1") || "R1",
       allocated:    allocated,
       finalAmount:  parseFloat(row[COL_FINAL_AMOUNT - 1]) || 0,
       phase2Due:    parseFloat(row[COL_PHASE2_DUE - 1])   || 0,
+      phase2Slip:   String(row[COL_PHASE2_SLIP - 1] || ""),
       phase2Status: String(row[COL_PHASE2_STATUS - 1] || "")
     });
   }
@@ -1275,6 +1355,15 @@ function doPost(e) {
       if (!checkAdminAuth(e)) return jsonResponse({ success: false, error: "unauthorized" });
       const body = JSON.parse(e.postData.contents);
       return jsonResponse(adminCommitAllocation(body));
+    } catch (err) {
+      return jsonResponse({ success: false, error: String(err) });
+    }
+  }
+  if (action === "admin_row_action") {
+    try {
+      if (!checkAdminAuth(e)) return jsonResponse({ success: false, error: "unauthorized" });
+      const body = JSON.parse(e.postData.contents);
+      return jsonResponse(adminRowAction(body));
     } catch (err) {
       return jsonResponse({ success: false, error: String(err) });
     }
