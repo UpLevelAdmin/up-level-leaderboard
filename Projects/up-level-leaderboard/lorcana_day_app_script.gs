@@ -125,9 +125,14 @@ function doPost(e) {
   try {
     const body = parseBody_(e);
 
-    // Action: slip upload
+    // Action: slip upload (re-upload after signup already committed)
     if (body.action === 'upload-slip') {
       return handleSlipUpload_(body);
+    }
+
+    // Action: combined signup + slip (new flow — user pays before sheet entry)
+    if (body.action === 'signup-with-slip') {
+      return handleSignupWithSlip_(body);
     }
 
     const row = buildRow_(body);
@@ -405,6 +410,30 @@ function testTelegram() {
 }
 
 /* ─────────── SLIP UPLOAD ─────────── */
+
+/**
+ * Combined signup + slip upload — used by the new "pay first, enter sheet after slip" flow.
+ * Skips cap check (Champ: overflow OK once user has already paid). Keeps dup check.
+ */
+function handleSignupWithSlip_(body) {
+  if (!body.data) return json_({ ok: false, error: 'file data missing' }, 400);
+
+  const row = buildRow_(body);
+  const err = validateRow_(row);
+  if (err) return json_({ ok: false, error: err }, 400);
+
+  // If phone already exists (e.g. user retrying after a previous slip-upload failure),
+  // skip the duplicate signup and just attach the slip to the existing row.
+  if (isDuplicate_(row.phone)) {
+    return handleSlipUpload_(body);
+  }
+
+  appendRow_(row);
+
+  try { notifyTelegram_(row); } catch (_) {}
+
+  return handleSlipUpload_(body);
+}
 
 function handleSlipUpload_(body) {
   const phone = String(body.phone || '').replace(/[^\d]/g, '');

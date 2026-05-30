@@ -1489,7 +1489,8 @@
 
     function normalizePhone(raw) { return String(raw || '').replace(/[^\d]/g, ''); }
 
-    let lastSignupPhone = null; // remember to attach slip later
+    let pendingPayload = null;   // form data captured at submit (not yet sent to sheet)
+    let signupCommitted = false; // true once signup row was appended (after first slip upload)
 
     function escHtml(s) {
       return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
@@ -1544,7 +1545,7 @@
     refreshSeatsAndList();
     setInterval(refreshSeatsAndList, 30000); // refresh every 30s
 
-    form.addEventListener('submit', async (e) => {
+    form.addEventListener('submit', (e) => {
       e.preventDefault();
       msg.textContent = '';
       msg.className = 'form-msg';
@@ -1571,11 +1572,8 @@
         return;
       }
 
-      btn.disabled = true;
-      btn.innerHTML = '<i data-lucide="loader-2" class="ico-inline spin"></i>กำลังบันทึก…';
-      if (window.lucide) lucide.createIcons();
-
-      const payload = {
+      // Capture form data — do NOT send to sheet yet. Send together with slip later.
+      pendingPayload = {
         name,
         nickname,
         phone,
@@ -1585,38 +1583,18 @@
         sets: hasDeck === 'yes' ? sets : [],
         source: 'web',
       };
+      signupCommitted = false;
 
-      try {
-        const r = await fetch(APP_SCRIPT_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify(payload),
-          redirect: 'follow',
-        });
-        const data = await r.json();
-        if (!data.ok) throw new Error(data.error || 'unknown error');
+      // Set QR amount based on tier
+      const amount = tier === 'master' ? 250 : 100;
+      const amountEl = document.getElementById('qr-amount-num');
+      if (amountEl) amountEl.textContent = amount;
 
-        // Set QR amount based on tier
-        const amount = data.tierPrice || (tier === 'master' ? 250 : 100);
-        const amountEl = document.getElementById('qr-amount-num');
-        if (amountEl) amountEl.textContent = amount;
-
-        lastSignupPhone = phone;
-        formWrap.style.display = 'none';
-        success.style.display = 'block';
-        // Scroll to success state (shows QR + slip upload), not page top
-        success.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-        // Refresh recent list
-        refreshSeatsAndList();
-      } catch (err) {
-        console.error('Signup error:', err);
-        msg.innerHTML = '<i data-lucide="alert-triangle" class="ico-inline"></i>' + (err.message || 'บันทึกไม่สำเร็จ — ลองอีกครั้ง หรือทักไลน์ @uplevelacademy');
-        msg.classList.add('err');
-        btn.disabled = false;
-        btn.innerHTML = '<i data-lucide="check-circle" class="ico-inline"></i>ยืนยันการสมัคร';
-        if (window.lucide) lucide.createIcons();
-      }
+      formWrap.style.display = 'none';
+      success.style.display = 'block';
+      // Scroll to success state (shows QR + slip upload), not page top
+      success.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (window.lucide) lucide.createIcons();
     });
 
     /* ────── SLIP UPLOAD ────── */
@@ -1642,8 +1620,8 @@
     slipFile.addEventListener('change', async (ev) => {
       const file = ev.target.files && ev.target.files[0];
       if (!file) return;
-      if (!lastSignupPhone) {
-        slipStatus.innerHTML = '<i data-lucide="alert-triangle" class="ico-inline"></i>ยังไม่ได้ลงทะเบียน';
+      if (!pendingPayload && !signupCommitted) {
+        slipStatus.innerHTML = '<i data-lucide="alert-triangle" class="ico-inline"></i>ยังไม่ได้กรอกฟอร์ม';
         slipStatus.className = 'slip-status err';
         if (window.lucide) lucide.createIcons();
         return;
@@ -1666,20 +1644,35 @@
 
       try {
         const base64 = await readFileAsBase64(file);
+
+        // First slip: commit signup + slip in one call.
+        // Re-upload (already committed): use upload-slip action and match by phone.
+        const body = signupCommitted
+          ? {
+              action: 'upload-slip',
+              phone: pendingPayload.phone,
+              filename: file.name,
+              mimeType: file.type || 'image/jpeg',
+              data: base64,
+            }
+          : {
+              action: 'signup-with-slip',
+              ...pendingPayload,
+              filename: file.name,
+              mimeType: file.type || 'image/jpeg',
+              data: base64,
+            };
+
         const r = await fetch(APP_SCRIPT_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({
-            action: 'upload-slip',
-            phone: lastSignupPhone,
-            filename: file.name,
-            mimeType: file.type || 'image/jpeg',
-            data: base64,
-          }),
+          body: JSON.stringify(body),
           redirect: 'follow',
         });
         const data = await r.json();
         if (!data.ok) throw new Error(data.error || 'upload failed');
+
+        signupCommitted = true;
 
         if (data.verified || data.status === 'paid') {
           slipStatus.innerHTML = '<i data-lucide="check-circle-2" class="ico-inline"></i>ตรวจสลิปผ่าน — ที่นั่งของคุณ confirm แล้ว!';
