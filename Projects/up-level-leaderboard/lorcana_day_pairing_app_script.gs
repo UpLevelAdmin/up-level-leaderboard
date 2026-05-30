@@ -173,17 +173,11 @@ function generatePlayerIDs(league) {
     const name = data[i][1], trId = data[i][2], tel = data[i][3];
     const rowErrs = [];
     if (!name || name.toString().trim() === '') rowErrs.push('ไม่มีชื่อ');
-    if (!trId || trId.toString().trim() === '') {
-      rowErrs.push('ไม่มี TR_ID');
-    } else {
-      const t = trId.toString().trim();
-      if (!/^[Tt][Hh]\d{6,8}$/.test(t)) {
-        rowErrs.push('TR_ID ผิดรูปแบบ (th+6-8 หลัก)');
-      } else if (trIdSet.has(t.toLowerCase())) {
-        rowErrs.push('TR_ID ซ้ำ');
-      } else {
-        trIdSet.add(t.toLowerCase());
-      }
+    // TR_ID optional (Lorcana ไม่มี) — แต่ถ้ามี ห้ามซ้ำ
+    if (trId && trId.toString().trim() !== '') {
+      const t = trId.toString().trim().toLowerCase();
+      if (trIdSet.has(t)) rowErrs.push('TR_ID ซ้ำ');
+      else trIdSet.add(t);
     }
     if (!tel || tel.toString().trim() === '') {
       rowErrs.push('ไม่มีเบอร์โทร');
@@ -206,7 +200,7 @@ function generatePlayerIDs(league) {
 
   const resp = SpreadsheetApp.getUi().alert(
     league + ' League: สร้าง Player ID',
-    'พบ ' + valid + ' คน → สร้าง P001, P002, ... และจัดรูปแบบชื่อ TR_ID_Name\nต่อหรือไม่?',
+    'พบ ' + valid + ' คน → สร้าง P001, P002, ...\n(TR_ID optional — ถ้ามีจะ prepend, ไม่มีก็ใช้ชื่อล้วน)\nต่อหรือไม่?',
     SpreadsheetApp.getUi().ButtonSet.YES_NO
   );
   if (resp !== SpreadsheetApp.getUi().Button.YES) return;
@@ -214,12 +208,13 @@ function generatePlayerIDs(league) {
   let counter = 1;
   for (let i = 0; i < data.length; i++) {
     const name = data[i][1], trId = data[i][2], tel = data[i][3];
-    if (!name || !trId || !tel) continue;
+    if (!name || !tel) continue;
 
     const playerId = 'P' + String(counter).padStart(3, '0');
-    const trIdLower = trId.toString().trim().toLowerCase();
     const cleanName = formatPlayerName(name.toString().trim());
-    const finalName = trIdLower + '_' + cleanName;
+    const hasTrId = trId && trId.toString().trim() !== '';
+    const trIdLower = hasTrId ? trId.toString().trim().toLowerCase() : '';
+    const finalName = hasTrId ? (trIdLower + '_' + cleanName) : cleanName;
 
     sh.getRange(i + 2, 1).setValue(playerId);
     sh.getRange(i + 2, 2).setValue(finalName);
