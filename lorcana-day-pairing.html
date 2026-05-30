@@ -12,28 +12,34 @@
   <link rel="icon" href="./lorcana-posters/assets/logos/badge-circle.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&family=Cinzel:wght@500;700;900&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
   <style>
     :root {
-      --sky:        #6EC1E4;
-      --sky-2:      #A9DCF2;
-      --sky-deep:   #4A9FCB;
-      --orange:     #FF8C42;
-      --orange-2:   #FFC78E;
-      --orange-deep:#E66B1F;
-      --brown:      #8B5A2B;
-      --brown-deep: #5C3A1E;
-      --cream:      #FFF8E7;
-      --cream-card: #FFFDF5;
-      --yellow:     #FCC861;
-      --ink:        #2A1810;
-      --ok:         #4CAF50;
-      --warn:       #F59E0B;
+      /* Lorcana-inspired dark tournament palette */
+      --bg-deep:     #0F0823;   /* midnight purple */
+      --bg-mid:      #1A0F36;   /* deep amethyst */
+      --bg-card:     #241552;   /* royal violet */
+      --bg-card-2:   #2E1A6B;   /* lifted */
+      --gold:        #F2C75E;   /* amber accent */
+      --gold-deep:   #C9962F;
+      --gold-glow:   rgba(242,199,94,0.4);
+      --sapphire:    #5B9CFF;
+      --sapphire-deep: #2E6FD9;
+      --ruby:        #FF5C77;
+      --ruby-deep:   #D62E50;
+      --emerald:     #4ADE80;
+      --ink-light:   #E8DFFF;
+      --ink-soft:    #B9A8E0;
+      --border:      rgba(242,199,94,0.18);
+      --border-soft: rgba(255,255,255,0.08);
+      --ok:          #4ADE80;
+      --warn:        #F2C75E;
     }
 
-    * { box-sizing: border-box; }
+    * { box-sizing: border-box; -webkit-font-smoothing: antialiased; }
 
     [data-lucide] {
       display: inline-block;
@@ -47,22 +53,45 @@
 
     body {
       font-family: 'Mitr', sans-serif;
-      background: var(--sky);
+      background: var(--bg-deep);
       background-image:
-        radial-gradient(ellipse at 15% 10%, rgba(255,255,255,0.6) 0%, transparent 35%),
-        radial-gradient(ellipse at 85% 25%, rgba(255,255,255,0.45) 0%, transparent 30%),
-        linear-gradient(180deg, var(--sky-2) 0%, var(--sky) 60%, #C8E6F2 100%);
+        radial-gradient(ellipse at 20% 10%, rgba(91, 156, 255, 0.18) 0%, transparent 45%),
+        radial-gradient(ellipse at 80% 20%, rgba(242, 199, 94, 0.15) 0%, transparent 40%),
+        radial-gradient(ellipse at 50% 90%, rgba(255, 92, 119, 0.12) 0%, transparent 50%),
+        linear-gradient(180deg, var(--bg-deep) 0%, var(--bg-mid) 100%);
       background-attachment: fixed;
       margin: 0;
       padding: 1rem;
       min-height: 100vh;
-      color: var(--ink);
+      color: var(--ink-light);
+    }
+
+    /* Sparkle particles */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        radial-gradient(1.5px 1.5px at 15% 22%, rgba(242,199,94,0.6) 0%, transparent 100%),
+        radial-gradient(1px 1px at 65% 15%, rgba(91,156,255,0.6) 0%, transparent 100%),
+        radial-gradient(2px 2px at 85% 40%, rgba(242,199,94,0.5) 0%, transparent 100%),
+        radial-gradient(1px 1px at 30% 70%, rgba(255,255,255,0.5) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 75% 80%, rgba(91,156,255,0.5) 0%, transparent 100%);
+      animation: twinkle 6s ease-in-out infinite alternate;
+      pointer-events: none;
+      z-index: 1;
+    }
+    @keyframes twinkle {
+      0%   { opacity: 0.4; }
+      100% { opacity: 1; }
     }
 
     .container {
       max-width: 1100px;
       margin: 0 auto;
       padding: 0 0.5rem;
+      position: relative;
+      z-index: 10;
     }
 
     /* HEADER */
@@ -71,48 +100,58 @@
       padding: 1.4rem 1rem 0.8rem;
     }
     .title {
-      font-size: 2rem;
-      font-weight: 700;
-      background: linear-gradient(135deg, var(--orange-deep), var(--orange) 50%, var(--sky-deep));
+      font-family: 'Cinzel', serif;
+      font-size: 2.4rem;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      background: linear-gradient(135deg, var(--gold) 0%, #FFE9A8 40%, var(--gold-deep) 80%);
       -webkit-background-clip: text;
       background-clip: text;
       -webkit-text-fill-color: transparent;
       margin: 0;
+      text-shadow: 0 0 30px var(--gold-glow);
+      filter: drop-shadow(0 2px 8px rgba(242, 199, 94, 0.4));
     }
     .subtitle {
-      color: var(--brown-deep);
+      color: var(--ink-soft);
       font-size: 0.95rem;
-      margin: 0.3rem 0 0.8rem;
+      margin: 0.4rem 0 0.8rem;
       font-weight: 500;
+      letter-spacing: 0.04em;
     }
     .home-link {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      color: var(--brown);
+      color: var(--ink-soft);
       text-decoration: none;
       font-size: 0.85rem;
       padding: 6px 14px;
       border-radius: 999px;
-      background: rgba(255,255,255,0.55);
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border-soft);
       transition: all 0.2s;
     }
-    .home-link:hover { background: var(--cream); }
+    .home-link:hover {
+      background: rgba(242,199,94,0.12);
+      color: var(--gold);
+      border-color: var(--gold);
+    }
 
     /* LEAGUE TABS */
     .league-tabs {
       display: flex;
       justify-content: center;
-      gap: 8px;
-      margin: 1rem 0 0.6rem;
+      gap: 10px;
+      margin: 1.2rem 0 0.6rem;
       flex-wrap: wrap;
     }
     .tab-btn {
-      padding: 10px 24px;
+      padding: 11px 26px;
       border-radius: 999px;
-      border: 2px solid transparent;
-      background: rgba(255,255,255,0.7);
-      color: var(--brown-deep);
+      border: 2px solid var(--border-soft);
+      background: rgba(255,255,255,0.04);
+      color: var(--ink-soft);
       font-weight: 600;
       font-family: inherit;
       font-size: 0.95rem;
@@ -121,22 +160,24 @@
       align-items: center;
       gap: 8px;
       transition: all 0.25s cubic-bezier(.4,0,.2,1);
+      backdrop-filter: blur(8px);
     }
     .tab-btn:hover {
       transform: translateY(-2px);
-      box-shadow: 0 6px 14px rgba(92,58,30,0.18);
+      border-color: var(--gold);
+      color: var(--gold);
     }
     .tab-btn.active.newbie {
-      background: linear-gradient(135deg, var(--sky-deep), var(--sky));
+      background: linear-gradient(135deg, var(--sapphire-deep), var(--sapphire));
       color: #fff;
-      border-color: var(--sky-deep);
-      box-shadow: 0 6px 18px rgba(74,159,203,0.4);
+      border-color: var(--sapphire);
+      box-shadow: 0 6px 24px rgba(91, 156, 255, 0.45);
     }
     .tab-btn.active.open {
-      background: linear-gradient(135deg, var(--orange-deep), var(--orange));
+      background: linear-gradient(135deg, var(--ruby-deep), var(--ruby));
       color: #fff;
-      border-color: var(--orange-deep);
-      box-shadow: 0 6px 18px rgba(230,107,31,0.4);
+      border-color: var(--ruby);
+      box-shadow: 0 6px 24px rgba(255, 92, 119, 0.45);
     }
 
     /* ACTION BAR */
@@ -148,11 +189,11 @@
       flex-wrap: wrap;
     }
     .btn {
-      padding: 8px 16px;
+      padding: 9px 18px;
       border-radius: 12px;
-      border: 1.5px solid var(--brown);
-      background: var(--cream-card);
-      color: var(--brown-deep);
+      border: 1.5px solid var(--border);
+      background: rgba(255,255,255,0.05);
+      color: var(--ink-light);
       font-weight: 600;
       font-family: inherit;
       font-size: 0.85rem;
@@ -161,40 +202,45 @@
       align-items: center;
       gap: 6px;
       transition: all 0.2s;
+      backdrop-filter: blur(8px);
     }
     .btn:hover {
       transform: translateY(-2px);
-      background: var(--cream);
-      box-shadow: 0 4px 10px rgba(92,58,30,0.18);
+      background: rgba(242,199,94,0.12);
+      border-color: var(--gold);
+      color: var(--gold);
     }
-    .btn.primary {
-      background: var(--orange);
-      color: #fff;
-      border-color: var(--orange-deep);
+    .btn.gold {
+      background: linear-gradient(135deg, var(--gold-deep), var(--gold));
+      color: var(--bg-deep);
+      border-color: var(--gold);
+      font-weight: 700;
+      box-shadow: 0 6px 18px var(--gold-glow);
     }
-    .btn.primary:hover { background: var(--orange-deep); }
+    .btn.gold:hover { transform: translateY(-3px); box-shadow: 0 10px 24px var(--gold-glow); color: var(--bg-deep); }
 
     /* CARDS */
     .card {
-      background: var(--cream-card);
-      border-radius: 20px;
+      background: linear-gradient(180deg, var(--bg-card) 0%, var(--bg-card-2) 100%);
+      border-radius: 22px;
       padding: 1.4rem 1.2rem;
-      margin-bottom: 1rem;
-      box-shadow: 0 10px 28px rgba(92,58,30,0.14);
-      border: 1px solid rgba(139,90,43,0.12);
+      margin-bottom: 1.1rem;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.4), 0 0 0 1px var(--border-soft);
+      border: 1px solid var(--border);
     }
     .card-title {
       display: flex;
       align-items: center;
       gap: 10px;
-      font-size: 1.2rem;
+      font-size: 1.15rem;
       font-weight: 700;
-      color: var(--brown-deep);
+      color: var(--gold);
       margin: 0 0 1rem;
-      padding-bottom: 0.6rem;
-      border-bottom: 2px solid var(--orange-2);
+      padding-bottom: 0.7rem;
+      border-bottom: 1px solid var(--border);
+      font-family: 'Cinzel', serif;
+      letter-spacing: 0.03em;
     }
-    .card-title.newbie { border-bottom-color: var(--sky); }
 
     /* STATS */
     .stats {
@@ -203,116 +249,131 @@
       gap: 12px;
     }
     .stat-box {
-      background: linear-gradient(135deg, var(--cream), #fff);
+      background: rgba(0,0,0,0.25);
       padding: 1rem;
       border-radius: 14px;
       text-align: center;
-      border: 1px solid rgba(139,90,43,0.1);
+      border: 1px solid var(--border-soft);
     }
     .stat-val {
-      font-size: 1.8rem;
-      font-weight: 700;
-      color: var(--orange-deep);
+      font-family: 'Cinzel', serif;
+      font-size: 2rem;
+      font-weight: 900;
+      color: var(--gold);
       display: block;
+      text-shadow: 0 0 15px var(--gold-glow);
     }
     .stat-label {
-      font-size: 0.75rem;
-      color: var(--brown);
-      letter-spacing: 1px;
+      font-size: 0.72rem;
+      color: var(--ink-soft);
+      letter-spacing: 1.5px;
       text-transform: uppercase;
       margin-top: 4px;
       display: block;
     }
-    .active.newbie .stat-val { color: var(--sky-deep); }
+    .league-newbie .stat-val { color: var(--sapphire); text-shadow: 0 0 15px rgba(91,156,255,0.4); }
+    .league-open .stat-val { color: var(--ruby); text-shadow: 0 0 15px rgba(255,92,119,0.4); }
 
     /* PAIRING ROW */
-    .round-block {
-      margin-bottom: 1.2rem;
-    }
+    .round-block { margin-bottom: 1.2rem; }
     .round-head {
-      font-size: 1rem;
+      font-family: 'Cinzel', serif;
+      font-size: 1.05rem;
       font-weight: 700;
-      color: var(--brown-deep);
-      margin: 0 0 0.6rem;
+      color: var(--gold);
+      margin: 0 0 0.7rem;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
+      letter-spacing: 0.03em;
     }
     .round-head .pill {
-      font-size: 0.75rem;
-      padding: 3px 10px;
+      font-size: 0.72rem;
+      padding: 3px 11px;
       border-radius: 999px;
-      background: var(--orange-2);
-      color: var(--brown-deep);
+      background: rgba(242,199,94,0.15);
+      color: var(--gold);
       font-weight: 600;
+      font-family: 'Mitr', sans-serif;
+      letter-spacing: 0;
+      border: 1px solid var(--border);
     }
-    .pairing-grid {
-      display: grid;
-      gap: 8px;
-    }
+    .pairing-grid { display: grid; gap: 8px; }
     .match {
       display: grid;
-      grid-template-columns: 50px 1fr 70px 1fr 100px;
+      grid-template-columns: 50px 1fr 75px 1fr 100px;
       align-items: center;
-      gap: 8px;
-      padding: 0.9rem 1rem;
-      background: #fff;
-      border: 1px solid rgba(139,90,43,0.1);
-      border-radius: 12px;
+      gap: 10px;
+      padding: 0.95rem 1.1rem;
+      background: rgba(0,0,0,0.22);
+      border: 1px solid var(--border-soft);
+      border-radius: 14px;
       transition: all 0.2s;
     }
     .match:hover {
       transform: translateX(3px);
-      box-shadow: 0 6px 14px rgba(92,58,30,0.12);
-      border-color: var(--orange-2);
+      box-shadow: 0 8px 18px rgba(0,0,0,0.4);
+      border-color: var(--gold);
+      background: rgba(242,199,94,0.06);
     }
     .table-num {
+      font-family: 'Cinzel', serif;
       font-weight: 700;
-      background: var(--cream);
-      color: var(--brown-deep);
-      padding: 4px 8px;
-      border-radius: 8px;
+      background: linear-gradient(135deg, var(--gold-deep), var(--gold));
+      color: var(--bg-deep);
+      padding: 5px 9px;
+      border-radius: 9px;
       text-align: center;
       font-size: 0.9rem;
+      box-shadow: 0 4px 10px var(--gold-glow);
     }
     .player {
       font-weight: 500;
-      color: var(--ink);
+      color: var(--ink-light);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
       font-size: 0.95rem;
     }
     .player.winner {
-      color: var(--ok);
+      color: var(--emerald);
       font-weight: 700;
+      text-shadow: 0 0 10px rgba(74,222,128,0.4);
     }
     .score {
+      font-family: 'Cinzel', serif;
       font-weight: 700;
-      color: var(--orange-deep);
-      background: var(--cream);
-      padding: 4px 10px;
-      border-radius: 8px;
+      color: var(--gold);
+      background: rgba(242,199,94,0.12);
+      padding: 5px 12px;
+      border-radius: 9px;
       text-align: center;
-      font-size: 0.9rem;
+      font-size: 0.95rem;
+      border: 1px solid var(--border);
     }
-    .score.pending { color: var(--brown); background: rgba(139,90,43,0.08); }
+    .score.pending {
+      color: var(--ink-soft);
+      background: rgba(255,255,255,0.04);
+      border-color: var(--border-soft);
+    }
     .status-tag {
       font-size: 0.7rem;
       font-weight: 700;
       text-transform: uppercase;
-      padding: 4px 10px;
+      padding: 5px 11px;
       border-radius: 999px;
       text-align: center;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.6px;
     }
     .status-tag.done {
-      background: rgba(76,175,80,0.18);
+      background: rgba(74,222,128,0.18);
       color: var(--ok);
+      border: 1px solid rgba(74,222,128,0.3);
     }
     .status-tag.pending {
-      background: rgba(245,158,11,0.18);
+      background: rgba(242,199,94,0.18);
       color: var(--warn);
+      border: 1px solid var(--border);
     }
 
     /* STANDINGS TABLE */
@@ -323,37 +384,39 @@
       min-width: 600px;
     }
     th {
-      background: var(--cream);
-      padding: 10px 8px;
+      background: rgba(0,0,0,0.3);
+      padding: 12px 10px;
       text-align: left;
-      font-size: 0.78rem;
-      color: var(--brown-deep);
+      font-size: 0.75rem;
+      color: var(--gold);
       text-transform: uppercase;
-      letter-spacing: 0.5px;
-      border-bottom: 2px solid var(--orange-2);
+      letter-spacing: 1px;
+      border-bottom: 1px solid var(--border);
+      font-family: 'Cinzel', serif;
+      font-weight: 700;
     }
     th.center, td.center { text-align: center; }
     td {
-      padding: 10px 8px;
-      border-bottom: 1px solid rgba(139,90,43,0.08);
+      padding: 11px 10px;
+      border-bottom: 1px solid var(--border-soft);
       font-size: 0.9rem;
+      color: var(--ink-light);
     }
-    tbody tr:hover td { background: rgba(255,200,142,0.12); }
-    tbody tr.dropped {
-      opacity: 0.5;
-      font-style: italic;
-    }
+    tbody tr:hover td { background: rgba(242,199,94,0.06); }
+    tbody tr.dropped { opacity: 0.4; font-style: italic; }
     .rank-cell {
-      font-weight: 700;
-      color: var(--orange-deep);
+      font-family: 'Cinzel', serif;
+      font-weight: 900;
+      color: var(--gold);
+      font-size: 1.05rem;
     }
-    .rank-cell.drop {
-      color: var(--brown);
-    }
-    .pts {
-      font-weight: 700;
-      color: var(--ink);
-    }
+    .rank-cell.drop { color: var(--ink-soft); font-weight: 600; }
+    .pts { font-weight: 700; color: var(--gold); font-family: 'Cinzel', serif; }
+
+    /* Top 3 highlight */
+    tbody tr:nth-child(1) .rank-cell { color: var(--gold); filter: drop-shadow(0 0 6px var(--gold-glow)); }
+    tbody tr:nth-child(2) .rank-cell { color: #C0C0C0; }
+    tbody tr:nth-child(3) .rank-cell { color: #CD7F32; }
 
     /* LOADER */
     .loader {
@@ -362,40 +425,74 @@
       align-items: center;
       justify-content: center;
       padding: 3rem 1rem;
-      color: var(--brown-deep);
+      color: var(--ink-soft);
       gap: 1rem;
     }
     .loader-ring {
       width: 50px;
       height: 50px;
-      border: 4px solid rgba(139,90,43,0.15);
-      border-top-color: var(--orange-deep);
+      border: 4px solid rgba(242,199,94,0.18);
+      border-top-color: var(--gold);
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
     }
 
     .empty {
       text-align: center;
-      color: var(--brown);
+      color: var(--ink-soft);
       padding: 2rem 1rem;
       font-style: italic;
     }
 
+    /* MODAL — capture options */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 8, 35, 0.85);
+      backdrop-filter: blur(14px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal-card {
+      background: linear-gradient(180deg, var(--bg-card), var(--bg-card-2));
+      border: 1px solid var(--gold);
+      border-radius: 22px;
+      padding: 2rem 1.6rem;
+      width: 100%;
+      max-width: 420px;
+      text-align: center;
+      box-shadow: 0 40px 80px rgba(0,0,0,0.5), 0 0 40px var(--gold-glow);
+    }
+    .modal-card h2 {
+      font-family: 'Cinzel', serif;
+      color: var(--gold);
+      margin: 0 0 0.5rem;
+      letter-spacing: 0.04em;
+    }
+    .modal-card p { color: var(--ink-soft); margin: 0 0 1.4rem; font-size: 0.9rem; }
+    .modal-card .btn-stack { display: flex; flex-direction: column; gap: 10px; }
+    .modal-card .btn { justify-content: center; width: 100%; padding: 12px; font-size: 0.92rem; }
+
     /* RESPONSIVE */
     @media (max-width: 640px) {
-      .title { font-size: 1.5rem; }
+      .title { font-size: 1.7rem; }
       .container { padding: 0; }
       .card { padding: 1rem 0.8rem; border-radius: 16px; }
       .match {
-        grid-template-columns: 40px 1fr 60px 1fr;
+        grid-template-columns: 42px 1fr 65px 1fr;
         font-size: 0.85rem;
         gap: 6px;
-        padding: 0.7rem 0.8rem;
+        padding: 0.75rem 0.85rem;
       }
       .status-tag { display: none; }
-      .stat-val { font-size: 1.4rem; }
+      .stat-val { font-size: 1.5rem; }
       .stats { grid-template-columns: 1fr 1fr; gap: 8px; }
-      .btn { font-size: 0.8rem; padding: 6px 12px; }
+      .btn { font-size: 0.8rem; padding: 7px 13px; }
+      .tab-btn { padding: 9px 18px; font-size: 0.88rem; }
     }
   </style>
 </head>
@@ -406,8 +503,8 @@
       <a href="./newbie-lorcana-day.html" class="home-link">
         <i data-lucide="arrow-left"></i> กลับ Signup
       </a>
-      <h1 class="title">Lorcana Day · Pairing</h1>
-      <p class="subtitle">ดูคู่แข่ง · เช็คคะแนนสด · 31 พ.ค. · Up Level Academy</p>
+      <h1 class="title">LORCANA DAY</h1>
+      <p class="subtitle">⚜ Live Pairing & Standings ⚜ Up Level Academy ⚜</p>
 
       <div class="league-tabs">
         <button id="tab-newbie" class="tab-btn active newbie" onclick="switchLeague('newbie')">
@@ -419,11 +516,14 @@
       </div>
 
       <div class="actions">
-        <button class="btn primary" onclick="loadData()">
+        <button class="btn gold" onclick="openCaptureModal()">
+          <i data-lucide="camera"></i> บันทึกเป็นรูป
+        </button>
+        <button class="btn" onclick="loadData()">
           <i data-lucide="refresh-cw"></i> Refresh
         </button>
-        <button class="btn" onclick="toggleFormal()">
-          <span id="formalLabel"><i data-lucide="user"></i> Show Real Name</span>
+        <button class="btn" onclick="cycleNameMode()" title="สลับ Codename / Real Name / Full">
+          <span id="formalLabel"><i data-lucide="crown"></i> Codename</span>
         </button>
       </div>
     </header>
@@ -436,38 +536,122 @@
     </main>
   </div>
 
+  <!-- CAPTURE MODAL -->
+  <div id="captureModal" class="modal-overlay" onclick="if(event.target===this)closeCaptureModal()">
+    <div class="modal-card">
+      <h2>📸 บันทึกเป็นรูป</h2>
+      <p>เลือกสิ่งที่ต้องการบันทึก</p>
+      <div class="btn-stack">
+        <button class="btn gold" onclick="captureScreen('pairing')">
+          <i data-lucide="layout-list"></i> Pairing ทั้งหมด
+        </button>
+        <button class="btn gold" onclick="captureScreen('standings')">
+          <i data-lucide="award"></i> Standings
+        </button>
+        <button class="btn gold" onclick="captureScreen('all')">
+          <i data-lucide="image"></i> ทั้งหน้า (Pairing + Standings)
+        </button>
+        <button class="btn" onclick="closeCaptureModal()" style="margin-top:0.6rem;">
+          ยกเลิก
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script>
-    // ⚙️ CONFIG — paste GAS web app URL here after deployment
+    // ⚙️ CONFIG
     const API_URL = 'https://script.google.com/macros/s/AKfycbztAHaqs0Jl2cUE5yU6AITaIhBWnedVresgkGHHOLjXgSCGM4M8fpZqv2BNuNXOn9WGfQ/exec';
+    const MEMBER_API = 'https://script.google.com/macros/s/AKfycbxtjsDwHI6nJU4OIHExUxMaZwUn3qwakvdkzwbQO7C8Trzz5Gh84SX6F1gqb4BOFQcn/exec?func=getMemberDashboardData';
+
+    // Name modes: 'codename' (guild codename if matched, fallback to real) | 'real' (strip TR_ID) | 'full' (raw TR_ID_Name)
+    const NAME_MODES = ['codename', 'real', 'full'];
+    const MODE_LABEL = {
+      codename: { icon: 'crown', label: 'Codename' },
+      real:     { icon: 'user', label: 'Real Name' },
+      full:     { icon: 'hash', label: 'Full Name' }
+    };
 
     let currentLeague = 'newbie';
-    let formalMode = false;
+    let nameMode = 'codename';  // default to codename (Guild integration)
     let dataStore = { newbie: null, open: null };
+    let phoneMap = {};       // phone → { codename, rank }
+    let playerPhoneMap = { newbie: {}, open: {} };  // playerId → phone
 
     function extractRealName(name) {
       if (!name) return '';
       return name.replace(/^[Tt][Hh]\d+[_\s]*/, '').trim();
     }
 
-    function displayName(rawName) {
+    function normalizePhone(p) {
+      return String(p || '').replace(/\D/g, '');
+    }
+
+    // Display name for a pairing/standing row.
+    // rowId = playerId (e.g. P001), rawName = raw from sheet
+    function displayName(rowId, rawName) {
       if (!rawName) return '';
-      return formalMode ? extractRealName(rawName) : rawName;
+      if (nameMode === 'full') return rawName;
+      if (nameMode === 'real') return extractRealName(rawName);
+      // codename mode → match phone → codename
+      const phone = playerPhoneMap[currentLeague][rowId];
+      if (phone && phoneMap[phone] && phoneMap[phone].codename) {
+        return phoneMap[phone].codename;
+      }
+      return extractRealName(rawName);
+    }
+
+    function buildPhoneMap(members) {
+      const map = {};
+      if (!Array.isArray(members)) return map;
+      members.forEach(m => {
+        const phone = normalizePhone(m.phone || m['Player Phone'] || m['Phone']);
+        if (phone) {
+          map[phone] = {
+            codename: m.codename || m['Codename'] || '',
+            rank: m.rank || m['Rank'] || ''
+          };
+        }
+      });
+      return map;
+    }
+
+    function buildPlayerPhoneMap(playersData) {
+      // playersData[0] = header [Player_id, Name, TR_ID, Tel]
+      // playersData[1+] = rows
+      const map = {};
+      if (!Array.isArray(playersData)) return map;
+      playersData.slice(1).forEach(row => {
+        const id = row[0], tel = row[3];
+        if (id && tel) {
+          map[id] = normalizePhone(tel);
+        }
+      });
+      return map;
     }
 
     async function loadData() {
       const content = document.getElementById('content');
       content.innerHTML = '<div class="loader"><div class="loader-ring"></div><p>Loading...</p></div>';
 
-      if (!API_URL || API_URL === 'PASTE_DEPLOYED_GAS_URL_HERE') {
-        content.innerHTML = '<div class="card"><p class="empty">⚠️ ยังไม่ได้ตั้งค่า API_URL — แก้ไขในไฟล์ HTML</p></div>';
-        return;
-      }
-
       try {
-        const res = await fetch(API_URL);
-        const data = await res.json();
+        const [pRes, mRes] = await Promise.all([
+          fetch(API_URL),
+          fetch(MEMBER_API).catch(() => null)
+        ]);
+        const data = await pRes.json();
         dataStore.newbie = data.newbie || null;
         dataStore.open = data.open || null;
+
+        if (mRes && mRes.ok) {
+          try {
+            const members = await mRes.json();
+            phoneMap = buildPhoneMap(members);
+          } catch (e) { phoneMap = {}; }
+        }
+
+        playerPhoneMap.newbie = buildPlayerPhoneMap(dataStore.newbie ? dataStore.newbie.players : []);
+        playerPhoneMap.open = buildPlayerPhoneMap(dataStore.open ? dataStore.open.players : []);
+
         render();
       } catch (err) {
         console.error(err);
@@ -482,12 +666,14 @@
       render();
     }
 
-    function toggleFormal() {
-      formalMode = !formalMode;
-      document.getElementById('formalLabel').innerHTML = formalMode
-        ? '<i data-lucide="hash"></i> Show TR_ID Name'
-        : '<i data-lucide="user"></i> Show Real Name';
+    function cycleNameMode() {
+      const idx = NAME_MODES.indexOf(nameMode);
+      nameMode = NAME_MODES[(idx + 1) % NAME_MODES.length];
+      const info = MODE_LABEL[nameMode];
+      document.getElementById('formalLabel').innerHTML =
+        '<i data-lucide="' + info.icon + '"></i> ' + info.label;
       render();
+      if (window.lucide) lucide.createIcons();
     }
 
     function render() {
@@ -503,7 +689,11 @@
       const pairing = d.pairing || [];
       const standings = d.standings || [];
 
-      const html = renderSummary(pairing, standings) + renderPairing(pairing) + renderStandings(standings);
+      const html = `<div class="league-${currentLeague}">
+        ${renderSummary(pairing, standings)}
+        <div id="pairing-section">${renderPairing(pairing)}</div>
+        <div id="standings-section">${renderStandings(standings)}</div>
+      </div>`;
       content.innerHTML = html;
       if (window.lucide) lucide.createIcons();
     }
@@ -517,12 +707,11 @@
         if (row[10] && row[10].toString().trim() !== '') completed++;
       });
       const total = pairing.length > 1 ? pairing.length - 1 : 0;
-      const cls = currentLeague === 'newbie' ? 'active newbie' : '';
 
       return `
-        <section class="card ${cls}">
-          <div class="card-title ${currentLeague === 'newbie' ? 'newbie' : ''}">
-            <i data-lucide="bar-chart-3"></i> Overview
+        <section class="card">
+          <div class="card-title">
+            <i data-lucide="bar-chart-3"></i> ${currentLeague === 'newbie' ? 'Newbie League' : 'Open League'}
           </div>
           <div class="stats">
             <div class="stat-box">
@@ -535,7 +724,7 @@
             </div>
             <div class="stat-box">
               <span class="stat-val">${completed}/${total}</span>
-              <span class="stat-label">Matches done</span>
+              <span class="stat-label">Done</span>
             </div>
           </div>
         </section>
@@ -557,30 +746,30 @@
 
       const roundKeys = Object.keys(rounds).sort((a, b) => b - a);
       let html = `<section class="card">
-        <div class="card-title ${currentLeague === 'newbie' ? 'newbie' : ''}">
-          <i data-lucide="layout-list"></i> Pairing
-        </div>`;
+        <div class="card-title"><i data-lucide="layout-list"></i> Pairing</div>`;
 
       roundKeys.forEach(r => {
         html += `<div class="round-block">
           <div class="round-head">
             <i data-lucide="trophy"></i> Round ${r}
-            <span class="pill">${rounds[r].length} match${rounds[r].length > 1 ? 'es' : ''}</span>
+            <span class="pill">${rounds[r].length} ${rounds[r].length > 1 ? 'matches' : 'match'}</span>
           </div>
           <div class="pairing-grid">`;
 
         rounds[r].sort((a, b) => parseInt(a[1]) - parseInt(b[1])).forEach(row => {
           const table = row[1];
+          const p1Id = row[2] || '';
           const p1Name = row[3] || '';
+          const p2Id = row[8] || '';
           const p2Name = row[9] || '';
           const result = row[10] || '';
-          const isBye = row[8] === 'BYE';
+          const isBye = p2Id === 'BYE';
           const isDone = result && result.toString().trim() !== '';
 
           if (isBye) {
             html += `<div class="match">
               <div class="table-num">${table}</div>
-              <div class="player winner">${displayName(p1Name)}</div>
+              <div class="player winner">${displayName(p1Id, p1Name)}</div>
               <div class="score">BYE</div>
               <div class="player" style="opacity:0.5;">—</div>
               <div class="status-tag done">BYE WIN</div>
@@ -590,9 +779,9 @@
             const p2Win = result === '0:1';
             html += `<div class="match">
               <div class="table-num">${table}</div>
-              <div class="player ${p1Win ? 'winner' : ''}">${displayName(p1Name)}</div>
+              <div class="player ${p1Win ? 'winner' : ''}">${displayName(p1Id, p1Name)}</div>
               <div class="score ${isDone ? '' : 'pending'}">${result || '- : -'}</div>
-              <div class="player ${p2Win ? 'winner' : ''}">${displayName(p2Name)}</div>
+              <div class="player ${p2Win ? 'winner' : ''}">${displayName(p2Id, p2Name)}</div>
               <div class="status-tag ${isDone ? 'done' : 'pending'}">${isDone ? 'Done' : 'Waiting'}</div>
             </div>`;
           }
@@ -611,9 +800,7 @@
       }
 
       let html = `<section class="card">
-        <div class="card-title ${currentLeague === 'newbie' ? 'newbie' : ''}">
-          <i data-lucide="award"></i> Standings
-        </div>
+        <div class="card-title"><i data-lucide="award"></i> Standings</div>
         <div class="table-wrap">
           <table>
             <thead><tr>
@@ -628,6 +815,7 @@
 
       standings.slice(1).forEach(row => {
         const rank = row[0];
+        const pid = row[1] || '';
         const name = row[2] || '';
         const wins = row[5] || 0;
         const draws = row[6] || 0;
@@ -639,7 +827,7 @@
 
         html += `<tr class="${isDrop ? 'dropped' : ''}">
           <td class="rank-cell ${isDrop ? 'drop' : ''} center">${rank}</td>
-          <td>${displayName(name)}</td>
+          <td>${displayName(pid, name)}</td>
           <td class="pts center">${pts}</td>
           <td class="center">${wins}/${losses}/${draws}</td>
           <td class="center">${wr}</td>
@@ -651,11 +839,52 @@
       return html;
     }
 
+    // CAPTURE
+    function openCaptureModal() {
+      document.getElementById('captureModal').classList.add('active');
+      if (window.lucide) lucide.createIcons();
+    }
+    function closeCaptureModal() {
+      document.getElementById('captureModal').classList.remove('active');
+    }
+
+    function captureScreen(mode) {
+      closeCaptureModal();
+      let target;
+      let label;
+      if (mode === 'pairing') {
+        target = document.getElementById('pairing-section');
+        label = 'Pairing';
+      } else if (mode === 'standings') {
+        target = document.getElementById('standings-section');
+        label = 'Standings';
+      } else {
+        target = document.getElementById('content');
+        label = 'All';
+      }
+      if (!target) return;
+
+      html2canvas(target, {
+        backgroundColor: '#0F0823',
+        scale: 2,
+        useCORS: true
+      }).then(canvas => {
+        const link = document.createElement('a');
+        const ts = new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-');
+        const leagueLabel = currentLeague === 'newbie' ? 'Newbie' : 'Open';
+        link.download = `LorcanaDay-${leagueLabel}-${label}-${ts}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      }).catch(err => {
+        console.error('Capture failed:', err);
+        alert('บันทึกรูปไม่สำเร็จ ลองใหม่');
+      });
+    }
+
     // Boot
     document.addEventListener('DOMContentLoaded', () => {
       if (window.lucide) lucide.createIcons();
       loadData();
-      // Auto-refresh every 30s
       setInterval(loadData, 30000);
     });
   </script>
