@@ -1491,10 +1491,17 @@
             slipBase64:    null,
             slipFile:      null,
             submitting:    false,
-            stock:         {},   // { [skuKey]: { cap, active, remaining, forceClosed, soldOut } } from getSummary
+            stock:         {},   // { [skuKey]: { cap, active, remaining, extraCap, extraRemaining, extraSoldOut, ... } }
             phase:         "collecting",
-            phase2Deadline: ""
+            phase2Deadline: "",
+            extraStockOpen: false
         };
+        // R2 (extra-stock round) is active when admin opened it + phase is past collecting.
+        // In R2 mode: form is visible during phase2_open/alloc_committed, customers pay full,
+        // and SKU caps follow extraRemaining instead of remaining.
+        function isR2Mode() {
+            return !!state.extraStockOpen && state.phase !== "collecting" && state.phase !== "done";
+        }
 
         /* ---------- Build SKU list ---------- */
         const skuList = document.getElementById("sku-list");
@@ -1524,6 +1531,7 @@
         const LOW_STOCK_THRESHOLD = 10;  // show "เหลือ N" badge when remaining ≤ this
 
         function applySkuStockUI() {
+            const r2 = isR2Mode();
             SKUS.forEach(s => {
                 const row = skuList.querySelector(`.sku[data-key="${s.key}"]`);
                 if (!row) return;
@@ -1533,12 +1541,16 @@
                 const baseLimitTxt = s.key === BOOSTER_KEY
                     ? `สูงสุด ${BOOSTER_LIMIT} กล่อง/ท่าน (1 case)`
                     : "";
+                const remaining = r2 ? stock.extraRemaining : stock.remaining;
+                const soldOut   = r2 ? !!stock.extraSoldOut : !!stock.soldOut;
 
-                if (stock.soldOut) {
+                if (soldOut) {
                     row.classList.add("sold-out");
                     state.cart[s.key] = 0;
-                    if (qtyBox) qtyBox.innerHTML = `<span class="sold-badge">Sold Out</span>`;
-                    if (body) body.textContent = "ปิดรับพรีออเดอร์รอบนี้ — สินค้าอื่นยังสั่งได้";
+                    if (qtyBox) qtyBox.innerHTML = `<span class="sold-badge">${r2 ? "R2 หมด" : "Sold Out"}</span>`;
+                    if (body) body.textContent = r2
+                        ? "ไม่ได้เปิดขายใน Round 2 รอบนี้"
+                        : "ปิดรับพรีออเดอร์รอบนี้ — สินค้าอื่นยังสั่งได้";
                     const qNum = document.getElementById("qty-" + s.key);
                     if (qNum) qNum.textContent = 0;
                     return;
@@ -1552,16 +1564,17 @@
                         <div class="qty-num" id="qty-${s.key}">${state.cart[s.key] || 0}</div>
                         <button class="qty-btn" data-act="inc" data-key="${s.key}">+</button>`;
                 }
-                if (typeof stock.remaining === "number" && stock.remaining <= LOW_STOCK_THRESHOLD) {
-                    if (body) body.textContent = `เหลือเพียง ${stock.remaining} ชิ้น${baseLimitTxt ? " · " + baseLimitTxt : ""}`;
+                if (typeof remaining === "number" && remaining <= LOW_STOCK_THRESHOLD) {
+                    const prefix = r2 ? "R2 เหลือ" : "เหลือเพียง";
+                    if (body) body.textContent = `${prefix} ${remaining} ชิ้น${baseLimitTxt ? " · " + baseLimitTxt : ""}`;
                 } else {
                     if (body) body.textContent = baseLimitTxt;
                 }
                 // Clamp current cart qty if it exceeds remaining (e.g., someone else just took some)
-                if (typeof stock.remaining === "number" && (state.cart[s.key] || 0) > stock.remaining) {
-                    state.cart[s.key] = stock.remaining;
+                if (typeof remaining === "number" && (state.cart[s.key] || 0) > remaining) {
+                    state.cart[s.key] = remaining;
                     const qNum = document.getElementById("qty-" + s.key);
-                    if (qNum) qNum.textContent = stock.remaining;
+                    if (qNum) qNum.textContent = remaining;
                 }
             });
             recalcTotal();
@@ -1579,7 +1592,10 @@
             if (!btn) return;
             const key = btn.dataset.key;
             const stock = state.stock[key] || {};
-            if (stock.soldOut) return;
+            const r2 = isR2Mode();
+            const remaining = r2 ? stock.extraRemaining : stock.remaining;
+            const soldOut   = r2 ? !!stock.extraSoldOut : !!stock.soldOut;
+            if (soldOut) return;
             const act = btn.dataset.act;
             const cur = state.cart[key] || 0;
             let next = act === "inc" ? cur + 1 : Math.max(0, cur - 1);
@@ -1589,8 +1605,8 @@
                 flashLimitHint(btn);
             }
             // Per-SKU stock cap (live remaining)
-            if (typeof stock.remaining === "number" && next > stock.remaining) {
-                next = stock.remaining;
+            if (typeof remaining === "number" && next > remaining) {
+                next = remaining;
                 flashLimitHint(btn);
             }
             state.cart[key] = next;
@@ -1605,12 +1621,13 @@
                 const data = await res.json();
                 if (data && data.stock) {
                     state.stock = data.stock;
-                    applySkuStockUI();
                 }
                 if (data) {
-                    state.phase = data.phase || "collecting";
+                    state.phase          = data.phase || "collecting";
                     state.phase2Deadline = data.phase2Deadline || "";
+                    state.extraStockOpen = !!data.extraStockOpen;
                     applyPhaseUI();
+                    applySkuStockUI();
                 }
             } catch (e) {
                 // silent — non-critical; server still enforces cap on submit
@@ -1627,11 +1644,17 @@
             const bContent = document.getElementById("phase-banner-content");
             const phase2Block = document.getElementById("phase2-payment-block");
             const hideTargets = document.querySelectorAll('[data-phase-hide="non-collecting"]');
+            const r2Mode = isR2Mode();
 
-            // Hide order-form sections whenever phase !== collecting
+            // Form is visible during collecting OR R2 (extra-stock full-payment round)
+            const formVisible = (phase === "collecting") || r2Mode;
             hideTargets.forEach(el => {
-                el.style.display = phase === "collecting" ? "" : "none";
+                el.style.display = formVisible ? "" : "none";
             });
+            // Refresh body class so CSS can target R2 mode
+            document.body.classList.toggle("r2-mode", r2Mode);
+            // Recalculate totals since deposit % changes between R1 and R2
+            try { recalcTotal(); } catch (e) {}
 
             if (phase === "collecting") {
                 banner.style.display = "none";
@@ -1672,6 +1695,21 @@
                     <p style="color:var(--ink-mute);font-size:0.92rem;line-height:1.55;margin:0;">
                         ทุกท่านชำระเรียบร้อย · ทางร้านกำลังจัดเตรียมของและจัดส่ง · ขอบคุณที่สนับสนุนครับ
                     </p>`;
+            }
+            // R2 banner — appears on top of phase banner when R2 is open during a closed phase
+            if (r2Mode) {
+                bannerHtml = `
+                    <div style="background:linear-gradient(135deg,rgba(245,197,66,0.18),rgba(255,160,80,0.18));border:1px solid rgba(245,197,66,0.5);border-radius:14px;padding:0.9rem 1rem;margin-bottom:0.8rem;">
+                        <div style="display:flex;align-items:center;gap:0.5rem;color:var(--gold-soft);font-weight:800;font-size:1.05rem;margin-bottom:0.3rem;">
+                            <span class="lc"><i data-lucide="sparkles"></i></span>
+                            ROUND 2 · จ่ายเต็มจำนวน · ของเหลือมีจำกัด
+                        </div>
+                        <div style="color:var(--ink-mute);font-size:0.85rem;line-height:1.45;">
+                            ทางร้านได้ของมามากกว่ายอดพรีออเดอร์ · เปิดขายลูกค้าใหม่ในราคาเต็มจำนวน (ไม่มี Phase 2 ทีหลัง)
+                            <br>กดเลือกของด้านล่างได้เลยครับ
+                        </div>
+                    </div>
+                ` + bannerHtml;
             }
             bContent.innerHTML = bannerHtml;
             banner.style.display = "";
@@ -1857,20 +1895,25 @@
             const sub   = getSubtotal();
             const fee   = state.shipping === "ship" ? SHIPPING_FEE : 0;
             const grand = sub + fee;
-            // Deposit = 50% ของยอดสินค้า (ค่าส่งเก็บทีหลังพร้อมคงเหลือ)
-            const deposit   = Math.round(sub * DEPOSIT_RATE);
-            const remaining = grand - deposit;
+            const r2 = isR2Mode();
+            // R1: deposit = 50% ของยอดสินค้า (ค่าส่งเก็บทีหลัง). R2: pay grand total in full.
+            const deposit   = r2 ? grand : Math.round(sub * DEPOSIT_RATE);
+            const remaining = r2 ? 0     : (grand - deposit);
+            const payLabel  = r2 ? "จ่ายเต็มจำนวน (Round 2)" : "มัดจำ 50% ของยอดสินค้า";
+            const tagLabel  = r2 ? "ยอดเต็ม " : "มัดจำ ";
             document.getElementById("subtotal-line").textContent   = sub.toLocaleString() + " บาท";
             document.getElementById("shipfee-line").textContent    = fee.toLocaleString() + " บาท";
             document.getElementById("total-line").textContent      = grand.toLocaleString() + " บาท";
             document.getElementById("remaining-line").textContent  = remaining.toLocaleString() + " บาท";
-            document.getElementById("total-display").innerHTML     = '<span class="num">' + deposit.toLocaleString() + '</span><span class="unit">บาท (มัดจำ 50% ของยอดสินค้า)</span>';
-            document.getElementById("qr-amount-tag").textContent   = "มัดจำ " + deposit.toLocaleString() + " บาท";
+            document.getElementById("total-display").innerHTML     = '<span class="num">' + deposit.toLocaleString() + '</span><span class="unit">บาท (' + payLabel + ')</span>';
+            document.getElementById("qr-amount-tag").textContent   = tagLabel + deposit.toLocaleString() + " บาท";
             document.getElementById("pay-amount-num").textContent  = deposit.toLocaleString();
             // Stash raw number (digits only) for copy-to-clipboard
             document.getElementById("btn-copy-amount").dataset.amount = String(deposit);
             // Sticky cart bar
             const cartBar = document.getElementById("cart-bar");
+            const cartLabel = document.querySelector(".cart-bar-label");
+            if (cartLabel) cartLabel.textContent = r2 ? "ยอดเต็ม (R2)" : "มัดจำตอนนี้";
             document.getElementById("cart-bar-amt").textContent = deposit.toLocaleString() + " บาท";
             if (getTotalQty() > 0) cartBar.classList.add("show");
             else                   cartBar.classList.remove("show");
@@ -1998,7 +2041,9 @@
 
         document.getElementById("btn-submit-order").onclick = async () => {
             if (state.submitting) return;
-            if (Date.now() >= CLOSE_AT) { showResult({ success: false, error: "preorder_closed" }); return; }
+            const r2 = isR2Mode();
+            // R1 only: enforce close-at deadline. R2 ignores it (extra-stock round runs post-close).
+            if (!r2 && Date.now() >= CLOSE_AT) { showResult({ success: false, error: "preorder_closed" }); return; }
 
             state.submitting = true;
             const btn       = document.getElementById("btn-submit-order");
@@ -2038,14 +2083,16 @@
                 address:      document.getElementById("input-address").value.trim(),
                 items:        state.cart,
                 slipBase64:   state.slipBase64,
-                clientVersion: "lorcana13.v4"
+                clientVersion: "lorcana13.v4",
+                payment_mode: r2 ? "full" : "deposit"
             };
 
             // Compute deposit/total locally to seed the card (server is source of truth on response)
             const subPreview = SKUS.reduce((sum, s) => sum + (state.cart[s.key] || 0) * s.price, 0);
             const shipPreview = state.shipping === "ship" ? SHIPPING_FEE : 0;
             const totalPreview = subPreview + shipPreview;
-            const depositPreview = Math.round(subPreview * DEPOSIT_RATE);
+            // R2 = pay grand total in full. R1 = 50% of subtotal as deposit.
+            const depositPreview = r2 ? totalPreview : Math.round(subPreview * DEPOSIT_RATE);
 
             // Pre-save BEFORE fetch — if response gets lost, the card still shows + customer can refresh status
             saveLocalOrder({
@@ -2076,16 +2123,21 @@
                 const data = await res.json();
                 // Update card with server-confirmed values
                 if (data && data.success) {
+                    const respIsR2 = data.orderRound === "R2";
+                    const remainingFinal = respIsR2
+                        ? 0
+                        : (typeof data.remaining === "number" ? data.remaining : (totalPreview - depositPreview));
                     saveLocalOrder({
                         customerName: payload.customerName,
                         phone:        payload.phone,
                         shipping:     payload.shipping,
                         items:        payload.items,
                         deposit:      data.deposit || depositPreview,
-                        remaining:    data.remaining || (totalPreview - depositPreview),
+                        remaining:    remainingFinal,
                         total:        data.total || totalPreview,
                         status:       data.status || "",
                         verified:     !!data.verified,
+                        orderRound:   respIsR2 ? "R2" : "R1",
                         pending:      false,
                         timestamp:    Date.now()
                     });
@@ -2302,14 +2354,22 @@
             const title = document.getElementById("result-title");
             const msg   = document.getElementById("result-message");
 
+            const isR2Resp = data.orderRound === "R2";
             if (data.success && data.verified) {
                 icon.textContent = "✅";
                 title.textContent = "เสร็จเรียบร้อย!";
-                msg.innerHTML =
-                    "<b>ไม่ต้องทำอะไรเพิ่มครับ</b> ระบบยืนยันมัดจำเรียบร้อย<br><br>" +
-                    "💵 มัดจำ <b>" + (data.deposit||0).toLocaleString() + " บาท</b>" +
-                    " · คงเหลือ <b>" + (data.remaining||0).toLocaleString() + " บาท</b> (จ่ายตอนรับของ)<br><br>" +
-                    "<small>หลังปิดพรีออเดอร์ 31 พ.ค. ทางร้านจะคอนเฟิร์มยอดและแจ้งชำระคงเหลืออีกครั้งครับ</small>";
+                if (isR2Resp) {
+                    msg.innerHTML =
+                        "<b>Round 2 — ชำระเต็มจำนวนเรียบร้อย</b><br><br>" +
+                        "💰 ยอดที่ชำระ <b>" + (data.deposit||0).toLocaleString() + " บาท</b> (ครบแล้ว · ไม่มี Phase 2 ทีหลัง)<br><br>" +
+                        "<small>ทางร้านจะติดต่อแจ้งวันรับของอีกครั้งครับ</small>";
+                } else {
+                    msg.innerHTML =
+                        "<b>ไม่ต้องทำอะไรเพิ่มครับ</b> ระบบยืนยันมัดจำเรียบร้อย<br><br>" +
+                        "💵 มัดจำ <b>" + (data.deposit||0).toLocaleString() + " บาท</b>" +
+                        " · คงเหลือ <b>" + (data.remaining||0).toLocaleString() + " บาท</b> (จ่ายตอนรับของ)<br><br>" +
+                        "<small>หลังปิดพรีออเดอร์ 31 พ.ค. ทางร้านจะคอนเฟิร์มยอดและแจ้งชำระคงเหลืออีกครั้งครับ</small>";
+                }
             } else if (data.success && !data.verified) {
                 icon.textContent = "⏳";
                 title.textContent = "รับออเดอร์แล้ว · รอตรวจสลิป";
@@ -2334,6 +2394,10 @@
             } else if (data.error === "preorder_closed") {
                 icon.textContent = "⏰"; title.textContent = "ปิดรับพรีออเดอร์แล้ว";
                 msg.innerHTML = "ขอบคุณทุกการสนับสนุน — ติดตามรอบหน้าได้ที่เพจร้าน";
+            } else if (data.error === "extra_stock_closed" || data.error === "sku_not_in_r2") {
+                icon.textContent = "🔒"; title.textContent = "Round 2 ปิดแล้ว";
+                msg.innerHTML = data.message || "รอบขายของเหลือ (Round 2) ปิดรับชั่วคราว — ติดตามประกาศจากร้านอีกครั้ง";
+                loadSummary();
             } else if (data.error === "empty_cart") {
                 icon.textContent = "🛒"; title.textContent = "ยังไม่ได้เลือกสินค้า";
                 msg.innerHTML = "กรุณาเลือกสินค้าก่อนกดยืนยัน";

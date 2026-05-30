@@ -79,6 +79,8 @@ const COL_PHASE2_DUE    = COL_FINAL_AMOUNT + 1;     // Y  final − depositPaid 
 const COL_PHASE2_SLIP   = COL_PHASE2_DUE + 1;       // Z  slip URL for phase 2
 const COL_PHASE2_REF    = COL_PHASE2_SLIP + 1;      // AA SlipOK transRef for phase 2
 const COL_PHASE2_STATUS = COL_PHASE2_REF + 1;       // AB phase 2 status string
+// Round 2 column — appended at end so existing rows/columns don't shift
+const COL_ORDER_ROUND   = COL_PHASE2_STATUS + 1;    // AC "R1" (default) or "R2" (round-2 full-payment)
 
 // Workflow phases (single Script Property `workflow_phase`)
 const PHASE_COLLECTING            = "collecting";
@@ -120,6 +122,17 @@ function getSkuClosed()  { return readJsonProp("sku_closed_json", DEFAULT_SKU_CL
 function saveSkuCaps(o)  { writeJsonProp("sku_caps_json",   o); }
 function saveSkuClosed(o){ writeJsonProp("sku_closed_json", o); }
 
+// Round 2 (extra-stock) — orthogonal flag, runs alongside phase2_open or alloc_committed.
+// extra_stock_open: "true"/"false" (string). sku_extra_caps_json: { skuKey: cap }.
+function isExtraStockOpen() {
+  return PropertiesService.getScriptProperties().getProperty("extra_stock_open") === "true";
+}
+function setExtraStockOpen(open) {
+  PropertiesService.getScriptProperties().setProperty("extra_stock_open", open ? "true" : "false");
+}
+function getSkuExtraCaps()   { return readJsonProp("sku_extra_caps_json", {}); }
+function saveSkuExtraCaps(o) { writeJsonProp("sku_extra_caps_json", o); }
+
 // Workflow phase — single source of truth in ScriptProperty.
 // Falls back to closed_awaiting_alloc once CLOSE_AT_ISO has passed (so even
 // if the auto-trigger never fired, the site flips correctly).
@@ -160,8 +173,10 @@ function safeParseToken(raw) {
 }
 
 // Count active (non-refunded/cancelled) units per SKU.
+// `roundFilter` (optional): "R1" or "R2" → count only rows of that round.
+// "R1" includes legacy rows with empty order_round (pre-R2 deployment).
 // Returns { [skuKey]: number }
-function countActiveSkuTotals(sheet) {
+function countActiveSkuTotals(sheet, roundFilter) {
   const data = sheet.getDataRange().getValues();
   const totals = {};
   SKUS.forEach(s => { totals[s.key] = 0; });
@@ -170,6 +185,11 @@ function countActiveSkuTotals(sheet) {
     if (!row[COL_NAME - 1]) continue;
     const status = String(row[COL_STATUS - 1] || "");
     if (/คืนเงิน|ยกเลิก|เกินโควต้า/.test(status)) continue;
+    if (roundFilter) {
+      const round = String(row[COL_ORDER_ROUND - 1] || "R1");
+      const norm = round === "" ? "R1" : round;
+      if (norm !== roundFilter) continue;
+    }
     for (let s = 0; s < SKUS.length; s++) {
       const q = parseInt(row[COL_QTY_START - 1 + s]) || 0;
       if (q > 0) totals[SKUS[s].key] += q;
@@ -179,22 +199,31 @@ function countActiveSkuTotals(sheet) {
 }
 
 // Build per-SKU sold-out + remaining map from caps + active counts.
-// activeTotals: { [key]: number } (from countActiveSkuTotals)
-function buildSkuStock(activeTotals) {
-  const caps   = getSkuCaps();
-  const closed = getSkuClosed();
+// activeTotals: { [key]: number } (from countActiveSkuTotals — R1 + R2 combined or unfiltered)
+// r2Totals:     { [key]: number } (from countActiveSkuTotals(sheet, "R2"))
+function buildSkuStock(activeTotals, r2Totals) {
+  const caps      = getSkuCaps();
+  const closed    = getSkuClosed();
+  const extraCaps = getSkuExtraCaps();
   const out = {};
   SKUS.forEach(s => {
     const cap        = (typeof caps[s.key] === "number" && caps[s.key] > 0) ? caps[s.key] : null;
     const isClosed   = closed[s.key] === true;
     const active     = activeTotals ? (activeTotals[s.key] || 0) : 0;
     const remaining  = cap !== null ? Math.max(0, cap - active) : null;
+    const extraCap        = (typeof extraCaps[s.key] === "number" && extraCaps[s.key] > 0) ? extraCaps[s.key] : 0;
+    const extraActive     = r2Totals ? (r2Totals[s.key] || 0) : 0;
+    const extraRemaining  = Math.max(0, extraCap - extraActive);
     out[s.key] = {
       cap:        cap,
       active:     active,
       remaining:  remaining,
       forceClosed: isClosed,
-      soldOut:    isClosed || (cap !== null && remaining <= 0)
+      soldOut:    isClosed || (cap !== null && remaining <= 0),
+      extraCap:       extraCap,
+      extraActive:    extraActive,
+      extraRemaining: extraRemaining,
+      extraSoldOut:   extraCap > 0 && extraRemaining <= 0
     };
   });
   return out;
@@ -598,13 +627,16 @@ function doGet(e) {
 function getAdminConfig() {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
   const activeTotals = sheet ? countActiveSkuTotals(sheet) : null;
-  const stock = buildSkuStock(activeTotals);
+  const r2Totals     = sheet ? countActiveSkuTotals(sheet, "R2") : null;
+  const stock = buildSkuStock(activeTotals, r2Totals);
   return {
-    updatedAt: new Date().toISOString(),
-    skus:      SKUS.map(s => ({ key: s.key, name: s.name, price: s.price })),
-    caps:      getSkuCaps(),
-    closed:    getSkuClosed(),
-    stock:     stock
+    updatedAt:      new Date().toISOString(),
+    skus:           SKUS.map(s => ({ key: s.key, name: s.name, price: s.price })),
+    caps:           getSkuCaps(),
+    closed:         getSkuClosed(),
+    extraCaps:      getSkuExtraCaps(),
+    extraStockOpen: isExtraStockOpen(),
+    stock:          stock
   };
 }
 
@@ -698,13 +730,17 @@ function adminCommitAllocation(body) {
         return o;
       });
 
-      // Distribute per-customer allocated qty greedily across this phone's rows
+      // Distribute per-customer allocated qty greedily across this phone's rows.
+      // UI is now the source of truth (override allowed > ordered), so we do
+      // NOT cap at perRowOrdered. Dump leftover into the LAST row of the phone
+      // so it remains traceable even if it exceeds the original order.
       const wantedByPhone = allocByPhone[phone] || {};
       SKUS.forEach(s => {
         let remaining = parseInt(wantedByPhone[s.key]) || 0;
         if (remaining < 0) remaining = 0;
         for (let r = 0; r < rows.length && remaining > 0; r++) {
-          const give = Math.min(remaining, perRowOrdered[r][s.key]);
+          const isLastRow = (r === rows.length - 1);
+          const give = isLastRow ? remaining : Math.min(remaining, perRowOrdered[r][s.key]);
           perRowAlloc[r][s.key] = give;
           remaining -= give;
         }
@@ -743,14 +779,36 @@ function adminCommitAllocation(body) {
     SpreadsheetApp.flush();
     setWorkflowPhase(PHASE_ALLOC_COMMITTED);
 
+    // Auto-populate R2 (extra) caps from leftover stock = received − totalAllocated per SKU.
+    // Only writes if UI sent `receivedTotals` (mapping skuKey → received qty from supplier).
+    let extraCaps = null;
+    if (body.receivedTotals && typeof body.receivedTotals === "object") {
+      const allocTotalsBySku = {};
+      SKUS.forEach(s => { allocTotalsBySku[s.key] = 0; });
+      Object.keys(allocByPhone).forEach(phone => {
+        const map = allocByPhone[phone] || {};
+        SKUS.forEach(s => { allocTotalsBySku[s.key] += parseInt(map[s.key]) || 0; });
+      });
+      extraCaps = {};
+      SKUS.forEach(s => {
+        const recv = parseInt(body.receivedTotals[s.key]) || 0;
+        const left = Math.max(0, recv - allocTotalsBySku[s.key]);
+        if (left > 0) extraCaps[s.key] = left;
+      });
+      saveSkuExtraCaps(extraCaps);
+    }
+
     sendTelegram(
       "💾 *Lorcana 13 — บันทึก Allocation แล้ว*\n" +
       "รวม " + customers + " ลูกค้า / " + touched + " แถว\n" +
       "ยอด final รวม " + totalFinal.toLocaleString() + " บาท · ต้องเก็บเพิ่ม " + totalDue.toLocaleString() + " บาท\n" +
       (refundCount > 0 ? "💸 ต้องคืนเงิน " + refundCount + " แถว\n" : "") +
+      (extraCaps && Object.keys(extraCaps).length > 0
+        ? "🆕 R2 stock พร้อมขาย: " + Object.keys(extraCaps).map(k => k + "×" + extraCaps[k]).join(", ") + "\n"
+        : "") +
       "→ ตรวจในชีท แล้วกด \"เปิด Phase 2\" เพื่อแจ้งลูกค้า"
     );
-    return { success: true, customers: customers, touched: touched, totalFinal: totalFinal, totalDue: totalDue, refundCount: refundCount };
+    return { success: true, customers: customers, touched: touched, totalFinal: totalFinal, totalDue: totalDue, refundCount: refundCount, extraCaps: extraCaps };
   } finally { try { lock.releaseLock(); } catch (e) {} }
 }
 
@@ -847,9 +905,11 @@ function submitPhase2Payment(body) {
 // Replaces both maps atomically. Caller sends complete maps.
 function saveAdminConfig(body) {
   if (!body || typeof body !== "object") throw new Error("invalid_body");
-  const caps   = (body.caps && typeof body.caps === "object") ? body.caps : null;
-  const closed = (body.closed && typeof body.closed === "object") ? body.closed : null;
-  if (!caps && !closed) throw new Error("nothing_to_update");
+  const caps           = (body.caps           && typeof body.caps           === "object") ? body.caps           : null;
+  const closed         = (body.closed         && typeof body.closed         === "object") ? body.closed         : null;
+  const extraCaps      = (body.extraCaps      && typeof body.extraCaps      === "object") ? body.extraCaps      : null;
+  const hasExtraToggle = typeof body.extraStockOpen === "boolean";
+  if (!caps && !closed && !extraCaps && !hasExtraToggle) throw new Error("nothing_to_update");
 
   // Sanitize: only known SKU keys, numbers >= 0 for caps, booleans for closed
   if (caps) {
@@ -869,6 +929,25 @@ function saveAdminConfig(body) {
       if (closed[s.key] === true) clean[s.key] = true;
     });
     saveSkuClosed(clean);
+  }
+  if (extraCaps) {
+    const clean = {};
+    SKUS.forEach(s => {
+      if (Object.prototype.hasOwnProperty.call(extraCaps, s.key)) {
+        const n = parseInt(extraCaps[s.key]);
+        if (!isNaN(n) && n > 0) clean[s.key] = n;
+      }
+    });
+    saveSkuExtraCaps(clean);
+  }
+  if (hasExtraToggle) {
+    const prev = isExtraStockOpen();
+    setExtraStockOpen(!!body.extraStockOpen);
+    if (prev !== !!body.extraStockOpen) {
+      sendTelegram(body.extraStockOpen
+        ? "🆕 *Lorcana 13 — เปิด Round 2 (ขายของเหลือ จ่ายเต็ม)*"
+        : "🔒 *Lorcana 13 — ปิด Round 2*");
+    }
   }
   return getAdminConfig();
 }
@@ -917,16 +996,18 @@ function getRecentOrders(limit) {
 function getSummary() {
   let stock = {};
   let activeTotals = null;
+  let r2Totals = null;
   try {
     const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
     if (sheet) {
       activeTotals = countActiveSkuTotals(sheet);
-      stock = buildSkuStock(activeTotals);
+      r2Totals     = countActiveSkuTotals(sheet, "R2");
+      stock = buildSkuStock(activeTotals, r2Totals);
     } else {
-      stock = buildSkuStock(null);
+      stock = buildSkuStock(null, null);
     }
   } catch (err) {
-    stock = buildSkuStock(null);
+    stock = buildSkuStock(null, null);
   }
   // Back-compat: keep boosterSoldOut at top level so older clients still work
   const boosterStock = stock[BOOSTER_KEY] || { soldOut: false };
@@ -942,7 +1023,8 @@ function getSummary() {
     stock:          stock,
     phase:          getWorkflowPhase(),
     phaseAt:        getWorkflowPhaseAt(),
-    phase2Deadline: getPhase2Deadline()
+    phase2Deadline: getPhase2Deadline(),
+    extraStockOpen: isExtraStockOpen()
   };
 }
 
@@ -1215,11 +1297,17 @@ function doPost(e) {
 
   try {
     const currentPhase = getWorkflowPhase();
-    if (currentPhase !== PHASE_COLLECTING) {
+    const extraOpen    = isExtraStockOpen();
+    const body         = JSON.parse(e.postData.contents);
+    // Round 2 = explicit full-payment when extra_stock_open. R1 = original collecting flow.
+    const isR2 = body.payment_mode === "full" && extraOpen;
+
+    if (!isR2 && currentPhase !== PHASE_COLLECTING) {
       return jsonResponse({ success: false, error: "preorder_closed", phase: currentPhase });
     }
-
-    const body = JSON.parse(e.postData.contents);
+    if (isR2 && !extraOpen) {
+      return jsonResponse({ success: false, error: "extra_stock_closed" });
+    }
 
     if (!body.customerName || !body.phone) {
       return jsonResponse({ success: false, error: "missing_fields" });
@@ -1241,9 +1329,9 @@ function doPost(e) {
 
     const shipFee   = shipping === "ship" ? SHIPPING_FEE : 0;
     const total     = subtotal + shipFee;
-    // Deposit = 50% ของยอดสินค้าเท่านั้น (ค่าส่งเก็บทีหลังพร้อมยอดคงเหลือ)
-    const deposit   = Math.round(subtotal * DEPOSIT_RATE);
-    const remaining = total - deposit;
+    // R1: 50% มัดจำสินค้า (ค่าส่งเก็บทีหลัง). R2: จ่ายเต็มจำนวนทันที — ไม่มี Phase 2.
+    const deposit   = isR2 ? total : Math.round(subtotal * DEPOSIT_RATE);
+    const remaining = isR2 ? 0     : (total - deposit);
 
     if (!body.slipBase64) {
       return jsonResponse({ success: false, error: "missing_slip" });
@@ -1282,9 +1370,11 @@ function doPost(e) {
     // Per-SKU caps + kill-switches — count ACTIVE rows (not just paid) so
     // pending/รอตรวจ submits also reserve the slot. Closes the race window
     // where 5 customers transfer for the last slot but only 1 gets confirmed.
-    const skuCaps    = getSkuCaps();
-    const skuClosed  = getSkuClosed();
-    const activeTotals = countActiveSkuTotals(sheet);
+    // R1 uses sku_caps_json + sku_closed_json. R2 uses sku_extra_caps_json
+    // (kill-switch = cap===0 or absent).
+    const skuCaps      = isR2 ? getSkuExtraCaps() : getSkuCaps();
+    const skuClosed    = isR2 ? {} : getSkuClosed();
+    const activeTotals = countActiveSkuTotals(sheet, isR2 ? "R2" : null);
     for (let s = 0; s < SKUS.length; s++) {
       const req = qtyArr[s];
       if (req <= 0) continue;
@@ -1302,7 +1392,19 @@ function doPost(e) {
       }
 
       const cap = (typeof skuCaps[key] === "number" && skuCaps[key] > 0) ? skuCaps[key] : null;
-      if (cap === null) continue;
+      // R2: missing cap = not for sale this round.
+      if (cap === null) {
+        if (isR2) {
+          return jsonResponse({
+            success: false,
+            error:   "sku_not_in_r2",
+            skuKey:  key,
+            skuName: name,
+            message: `${name} ไม่ได้เปิดขายใน Round 2 รอบนี้`
+          });
+        }
+        continue;
+      }
 
       const active = activeTotals[key] || 0;
       if (active + req > cap) {
@@ -1318,7 +1420,7 @@ function doPost(e) {
           remaining: left,
           message:   left > 0
             ? `${name} เหลือเพียง ${left} ชิ้น — กรุณาลดจำนวนแล้วลองใหม่`
-            : `${name} ปิดรับพรีออเดอร์รอบนี้แล้ว — สินค้าอื่นยังสั่งได้ปกติ`
+            : `${name} ${isR2 ? "Round 2 หมดแล้ว" : "ปิดรับพรีออเดอร์รอบนี้แล้ว"} — สินค้าอื่นยังสั่งได้ปกติ`
         });
       }
     }
@@ -1358,7 +1460,7 @@ function doPost(e) {
         }
 
         if (Math.abs(amt - deposit) < 1) {
-          status         = "✅ มัดจำแล้ว";
+          status         = isR2 ? "✅ ชำระเต็มแล้ว (R2)" : "✅ มัดจำแล้ว";
           verifiedAmount = amt;
         } else {
           status = `⚠️ ยอดไม่ตรง (${amt}/${deposit})`;
@@ -1368,7 +1470,7 @@ function doPost(e) {
       }
     }
 
-    // Build row
+    // Build row — pad Phase 2 columns (W..AB) blank for R2 rows so AC lands in the right column
     const row = [
       new Date(),                  // A timestamp
       body.customerName,           // B name
@@ -1379,13 +1481,20 @@ function doPost(e) {
       subtotal,                                        // M
       shipFee,                                         // N
       total,                                           // O total full
-      deposit,                                         // P deposit 50%
-      remaining,                                       // Q remaining
+      deposit,                                         // P deposit (R1=50%, R2=full)
+      remaining,                                       // Q remaining (R2=0)
       slipUrl,                                         // R
       transRef,                                        // S
       senderName,                                      // T
       status,                                          // U
-      SCRIPT_VERSION                                   // V
+      SCRIPT_VERSION,                                  // V
+      "",                                              // W Allocated JSON
+      "",                                              // X final amount
+      "",                                              // Y phase2 due
+      "",                                              // Z phase2 slip
+      "",                                              // AA phase2 ref
+      "",                                              // AB phase2 status
+      isR2 ? "R2" : "R1"                               // AC order round
     ];
     sheet.appendRow(row);
     SpreadsheetApp.flush();
@@ -1400,30 +1509,35 @@ function doPost(e) {
       : `🏬 รับที่ร้าน`;
     const senderLine = senderMismatch ? `⚠️ Sender ไม่ตรง: ${senderName}\n` : "";
 
+    const headerEmoji = isR2 ? "🆕" : "🌿";
+    const headerLabel = isR2 ? "Lorcana Set 13 — Round 2 ออเดอร์ใหม่ (จ่ายเต็ม)!" : "Lorcana Set 13 — ออเดอร์ใหม่!";
+    const moneyLine = isR2
+      ? `💰 จ่ายเต็มจำนวน ${total.toLocaleString()} บาท (Round 2 — ไม่มี Phase 2)\n`
+      : `💰 ยอดเต็ม ${total.toLocaleString()} บาท\n💵 มัดจำ 50% สินค้า = ${deposit.toLocaleString()} บาท (คงเหลือ + ค่าส่ง ${remaining.toLocaleString()})\n`;
     sendTelegram(
-      `🌿 *Lorcana Set 13 — ออเดอร์ใหม่!*\n\n` +
+      `${headerEmoji} *${headerLabel}*\n\n` +
       `👤 ${body.customerName}\n` +
       `📱 ${body.phone}\n` +
       `${shipLine}\n` +
       `🛒 รายการ (${totalQty} ชิ้น):\n${itemLines}\n` +
-      `💰 ยอดเต็ม ${total.toLocaleString()} บาท\n` +
-      `💵 มัดจำ 50% สินค้า = ${deposit.toLocaleString()} บาท (คงเหลือ + ค่าส่ง ${remaining.toLocaleString()})\n` +
+      moneyLine +
       `📊 ${status}\n` +
       senderLine +
       (slipUrl ? `🧾 [Slip](${slipUrl})` : "")
     );
 
     return jsonResponse({
-      success:  true,
-      status:   status,
-      slipUrl:  slipUrl,
-      verified: status === "✅ มัดจำแล้ว",
-      total:    total,
-      deposit:  deposit,
-      remaining: remaining,
-      subtotal: subtotal,
-      shipFee:  shipFee,
-      itemCount: totalQty
+      success:    true,
+      status:     status,
+      slipUrl:    slipUrl,
+      verified:   status.indexOf("✅") === 0,
+      total:      total,
+      deposit:    deposit,
+      remaining:  remaining,
+      subtotal:   subtotal,
+      shipFee:    shipFee,
+      itemCount:  totalQty,
+      orderRound: isR2 ? "R2" : "R1"
     });
   } catch (err) {
     console.error("doPost error:", err);
@@ -1448,6 +1562,8 @@ function ensureHeaders(sheet) {
   headers.push("ยอดสินค้า", "ค่าส่ง", "ยอดรวม", "มัดจำ 50%", "คงเหลือ", "สลิป URL", "Slip TransRef", "ชื่อผู้โอน", "สถานะ", "Version");
   // Phase 2 (post-allocation) columns
   headers.push("Allocated JSON", "ยอดสุทธิหลังจัดสรร", "ยอด Phase2 ต้องโอน", "Slip Phase 2 URL", "Phase2 TransRef", "สถานะ Phase 2");
+  // Round tag — R1 (default 50% deposit) or R2 (full-payment extra-stock round)
+  headers.push("Order Round");
 
   for (let c = 0; c < headers.length; c++) {
     const cell = sheet.getRange(1, c + 1);
@@ -1555,6 +1671,10 @@ function getShippingList() {
     const status = String(row[COL_STATUS - 1] || "");
     // Skip cancelled / refunded / over-quota
     if (/คืนเงิน|ยกเลิก|เกินโควต้า/.test(status)) continue;
+
+    // R2 (extra-stock) rows already paid full — don't include in allocation pool
+    const round = String(row[COL_ORDER_ROUND - 1] || "R1");
+    if ((round || "R1") === "R2") continue;
 
     const phone     = normalizePhone(row[COL_PHONE - 1]);
     if (!phone) continue;
