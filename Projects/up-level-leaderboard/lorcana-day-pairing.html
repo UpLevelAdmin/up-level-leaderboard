@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lorcana Day · Pairing</title>
+  <meta name="description" content="Live pairing & standings · Lorcana Day · Up Level Academy" />
+  <meta property="og:title" content="Lorcana Day · Pairing" />
+  <meta property="og:description" content="ดูคู่แข่ง · เช็คคะแนนสด · 2 League" />
+  <meta property="og:image" content="./lorcana-posters/lorcana-day-2026-05-31/1.png" />
+
+  <link rel="icon" href="./lorcana-posters/assets/logos/badge-circle.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+
+  <style>
+    :root {
+      --sky:        #6EC1E4;
+      --sky-2:      #A9DCF2;
+      --sky-deep:   #4A9FCB;
+      --orange:     #FF8C42;
+      --orange-2:   #FFC78E;
+      --orange-deep:#E66B1F;
+      --brown:      #8B5A2B;
+      --brown-deep: #5C3A1E;
+      --cream:      #FFF8E7;
+      --cream-card: #FFFDF5;
+      --yellow:     #FCC861;
+      --ink:        #2A1810;
+      --ok:         #4CAF50;
+      --warn:       #F59E0B;
+    }
+
+    * { box-sizing: border-box; }
+
+    [data-lucide] {
+      display: inline-block;
+      width: 1em; height: 1em;
+      vertical-align: -0.15em;
+      stroke-width: 2.2;
+      flex-shrink: 0;
+    }
+    .spin { animation: spin 0.9s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    body {
+      font-family: 'Mitr', sans-serif;
+      background: var(--sky);
+      background-image:
+        radial-gradient(ellipse at 15% 10%, rgba(255,255,255,0.6) 0%, transparent 35%),
+        radial-gradient(ellipse at 85% 25%, rgba(255,255,255,0.45) 0%, transparent 30%),
+        linear-gradient(180deg, var(--sky-2) 0%, var(--sky) 60%, #C8E6F2 100%);
+      background-attachment: fixed;
+      margin: 0;
+      padding: 1rem;
+      min-height: 100vh;
+      color: var(--ink);
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 0.5rem;
+    }
+
+    /* HEADER */
+    header {
+      text-align: center;
+      padding: 1.4rem 1rem 0.8rem;
+    }
+    .title {
+      font-size: 2rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--orange-deep), var(--orange) 50%, var(--sky-deep));
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin: 0;
+    }
+    .subtitle {
+      color: var(--brown-deep);
+      font-size: 0.95rem;
+      margin: 0.3rem 0 0.8rem;
+      font-weight: 500;
+    }
+    .home-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--brown);
+      text-decoration: none;
+      font-size: 0.85rem;
+      padding: 6px 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.55);
+      transition: all 0.2s;
+    }
+    .home-link:hover { background: var(--cream); }
+
+    /* LEAGUE TABS */
+    .league-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin: 1rem 0 0.6rem;
+      flex-wrap: wrap;
+    }
+    .tab-btn {
+      padding: 10px 24px;
+      border-radius: 999px;
+      border: 2px solid transparent;
+      background: rgba(255,255,255,0.7);
+      color: var(--brown-deep);
+      font-weight: 600;
+      font-family: inherit;
+      font-size: 0.95rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.25s cubic-bezier(.4,0,.2,1);
+    }
+    .tab-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 14px rgba(92,58,30,0.18);
+    }
+    .tab-btn.active.newbie {
+      background: linear-gradient(135deg, var(--sky-deep), var(--sky));
+      color: #fff;
+      border-color: var(--sky-deep);
+      box-shadow: 0 6px 18px rgba(74,159,203,0.4);
+    }
+    .tab-btn.active.open {
+      background: linear-gradient(135deg, var(--orange-deep), var(--orange));
+      color: #fff;
+      border-color: var(--orange-deep);
+      box-shadow: 0 6px 18px rgba(230,107,31,0.4);
+    }
+
+    /* ACTION BAR */
+    .actions {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin: 0.8rem 0 1.2rem;
+      flex-wrap: wrap;
+    }
+    .btn {
+      padding: 8px 16px;
+      border-radius: 12px;
+      border: 1.5px solid var(--brown);
+      background: var(--cream-card);
+      color: var(--brown-deep);
+      font-weight: 600;
+      font-family: inherit;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .btn:hover {
+      transform: translateY(-2px);
+      background: var(--cream);
+      box-shadow: 0 4px 10px rgba(92,58,30,0.18);
+    }
+    .btn.primary {
+      background: var(--orange);
+      color: #fff;
+      border-color: var(--orange-deep);
+    }
+    .btn.primary:hover { background: var(--orange-deep); }
+
+    /* CARDS */
+    .card {
+      background: var(--cream-card);
+      border-radius: 20px;
+      padding: 1.4rem 1.2rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 10px 28px rgba(92,58,30,0.14);
+      border: 1px solid rgba(139,90,43,0.12);
+    }
+    .card-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--brown-deep);
+      margin: 0 0 1rem;
+      padding-bottom: 0.6rem;
+      border-bottom: 2px solid var(--orange-2);
+    }
+    .card-title.newbie { border-bottom-color: var(--sky); }
+
+    /* STATS */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+    }
+    .stat-box {
+      background: linear-gradient(135deg, var(--cream), #fff);
+      padding: 1rem;
+      border-radius: 14px;
+      text-align: center;
+      border: 1px solid rgba(139,90,43,0.1);
+    }
+    .stat-val {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--orange-deep);
+      display: block;
+    }
+    .stat-label {
+      font-size: 0.75rem;
+      color: var(--brown);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-top: 4px;
+      display: block;
+    }
+    .active.newbie .stat-val { color: var(--sky-deep); }
+
+    /* PAIRING ROW */
+    .round-block {
+      margin-bottom: 1.2rem;
+    }
+    .round-head {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--brown-deep);
+      margin: 0 0 0.6rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .round-head .pill {
+      font-size: 0.75rem;
+      padding: 3px 10px;
+      border-radius: 999px;
+      background: var(--orange-2);
+      color: var(--brown-deep);
+      font-weight: 600;
+    }
+    .pairing-grid {
+      display: grid;
+      gap: 8px;
+    }
+    .match {
+      display: grid;
+      grid-template-columns: 50px 1fr 70px 1fr 100px;
+      align-items: center;
+      gap: 8px;
+      padding: 0.9rem 1rem;
+      background: #fff;
+      border: 1px solid rgba(139,90,43,0.1);
+      border-radius: 12px;
+      transition: all 0.2s;
+    }
+    .match:hover {
+      transform: translateX(3px);
+      box-shadow: 0 6px 14px rgba(92,58,30,0.12);
+      border-color: var(--orange-2);
+    }
+    .table-num {
+      font-weight: 700;
+      background: var(--cream);
+      color: var(--brown-deep);
+      padding: 4px 8px;
+      border-radius: 8px;
+      text-align: center;
+      font-size: 0.9rem;
+    }
+    .player {
+      font-weight: 500;
+      color: var(--ink);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-size: 0.95rem;
+    }
+    .player.winner {
+      color: var(--ok);
+      font-weight: 700;
+    }
+    .score {
+      font-weight: 700;
+      color: var(--orange-deep);
+      background: var(--cream);
+      padding: 4px 10px;
+      border-radius: 8px;
+      text-align: center;
+      font-size: 0.9rem;
+    }
+    .score.pending { color: var(--brown); background: rgba(139,90,43,0.08); }
+    .status-tag {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 999px;
+      text-align: center;
+      letter-spacing: 0.5px;
+    }
+    .status-tag.done {
+      background: rgba(76,175,80,0.18);
+      color: var(--ok);
+    }
+    .status-tag.pending {
+      background: rgba(245,158,11,0.18);
+      color: var(--warn);
+    }
+
+    /* STANDINGS TABLE */
+    .table-wrap { overflow-x: auto; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 600px;
+    }
+    th {
+      background: var(--cream);
+      padding: 10px 8px;
+      text-align: left;
+      font-size: 0.78rem;
+      color: var(--brown-deep);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 2px solid var(--orange-2);
+    }
+    th.center, td.center { text-align: center; }
+    td {
+      padding: 10px 8px;
+      border-bottom: 1px solid rgba(139,90,43,0.08);
+      font-size: 0.9rem;
+    }
+    tbody tr:hover td { background: rgba(255,200,142,0.12); }
+    tbody tr.dropped {
+      opacity: 0.5;
+      font-style: italic;
+    }
+    .rank-cell {
+      font-weight: 700;
+      color: var(--orange-deep);
+    }
+    .rank-cell.drop {
+      color: var(--brown);
+    }
+    .pts {
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    /* LOADER */
+    .loader {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 1rem;
+      color: var(--brown-deep);
+      gap: 1rem;
+    }
+    .loader-ring {
+      width: 50px;
+      height: 50px;
+      border: 4px solid rgba(139,90,43,0.15);
+      border-top-color: var(--orange-deep);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    .empty {
+      text-align: center;
+      color: var(--brown);
+      padding: 2rem 1rem;
+      font-style: italic;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 640px) {
+      .title { font-size: 1.5rem; }
+      .container { padding: 0; }
+      .card { padding: 1rem 0.8rem; border-radius: 16px; }
+      .match {
+        grid-template-columns: 40px 1fr 60px 1fr;
+        font-size: 0.85rem;
+        gap: 6px;
+        padding: 0.7rem 0.8rem;
+      }
+      .status-tag { display: none; }
+      .stat-val { font-size: 1.4rem; }
+      .stats { grid-template-columns: 1fr 1fr; gap: 8px; }
+      .btn { font-size: 0.8rem; padding: 6px 12px; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <header>
+      <a href="./newbie-lorcana-day.html" class="home-link">
+        <i data-lucide="arrow-left"></i> กลับ Signup
+      </a>
+      <h1 class="title">Lorcana Day · Pairing</h1>
+      <p class="subtitle">ดูคู่แข่ง · เช็คคะแนนสด · 31 พ.ค. · Up Level Academy</p>
+
+      <div class="league-tabs">
+        <button id="tab-newbie" class="tab-btn active newbie" onclick="switchLeague('newbie')">
+          <i data-lucide="sparkles"></i> Newbie League
+        </button>
+        <button id="tab-open" class="tab-btn open" onclick="switchLeague('open')">
+          <i data-lucide="swords"></i> Open League
+        </button>
+      </div>
+
+      <div class="actions">
+        <button class="btn primary" onclick="loadData()">
+          <i data-lucide="refresh-cw"></i> Refresh
+        </button>
+        <button class="btn" onclick="toggleFormal()">
+          <span id="formalLabel"><i data-lucide="user"></i> Show Real Name</span>
+        </button>
+      </div>
+    </header>
+
+    <main id="content">
+      <div class="loader">
+        <div class="loader-ring"></div>
+        <p>Loading...</p>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // ⚙️ CONFIG — paste GAS web app URL here after deployment
+    const API_URL = 'https://script.google.com/macros/s/AKfycbztAHaqs0Jl2cUE5yU6AITaIhBWnedVresgkGHHOLjXgSCGM4M8fpZqv2BNuNXOn9WGfQ/exec';
+
+    let currentLeague = 'newbie';
+    let formalMode = false;
+    let dataStore = { newbie: null, open: null };
+
+    function extractRealName(name) {
+      if (!name) return '';
+      return name.replace(/^[Tt][Hh]\d+[_\s]*/, '').trim();
+    }
+
+    function displayName(rawName) {
+      if (!rawName) return '';
+      return formalMode ? extractRealName(rawName) : rawName;
+    }
+
+    async function loadData() {
+      const content = document.getElementById('content');
+      content.innerHTML = '<div class="loader"><div class="loader-ring"></div><p>Loading...</p></div>';
+
+      if (!API_URL || API_URL === 'PASTE_DEPLOYED_GAS_URL_HERE') {
+        content.innerHTML = '<div class="card"><p class="empty">⚠️ ยังไม่ได้ตั้งค่า API_URL — แก้ไขในไฟล์ HTML</p></div>';
+        return;
+      }
+
+      try {
+        const res = await fetch(API_URL);
+        const data = await res.json();
+        dataStore.newbie = data.newbie || null;
+        dataStore.open = data.open || null;
+        render();
+      } catch (err) {
+        console.error(err);
+        content.innerHTML = '<div class="card"><p class="empty">❌ โหลดข้อมูลไม่ได้ ลอง refresh อีกครั้ง</p></div>';
+      }
+    }
+
+    function switchLeague(league) {
+      currentLeague = league;
+      document.getElementById('tab-newbie').classList.toggle('active', league === 'newbie');
+      document.getElementById('tab-open').classList.toggle('active', league === 'open');
+      render();
+    }
+
+    function toggleFormal() {
+      formalMode = !formalMode;
+      document.getElementById('formalLabel').innerHTML = formalMode
+        ? '<i data-lucide="hash"></i> Show TR_ID Name'
+        : '<i data-lucide="user"></i> Show Real Name';
+      render();
+    }
+
+    function render() {
+      const d = dataStore[currentLeague];
+      const content = document.getElementById('content');
+
+      if (!d) {
+        content.innerHTML = '<div class="card"><p class="empty">ไม่พบข้อมูล League นี้</p></div>';
+        if (window.lucide) lucide.createIcons();
+        return;
+      }
+
+      const pairing = d.pairing || [];
+      const standings = d.standings || [];
+
+      const html = renderSummary(pairing, standings) + renderPairing(pairing) + renderStandings(standings);
+      content.innerHTML = html;
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function renderSummary(pairing, standings) {
+      const playerCount = standings.length > 1 ? standings.length - 1 : 0;
+      const rounds = new Set();
+      let completed = 0;
+      pairing.slice(1).forEach(row => {
+        if (row[0]) rounds.add(row[0]);
+        if (row[10] && row[10].toString().trim() !== '') completed++;
+      });
+      const total = pairing.length > 1 ? pairing.length - 1 : 0;
+      const cls = currentLeague === 'newbie' ? 'active newbie' : '';
+
+      return `
+        <section class="card ${cls}">
+          <div class="card-title ${currentLeague === 'newbie' ? 'newbie' : ''}">
+            <i data-lucide="bar-chart-3"></i> Overview
+          </div>
+          <div class="stats">
+            <div class="stat-box">
+              <span class="stat-val">${playerCount}</span>
+              <span class="stat-label">Players</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-val">${rounds.size}</span>
+              <span class="stat-label">Rounds</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-val">${completed}/${total}</span>
+              <span class="stat-label">Matches done</span>
+            </div>
+          </div>
+        </section>
+      `;
+    }
+
+    function renderPairing(pairing) {
+      if (!pairing || pairing.length <= 1) {
+        return '<section class="card"><p class="empty">ยังไม่มีการจับคู่</p></section>';
+      }
+
+      const rounds = {};
+      pairing.slice(1).forEach(row => {
+        if (!row[0]) return;
+        const r = row[0];
+        if (!rounds[r]) rounds[r] = [];
+        rounds[r].push(row);
+      });
+
+      const roundKeys = Object.keys(rounds).sort((a, b) => b - a);
+      let html = `<section class="card">
+        <div class="card-title ${currentLeague === 'newbie' ? 'newbie' : ''}">
+          <i data-lucide="layout-list"></i> Pairing
+        </div>`;
+
+      roundKeys.forEach(r => {
+        html += `<div class="round-block">
+          <div class="round-head">
+            <i data-lucide="trophy"></i> Round ${r}
+            <span class="pill">${rounds[r].length} match${rounds[r].length > 1 ? 'es' : ''}</span>
+          </div>
+          <div class="pairing-grid">`;
+
+        rounds[r].sort((a, b) => parseInt(a[1]) - parseInt(b[1])).forEach(row => {
+          const table = row[1];
+          const p1Name = row[3] || '';
+          const p2Name = row[9] || '';
+          const result = row[10] || '';
+          const isBye = row[8] === 'BYE';
+          const isDone = result && result.toString().trim() !== '';
+
+          if (isBye) {
+            html += `<div class="match">
+              <div class="table-num">${table}</div>
+              <div class="player winner">${displayName(p1Name)}</div>
+              <div class="score">BYE</div>
+              <div class="player" style="opacity:0.5;">—</div>
+              <div class="status-tag done">BYE WIN</div>
+            </div>`;
+          } else {
+            const p1Win = result === '1:0';
+            const p2Win = result === '0:1';
+            html += `<div class="match">
+              <div class="table-num">${table}</div>
+              <div class="player ${p1Win ? 'winner' : ''}">${displayName(p1Name)}</div>
+              <div class="score ${isDone ? '' : 'pending'}">${result || '- : -'}</div>
+              <div class="player ${p2Win ? 'winner' : ''}">${displayName(p2Name)}</div>
+              <div class="status-tag ${isDone ? 'done' : 'pending'}">${isDone ? 'Done' : 'Waiting'}</div>
+            </div>`;
+          }
+        });
+
+        html += `</div></div>`;
+      });
+
+      html += '</section>';
+      return html;
+    }
+
+    function renderStandings(standings) {
+      if (!standings || standings.length <= 1) {
+        return '<section class="card"><p class="empty">ยังไม่มี Standing</p></section>';
+      }
+
+      let html = `<section class="card">
+        <div class="card-title ${currentLeague === 'newbie' ? 'newbie' : ''}">
+          <i data-lucide="award"></i> Standings
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th class="center">Rank</th>
+              <th>Player</th>
+              <th class="center">Pts</th>
+              <th class="center">W/L/D</th>
+              <th class="center">WR%</th>
+              <th class="center">OW%</th>
+            </tr></thead>
+            <tbody>`;
+
+      standings.slice(1).forEach(row => {
+        const rank = row[0];
+        const name = row[2] || '';
+        const wins = row[5] || 0;
+        const draws = row[6] || 0;
+        const losses = row[7] || 0;
+        const pts = row[8] || 0;
+        const wr = row[9] || '0%';
+        const ow = row[10] || '0%';
+        const isDrop = rank === 'DROP';
+
+        html += `<tr class="${isDrop ? 'dropped' : ''}">
+          <td class="rank-cell ${isDrop ? 'drop' : ''} center">${rank}</td>
+          <td>${displayName(name)}</td>
+          <td class="pts center">${pts}</td>
+          <td class="center">${wins}/${losses}/${draws}</td>
+          <td class="center">${wr}</td>
+          <td class="center">${ow}</td>
+        </tr>`;
+      });
+
+      html += '</tbody></table></div></section>';
+      return html;
+    }
+
+    // Boot
+    document.addEventListener('DOMContentLoaded', () => {
+      if (window.lucide) lucide.createIcons();
+      loadData();
+      // Auto-refresh every 30s
+      setInterval(loadData, 30000);
+    });
+  </script>
+</body>
+</html>
