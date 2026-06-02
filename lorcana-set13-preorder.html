@@ -1751,14 +1751,7 @@
                         detail.innerHTML = `<div class="alert info">ยังไม่มียอดคงเหลือสำหรับเบอร์นี้ — รอประกาศการจัดสรรอีกครั้งครับ</div>`;
                         return;
                     }
-                    const allocItems = (agg.allocatedItems || [])
-                        .map(it => `<div style="display:flex;justify-content:space-between;font-size:0.92rem;padding:2px 0;"><span>${it.name}</span><span style="color:var(--gold-soft);font-weight:700;">× ${it.qty}</span></div>`)
-                        .join("");
                     detail.innerHTML = `
-                        <div class="alert info" style="margin-bottom:0.8rem;">
-                            <div style="font-weight:700;margin-bottom:0.4rem;">รายการที่จัดสรรให้ท่าน</div>
-                            ${allocItems || '<div style="color:var(--ink-mute);">(ยังไม่มี — กรุณาทักแอดมิน)</div>'}
-                        </div>
                         <div class="pay-amount-panel">
                             <div class="pay-amount-label">ยอดคงเหลือต้องโอน</div>
                             <div class="pay-amount-big"><span>${due.toLocaleString()}</span><span class="baht">บาท</span></div>
