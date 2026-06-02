@@ -15,7 +15,7 @@
  * =============================================
  */
 
-const SCRIPT_VERSION = "lorcana13.v8.1";
+const SCRIPT_VERSION = "lorcana13.v8.2";
 
 // ===== Config =====
 const SHEET_NAME      = "Responses";
