@@ -377,7 +377,7 @@
         <img src="https://i.postimg.cc/fyMXPbrX/gym-thiy-ch-d.png" alt="Gym Logo" class="logo-gym">
       </div>
       <h1>รายชื่อผู้สมัคร GYM BATTLE</h1>
-      <div style="color: var(--text-muted); margin-top: 0.5rem;">ประจำเดือนพฤษภาคม 2569</div>
+      <div style="color: var(--text-muted); margin-top: 0.5rem;">ประจำเดือนมิถุนายน 2569</div>
     </header>
 
     <!-- Floating Decorations -->
@@ -385,7 +385,7 @@
     <img src="https://asia.pokemon-card.com/th/wp-content/uploads/sites/4/2026/03/th_news_gym_promo_3.png" class="floating-card-pack pack-left">
 
     <div class="promo-banner">
-      📢 ตลอดเดือนพฤษภาคม: แข่งขัน Gym Battle เลือกรับของรางวัลชุดใหม่ล่าสุด (MA4, MA3)
+      📢 ตลอดเดือนมิถุนายน: แข่งขัน Gym Battle เลือกรับของรางวัลชุดใหม่ล่าสุด (MA4, MA3)
     </div>
 
     <div class="details-card">
@@ -442,11 +442,11 @@
 
     <div class="promo-section">
       <h3 class="promo-title">การ์ดโปรโม GYM BATTLE</h3>
-      <div style="text-align: center; color: var(--text-muted); font-size: 0.9rem;">🎁 ของรางวัลประจำเดือนพฤษภาคม 2569</div>
+      <div style="text-align: center; color: var(--text-muted); font-size: 0.9rem;">🎁 ของรางวัลประจำเดือนมิถุนายน 2569</div>
 
       <div style="margin-top: 2rem;">
         <div class="date-header" onclick="toggleSet('set-new', 'arrow-new')" style="cursor: pointer; border-radius: 1rem; border-bottom: 1px solid var(--glass-border);">
-          <span>🔥 ชุดใหม่ล่าสุด (พฤษภาคม)</span>
+          <span>🔥 ชุดใหม่ล่าสุด (มิถุนายน)</span>
           <span id="arrow-new">▲</span>
         </div>
         <div id="set-new" class="promo-cards-grid" style="margin-bottom: 3rem;"></div>
@@ -480,10 +480,12 @@
     const apiUrl = "https://script.google.com/macros/s/AKfycbx6UHStLora2VL2_7RI1I2fOigIKa-2gJBCMI7ZD77nLKqII2XdF2UIxjePIoECSYzd/exec?type=json";
     const memberDashboardApi = "https://script.google.com/macros/s/AKfycbxtjsDwHI6nJU4OIHExUxMaZwUn3qwakvdkzwbQO7C8Trzz5Gh84SX6F1gqb4BOFQcn/exec?func=getMemberDashboardData";
 
-    const mayDates = [
-      "วันศุกร์ที่ 1 พฤษภาคม 2569", "วันเสาร์ที่ 2 พฤษภาคม 2569", "วันอังคารที่ 5 พฤษภาคม 2569",
-      "วันอังคารที่ 19 พฤษภาคม 2569", "วันศุกร์ที่ 22 พฤษภาคม 2569", "วันเสาร์ที่ 23 พฤษภาคม 2569",
-      "วันอังคารที่ 26 พฤษภาคม 2569", "วันศุกร์ที่ 29 พฤษภาคม 2569", "วันเสาร์ที่ 30 พฤษภาคม 2569"
+    const juneDates = [
+      "วันอังคารที่ 2 มิถุนายน 2569", "วันศุกร์ที่ 5 มิถุนายน 2569", "วันเสาร์ที่ 6 มิถุนายน 2569",
+      "วันอังคารที่ 9 มิถุนายน 2569", "วันศุกร์ที่ 12 มิถุนายน 2569", "วันเสาร์ที่ 13 มิถุนายน 2569",
+      "วันอังคารที่ 16 มิถุนายน 2569", "วันศุกร์ที่ 19 มิถุนายน 2569", "วันเสาร์ที่ 20 มิถุนายน 2569",
+      "วันอังคารที่ 23 มิถุนายน 2569", "วันศุกร์ที่ 26 มิถุนายน 2569", "วันเสาร์ที่ 27 มิถุนายน 2569",
+      "วันอังคารที่ 30 มิถุนายน 2569"
     ];
 
     const rankEmojis = {
@@ -530,10 +532,10 @@
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
-        let upcomingIndex = mayDates.findIndex(date => parseThaiDate(date) >= today);
-        if (upcomingIndex === -1) upcomingIndex = mayDates.length - 1;
+        let upcomingIndex = juneDates.findIndex(date => parseThaiDate(date) >= today);
+        if (upcomingIndex === -1) upcomingIndex = juneDates.length - 1;
 
-        mayDates.forEach((date, idx) => {
+        juneDates.forEach((date, idx) => {
           const players = (data.groupedData && data.groupedData[date]) || [];
           const isUpcoming = (idx === upcomingIndex);
           const groupId = `group-${idx}`;
