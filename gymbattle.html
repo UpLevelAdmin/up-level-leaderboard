@@ -985,8 +985,13 @@
           }
           const rank = member.rank || 'Rookie';
           const emoji = getRankEmoji(rank, cleanPhone);
-          badge.innerHTML = `✅ <strong>สมาชิก:</strong> ${emoji} <strong>[${member.codename}]</strong> · ${rank}` +
-            (lookupRes && lookupRes.found ? ' · ดึงข้อมูลครั้งก่อนแล้ว' : '');
+          let extra = '';
+          if (lookupRes && lookupRes.found) {
+            extra = ' · ✅ ดึงประวัติแล้ว';
+          } else {
+            extra = '<br><span style="font-size:0.78rem;">⚠️ ครั้งแรก กรอก <strong>ชื่อ-นามสกุล Eng</strong> + <strong>Trainer ID</strong> ด้วย ครั้งหน้าจะ auto</span>';
+          }
+          badge.innerHTML = `✅ <strong>สมาชิก:</strong> ${emoji} <strong>[${member.codename}]</strong> · ${rank}${extra}`;
         } else if (lookupRes && lookupRes.found) {
           badge.classList.add('guest');
           badge.innerHTML = `📋 พบประวัติสมัครครั้งก่อน — ดึงข้อมูลให้แล้ว`;
