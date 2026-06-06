@@ -983,6 +983,9 @@
           if (!document.getElementById('regNickname').value && member.nickname) {
             document.getElementById('regNickname').value = member.nickname;
           }
+          // Members default to expert (they're already in the guild = experienced)
+          const lvlEl = document.getElementById('regLevel');
+          if (!lvlEl.value) lvlEl.value = 'มีประสบการณ์ expert';
           const rank = member.rank || 'Rookie';
           const emoji = getRankEmoji(rank, cleanPhone);
           let extra = '';
