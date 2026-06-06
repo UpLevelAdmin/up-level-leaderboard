@@ -627,7 +627,8 @@
 
           <div class="reg-field">
             <label>🆔 Trainer ID (เช่น th5xxxxxx)</label>
-            <input type="text" id="regTrainerId" placeholder="th5xxxxxx" pattern="[A-Za-z0-9]+">
+            <input type="text" id="regTrainerId" required placeholder="th5xxxxxx" pattern="[A-Za-z0-9]+">
+            <div style="font-size:0.72rem; color:var(--text-muted); margin-top:4px;">💡 กรอกครั้งแรก ครั้งหน้าระบบจะดึงให้อัตโนมัติ</div>
           </div>
 
           <div class="reg-field">
@@ -1048,8 +1049,17 @@
         const result = await res.json();
 
         if (result.ok) {
+          const st = result.status || '';
+          const verified = st.indexOf('ชำระแล้ว') >= 0 || st.indexOf('✅') >= 0;
+          const manualCheck = st.indexOf('รอตรวจสอบ') >= 0 || st.indexOf('⏳') >= 0;
           msg.className = 'reg-msg show success';
-          msg.textContent = '✅ สมัครสำเร็จ! ระบบกำลังตรวจสลิปอัตโนมัติ — รีเฟรชหน้าเพื่อดูรายชื่อ';
+          if (verified) {
+            msg.innerHTML = '✅ <strong>สมัครและตรวจสลิปสำเร็จ!</strong><br>ระบบยืนยันการชำระเงินเรียบร้อย';
+          } else if (manualCheck) {
+            msg.innerHTML = '⏳ <strong>สมัครเรียบร้อย</strong> · สลิปกำลังรอตรวจสอบ<br>แอดมินจะอนุมัติให้เร็วๆนี้';
+          } else {
+            msg.innerHTML = '✅ <strong>สมัครเรียบร้อย!</strong><br>ระบบกำลังประมวลผลสลิป';
+          }
           btn.textContent = '✅ สำเร็จ';
           setTimeout(() => {
             closeRegisterModal();
@@ -1058,7 +1068,7 @@
             btn.textContent = '🚀 ยืนยันสมัคร';
             document.getElementById('regForm').reset();
             document.getElementById('memberBadge').classList.remove('show');
-          }, 2500);
+          }, 3500);
         } else {
           msg.className = 'reg-msg show error';
           msg.textContent = '❌ ' + (result.error || 'เกิดข้อผิดพลาด');
