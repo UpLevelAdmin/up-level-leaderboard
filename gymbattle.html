@@ -632,9 +632,18 @@
           </div>
 
           <div class="reg-field">
-            <label>📎 สลิปโอนเงิน 220 บาท</label>
+            <label>💰 ค่าสมัคร 220 บาท · สแกน QR เพื่อโอน</label>
+            <div style="text-align:center; background:#fff; border-radius:0.75rem; padding:0.75rem; margin-top:4px;">
+              <img src="https://i.postimg.cc/9Qf7H5S7/QR-KShop.jpg" alt="QR ชำระเงิน 220 บาท" style="max-width:220px; width:100%; height:auto; border-radius:0.5rem;">
+              <div style="color:#0f172a; font-weight:700; font-size:0.85rem; margin-top:6px;">ธ.กสิกรไทย · นายชวณัฐ เจริญธรรมโชค</div>
+              <div style="color:#475569; font-size:0.78rem; margin-top:2px;">จำนวน 220 บาท</div>
+            </div>
+          </div>
+
+          <div class="reg-field">
+            <label>📎 แนบสลิปโอนเงิน</label>
             <input type="file" id="regSlip" accept="image/*" required>
-            <div class="qr-promo">📲 โอนผ่าน QR กสิกร แล้วแนบสลิปที่นี่</div>
+            <div class="qr-promo">⚡ ระบบจะตรวจสลิปอัตโนมัติ (SlipOK)</div>
           </div>
 
           <label class="reg-accept">
@@ -944,10 +953,12 @@
       badge.innerHTML = '⏳ กำลังตรวจสอบ...';
 
       try {
+        const cacheBust = Date.now();
         const [memberRes, lookupRes] = await Promise.all([
           fetch(memberDashboardApi).then(r => r.json()).catch(() => []),
-          fetch(`${gasBaseUrl}?op=lookupPhone&phone=${encodeURIComponent(cleanPhone)}`).then(r => r.json()).catch(() => ({ found: false }))
+          fetch(`${gasBaseUrl}?op=lookupPhone&phone=${encodeURIComponent(cleanPhone)}&_=${cacheBust}`).then(r => r.json()).catch(err => { console.error('lookup err:', err); return { found: false }; })
         ]);
+        console.log('[autoFill]', cleanPhone, 'lookup:', lookupRes);
 
         // Member dashboard lookup
         let member = null;
