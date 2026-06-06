@@ -339,6 +339,154 @@
 
     #loading { text-align: center; padding: 3rem; color: var(--text-muted); }
 
+    /* ===== Registration Modal ===== */
+    .reg-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 3000;
+      background: rgba(2, 6, 23, 0.88);
+      backdrop-filter: blur(8px);
+      overflow-y: auto;
+      padding: 1rem;
+    }
+    .reg-modal.active { display: block; }
+    .reg-content {
+      max-width: 520px;
+      margin: 2rem auto;
+      background: linear-gradient(160deg, #064e3b 0%, #022c22 100%);
+      border: 1px solid var(--glass-border);
+      border-radius: 1.5rem;
+      padding: 1.75rem 1.5rem;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
+      position: relative;
+    }
+    .reg-close {
+      position: absolute;
+      top: 12px;
+      right: 14px;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.6rem;
+      cursor: pointer;
+      line-height: 1;
+    }
+    .reg-close:hover { color: #fff; }
+    .reg-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      text-align: center;
+      margin: 0 0 0.25rem;
+      color: #fff;
+    }
+    .reg-subtitle {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      margin-bottom: 1.25rem;
+    }
+    .reg-field { margin-bottom: 1rem; }
+    .reg-field label {
+      display: block;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-bottom: 5px;
+      font-weight: 600;
+    }
+    .reg-field input,
+    .reg-field select {
+      width: 100%;
+      padding: 0.75rem 0.9rem;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 0.75rem;
+      color: #fff;
+      font-size: 0.95rem;
+      font-family: inherit;
+      transition: 0.2s;
+    }
+    .reg-field input:focus,
+    .reg-field select:focus {
+      outline: none;
+      border-color: var(--primary);
+      background: rgba(16, 185, 129, 0.08);
+    }
+    .reg-field input:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    .reg-field input[type="file"] {
+      padding: 0.5rem;
+      cursor: pointer;
+    }
+    .reg-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    @media (max-width: 480px) { .reg-row { grid-template-columns: 1fr; } }
+    .member-badge {
+      display: none;
+      margin-top: 8px;
+      padding: 0.6rem 0.8rem;
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.18), rgba(52, 211, 153, 0.1));
+      border: 1px solid var(--primary);
+      border-radius: 0.6rem;
+      font-size: 0.85rem;
+    }
+    .member-badge.show { display: block; }
+    .member-badge.guest {
+      background: rgba(245, 158, 11, 0.08);
+      border-color: rgba(245, 158, 11, 0.4);
+      color: #fde68a;
+    }
+    .reg-accept {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.6rem;
+      padding: 0.75rem;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 0.6rem;
+      margin-bottom: 1rem;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .reg-accept input { width: auto; margin-top: 3px; }
+    .reg-submit {
+      width: 100%;
+      padding: 1rem;
+      background: linear-gradient(135deg, var(--primary) 0%, #059669 100%);
+      color: #fff;
+      border: none;
+      border-radius: 0.9rem;
+      font-weight: 700;
+      font-size: 1rem;
+      font-family: inherit;
+      cursor: pointer;
+      transition: 0.2s;
+      box-shadow: 0 8px 18px var(--primary-glow);
+    }
+    .reg-submit:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.08); }
+    .reg-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+    .reg-msg {
+      margin-top: 0.75rem;
+      padding: 0.75rem;
+      border-radius: 0.6rem;
+      font-size: 0.88rem;
+      text-align: center;
+      display: none;
+    }
+    .reg-msg.show { display: block; }
+    .reg-msg.error { background: rgba(239, 68, 68, 0.15); color: #fecaca; border: 1px solid rgba(239, 68, 68, 0.4); }
+    .reg-msg.success { background: rgba(16, 185, 129, 0.15); color: #a7f3d0; border: 1px solid rgba(16, 185, 129, 0.4); }
+    .qr-promo {
+      text-align: center;
+      margin-top: 0.5rem;
+      padding: 0.75rem;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 0.6rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
     /* /arrange: Hub-consistent Header Statuses */
     .status-text {
       white-space: nowrap;
@@ -433,7 +581,70 @@
     </div>
 
     <div style="text-align: center;">
-      <a class="register-btn" href="https://forms.gle/qfXtyTvD6zsjFNDN9" target="_blank">🚀 สมัครแข่งขัน GYM BATTLE</a>
+      <button class="register-btn" onclick="openRegisterModal()" style="border:none; cursor:pointer; font-family:inherit;">🚀 สมัครแข่งขัน GYM BATTLE</button>
+    </div>
+
+    <!-- ===== Registration Modal ===== -->
+    <div id="regModal" class="reg-modal" onclick="if(event.target===this) closeRegisterModal()">
+      <div class="reg-content">
+        <button class="reg-close" onclick="closeRegisterModal()">&times;</button>
+        <h2 class="reg-title">🏟️ สมัคร Gym Battle</h2>
+        <div class="reg-subtitle">ค่าสมัคร 220 บาท · ธ.กสิกรไทย · นายชวณัฐ เจริญธรรมโชค</div>
+
+        <form id="regForm" onsubmit="submitRegistration(event)">
+          <div class="reg-field">
+            <label>📱 เบอร์โทรศัพท์ (สมาชิก ⇒ ดึงข้อมูลให้อัตโนมัติ)</label>
+            <input type="tel" id="regPhone" inputmode="numeric" pattern="[0-9]{9,10}" maxlength="10" placeholder="0xxxxxxxxx" required>
+            <div id="memberBadge" class="member-badge"></div>
+          </div>
+
+          <div class="reg-field">
+            <label>📅 วันที่ลงแข่งขัน</label>
+            <select id="regDate" required>
+              <option value="">-- เลือกวันที่ --</option>
+            </select>
+          </div>
+
+          <div class="reg-row">
+            <div class="reg-field">
+              <label>🏷️ ชื่อเล่น</label>
+              <input type="text" id="regNickname" required placeholder="เช่น Champ">
+            </div>
+            <div class="reg-field">
+              <label>🎮 ระดับการเล่น</label>
+              <select id="regLevel" required>
+                <option value="">-- เลือก --</option>
+                <option value="มือใหม่ rookie">มือใหม่ rookie</option>
+                <option value="มีประสบการณ์ expert">มีประสบการณ์ expert</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="reg-field">
+            <label>📛 ชื่อ - นามสกุล (ภาษาอังกฤษ)</label>
+            <input type="text" id="regName" required placeholder="Name Surname">
+          </div>
+
+          <div class="reg-field">
+            <label>🆔 Trainer ID (เช่น th5xxxxxx)</label>
+            <input type="text" id="regTrainerId" placeholder="th5xxxxxx" pattern="[A-Za-z0-9]+">
+          </div>
+
+          <div class="reg-field">
+            <label>📎 สลิปโอนเงิน 220 บาท</label>
+            <input type="file" id="regSlip" accept="image/*" required>
+            <div class="qr-promo">📲 โอนผ่าน QR กสิกร แล้วแนบสลิปที่นี่</div>
+          </div>
+
+          <label class="reg-accept">
+            <input type="checkbox" id="regAccept" required>
+            <span>ฉันยอมรับเงื่อนไขทั้งหมด: แข่ง Standard Format, นำเด็คตามกฎ, แจ้งล่วงหน้าหากไม่มา, รับทราบของรางวัล</span>
+          </label>
+
+          <button type="submit" class="reg-submit" id="regSubmitBtn">🚀 ยืนยันสมัคร</button>
+          <div id="regMsg" class="reg-msg"></div>
+        </form>
+      </div>
     </div>
 
     <div id="gymbattle-list">
@@ -681,9 +892,201 @@
 
     window.onclick = e => { if (e.target.className === 'modal') closeCardModal(); };
     
+    // ===== Registration Modal Logic =====
+    const gasBaseUrl = "https://script.google.com/macros/s/AKfycbx6UHStLora2VL2_7RI1I2fOigIKa-2gJBCMI7ZD77nLKqII2XdF2UIxjePIoECSYzd/exec";
+    let lookupTimer = null;
+    let cachedMember = null;
+
+    function openRegisterModal() {
+      const dateSel = document.getElementById('regDate');
+      if (dateSel && dateSel.options.length <= 1) {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        juneDates.forEach(d => {
+          const dt = parseThaiDate(d);
+          if (dt && dt >= today) {
+            const opt = document.createElement('option');
+            opt.value = d;
+            opt.textContent = d;
+            dateSel.appendChild(opt);
+          }
+        });
+        if (dateSel.options.length <= 1) {
+          juneDates.forEach(d => {
+            const opt = document.createElement('option');
+            opt.value = d;
+            opt.textContent = d;
+            dateSel.appendChild(opt);
+          });
+        }
+      }
+      document.getElementById('regModal').classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeRegisterModal() {
+      document.getElementById('regModal').classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    async function autoFillFromPhone(phone) {
+      const badge = document.getElementById('memberBadge');
+      const cleanPhone = phone.replace(/[^\d]/g, '');
+      if (cleanPhone.length < 9) {
+        badge.classList.remove('show');
+        cachedMember = null;
+        return;
+      }
+
+      badge.classList.add('show');
+      badge.classList.remove('guest');
+      badge.innerHTML = '⏳ กำลังตรวจสอบ...';
+
+      try {
+        const [memberRes, lookupRes] = await Promise.all([
+          fetch(memberDashboardApi).then(r => r.json()).catch(() => []),
+          fetch(`${gasBaseUrl}?op=lookupPhone&phone=${encodeURIComponent(cleanPhone)}`).then(r => r.json()).catch(() => ({ found: false }))
+        ]);
+
+        // Member dashboard lookup
+        let member = null;
+        if (Array.isArray(memberRes)) {
+          member = memberRes.find(m => {
+            const p = String(m.phone || m.Phone || '').replace(/[^\d]/g, '');
+            return p === cleanPhone;
+          });
+        }
+        cachedMember = member;
+
+        // Fill from previous registration (history) first
+        if (lookupRes && lookupRes.found) {
+          if (lookupRes.name) document.getElementById('regName').value = lookupRes.name;
+          if (lookupRes.nickname) document.getElementById('regNickname').value = lookupRes.nickname;
+          if (lookupRes.trainerId) document.getElementById('regTrainerId').value = lookupRes.trainerId;
+          if (lookupRes.level) document.getElementById('regLevel').value = lookupRes.level;
+        }
+
+        // Always overlay member nickname/codename if available
+        if (member) {
+          if (!document.getElementById('regNickname').value && member.nickname) {
+            document.getElementById('regNickname').value = member.nickname;
+          }
+          const rank = member.rank || 'Rookie';
+          const emoji = getRankEmoji(rank, cleanPhone);
+          badge.innerHTML = `✅ <strong>สมาชิก:</strong> ${emoji} <strong>[${member.codename}]</strong> · ${rank}` +
+            (lookupRes && lookupRes.found ? ' · ดึงข้อมูลครั้งก่อนแล้ว' : '');
+        } else if (lookupRes && lookupRes.found) {
+          badge.classList.add('guest');
+          badge.innerHTML = `📋 พบประวัติสมัครครั้งก่อน — ดึงข้อมูลให้แล้ว`;
+        } else {
+          badge.classList.add('guest');
+          badge.innerHTML = `👋 ไม่พบในระบบ — กรอกข้อมูลเอง (สมัครได้ปกติ)`;
+        }
+      } catch (e) {
+        console.error('autoFill error:', e);
+        badge.classList.add('guest');
+        badge.innerHTML = '⚠️ ตรวจสอบไม่ได้ — กรอกข้อมูลเองได้ครับ';
+      }
+    }
+
+    function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function submitRegistration(ev) {
+      ev.preventDefault();
+      const btn = document.getElementById('regSubmitBtn');
+      const msg = document.getElementById('regMsg');
+      msg.className = 'reg-msg';
+
+      const slipFile = document.getElementById('regSlip').files[0];
+      if (!slipFile) {
+        msg.className = 'reg-msg show error';
+        msg.textContent = '❌ กรุณาแนบสลิปโอนเงิน';
+        return;
+      }
+      if (slipFile.size > 6 * 1024 * 1024) {
+        msg.className = 'reg-msg show error';
+        msg.textContent = '❌ ไฟล์ใหญ่เกิน 6MB กรุณาย่อภาพก่อน';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = '⏳ กำลังส่ง...';
+      msg.className = 'reg-msg show';
+      msg.style.background = 'rgba(255,255,255,0.04)';
+      msg.style.color = 'var(--text-muted)';
+      msg.textContent = '⏳ กำลังอัปโหลดสลิป + ตรวจสอบอัตโนมัติ...';
+
+      try {
+        const slipBase64 = await fileToBase64(slipFile);
+        const payload = {
+          phone: document.getElementById('regPhone').value.replace(/[^\d]/g, ''),
+          selectedDate: document.getElementById('regDate').value,
+          nickname: document.getElementById('regNickname').value.trim(),
+          name: document.getElementById('regName').value.trim(),
+          trainerId: document.getElementById('regTrainerId').value.trim(),
+          level: document.getElementById('regLevel').value,
+          accept: document.getElementById('regAccept').checked,
+          slipBase64: slipBase64,
+          slipMime: slipFile.type || 'image/jpeg',
+          slipFilename: slipFile.name || `slip_${Date.now()}.jpg`
+        };
+
+        // Use text/plain to avoid CORS preflight
+        const res = await fetch(gasBaseUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload),
+          redirect: 'follow'
+        });
+        const result = await res.json();
+
+        if (result.ok) {
+          msg.className = 'reg-msg show success';
+          msg.textContent = '✅ สมัครสำเร็จ! ระบบกำลังตรวจสลิปอัตโนมัติ — รีเฟรชหน้าเพื่อดูรายชื่อ';
+          btn.textContent = '✅ สำเร็จ';
+          setTimeout(() => {
+            closeRegisterModal();
+            initGymBattle();
+            btn.disabled = false;
+            btn.textContent = '🚀 ยืนยันสมัคร';
+            document.getElementById('regForm').reset();
+            document.getElementById('memberBadge').classList.remove('show');
+          }, 2500);
+        } else {
+          msg.className = 'reg-msg show error';
+          msg.textContent = '❌ ' + (result.error || 'เกิดข้อผิดพลาด');
+          btn.disabled = false;
+          btn.textContent = '🚀 ยืนยันสมัคร';
+        }
+      } catch (e) {
+        console.error('submit error:', e);
+        msg.className = 'reg-msg show error';
+        msg.textContent = '❌ ส่งข้อมูลไม่สำเร็จ: ' + e.message;
+        btn.disabled = false;
+        btn.textContent = '🚀 ยืนยันสมัคร';
+      }
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
       initGymBattle();
       initPromoCards();
+
+      // Phone debounced lookup
+      const phoneInput = document.getElementById('regPhone');
+      if (phoneInput) {
+        phoneInput.addEventListener('input', (e) => {
+          clearTimeout(lookupTimer);
+          const v = e.target.value;
+          lookupTimer = setTimeout(() => autoFillFromPhone(v), 500);
+        });
+      }
     });
   </script>
 
