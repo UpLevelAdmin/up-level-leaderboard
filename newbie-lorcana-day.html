@@ -1097,6 +1097,26 @@
       color: var(--brown);
       font-weight: 600;
     }
+    .kshop-card {
+      position: relative;
+      display: inline-block;
+      width: 280px;
+      max-width: 100%;
+      aspect-ratio: 1240 / 1535;
+      background: url("/assets/kshop-frame.png") center/contain no-repeat;
+    }
+    .kshop-card .kshop-qr {
+      position: absolute;
+      left: 31%;
+      top: 43%;
+      width: 38%;
+      height: auto;
+      aspect-ratio: 1 / 1;
+      border-radius: 4px;
+      image-rendering: pixelated;
+      border: none;
+      box-shadow: none;
+    }
 
     /* CONTACT */
     .contact-card {
@@ -1396,8 +1416,9 @@
       <!-- QR PAYMENT -->
       <div class="qr-box">
         <div class="qr-amount">โอน <strong id="qr-amount-num">100</strong> บาท</div>
-        <img id="qr-img" src="https://i.postimg.cc/9Qf7H5S7/QR-KShop.jpg" alt="QR KShop Up Level Academy" />
-        <div class="qr-name">Up Level Academy (KShop)</div>
+        <div class="kshop-card">
+          <canvas id="qr-img" class="kshop-qr" aria-label="QR KShop Up Level Academy"></canvas>
+        </div>
       </div>
 
       <!-- SLIP UPLOAD -->
@@ -1600,6 +1621,8 @@
         const amount = data.tierPrice || (tier === 'master' ? 250 : 100);
         const amountEl = document.getElementById('qr-amount-num');
         if (amountEl) amountEl.textContent = amount;
+        const qrCanvas = document.getElementById('qr-img');
+        if (qrCanvas && window.KShopQR) window.KShopQR.renderKShopQR(qrCanvas, amount);
 
         lastSignupPhone = phone;
         formWrap.style.display = 'none';
@@ -1704,6 +1727,9 @@
       }
     });
   </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+  <script src="/assets/kshop-qr.js"></script>
 
 </body>
 

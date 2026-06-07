@@ -511,6 +511,26 @@
       .pack-right { top: 100px !important; right: 10px !important; }
       .pack-left { top: 200px !important; left: 10px !important; }
     }
+
+    /* KShop QR framed card */
+    .kshop-card {
+      position: relative;
+      display: inline-block;
+      width: 280px;
+      max-width: 100%;
+      aspect-ratio: 1240 / 1535;
+      background: url("/assets/kshop-frame.png") center/contain no-repeat;
+    }
+    .kshop-qr {
+      position: absolute;
+      left: 31%;
+      top: 43%;
+      width: 38%;
+      height: auto;
+      aspect-ratio: 1 / 1;
+      border-radius: 4px;
+      image-rendering: pixelated;
+    }
   </style>
 </head>
 
@@ -633,10 +653,11 @@
 
           <div class="reg-field">
             <label>💰 ค่าสมัคร 220 บาท · สแกน QR เพื่อโอน</label>
-            <div style="text-align:center; background:#fff; border-radius:0.75rem; padding:0.75rem; margin-top:4px;">
-              <img src="https://i.postimg.cc/9Qf7H5S7/QR-KShop.jpg" alt="QR ชำระเงิน 220 บาท" style="max-width:220px; width:100%; height:auto; border-radius:0.5rem;">
-              <div style="color:#0f172a; font-weight:700; font-size:0.85rem; margin-top:6px;">ธ.กสิกรไทย · นายชวณัฐ เจริญธรรมโชค</div>
-              <div style="color:#475569; font-size:0.78rem; margin-top:2px;">จำนวน 220 บาท</div>
+            <div style="text-align:center; margin-top:4px;">
+              <div class="kshop-card">
+                <canvas id="kshopQrCanvas" class="kshop-qr"></canvas>
+              </div>
+              <div style="color:#cbd5e1; font-weight:600; font-size:0.78rem; margin-top:6px;">จำนวน 220.00 บาท</div>
             </div>
           </div>
 
@@ -1169,6 +1190,16 @@
       requestAnimationFrame(animate);
     }
     animate();
+  </script>
+
+  <!-- KShop dynamic QR (PromptPay merchant Tag 30 + amount Tag 54) -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+  <script src="/assets/kshop-qr.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const c = document.getElementById("kshopQrCanvas");
+      if (c && window.KShopQR) window.KShopQR.renderKShopQR(c, 220);
+    });
   </script>
 </body>
 

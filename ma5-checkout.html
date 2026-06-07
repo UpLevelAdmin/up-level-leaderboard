@@ -12,7 +12,7 @@
 
     <style>
         /* ========== CONFIG (Champ fill these in) ========== */
-        /* APPS_SCRIPT_URL, FB_APP_ID, KSHOP_QR_URL — see <script> at bottom */
+        /* APPS_SCRIPT_URL, FB_APP_ID — see <script> at bottom. KShop QR rendered via /assets/kshop-qr.js */
 
         * { box-sizing: border-box; }
 
@@ -340,7 +340,8 @@
             margin-bottom: 1rem;
         }
 
-        .qr-display img {
+        .qr-display img,
+        .qr-display canvas {
             max-width: 100%;
             height: auto;
             max-height: 280px;
@@ -615,6 +616,27 @@
         @media (max-width: 768px) {
             .floating-card-pack { width: 48px; opacity: 0.45; top: 70px; }
         }
+
+        /* KShop framed QR card */
+        .kshop-card {
+            position: relative;
+            display: inline-block;
+            width: 280px;
+            max-width: 100%;
+            aspect-ratio: 1240 / 1535;
+            background: url("/assets/kshop-frame.png") center/contain no-repeat;
+        }
+        .kshop-card .kshop-qr {
+            position: absolute;
+            left: 31%;
+            top: 43%;
+            width: 38%;
+            height: auto;
+            aspect-ratio: 1 / 1;
+            border-radius: 4px;
+            image-rendering: pixelated;
+            max-height: none;
+        }
     </style>
 </head>
 
@@ -794,7 +816,9 @@
             </div>
 
             <div class="qr-display">
-                <img id="kshop-qr-img" src="" alt="KShop QR" />
+                <div class="kshop-card">
+                    <canvas id="kshop-qr-img" class="kshop-qr" aria-label="KShop QR"></canvas>
+                </div>
                 <div class="qr-amount-tag" id="qr-amount-tag">โอน 0 บาท</div>
             </div>
 
@@ -828,7 +852,6 @@
     <script>
         /* ===================== CONFIG ===================== */
         const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw220nOc36exhqF5i4YIyReivU2dAGWrsOtg4QCXQErnCfF5TER1Nuy8SDo2Kobjbd_ag/exec";
-        const KSHOP_QR_URL    = "https://i.postimg.cc/9Qf7H5S7/QR-KShop.jpg";
         const PRICE_PER_BOX   = 1400;
         /* ================================================== */
 
@@ -974,7 +997,8 @@
         document.getElementById('btn-proceed-payment').onclick = () => {
             const total = state.selectedBoxes * PRICE_PER_BOX;
             document.getElementById('qr-amount-tag').textContent = 'โอน ' + total.toLocaleString() + ' บาท';
-            document.getElementById('kshop-qr-img').src = KSHOP_QR_URL;
+            const qrCanvas = document.getElementById('kshop-qr-img');
+            if (qrCanvas && window.KShopQR) window.KShopQR.renderKShopQR(qrCanvas, total);
             step2.classList.add('done');
             unlockStep(step2, step3);
         };
@@ -1188,5 +1212,8 @@
         lucide.createIcons();
         loadQuota();
     </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+    <script src="/assets/kshop-qr.js"></script>
 </body>
 </html>

@@ -585,12 +585,33 @@
             width: max-content;
             max-width: 100%;
             margin: 0 auto;
-            background: #fff;
-            padding: 8px;
-            border-radius: 10px;
-            box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+            background: transparent;
+            padding: 0;
+            border-radius: 0;
+            box-shadow: none;
         }
         .qr-display img { display: block; max-width: 100%; height: auto; max-height: 220px; border-radius: 4px; }
+
+        /* KShop framed QR card (shared) */
+        .kshop-card {
+            position: relative;
+            display: inline-block;
+            width: 280px;
+            max-width: 100%;
+            aspect-ratio: 1240 / 1535;
+            background: url("/assets/kshop-frame.png") center/contain no-repeat;
+        }
+        .kshop-card .kshop-qr {
+            position: absolute;
+            left: 31%;
+            top: 43%;
+            width: 38%;
+            height: auto;
+            aspect-ratio: 1 / 1;
+            border-radius: 4px;
+            image-rendering: pixelated;
+            max-height: none;
+        }
         .qr-amount-tag {
             display: block;
             width: max-content;
@@ -1352,7 +1373,7 @@
                 สแกน QR แล้วโอนยอดตรงตามจำนวน ระบบเช็คสลิปอัตโนมัติ
             </div>
             <div class="qr-display">
-                <div class="qr-plate"><img id="kshop-qr-img" src="https://i.postimg.cc/9Qf7H5S7/QR-KShop.jpg" alt="KShop QR" crossorigin="anonymous" /></div>
+                <div class="qr-plate"><div class="kshop-card"><canvas id="kshop-qr-img" class="kshop-qr" aria-label="KShop QR"></canvas></div></div>
                 <div class="qr-amount-tag" id="qr-amount-tag">มัดจำ 0 บาท</div>
             </div>
 
@@ -1615,7 +1636,16 @@
         });
 
         /* ---------- Load summary (per-SKU stock + sold-out flags) ---------- */
+        const TEST_MODE = /[?&]status=1\b/.test(location.search);
         async function loadSummary() {
+            if (TEST_MODE) {
+                state.phase = "collecting";
+                state.phase2Deadline = "";
+                state.extraStockOpen = false;
+                applyPhaseUI();
+                applySkuStockUI();
+                return;
+            }
             try {
                 const res = await fetch(`${APPS_SCRIPT_URL}?_=${Date.now()}`);
                 const data = await res.json();
@@ -1635,7 +1665,7 @@
         }
         loadSummary();
         // Auto-refresh stock every 20s so customers see oversold SKUs go away
-        setInterval(loadSummary, 20000);
+        if (!TEST_MODE) setInterval(loadSummary, 20000);
 
         /* ---------- Phase router (collecting / closed / phase2_open / done) ---------- */
         function applyPhaseUI() {
@@ -1758,7 +1788,7 @@
                             <div class="pay-amount-hint">โอนเข้า KShop เดิม → อัปสลิปด้านล่าง · ระบบจะเช็คอัตโนมัติ</div>
                         </div>
                         <div class="qr-display" style="margin:0.7rem 0;">
-                            <div class="qr-plate"><img src="https://i.postimg.cc/9Qf7H5S7/QR-KShop.jpg" alt="KShop QR" /></div>
+                            <div class="qr-plate"><div class="kshop-card"><canvas id="phase2-qr-canvas" class="kshop-qr" aria-label="KShop QR Phase 2"></canvas></div></div>
                         </div>
                         <div class="input-row">
                             <label>อัปโหลดสลิป Phase 2 *</label>
@@ -1774,6 +1804,8 @@
                         </button>
                         <div id="phase2-error" style="margin-top:0.6rem;"></div>`;
                     if (window.lucide && window.lucide.createIcons) window.lucide.createIcons();
+                    const p2qr = document.getElementById("phase2-qr-canvas");
+                    if (p2qr && window.KShopQR && due > 0) window.KShopQR.renderKShopQR(p2qr, due);
                     wirePhase2SlipUpload(phone, due);
                 } catch (e) {
                     detail.innerHTML = `<div class="alert err">โหลดไม่ได้: ${escapeHtml(String(e))}</div>`;
@@ -1910,6 +1942,11 @@
             document.getElementById("cart-bar-amt").textContent = deposit.toLocaleString() + " บาท";
             if (getTotalQty() > 0) cartBar.classList.add("show");
             else                   cartBar.classList.remove("show");
+            // Render dynamic KShop QR with current deposit amount
+            const qrCanvas = document.getElementById("kshop-qr-img");
+            if (qrCanvas && window.KShopQR && deposit > 0) {
+                window.KShopQR.renderKShopQR(qrCanvas, deposit);
+            }
             updateSubmitState();
         }
 
@@ -1950,24 +1987,21 @@
         });
 
         /* ---------- Save QR button ---------- */
-        document.getElementById("btn-save-qr").addEventListener("click", async () => {
-            const img = document.getElementById("kshop-qr-img");
-            const filename = "KShop-QR-Lorcana-Set13.jpg";
-            try {
-                const res  = await fetch(img.src, { mode: "cors" });
-                const blob = await res.blob();
-                const url  = URL.createObjectURL(blob);
-                const a    = document.createElement("a");
+        document.getElementById("btn-save-qr").addEventListener("click", () => {
+            const canvas = document.getElementById("kshop-qr-img");
+            const filename = "KShop-QR-Lorcana-Set13.png";
+            if (!canvas || !canvas.toBlob) return;
+            canvas.toBlob((blob) => {
+                if (!blob) return;
+                const url = URL.createObjectURL(blob);
+                const a   = document.createElement("a");
                 a.href = url;
                 a.download = filename;
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
                 setTimeout(() => URL.revokeObjectURL(url), 1000);
-            } catch (err) {
-                // Fallback: open image in new tab (user long-press to save on mobile)
-                window.open(img.src, "_blank");
-            }
+            }, "image/png");
         });
 
         /* ---------- Sticky cart bar action ---------- */
@@ -2594,5 +2628,9 @@
             });
         })();
     </script>
+
+    <!-- KShop dynamic-amount QR (PromptPay merchant Tag 30 + Tag 54) -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+    <script src="/assets/kshop-qr.js"></script>
 </body>
 </html>
