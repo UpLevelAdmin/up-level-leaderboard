@@ -300,6 +300,91 @@
       gap: 8px;
       background: rgba(0,0,0,0.18);
     }
+    /* ป้ายยา teaser button */
+    .payaa-btn {
+      display: block;
+      position: relative;
+      overflow: hidden;
+      width: 100%;
+      max-width: 720px;
+      margin: 0 auto 2rem;
+      padding: 1.6rem 1.4rem;
+      border-radius: 1.1rem;
+      text-decoration: none;
+      text-align: center;
+      background:
+        linear-gradient(135deg, rgba(178, 84, 33, 0.92), rgba(174, 144, 76, 0.92)),
+        url("https://ravensburger.cloud/cms/gallery/lorcana-web/products/s12-wild-unknown/background/2tly5psx8v_1920x1080.jpg") center/cover;
+      border: 1.5px solid rgba(212, 181, 104, 0.55);
+      box-shadow: 0 14px 32px rgba(178, 84, 33, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+      transition: 0.3s;
+      cursor: pointer;
+    }
+    .payaa-btn:hover { transform: translateY(-3px) scale(1.01); filter: brightness(1.06); }
+
+    .payaa-inner { position: relative; z-index: 1; }
+    .payaa-eyebrow {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #FFE6B8;
+      margin-bottom: 0.35rem;
+    }
+    .payaa-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #FFF6E2;
+      line-height: 1.05;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    }
+    .payaa-sub {
+      margin-top: 0.4rem;
+      font-size: 0.9rem;
+      color: #FCE7C8;
+      font-weight: 500;
+    }
+
+    /* Disabled / coming-soon state */
+    .payaa-btn.disabled {
+      filter: grayscale(1) brightness(0.7);
+      cursor: not-allowed;
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.35);
+      border-color: rgba(255, 255, 255, 0.12);
+    }
+    .payaa-btn.disabled:hover { transform: none; filter: grayscale(1) brightness(0.75); }
+
+    .payaa-ribbon {
+      position: absolute;
+      top: 18px;
+      right: -52px;
+      transform: rotate(35deg);
+      background: linear-gradient(135deg, #DC2626, #991B1B);
+      color: #FFF;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 800;
+      letter-spacing: 0.18em;
+      padding: 6px 60px;
+      box-shadow: 0 4px 12px rgba(220, 38, 38, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+      border-top: 1px solid rgba(255, 255, 255, 0.3);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.25);
+      z-index: 2;
+      display: none;
+    }
+    .payaa-btn.disabled .payaa-ribbon { display: block; }
+
+    @media (max-width: 600px) {
+      .payaa-title { font-size: 1.5rem; }
+      .payaa-eyebrow { font-size: 0.75rem; }
+      .payaa-sub { font-size: 0.82rem; }
+      .payaa-ribbon { font-size: 0.78rem; padding: 5px 50px; right: -46px; top: 14px; }
+    }
+
     /* On-demand slot cards */
     .od-slot {
       background: rgba(255,255,255,0.04);
@@ -717,6 +802,16 @@
     <div class="promo-banner">
       🎁 ทุกคนได้ Promo สุ่ม 1 ใบ · ที่ 1 รับเพิ่ม 1 ซอง · ผู้สมัคร 8+ คน ที่ 2 รับ 1 ซองด้วย
     </div>
+
+    <!-- ป้ายยา event teaser — disabled until Champ confirms -->
+    <a class="payaa-btn disabled" href="newbie-lorcana-day.html" aria-disabled="true" onclick="event.preventDefault()">
+      <div class="payaa-inner">
+        <div class="payaa-eyebrow">🎪 Special Event</div>
+        <div class="payaa-title">งานป้ายยา Lorcana</div>
+        <div class="payaa-sub">มือใหม่ลองเล่นฟรี · พบเพื่อนใหม่ · เปิดซองสนุก</div>
+      </div>
+      <div class="payaa-ribbon">COMING SOON</div>
+    </a>
 
     <div class="details-card">
       <div class="details-title" onclick="toggleDetails()">
