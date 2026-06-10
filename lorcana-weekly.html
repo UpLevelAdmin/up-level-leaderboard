@@ -839,7 +839,7 @@
       <div class="info-box" style="border: 1px solid rgba(212, 181, 104, 0.35); background: linear-gradient(135deg, rgba(178, 84, 33, 0.12), rgba(174, 144, 76, 0.06));">
         <span class="lbl" style="color: var(--gold-bright);">🔥 On-demand Casual</span>
         <span class="val" style="font-size: 0.95rem; line-height: 1.5;">
-          ลงชื่อรอ — ครบ 4 คนเมื่อไหร่จัด event ทันที<br>
+          เปิดตี้เอง — เลือกวัน/เวลา · ครบ 4 พร้อมจัด · เกินได้ ยิ่งเยอะยิ่งสนุก<br>
           <span style="color: var(--text-muted); font-size: 0.85rem; font-weight: 400;">สะดวกวันไหนนัดกันมาได้ ไม่ต้องรอคิวตาราง</span>
         </span>
       </div>
@@ -1176,6 +1176,11 @@
 
           const msgList = s.messages.map(m => `<div style="font-size:0.85rem;color:var(--text-main);padding:6px 0;border-top:1px dashed rgba(212,181,104,0.18);"><strong style="color:var(--gold-bright);">${m.nick}:</strong> ${m.msg}</div>`).join('');
 
+          const countLabel = ready ? `${cnt} คน ✅` : `${cnt}/4`;
+          const statusText = ready
+            ? `<span style="color:#4ade80;font-weight:700;">✅ พร้อมจัด · ลงเพิ่มได้ ยิ่งเยอะยิ่งสนุก</span>`
+            : `<span style="color:var(--text-muted);">ต้องการอีก <strong style="color:var(--gold-bright);">${need}</strong> คน</span>`;
+
           return `
             <div class="od-slot ${isPack ? 'pack' : 'core'} ${ready ? 'ready' : ''}">
               <div class="od-slot-head">
@@ -1185,17 +1190,14 @@
                 </div>
                 <div style="text-align:right;">
                   <span class="event-pill ${isPack ? 'pack' : 'core'}">${isPack ? '📦 Pack Rush' : '⚔️ Core'}</span>
-                  <div class="od-slot-count ${ready ? 'ready' : ''}">${cnt}/4</div>
+                  <div class="od-slot-count ${ready ? 'ready' : ''}">${countLabel}</div>
                 </div>
               </div>
               ${msgList ? `<div class="od-slot-msgs">${msgList}</div>` : ''}
               <ul style="margin:0.5rem 0 0; padding:0 0 0 0.25rem; list-style:none;">${playerLis}</ul>
               <div class="od-slot-foot">
-                ${ready
-                  ? `<span style="color:#4ade80;font-weight:700;">✅ ครบ ${cnt}/4 — พร้อมจัด!</span>`
-                  : `<span style="color:var(--text-muted);">ต้องการอีก <strong style="color:var(--gold-bright);">${need}</strong> คน</span>
-                     <button class="od-join-btn" onclick="joinOdSlot('${s.odDate}','${s.odTime}','${s.eventType}')">+ ลงชื่อร่วม slot นี้</button>`
-                }
+                ${statusText}
+                <button class="od-join-btn" onclick="joinOdSlot('${s.odDate}','${s.odTime}','${s.eventType}')">+ ลงชื่อร่วม slot นี้</button>
               </div>
             </div>`;
         }).join('');
@@ -1350,7 +1352,7 @@
         // On-demand always first
         const odOpt = document.createElement('option');
         odOpt.value = ON_DEMAND;
-        odOpt.textContent = "🔥 " + ON_DEMAND;
+        odOpt.textContent = "🔥 On-demand · เปิดตี้เอง (เลือกวัน/เวลา)";
         dateSel.appendChild(odOpt);
 
         const today = new Date(); today.setHours(0, 0, 0, 0);

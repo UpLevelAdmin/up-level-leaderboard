@@ -88,8 +88,9 @@ async function buildOgHtml() {
     if (todaySlots.length) {
       const sum = todaySlots.map(s => {
         const ic = s.ev === "Pack" ? "📦" : "⚔️";
-        const ready = s.n >= 4 ? "✅" : "";
-        return `${ic}${s.n}/4 ${s.t || ""}${ready}`;
+        const ready = s.n >= 4;
+        const cnt = ready ? `${s.n}คน ✅` : `${s.n}/4`;
+        return `${ic}${cnt} ${s.t || ""}`;
       }).join(" ");
       titleParts.push(`🔥 วันนี้ ${sum}`);
     } else if (upcoming) {
