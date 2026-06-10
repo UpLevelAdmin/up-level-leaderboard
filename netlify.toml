@@ -2,7 +2,15 @@
   publish = "."
   functions = "netlify/functions"
 
-# Friendly URL for the dynamic share link
+# /lorcana-weekly goes through the function: bots get live OG, browsers
+# get the real static page (loopback-fetched from /lorcana-weekly.html).
+[[redirects]]
+  from = "/lorcana-weekly"
+  to = "/.netlify/functions/lorcana-weekly"
+  status = 200
+  force = true
+
+# Legacy share alias — keep working in case anyone already pasted it
 [[redirects]]
   from = "/share"
   to = "/.netlify/functions/share"

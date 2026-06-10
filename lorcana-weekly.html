@@ -886,9 +886,9 @@
     <div style="margin-top:3rem; padding-top:1.5rem; border-top:1px dashed rgba(212,181,104,0.15); text-align:center;">
       <div style="font-size:0.72rem; color:var(--text-muted); margin-bottom:6px; letter-spacing:0.08em; text-transform:uppercase;">For admin</div>
       <button onclick="copyShareLink(this)" style="display:inline-flex;align-items:center;gap:6px;padding:0.55rem 1.1rem;background:rgba(255,255,255,0.04);border:1px solid var(--glass-border);border-radius:0.5rem;color:var(--text-muted);font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:0.85rem;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;">
-        🔗 <span id="shareBtnLbl">Copy ลิงก์ live (โพสครั้งเดียว · OG อัปเดตเอง)</span>
+        🔗 <span id="shareBtnLbl">Copy ลิงก์</span>
       </button>
-      <div style="font-size:0.7rem;color:var(--text-muted);margin-top:6px;opacity:0.7;">โพสครั้งเดียวใน Line OpenChat ก็พอ. Preview จะดึงยอดสดทุกครั้งที่ Line cache refresh (~1 ชม.)</div>
+      <div style="font-size:0.7rem;color:var(--text-muted);margin-top:6px;opacity:0.7;">โพสครั้งเดียวใน Line OpenChat ก็พอ. Preview ดึงยอดสดเองทุก ~1 ชม.</div>
     </div>
   </div>
 
@@ -1209,7 +1209,7 @@
       // /share is a Netlify Function that returns dynamic OG meta with live
       // counts in og:title + og:description, then redirects to /lorcana-weekly.
       // Cache-bust forces Line/FB to re-fetch the OG when reposted.
-      const url = "https://uplevelguild.netlify.app/share?t=" + Date.now();
+      const url = "https://uplevelguild.netlify.app/lorcana-weekly";
       const lbl = document.getElementById('shareBtnLbl');
       const orig = lbl.textContent;
       try {
