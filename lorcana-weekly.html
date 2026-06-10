@@ -949,10 +949,18 @@
           <div class="reg-field">
             <label>💰 ค่าสมัคร <span id="regAmountLabel" style="color:var(--primary-bright); font-weight:700;">— เลือก Event ก่อน —</span></label>
             <div style="text-align:center; margin-top:4px;">
-              <div class="kshop-card">
+              <div class="kshop-card" id="kshopCard">
                 <canvas id="kshopQrCanvas" class="kshop-qr"></canvas>
               </div>
               <div id="regAmountDisplay" style="color:#cbd5e1; font-weight:600; font-size:0.8rem; margin-top:6px;">เลือก Event เพื่อให้ระบบ generate QR ตามจำนวนเงิน</div>
+              <button type="button" id="saveQrBtn" onclick="saveQrImage(this)" disabled
+                style="margin-top:10px; display:inline-flex; align-items:center; gap:6px; padding:0.55rem 1.2rem;
+                       background:linear-gradient(135deg, var(--gold), var(--gold-bright)); color:#1A0F00;
+                       border:none; border-radius:0.55rem; font-family:'Barlow Condensed',sans-serif;
+                       font-weight:700; font-size:0.95rem; letter-spacing:0.08em; text-transform:uppercase;
+                       cursor:pointer; transition:0.2s; box-shadow:0 6px 14px rgba(212,181,104,0.3);">
+                💾 <span id="saveQrLbl">Save QR</span>
+              </button>
             </div>
           </div>
 
@@ -1455,16 +1463,53 @@
       const lbl = document.getElementById('regAmountLabel');
       const disp = document.getElementById('regAmountDisplay');
       const c = document.getElementById('kshopQrCanvas');
+      const saveBtn = document.getElementById('saveQrBtn');
       if (!eventType || !PRICES[eventType]) {
         lbl.textContent = '— เลือก Event ก่อน —';
         disp.textContent = 'เลือก Event เพื่อให้ระบบ generate QR ตามจำนวนเงิน';
         if (c && c.getContext) c.getContext('2d').clearRect(0, 0, c.width, c.height);
+        if (saveBtn) { saveBtn.disabled = true; saveBtn.style.opacity = '0.45'; saveBtn.style.cursor = 'not-allowed'; }
         return;
       }
       const amount = PRICES[eventType];
       lbl.textContent = amount + ' บาท · ' + eventType;
       disp.textContent = `จำนวน ${amount}.00 บาท · ${eventType}`;
       if (c && window.KShopQR) window.KShopQR.renderKShopQR(c, amount);
+      if (saveBtn) { saveBtn.disabled = false; saveBtn.style.opacity = ''; saveBtn.style.cursor = 'pointer'; }
+    }
+
+    async function saveQrImage(btn) {
+      const amount = PRICES[getSelectedEventType()] || 0;
+      if (!amount) return;
+      const lbl = document.getElementById('saveQrLbl');
+      const orig = lbl.textContent;
+      lbl.textContent = 'กำลังสร้างภาพ...';
+      btn.disabled = true;
+      try {
+        const card = document.getElementById('kshopCard');
+        const canvas = await html2canvas(card, {
+          backgroundColor: null,
+          scale: 2,
+          useCORS: true,
+          logging: false
+        });
+        canvas.toBlob(blob => {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `lorcana-weekly-qr-${amount}.png`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          setTimeout(() => URL.revokeObjectURL(url), 1000);
+          lbl.textContent = '✅ บันทึกแล้ว';
+          setTimeout(() => { lbl.textContent = orig; btn.disabled = false; }, 2000);
+        }, 'image/png');
+      } catch (e) {
+        console.error('Save QR error:', e);
+        lbl.textContent = '❌ ลองใหม่';
+        setTimeout(() => { lbl.textContent = orig; btn.disabled = false; }, 2000);
+      }
     }
 
     async function submitRegistration(ev) {
@@ -1639,8 +1684,9 @@
     animate();
   </script>
 
-  <!-- KShop dynamic QR -->
+  <!-- KShop dynamic QR + Save QR helper -->
   <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="/assets/kshop-qr.js"></script>
 </body>
 
