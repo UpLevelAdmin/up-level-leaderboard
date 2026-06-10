@@ -19,6 +19,7 @@ const SHEET_NAME = "Form Responses 1";
 const SLIP_FOLDER_NAME = "Lorcana Weekly Slips";
 
 const PRICES = { "Pack Rush": 400, "Core Constructed": 200 };
+const ON_DEMAND = "On-demand · นัดเล่น (ครบ 4 คนจัดเลย)";
 
 // Telegram (reuse gym group for now — Champ can swap if he wants its own channel)
 const BOT_TOKEN = "8124787979:AAEWOqfiEACRxkrtZSWdTNuvGQr7uff_UoI";
@@ -352,8 +353,12 @@ function doGet(e) {
     });
   }
 
+  // OG preview page — share THIS URL in Line/Telegram for rich preview with live counts
+  if (e && e.parameter && e.parameter.op === "preview") {
+    return renderPreviewHtml_(groupedData);
+  }
+
   if (!e || !e.parameter || e.parameter.type !== "json") {
-    // simple HTML index for quick eyeballing
     let html = "<h2>Lorcana Weekly · Form Responses</h2>";
     Object.keys(groupedData).forEach(d => {
       html += `<h3>${d} (${groupedData[d].length})</h3><ul>`;
@@ -366,6 +371,81 @@ function doGet(e) {
   }
 
   return jsonOut_({ groupedData: groupedData });
+}
+
+// ============================================================
+// Live preview (rich OG meta for Line/Telegram link sharing)
+// ============================================================
+function renderPreviewHtml_(groupedData) {
+  const od = groupedData[ON_DEMAND] || [];
+  const odPack = od.filter(p => String(p.eventType || '').toLowerCase().indexOf('pack') >= 0).length;
+  const odCore = od.length - odPack;
+
+  // Find next scheduled date (Mon/Sat) — naive scan: latest non-On-demand date
+  let nextScheduled = "";
+  let nextPack = 0, nextCore = 0;
+  Object.keys(groupedData).forEach(d => {
+    if (d === ON_DEMAND) return;
+    if (!nextScheduled) nextScheduled = d;
+  });
+  if (nextScheduled) {
+    const list = groupedData[nextScheduled] || [];
+    nextPack = list.filter(p => String(p.eventType || '').toLowerCase().indexOf('pack') >= 0).length;
+    nextCore = list.length - nextPack;
+  }
+
+  const odTitle = `📦 ${odPack}/4 · ⚔️ ${odCore}/4`;
+  const ogTitle = `🔥 LORCANA On-demand ${odTitle}`;
+  const ogDesc = `${ON_DEMAND}\n${nextScheduled ? `ตารางถัดไป: ${nextScheduled} (📦 ${nextPack} · ⚔️ ${nextCore})` : 'จ.19:00 · ส.13:00'}\nค่าสมัคร Pack Rush 400 / Core 200`;
+  const ogImage = "https://ravensburger.cloud/cms/gallery/lorcana-web/products/s12-wild-unknown/dlc_s12_stubpage_1080x1080_mobile_hero.png";
+  const redirectUrl = "https://uplevelguild.netlify.app/lorcana-weekly";
+
+  const html = `<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${escapeHtml_(ogTitle)}</title>
+
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="${escapeHtml_(ogTitle)}">
+  <meta property="og:description" content="${escapeHtml_(ogDesc)}">
+  <meta property="og:image" content="${ogImage}">
+  <meta property="og:image:width" content="1080">
+  <meta property="og:image:height" content="1080">
+  <meta property="og:url" content="${redirectUrl}">
+  <meta property="og:site_name" content="Up Level Guild · Lorcana Weekly">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="${escapeHtml_(ogTitle)}">
+  <meta name="twitter:description" content="${escapeHtml_(ogDesc)}">
+  <meta name="twitter:image" content="${ogImage}">
+
+  <meta http-equiv="refresh" content="0; url=${redirectUrl}">
+  <link rel="canonical" href="${redirectUrl}">
+  <style>
+    body{font-family:'Barlow Condensed',sans-serif;background:#0E1A26;color:#F4EAD6;margin:0;padding:2rem;text-align:center}
+    a{color:#D4B568;font-weight:700}
+  </style>
+</head>
+<body>
+  <h1>${escapeHtml_(ogTitle)}</h1>
+  <p>${escapeHtml_(ogDesc).replace(/\n/g, '<br>')}</p>
+  <p><a href="${redirectUrl}">→ ไปหน้าสมัคร</a></p>
+  <script>location.replace(${JSON.stringify(redirectUrl)});</script>
+</body>
+</html>`;
+
+  return HtmlService.createHtmlOutput(html)
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+}
+
+function escapeHtml_(s) {
+  return String(s == null ? "" : s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
 // ============================================================

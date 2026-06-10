@@ -666,7 +666,15 @@
 
       <div class="info-box">
         <span class="lbl">⏰ เวลาแข่งขัน</span>
-        <span class="val">จันทร์ 19:00 | เสาร์ 16:00</span>
+        <span class="val">จันทร์ 19:00 · เสาร์ 13:00 · On-demand นัดกันมา</span>
+      </div>
+
+      <div class="info-box" style="border: 1px solid rgba(212, 181, 104, 0.35); background: linear-gradient(135deg, rgba(178, 84, 33, 0.12), rgba(174, 144, 76, 0.06));">
+        <span class="lbl" style="color: var(--gold-bright);">🔥 On-demand Casual</span>
+        <span class="val" style="font-size: 0.95rem; line-height: 1.5;">
+          ลงชื่อรอ — ครบ 4 คนเมื่อไหร่จัด event ทันที<br>
+          <span style="color: var(--text-muted); font-size: 0.85rem; font-weight: 400;">สะดวกวันไหนนัดกันมาได้ ไม่ต้องรอคิวตาราง</span>
+        </span>
       </div>
 
       <div id="details-content" style="display: none; padding-top: 1rem; border-top: 1px solid var(--glass-border);">
@@ -685,6 +693,9 @@
 
     <div style="text-align: center;">
       <button class="register-btn" onclick="openRegisterModal()">✨ สมัครแข่งขัน Lorcana Weekly</button>
+      <button onclick="copyShareLink(this)" style="display:inline-flex;align-items:center;gap:6px;margin-top:-0.5rem;margin-bottom:1.5rem;padding:0.55rem 1.1rem;background:rgba(255,255,255,0.06);border:1px solid var(--glass-border);border-radius:0.6rem;color:var(--text-muted);font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:0.95rem;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;">
+        🔗 <span id="shareBtnLbl">Copy link สำหรับแชร์ Line OpenChat</span>
+      </button>
     </div>
 
     <!-- Registration Modal -->
@@ -806,8 +817,9 @@
     const memberDashboardApi = "https://script.google.com/macros/s/AKfycbxtjsDwHI6nJU4OIHExUxMaZwUn3qwakvdkzwbQO7C8Trzz5Gh84SX6F1gqb4BOFQcn/exec?func=getMemberDashboardData";
 
     const PRICES = { "Pack Rush": 400, "Core Constructed": 200 };
+    const ON_DEMAND = "On-demand · นัดเล่น (ครบ 4 คนจัดเลย)";
 
-    // Mon/Sat only for June 2569 (Mon = จันทร์, Sat = เสาร์)
+    // Mon 19:00 / Sat 13:00 for June 2569 (Mon = จันทร์, Sat = เสาร์)
     const playDates = [
       "วันจันทร์ที่ 1 มิถุนายน 2569",
       "วันเสาร์ที่ 6 มิถุนายน 2569",
@@ -870,17 +882,39 @@
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
-        let upcomingIndex = playDates.findIndex(d => parseThaiDate(d) >= today);
+      let upcomingIndex = playDates.findIndex(d => parseThaiDate(d) >= today);
         if (upcomingIndex === -1) upcomingIndex = playDates.length - 1;
 
         const colors = [
-          'linear-gradient(135deg, #5B9CFF 0%, #8b5cf6 100%)',
-          'linear-gradient(135deg, #C9962F 0%, #F2C75E 100%)',
-          'linear-gradient(135deg, #8b5cf6 0%, #FF5C77 100%)',
-          'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)',
-          'linear-gradient(135deg, #f43f5e 0%, #fb923c 100%)',
-          'linear-gradient(135deg, #06b6d4 0%, #5B9CFF 100%)'
+          'linear-gradient(135deg, #404093 0%, #93AED1 100%)',
+          'linear-gradient(135deg, #B25421 0%, #D4B568 100%)',
+          'linear-gradient(135deg, #AE904C 0%, #E07A3B 100%)',
+          'linear-gradient(135deg, #51626F 0%, #404093 100%)',
+          'linear-gradient(135deg, #E07A3B 0%, #93AED1 100%)',
+          'linear-gradient(135deg, #404093 0%, #B25421 100%)'
         ];
+
+        // ── Render On-demand pool at top ──
+        const onDemandPlayers = (apiRes.groupedData && apiRes.groupedData[ON_DEMAND]) || [];
+        const onDemandPack = onDemandPlayers.filter(p => (p.eventType || '').toLowerCase().includes('pack'));
+        const onDemandCore = onDemandPlayers.filter(p => !(p.eventType || '').toLowerCase().includes('pack'));
+        const needPack = Math.max(0, 4 - onDemandPack.length);
+        const needCore = Math.max(0, 4 - onDemandCore.length);
+        html += `
+          <div class="date-header" onclick="toggleGroup('group-od', 'btn-od')" style="background: linear-gradient(135deg, #B25421 0%, #D4B568 100%); border-radius: 12px; margin-bottom: 0.5rem; padding: 1rem; color: white; box-shadow: 0 8px 22px rgba(178,84,33,0.4);">
+            <span>🔥 ${ON_DEMAND} <small style="opacity: 0.9; font-weight: 400; margin-left: 8px;">(📦 ${onDemandPack.length}/4 · ⚔️ ${onDemandCore.length}/4)</small></span>
+            <button id="btn-od" class="btn-toggle" style="background:none; border:none; color:#fff; cursor:pointer; font-size:1.2rem;">▲</button>
+          </div>
+          <div id="group-od" class="table-wrap">
+            <div style="padding: 0.85rem 1.25rem; font-size: 0.85rem; color: var(--text-muted); background: rgba(0,0,0,0.18); border-left: 4px solid var(--gold-bright);">
+              💡 ลงชื่อรอ on-demand ได้เลย — ครบ 4 คนเมื่อไหร่นัดวันกันใน Line/Telegram แล้วจัดทันที
+              ${needPack > 0 ? `<br>📦 ต้องการอีก <strong style="color:var(--rust-bright);">${needPack}</strong> คน เพื่อเปิด Pack Rush` : '<br>📦 <strong style="color:#4ade80;">Pack Rush พร้อมจัด!</strong>'}
+              ${needCore > 0 ? `<br>⚔️ ต้องการอีก <strong style="color:var(--sky);">${needCore}</strong> คน เพื่อเปิด Core Constructed` : '<br>⚔️ <strong style="color:#4ade80;">Core Constructed พร้อมจัด!</strong>'}
+            </div>
+            ${renderEventSection('pack', '📦 Pack Rush', onDemandPack, phoneMap)}
+            ${renderEventSection('core', '⚔️ Core Constructed', onDemandCore, phoneMap)}
+          </div>
+        `;
 
         playDates.forEach((date, idx) => {
           const allPlayers = (apiRes.groupedData && apiRes.groupedData[date]) || [];
@@ -962,6 +996,48 @@
         </div>`;
     }
 
+    async function copyShareLink(btn) {
+      const lbl = document.getElementById('shareBtnLbl');
+      const orig = lbl.textContent;
+      lbl.textContent = '⏳ กำลังนับยอด...';
+      try {
+        const api = await fetch(apiUrl).then(r => r.json()).catch(() => ({ groupedData: {} }));
+        const od = (api.groupedData && api.groupedData[ON_DEMAND]) || [];
+        const odPack = od.filter(p => String(p.eventType || '').toLowerCase().includes('pack')).length;
+        const odCore = od.length - odPack;
+
+        // Find next upcoming scheduled date with players
+        const today = new Date(); today.setHours(0, 0, 0, 0);
+        let nextLine = '';
+        for (const d of playDates) {
+          const dt = parseThaiDate(d);
+          if (!dt || dt < today) continue;
+          const list = (api.groupedData && api.groupedData[d]) || [];
+          const p = list.filter(x => String(x.eventType || '').toLowerCase().includes('pack')).length;
+          const c = list.length - p;
+          nextLine = `📅 ${d}\n   📦 ${p} · ⚔️ ${c}`;
+          break;
+        }
+
+        const url = "https://uplevelguild.netlify.app/lorcana-weekly";
+        const msg = `🔥 LORCANA WEEKLY · On-demand\n` +
+                    `📦 Pack Rush ${odPack}/4  ·  ⚔️ Core ${odCore}/4\n` +
+                    `(ครบ 4 คนจัดเลย ไม่ต้องรอตาราง)\n` +
+                    (nextLine ? `\n${nextLine}\n` : '') +
+                    `\n💰 Pack 400 · Core 200\n` +
+                    `⏰ จ.19:00 · ส.13:00\n\n` +
+                    `👉 ${url}`;
+
+        await navigator.clipboard.writeText(msg);
+        lbl.textContent = '✅ Copied! วางใน Line ได้เลย';
+        btn.style.color = '#4ade80';
+        setTimeout(() => { lbl.textContent = orig; btn.style.color = ''; }, 3500);
+      } catch (e) {
+        lbl.textContent = orig;
+        prompt('Copy ข้อความนี้ไปแชร์:', 'https://uplevelguild.netlify.app/lorcana-weekly');
+      }
+    }
+
     function toggleGroup(id, btnId) {
       const el = document.getElementById(id);
       const btn = document.getElementById(btnId);
@@ -984,16 +1060,24 @@
     function openRegisterModal() {
       const dateSel = document.getElementById('regDate');
       if (dateSel && dateSel.options.length <= 1) {
+        // On-demand always first
+        const odOpt = document.createElement('option');
+        odOpt.value = ON_DEMAND;
+        odOpt.textContent = "🔥 " + ON_DEMAND;
+        dateSel.appendChild(odOpt);
+
         const today = new Date(); today.setHours(0, 0, 0, 0);
+        let added = 0;
         playDates.forEach(d => {
           const dt = parseThaiDate(d);
           if (dt && dt >= today) {
             const opt = document.createElement('option');
             opt.value = d; opt.textContent = d;
             dateSel.appendChild(opt);
+            added++;
           }
         });
-        if (dateSel.options.length <= 1) {
+        if (added === 0) {
           playDates.forEach(d => {
             const opt = document.createElement('option');
             opt.value = d; opt.textContent = d;
