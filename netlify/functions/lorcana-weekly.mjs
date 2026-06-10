@@ -36,14 +36,18 @@ function escape(s) {
 }
 
 async function buildOgHtml() {
-  let title = "🔥 Lorcana Weekly Play";
-  let desc = "On-demand · นัดเล่นได้ทุกวัน · จ.19:00 · ส.13:00";
+  let title = "Lorcana Weekly — สนใจลงได้";
+  let desc = "Pack 400 / Core 200 · จ.19:00 · ส.13:00";
 
   try {
     const res = await fetch(GAS_URL, { signal: AbortSignal.timeout(8000) });
     const data = await res.json();
     const grouped = (data && data.groupedData) || {};
 
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const todayIso = today.toISOString().slice(0, 10);
+
+    // ── Today's on-demand slots ──
     const od = grouped[ON_DEMAND] || [];
     const slots = {};
     for (const p of od) {
@@ -55,43 +59,53 @@ async function buildOgHtml() {
       if (!slots[key]) slots[key] = { d, t, ev, n: 0 };
       slots[key].n++;
     }
-    const today = new Date(); today.setHours(0, 0, 0, 0);
-    const slotList = Object.values(slots)
-      .filter(s => !s.d || new Date(s.d + "T00:00:00") >= today)
-      .sort((a, b) => (a.d + a.t).localeCompare(b.d + b.t));
+    const todaySlots = Object.values(slots)
+      .filter(s => s.d === todayIso)
+      .sort((a, b) => (a.t || "").localeCompare(b.t || ""));
 
+    // ── Next scheduled Mon/Sat ──
     const scheduledKeys = Object.keys(grouped).filter(k => k !== ON_DEMAND);
     const upcoming = scheduledKeys
       .map(k => ({ key: k, dt: parseThaiScheduledDate(k), list: grouped[k] }))
       .filter(x => x.dt && x.dt >= today)
       .sort((a, b) => a.dt - b.dt)[0];
 
-    const parts = [];
-
-    if (slotList.length) {
-      const top = slotList[0];
-      const ready = top.n >= 4 ? " ✅" : "";
-      const evIcon = top.ev === "Pack" ? "📦" : "⚔️";
-      title = `🔥 ${evIcon} ${top.n}/4 · ${formatThai(top.d, true)} ${top.t || ""}${ready}`;
-      const slotLines = slotList.slice(0, 4).map(s => {
-        const ic = s.ev === "Pack" ? "📦" : "⚔️";
-        return `${ic} ${formatThai(s.d)} ${s.t || ""} · ${s.n}/4${s.n >= 4 ? "✅" : ""}`;
-      });
-      parts.push(slotLines.join(" │ "));
-    } else {
-      title = "🔥 Lorcana Weekly · ยังไม่มี On-demand เปิด";
-      parts.push("เปิดตี้ของคุณได้เลย");
-    }
-
+    let upPack = 0, upCore = 0, upLabel = "";
     if (upcoming) {
       const list = upcoming.list || [];
-      const p = list.filter(x => String(x.eventType || "").toLowerCase().includes("pack")).length;
-      const c = list.length - p;
-      parts.push(`ถัดไป: ${upcoming.key} · 📦${p} ⚔️${c}`);
+      upPack = list.filter(x => String(x.eventType || "").toLowerCase().includes("pack")).length;
+      upCore = list.length - upPack;
+      // Strip "วัน" prefix + Buddhist year if present for shorter label
+      upLabel = upcoming.key.replace(/^วัน/, "").replace(/ 25\d{2}$/, "");
     }
 
-    parts.push("💰 Pack 400 / Core 200");
-    desc = parts.join(" · ");
+    // ── Build focused title ──
+    // Priority: next scheduled · today's on-demand summary
+    const titleParts = [];
+    if (upcoming) {
+      titleParts.push(`📅 ${upLabel}: 📦${upPack} ⚔️${upCore}`);
+    }
+    if (todaySlots.length) {
+      const sum = todaySlots.map(s => {
+        const ic = s.ev === "Pack" ? "📦" : "⚔️";
+        const ready = s.n >= 4 ? "✅" : "";
+        return `${ic}${s.n}/4 ${s.t || ""}${ready}`;
+      }).join(" ");
+      titleParts.push(`🔥 วันนี้ ${sum}`);
+    } else if (upcoming) {
+      titleParts.push("วันนี้ยังไม่มี on-demand");
+    }
+    if (titleParts.length) title = titleParts.join(" · ");
+
+    // ── Build short desc ──
+    const descParts = [];
+    if (todaySlots.length) {
+      descParts.push("สนใจลงร่วม on-demand วันนี้ได้");
+    } else {
+      descParts.push("วันนี้ยังว่าง — เปิดตี้ on-demand ได้");
+    }
+    descParts.push("Pack 400 / Core 200 · จ.19:00 · ส.13:00");
+    desc = descParts.join(" · ");
   } catch (e) {
     desc = `${desc} · (เช็คยอดสดที่หน้าเวป)`;
   }
