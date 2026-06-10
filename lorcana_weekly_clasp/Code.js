@@ -58,13 +58,18 @@ function getSheet_() {
   let sheet = ss.getSheetByName(SHEET_NAME);
   if (!sheet) {
     sheet = ss.insertSheet(SHEET_NAME);
-    sheet.getRange(1, 1, 1, 11).setValues([[
+    sheet.getRange(1, 1, 1, 14).setValues([[
       "Timestamp", "วันที่", "ชื่อ-นามสกุล (Eng)", "ชื่อเล่น",
-      "Event", "เบอร์", "ระดับ", "ค่าสมัคร", "ยืนยัน", "สลิป", "สถานะ"
+      "Event", "เบอร์", "ระดับ", "ค่าสมัคร", "ยืนยัน", "สลิป", "สถานะ",
+      "OD วันที่", "OD เวลา", "OD ข้อความ"
     ]]);
     sheet.setFrozenRows(1);
-    // force phone column (F) to plain text
     sheet.getRange("F:F").setNumberFormat("@");
+  } else if (sheet.getLastColumn() < 14) {
+    // backfill new headers when upgrading
+    const lastCol = sheet.getLastColumn();
+    const extras = ["OD วันที่", "OD เวลา", "OD ข้อความ"];
+    sheet.getRange(1, lastCol + 1, 1, 14 - lastCol).setValues([extras.slice(0, 14 - lastCol)]);
   }
   return sheet;
 }
@@ -219,6 +224,12 @@ function doPost(e) {
     let slipUrl = "";
     if (body.slipBase64) slipUrl = uploadSlipToDrive_(body.slipBase64, body.slipMime, body.slipFilename);
 
+    const isOd = body.selectedDate === ON_DEMAND;
+    const odDate = isOd ? (body.odDate || "") : "";
+    const odTime = isOd ? (body.odTime || "") : "";
+    const odMessage = isOd ? (body.odMessage || "") : "";
+    if (isOd && !odDate) return jsonOut_({ ok: false, error: "on-demand ต้องเลือกวันที่" });
+
     const sheet = getSheet_();
     const timestamp = new Date();
     const row = [
@@ -232,11 +243,16 @@ function doPost(e) {
       amount,
       "ฉันยอมรับเงื่อนไขทั้งหมดและยืนยันการสมัคร",
       slipUrl,
-      ""
+      "",
+      odDate,
+      odTime,
+      odMessage
     ];
     sheet.appendRow(row);
     const rowIndex = sheet.getLastRow();
-    sheet.getRange(rowIndex, 6).setNumberFormat("@").setValue(phone); // keep phone as text
+    sheet.getRange(rowIndex, 6).setNumberFormat("@").setValue(phone);
+    if (odDate) sheet.getRange(rowIndex, 12).setNumberFormat("@").setValue(odDate);
+    if (odTime) sheet.getRange(rowIndex, 13).setNumberFormat("@").setValue(odTime);
 
     // Pipeline: slip OK + Firestore + Telegram + status
     let verificationStatus = "⚠️ ไม่ได้แนบสลิป";
@@ -349,7 +365,10 @@ function doGet(e) {
       phone: data[i][5],
       amount: data[i][7],
       paid: hasSlip,
-      status: data[i][10] ? String(data[i][10]).trim() : ""
+      status: data[i][10] ? String(data[i][10]).trim() : "",
+      odDate: data[i][11] ? String(data[i][11]).trim() : "",
+      odTime: data[i][12] ? String(data[i][12]).trim() : "",
+      odMessage: data[i][13] ? String(data[i][13]).trim() : ""
     });
   }
 

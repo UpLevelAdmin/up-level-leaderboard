@@ -300,6 +300,78 @@
       gap: 8px;
       background: rgba(0,0,0,0.18);
     }
+    /* On-demand slot cards */
+    .od-slot {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(212, 181, 104, 0.18);
+      border-radius: 0.85rem;
+      padding: 0.9rem 1rem;
+      position: relative;
+    }
+    .od-slot.pack { border-left: 4px solid var(--rust); background: linear-gradient(135deg, rgba(178,84,33,0.12), rgba(14,26,38,0.4)); }
+    .od-slot.core { border-left: 4px solid var(--deep-blue); background: linear-gradient(135deg, rgba(64,64,147,0.15), rgba(14,26,38,0.4)); }
+    .od-slot.ready { box-shadow: 0 0 0 1px rgba(74,222,128,0.6), 0 10px 22px rgba(74,222,128,0.18); }
+    .od-slot-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 0.75rem;
+      margin-bottom: 0.5rem;
+    }
+    .od-slot-date {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      font-size: 1.05rem;
+      color: var(--text-main);
+      letter-spacing: 0.02em;
+    }
+    .od-slot-time {
+      font-size: 0.95rem;
+      color: var(--gold-bright);
+      font-weight: 600;
+      margin-top: 2px;
+    }
+    .od-slot-count {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--text-main);
+      letter-spacing: 0.04em;
+      margin-top: 4px;
+    }
+    .od-slot-count.ready { color: #4ade80; }
+    .od-slot-msgs {
+      margin: 0.4rem 0;
+      padding: 0.5rem 0.75rem;
+      background: rgba(0,0,0,0.18);
+      border-radius: 0.5rem;
+    }
+    .od-slot-foot {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+      padding-top: 0.6rem;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      font-size: 0.88rem;
+    }
+    .od-join-btn {
+      background: linear-gradient(135deg, var(--gold), var(--gold-bright));
+      color: #1A0F00;
+      border: none;
+      padding: 0.45rem 0.85rem;
+      border-radius: 0.5rem;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      font-size: 0.85rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .od-join-btn:hover { transform: translateY(-1px); filter: brightness(1.1); }
+
     .event-section-title.pack { color: var(--rust-bright); border-left: 4px solid var(--rust); }
     .event-section-title.core { color: var(--sky); border-left: 4px solid var(--deep-blue); }
 
@@ -693,9 +765,6 @@
 
     <div style="text-align: center;">
       <button class="register-btn" onclick="openRegisterModal()">✨ สมัครแข่งขัน Lorcana Weekly</button>
-      <button onclick="copyShareLink(this)" style="display:inline-flex;align-items:center;gap:6px;margin-top:-0.5rem;margin-bottom:1.5rem;padding:0.55rem 1.1rem;background:rgba(255,255,255,0.06);border:1px solid var(--glass-border);border-radius:0.6rem;color:var(--text-muted);font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:0.95rem;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;">
-        🔗 <span id="shareBtnLbl">Copy link สำหรับแชร์ Line OpenChat</span>
-      </button>
     </div>
 
     <!-- Registration Modal -->
@@ -714,9 +783,30 @@
 
           <div class="reg-field">
             <label>📅 วันที่ลงแข่งขัน</label>
-            <select id="regDate" required>
+            <select id="regDate" required onchange="toggleOnDemandFields()">
               <option value="">-- เลือกวันที่ --</option>
             </select>
+          </div>
+
+          <!-- On-demand extra fields (revealed when date = On-demand) -->
+          <div id="odBlock" style="display:none; padding:1rem; background:linear-gradient(135deg, rgba(178,84,33,0.15), rgba(174,144,76,0.08)); border:1px solid rgba(212,181,104,0.35); border-radius:0.9rem; margin-bottom:1rem;">
+            <div style="font-family:'Barlow Condensed',sans-serif; font-size:1rem; font-weight:700; color:var(--gold-bright); margin-bottom:0.8rem; letter-spacing:0.06em; text-transform:uppercase;">
+              🔥 เปิดตี้ของคุณ
+            </div>
+            <div class="reg-row">
+              <div class="reg-field" style="margin-bottom:0.75rem;">
+                <label>📅 วันที่สะดวก</label>
+                <input type="date" id="odDate">
+              </div>
+              <div class="reg-field" style="margin-bottom:0.75rem;">
+                <label>⏰ เวลา</label>
+                <input type="time" id="odTime" value="19:00">
+              </div>
+            </div>
+            <div class="reg-field" style="margin-bottom:0;">
+              <label>💬 ข้อความเชิญชวน (ไม่บังคับ)</label>
+              <input type="text" id="odMessage" placeholder="เปิดตี้ ขาดคน · พรุ่งนี้ว่าง อยากมา · ฯลฯ" maxlength="80">
+            </div>
           </div>
 
           <div class="reg-field">
@@ -790,6 +880,14 @@
 
     <div id="lorcana-list">
       <div id="loading">✨ กำลังเรียกประกาศรายชื่อ...</div>
+    </div>
+
+    <!-- Admin-only: copy live message for Line OpenChat -->
+    <div style="margin-top:3rem; padding-top:1.5rem; border-top:1px dashed rgba(212,181,104,0.15); text-align:center;">
+      <div style="font-size:0.72rem; color:var(--text-muted); margin-bottom:6px; letter-spacing:0.08em; text-transform:uppercase;">For admin</div>
+      <button onclick="copyShareLink(this)" style="display:inline-flex;align-items:center;gap:6px;padding:0.55rem 1.1rem;background:rgba(255,255,255,0.04);border:1px solid var(--glass-border);border-radius:0.5rem;color:var(--text-muted);font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:0.85rem;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;">
+        🔗 <span id="shareBtnLbl">Copy ข้อความ + ลิงก์ แชร์ Line OpenChat</span>
+      </button>
     </div>
   </div>
 
@@ -894,27 +992,9 @@
           'linear-gradient(135deg, #404093 0%, #B25421 100%)'
         ];
 
-        // ── Render On-demand pool at top ──
+        // ── Render On-demand invitation slots ──
         const onDemandPlayers = (apiRes.groupedData && apiRes.groupedData[ON_DEMAND]) || [];
-        const onDemandPack = onDemandPlayers.filter(p => (p.eventType || '').toLowerCase().includes('pack'));
-        const onDemandCore = onDemandPlayers.filter(p => !(p.eventType || '').toLowerCase().includes('pack'));
-        const needPack = Math.max(0, 4 - onDemandPack.length);
-        const needCore = Math.max(0, 4 - onDemandCore.length);
-        html += `
-          <div class="date-header" onclick="toggleGroup('group-od', 'btn-od')" style="background: linear-gradient(135deg, #B25421 0%, #D4B568 100%); border-radius: 12px; margin-bottom: 0.5rem; padding: 1rem; color: white; box-shadow: 0 8px 22px rgba(178,84,33,0.4);">
-            <span>🔥 ${ON_DEMAND} <small style="opacity: 0.9; font-weight: 400; margin-left: 8px;">(📦 ${onDemandPack.length}/4 · ⚔️ ${onDemandCore.length}/4)</small></span>
-            <button id="btn-od" class="btn-toggle" style="background:none; border:none; color:#fff; cursor:pointer; font-size:1.2rem;">▲</button>
-          </div>
-          <div id="group-od" class="table-wrap">
-            <div style="padding: 0.85rem 1.25rem; font-size: 0.85rem; color: var(--text-muted); background: rgba(0,0,0,0.18); border-left: 4px solid var(--gold-bright);">
-              💡 ลงชื่อรอ on-demand ได้เลย — ครบ 4 คนเมื่อไหร่นัดวันกันใน Line/Telegram แล้วจัดทันที
-              ${needPack > 0 ? `<br>📦 ต้องการอีก <strong style="color:var(--rust-bright);">${needPack}</strong> คน เพื่อเปิด Pack Rush` : '<br>📦 <strong style="color:#4ade80;">Pack Rush พร้อมจัด!</strong>'}
-              ${needCore > 0 ? `<br>⚔️ ต้องการอีก <strong style="color:var(--sky);">${needCore}</strong> คน เพื่อเปิด Core Constructed` : '<br>⚔️ <strong style="color:#4ade80;">Core Constructed พร้อมจัด!</strong>'}
-            </div>
-            ${renderEventSection('pack', '📦 Pack Rush', onDemandPack, phoneMap)}
-            ${renderEventSection('core', '⚔️ Core Constructed', onDemandCore, phoneMap)}
-          </div>
-        `;
+        html += renderOnDemandSlots(onDemandPlayers, phoneMap);
 
         playDates.forEach((date, idx) => {
           const allPlayers = (apiRes.groupedData && apiRes.groupedData[date]) || [];
@@ -940,6 +1020,108 @@
         console.error("Init error:", e);
         document.getElementById('lorcana-list').innerHTML = '<div style="padding:2rem; color:var(--text-muted);">❌ เกิดข้อผิดพลาดในการโหลดข้อมูล</div>';
       }
+    }
+
+    function renderOnDemandSlots(players, phoneMap) {
+      // group by date|time|eventType
+      const slots = {};
+      players.forEach(p => {
+        const d = p.odDate || '';
+        const t = p.odTime || '';
+        const ev = (p.eventType || '').toLowerCase().includes('pack') ? 'Pack Rush' : 'Core Constructed';
+        const key = `${d}|${t}|${ev}`;
+        if (!slots[key]) slots[key] = { odDate: d, odTime: t, eventType: ev, players: [], messages: [] };
+        slots[key].players.push(p);
+        if (p.odMessage) slots[key].messages.push({ msg: p.odMessage, nick: p.nickname });
+      });
+
+      const slotKeys = Object.keys(slots).sort((a, b) => {
+        const sa = slots[a], sb = slots[b];
+        return (sa.odDate + sa.odTime).localeCompare(sb.odDate + sb.odTime);
+      });
+
+      let inner = '';
+      if (slotKeys.length === 0) {
+        inner = `
+          <div style="padding: 1.5rem 1.25rem; text-align:center; color:var(--text-muted);">
+            📭 ยังไม่มี slot On-demand เปิด<br>
+            <span style="font-size:0.82rem;">กดสมัคร → เลือก "🔥 On-demand" → เปิดตี้ของคุณได้เลย</span>
+          </div>`;
+      } else {
+        inner = slotKeys.map(k => {
+          const s = slots[k];
+          const isPack = s.eventType === 'Pack Rush';
+          const cnt = s.players.length;
+          const need = Math.max(0, 4 - cnt);
+          const ready = cnt >= 4;
+          const dateLabel = s.odDate ? formatOdDateTH(s.odDate) : 'ไม่ระบุวัน';
+          const timeLabel = s.odTime || '—';
+
+          const playerLis = s.players.map((p, i) => {
+            let phone = String(p.phone || '').replace(/[^\d]/g, '');
+            if (phone.endsWith('971156555')) phone = '0971156555';
+            const prof = phoneMap[phone];
+            let name = p.nickname || '';
+            if (prof || phone === '0971156555') {
+              const rank = prof ? prof.rank : 'Legend';
+              const code = prof ? prof.codename : 'Master Championest';
+              name = `<span style="display:inline-flex;align-items:center;gap:5px;">${getRankEmoji(rank, phone)} ${renderCodenameEffect(code, rank, phone)}</span>`;
+            }
+            return `<li style="padding:5px 0;font-size:0.88rem;">${i + 1}. ${name} <span style="color:var(--text-muted);font-size:0.78rem;">· ${p.nickname || ''}</span></li>`;
+          }).join('');
+
+          const msgList = s.messages.map(m => `<div style="font-size:0.85rem;color:var(--text-main);padding:6px 0;border-top:1px dashed rgba(212,181,104,0.18);"><strong style="color:var(--gold-bright);">${m.nick}:</strong> ${m.msg}</div>`).join('');
+
+          return `
+            <div class="od-slot ${isPack ? 'pack' : 'core'} ${ready ? 'ready' : ''}">
+              <div class="od-slot-head">
+                <div>
+                  <div class="od-slot-date">📅 ${dateLabel}</div>
+                  <div class="od-slot-time">⏰ ${timeLabel}</div>
+                </div>
+                <div style="text-align:right;">
+                  <span class="event-pill ${isPack ? 'pack' : 'core'}">${isPack ? '📦 Pack Rush' : '⚔️ Core'}</span>
+                  <div class="od-slot-count ${ready ? 'ready' : ''}">${cnt}/4</div>
+                </div>
+              </div>
+              ${msgList ? `<div class="od-slot-msgs">${msgList}</div>` : ''}
+              <ul style="margin:0.5rem 0 0; padding:0 0 0 0.25rem; list-style:none;">${playerLis}</ul>
+              <div class="od-slot-foot">
+                ${ready
+                  ? `<span style="color:#4ade80;font-weight:700;">✅ ครบ ${cnt}/4 — พร้อมจัด!</span>`
+                  : `<span style="color:var(--text-muted);">ต้องการอีก <strong style="color:var(--gold-bright);">${need}</strong> คน</span>
+                     <button class="od-join-btn" onclick="joinOdSlot('${s.odDate}','${s.odTime}','${s.eventType}')">+ ลงชื่อร่วม slot นี้</button>`
+                }
+              </div>
+            </div>`;
+        }).join('');
+      }
+
+      return `
+        <div class="date-header" onclick="toggleGroup('group-od', 'btn-od')" style="background: linear-gradient(135deg, #B25421 0%, #D4B568 100%); border-radius: 12px; margin-bottom: 0.5rem; padding: 1rem; color: white; box-shadow: 0 8px 22px rgba(178,84,33,0.4);">
+          <span>🔥 On-demand · เปิดตี้ <small style="opacity: 0.9; font-weight: 400; margin-left: 8px;">(${slotKeys.length} slot · ${players.length} คน)</small></span>
+          <button id="btn-od" class="btn-toggle" style="background:none; border:none; color:#fff; cursor:pointer; font-size:1.2rem;">▲</button>
+        </div>
+        <div id="group-od" class="table-wrap" style="padding: 0.9rem; display: flex; flex-direction: column; gap: 0.85rem;">
+          <div style="padding: 0.6rem 0.85rem; font-size: 0.82rem; color: var(--text-muted); background: rgba(0,0,0,0.18); border-left: 3px solid var(--gold-bright); border-radius:0.45rem;">
+            💡 ผู้เล่นเปิดตี้เอง — เลือกวัน เวลา และข้อความเชิญชวน · ครบ 4 → พร้อมจัด
+          </div>
+          ${inner}
+        </div>
+      `;
+    }
+
+    function joinOdSlot(odDate, odTime, eventType) {
+      openRegisterModal();
+      setTimeout(() => {
+        const sel = document.getElementById('regDate');
+        sel.value = ON_DEMAND;
+        toggleOnDemandFields();
+        if (odDate) document.getElementById('odDate').value = odDate;
+        if (odTime) document.getElementById('odTime').value = odTime;
+        const radio = document.querySelector(`input[name="eventType"][value="${eventType}"]`);
+        if (radio) { radio.checked = true; refreshQrFromEvent(); }
+      }, 100);
     }
 
     function renderEventSection(kind, title, players, phoneMap) {
@@ -996,6 +1178,32 @@
         </div>`;
     }
 
+    function toggleOnDemandFields() {
+      const sel = document.getElementById('regDate');
+      const block = document.getElementById('odBlock');
+      const odDate = document.getElementById('odDate');
+      const odTime = document.getElementById('odTime');
+      const isOd = sel.value === ON_DEMAND;
+      block.style.display = isOd ? 'block' : 'none';
+      odDate.required = isOd;
+      odTime.required = isOd;
+      if (isOd && !odDate.value) {
+        // default to tomorrow
+        const t = new Date(); t.setDate(t.getDate() + 1);
+        odDate.value = t.toISOString().slice(0, 10);
+        const today = new Date(); today.setHours(0,0,0,0);
+        odDate.min = today.toISOString().slice(0, 10);
+      }
+    }
+
+    function formatOdDateTH(iso) {
+      if (!iso) return '';
+      const dt = new Date(iso + 'T00:00:00');
+      const days = ['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'];
+      const months = ['','มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+      return `วัน${days[dt.getDay()]}ที่ ${dt.getDate()} ${months[dt.getMonth()+1]} ${dt.getFullYear()+543}`;
+    }
+
     async function copyShareLink(btn) {
       const lbl = document.getElementById('shareBtnLbl');
       const orig = lbl.textContent;
@@ -1003,10 +1211,35 @@
       try {
         const api = await fetch(apiUrl).then(r => r.json()).catch(() => ({ groupedData: {} }));
         const od = (api.groupedData && api.groupedData[ON_DEMAND]) || [];
-        const odPack = od.filter(p => String(p.eventType || '').toLowerCase().includes('pack')).length;
-        const odCore = od.length - odPack;
 
-        // Find next upcoming scheduled date with players
+        // group on-demand by date|time|event
+        const slots = {};
+        od.forEach(p => {
+          const d = p.odDate || '';
+          const t = p.odTime || '';
+          const ev = (p.eventType || '').toLowerCase().includes('pack') ? '📦' : '⚔️';
+          const key = `${d}|${t}|${ev}`;
+          if (!slots[key]) slots[key] = { d, t, ev, n: 0 };
+          slots[key].n++;
+        });
+        const slotKeys = Object.keys(slots).sort((a, b) => {
+          const sa = slots[a], sb = slots[b];
+          return (sa.d + sa.t).localeCompare(sb.d + sb.t);
+        });
+
+        let odLines = '';
+        if (slotKeys.length) {
+          odLines = '🔥 On-demand เปิดตี้:\n' + slotKeys.slice(0, 5).map(k => {
+            const s = slots[k];
+            const dateLabel = s.d ? formatOdDateTH(s.d) : 'ไม่ระบุวัน';
+            const ready = s.n >= 4 ? ' ✅' : '';
+            return `  ${s.ev} ${dateLabel} ${s.t || ''} · ${s.n}/4${ready}`;
+          }).join('\n');
+        } else {
+          odLines = '🔥 On-demand: ยังไม่มี slot เปิด — เปิดของคุณได้!';
+        }
+
+        // Next upcoming scheduled date
         const today = new Date(); today.setHours(0, 0, 0, 0);
         let nextLine = '';
         for (const d of playDates) {
@@ -1015,21 +1248,20 @@
           const list = (api.groupedData && api.groupedData[d]) || [];
           const p = list.filter(x => String(x.eventType || '').toLowerCase().includes('pack')).length;
           const c = list.length - p;
-          nextLine = `📅 ${d}\n   📦 ${p} · ⚔️ ${c}`;
+          nextLine = `📅 ตารางถัดไป: ${d}\n   📦 ${p} · ⚔️ ${c}`;
           break;
         }
 
         const url = "https://uplevelguild.netlify.app/lorcana-weekly";
-        const msg = `🔥 LORCANA WEEKLY · On-demand\n` +
-                    `📦 Pack Rush ${odPack}/4  ·  ⚔️ Core ${odCore}/4\n` +
-                    `(ครบ 4 คนจัดเลย ไม่ต้องรอตาราง)\n` +
+        const msg = `✨ LORCANA WEEKLY PLAY\n\n` +
+                    `${odLines}\n` +
                     (nextLine ? `\n${nextLine}\n` : '') +
                     `\n💰 Pack 400 · Core 200\n` +
                     `⏰ จ.19:00 · ส.13:00\n\n` +
                     `👉 ${url}`;
 
         await navigator.clipboard.writeText(msg);
-        lbl.textContent = '✅ Copied! วางใน Line ได้เลย';
+        lbl.textContent = '✅ Copied!';
         btn.style.color = '#4ade80';
         setTimeout(() => { lbl.textContent = orig; btn.style.color = ''; }, 3500);
       } catch (e) {
@@ -1222,15 +1454,20 @@
 
       try {
         const slipBase64 = await fileToBase64(slipFile);
+        const selDate = document.getElementById('regDate').value;
+        const isOd = selDate === ON_DEMAND;
         const payload = {
           phone: document.getElementById('regPhone').value.replace(/[^\d]/g, ''),
-          selectedDate: document.getElementById('regDate').value,
+          selectedDate: selDate,
           eventType: eventType,
           amount: PRICES[eventType],
           nickname: document.getElementById('regNickname').value.trim(),
           name: document.getElementById('regName').value.trim(),
           level: document.getElementById('regLevel').value,
           accept: document.getElementById('regAccept').checked,
+          odDate: isOd ? document.getElementById('odDate').value : '',
+          odTime: isOd ? document.getElementById('odTime').value : '',
+          odMessage: isOd ? document.getElementById('odMessage').value.trim() : '',
           slipBase64: slipBase64,
           slipMime: slipFile.type || 'image/jpeg',
           slipFilename: slipFile.name || `slip_${Date.now()}.jpg`
