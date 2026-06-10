@@ -886,8 +886,9 @@
     <div style="margin-top:3rem; padding-top:1.5rem; border-top:1px dashed rgba(212,181,104,0.15); text-align:center;">
       <div style="font-size:0.72rem; color:var(--text-muted); margin-bottom:6px; letter-spacing:0.08em; text-transform:uppercase;">For admin</div>
       <button onclick="copyShareLink(this)" style="display:inline-flex;align-items:center;gap:6px;padding:0.55rem 1.1rem;background:rgba(255,255,255,0.04);border:1px solid var(--glass-border);border-radius:0.5rem;color:var(--text-muted);font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:0.85rem;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;">
-        🔗 <span id="shareBtnLbl">Copy ข้อความ + ลิงก์ แชร์ Line OpenChat</span>
+        🔗 <span id="shareBtnLbl">Copy ลิงก์ live (โพสครั้งเดียว · OG อัปเดตเอง)</span>
       </button>
+      <div style="font-size:0.7rem;color:var(--text-muted);margin-top:6px;opacity:0.7;">โพสครั้งเดียวใน Line OpenChat ก็พอ. Preview จะดึงยอดสดทุกครั้งที่ Line cache refresh (~1 ชม.)</div>
     </div>
   </div>
 
@@ -1205,68 +1206,19 @@
     }
 
     async function copyShareLink(btn) {
+      // /share is a Netlify Function that returns dynamic OG meta with live
+      // counts in og:title + og:description, then redirects to /lorcana-weekly.
+      // Cache-bust forces Line/FB to re-fetch the OG when reposted.
+      const url = "https://uplevelguild.netlify.app/share?t=" + Date.now();
       const lbl = document.getElementById('shareBtnLbl');
       const orig = lbl.textContent;
-      lbl.textContent = '⏳ กำลังนับยอด...';
       try {
-        const api = await fetch(apiUrl).then(r => r.json()).catch(() => ({ groupedData: {} }));
-        const od = (api.groupedData && api.groupedData[ON_DEMAND]) || [];
-
-        // group on-demand by date|time|event
-        const slots = {};
-        od.forEach(p => {
-          const d = p.odDate || '';
-          const t = p.odTime || '';
-          const ev = (p.eventType || '').toLowerCase().includes('pack') ? '📦' : '⚔️';
-          const key = `${d}|${t}|${ev}`;
-          if (!slots[key]) slots[key] = { d, t, ev, n: 0 };
-          slots[key].n++;
-        });
-        const slotKeys = Object.keys(slots).sort((a, b) => {
-          const sa = slots[a], sb = slots[b];
-          return (sa.d + sa.t).localeCompare(sb.d + sb.t);
-        });
-
-        let odLines = '';
-        if (slotKeys.length) {
-          odLines = '🔥 On-demand เปิดตี้:\n' + slotKeys.slice(0, 5).map(k => {
-            const s = slots[k];
-            const dateLabel = s.d ? formatOdDateTH(s.d) : 'ไม่ระบุวัน';
-            const ready = s.n >= 4 ? ' ✅' : '';
-            return `  ${s.ev} ${dateLabel} ${s.t || ''} · ${s.n}/4${ready}`;
-          }).join('\n');
-        } else {
-          odLines = '🔥 On-demand: ยังไม่มี slot เปิด — เปิดของคุณได้!';
-        }
-
-        // Next upcoming scheduled date
-        const today = new Date(); today.setHours(0, 0, 0, 0);
-        let nextLine = '';
-        for (const d of playDates) {
-          const dt = parseThaiDate(d);
-          if (!dt || dt < today) continue;
-          const list = (api.groupedData && api.groupedData[d]) || [];
-          const p = list.filter(x => String(x.eventType || '').toLowerCase().includes('pack')).length;
-          const c = list.length - p;
-          nextLine = `📅 ตารางถัดไป: ${d}\n   📦 ${p} · ⚔️ ${c}`;
-          break;
-        }
-
-        const url = "https://uplevelguild.netlify.app/lorcana-weekly";
-        const msg = `✨ LORCANA WEEKLY PLAY\n\n` +
-                    `${odLines}\n` +
-                    (nextLine ? `\n${nextLine}\n` : '') +
-                    `\n💰 Pack 400 · Core 200\n` +
-                    `⏰ จ.19:00 · ส.13:00\n\n` +
-                    `👉 ${url}`;
-
-        await navigator.clipboard.writeText(msg);
-        lbl.textContent = '✅ Copied!';
+        await navigator.clipboard.writeText(url);
+        lbl.textContent = '✅ Copied! แชร์ใน Line ได้เลย';
         btn.style.color = '#4ade80';
         setTimeout(() => { lbl.textContent = orig; btn.style.color = ''; }, 3500);
       } catch (e) {
-        lbl.textContent = orig;
-        prompt('Copy ข้อความนี้ไปแชร์:', 'https://uplevelguild.netlify.app/lorcana-weekly');
+        prompt('Copy ลิงก์นี้ไปแชร์:', url);
       }
     }
 

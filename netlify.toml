@@ -1,0 +1,16 @@
+[build]
+  publish = "."
+  functions = "netlify/functions"
+
+# Friendly URL for the dynamic share link
+[[redirects]]
+  from = "/share"
+  to = "/.netlify/functions/share"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/share/*"
+  to = "/.netlify/functions/share"
+  status = 200
+  force = true
