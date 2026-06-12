@@ -1127,6 +1127,11 @@
     }
 
     function renderOnDemandSlots(players, phoneMap) {
+      // Hide on-demand slots whose date has already passed (local time)
+      const now = new Date();
+      const todayLocal = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+      players = players.filter(p => !p.odDate || p.odDate >= todayLocal);
+
       // group by date|time|eventType
       const slots = {};
       players.forEach(p => {
