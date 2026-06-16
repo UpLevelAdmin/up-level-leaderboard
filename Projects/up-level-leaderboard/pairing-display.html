@@ -73,23 +73,24 @@
 
     /* Pairing — open rows, dividers (no boxes), truncated names */
     .pairing-list{ display:flex; flex-direction:column; margin-bottom:24px; }
-    .pairing-card{ display:grid; grid-template-columns:34px 1fr auto; gap:6px 12px; align-items:center;
-      grid-template-areas:"tbl p1 badge" "tbl score badge" "tbl p2 badge"; padding:15px 2px; }
+    /* names left|right flanking the score so the winner reads at a glance */
+    .pairing-card{ display:grid; grid-template-columns:26px minmax(0,1fr) auto minmax(0,1fr) 20px;
+      gap:4px 6px; align-items:center; grid-template-areas:"tbl p1 score p2 badge"; padding:13px 0; }
     .pairing-card + .pairing-card{ border-top:1px solid var(--line2); }
     .round-label{ grid-area:tbl; align-self:center; background:transparent!important; color:var(--ink-soft)!important;
-      font-size:.6rem!important; font-weight:600; padding:0!important; text-align:center; line-height:1.25; white-space:normal; }
-    .pairing-card>:nth-child(2){ grid-area:p1; }
+      font-size:.54rem!important; font-weight:600; padding:0!important; text-align:center; line-height:1.15; white-space:normal; }
+    .pairing-card>:nth-child(2){ grid-area:p1; text-align:right; }
     .pairing-card>.score{ grid-area:score; }
-    .pairing-card>:nth-child(4){ grid-area:p2; }
+    .pairing-card>:nth-child(4){ grid-area:p2; text-align:left; }
     .pairing-card>.status-badge{ grid-area:badge; }
-    .player-name{ display:block; padding:7px 12px; border-radius:11px; font-size:.95rem; font-weight:500;
+    .player-name{ display:block; padding:7px 9px; border-radius:10px; font-size:.85rem; font-weight:500;
       background:transparent; color:var(--ink); border:none; cursor:pointer;
-      max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-    .player-name.winner{ background:#EAF6FF; color:#0B6BA8; font-weight:600; }
+      min-width:0; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .player-name.winner{ background:#E3F3FF; color:#0B6BA8; font-weight:600; }
     .player-name.loser{ background:#FDEEF1; color:#B03A52; }
     .player-name.draw{ background:#FDF5E1; color:#9A6B12; }
-    .score{ text-align:center; font-weight:600; font-size:.82rem; color:var(--ink-soft); padding:2px 0; }
-    .status-badge{ font-size:1rem; text-align:center; justify-self:center; }
+    .score{ text-align:center; font-weight:700; font-size:.82rem; color:var(--ink); padding:0 1px; white-space:nowrap; }
+    .status-badge{ font-size:.85rem; text-align:center; justify-self:center; }
 
     /* Standings — borderless, dividers, names truncate with ... (click to expand) */
     /* Standings = soft card; round groups stay open & airy (no box) */
@@ -131,9 +132,11 @@
     /* Desktop */
     @media(min-width:640px){
       .title{ font-size:2rem; }
-      .pairing-card{ grid-template-columns:40px 1fr auto 1fr auto;
-        grid-template-areas:"tbl p1 score p2 badge"; gap:14px; padding:16px 4px; }
-      .player-name{ font-size:1rem; }
+      .pairing-card{ grid-template-columns:40px minmax(0,1fr) auto minmax(0,1fr) 28px;
+        grid-template-areas:"tbl p1 score p2 badge"; gap:6px 14px; padding:15px 4px; }
+      .round-label{ font-size:.66rem!important; }
+      .player-name{ font-size:.98rem; padding:8px 14px; }
+      .score{ font-size:.95rem; }
       .stat-number{ font-size:2rem; }
       .standings-table{ font-size:.9rem; }
       .standings-table tbody td:nth-child(2){ max-width:220px; }
