@@ -22,3 +22,16 @@
   to = "/.netlify/functions/share"
   status = 200
   force = true
+
+# HQ moved to uplevelguild.com (2026-06-18)
+[[redirects]]
+  from = "/"
+  to = "https://uplevelguild.com"
+  status = 302
+  force = true
+
+[[redirects]]
+  from = "/index.html"
+  to = "https://uplevelguild.com"
+  status = 302
+  force = true
