@@ -44,13 +44,25 @@
   force = true
 
 [[redirects]]
-  from = "/*.gs"
+  from = "/lorcana_day_app_script.gs"
   to = "/404.html"
   status = 404
   force = true
 
 [[redirects]]
-  from = "/*.xlsx"
+  from = "/lorcana_day_pairing_app_script.gs"
+  to = "/404.html"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/Up Level Guild Data.xlsx"
+  to = "/404.html"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/Up%20Level%20Guild%20Data.xlsx"
   to = "/404.html"
   status = 404
   force = true
