@@ -1,25 +1,25 @@
 # ════════════════════════════════════════════════════════════════
-# Legacy site RETIRED (2026-06-20) — funnel every page to the new web
+# Legacy site RETIRED (2026-06-20) — funnel every page to the new web.
 # New web: uplevelguild.com (hub) + guild.uplevelguild.com (member app)
-# Specific pages map to their new-web equivalent; everything else → hub home.
+# `!` force flag = redirect even though the .html file still exists in repo.
 # ════════════════════════════════════════════════════════════════
 
 # Member app features (guild.uplevelguild.com)
-/gymbattle.html        https://guild.uplevelguild.com/gym             301
-/gymstanding.html      https://guild.uplevelguild.com/gym             301
-/leaderboard.html      https://guild.uplevelguild.com/leaderboard     301
-/quests.html           https://guild.uplevelguild.com/quests          301
-/challenge.html        https://guild.uplevelguild.com/quests          301
-/profile.html          https://guild.uplevelguild.com/dashboard       301
-/pairing.html          https://guild.uplevelguild.com/pairing         301
-/preorder-jersey.html  https://guild.uplevelguild.com/preorder/jersey 301
-/lorcana.html          https://guild.uplevelguild.com/lorcana         301
-/lorcana-weekly.html   https://guild.uplevelguild.com/lorcana         301
+/gymbattle.html        https://guild.uplevelguild.com/gym             301!
+/gymstanding.html      https://guild.uplevelguild.com/gym             301!
+/leaderboard.html      https://guild.uplevelguild.com/leaderboard     301!
+/quests.html           https://guild.uplevelguild.com/quests          301!
+/challenge.html        https://guild.uplevelguild.com/quests          301!
+/profile.html          https://guild.uplevelguild.com/dashboard       301!
+/pairing.html          https://guild.uplevelguild.com/pairing         301!
+/preorder-jersey.html  https://guild.uplevelguild.com/preorder/jersey 301!
+/lorcana.html          https://guild.uplevelguild.com/lorcana         301!
+/lorcana-weekly.html   https://guild.uplevelguild.com/lorcana         301!
 
 # Tournaments / events (uplevelguild.com)
-/GT4.html              https://uplevelguild.com/gt5                   301
-/GT3.html              https://uplevelguild.com/gt5                   301
-/riftbound.html        https://uplevelguild.com/riftbound             301
+/GT4.html              https://uplevelguild.com/gt5                   301!
+/GT3.html              https://uplevelguild.com/gt5                   301!
+/riftbound.html        https://uplevelguild.com/riftbound             301!
 
 # Everything else (any remaining page / path) → new web hub home
-/*                     https://uplevelguild.com/                      301
+/*                     https://uplevelguild.com/                      301!
